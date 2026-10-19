@@ -1,0 +1,796 @@
+<title>Abundance Loan Planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Carlito:wght@400;700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+<style>
+/* Layout: brand band → loan inputs + regular EMI → prepayment planner (strategies | results) → chart → schedule → summary */
+:root{
+  --primary:#005826; --secondary:#934E32; --accent:#F9B738;
+  --bg:#F0F8FF; --surface:#FFFFFF; --ink:#39293E; --muted:#6B6170;
+  --line:#DCE6EE; --soft:#E6F0EA; --soft2:#F6ECE6; --gold-soft:#FEF3D6; --grid:#E3EAF0;
+  --f-head:"Montserrat",system-ui,sans-serif;
+  --f-body:Calibri,"Carlito","Segoe UI",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --primary:#3FAE6A; --secondary:#C9876A; --accent:#F9B738;
+  --bg:#1C1620; --surface:#271F2C; --ink:#F1ECF3; --muted:#B3A8B8;
+  --line:#3A3140; --soft:#1F3328; --soft2:#3A2A24; --gold-soft:#3A3120; --grid:#352C3A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --primary:#3FAE6A; --secondary:#C9876A; --accent:#F9B738;
+  --bg:#1C1620; --surface:#271F2C; --ink:#F1ECF3; --muted:#B3A8B8;
+  --line:#3A3140; --soft:#1F3328; --soft2:#3A2A24; --gold-soft:#3A3120; --grid:#352C3A; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5;padding-inline:16px;padding-block:0 40px}
+.wrap{max-width:1080px;margin:20px auto 0;display:flex;flex-direction:column;gap:20px}
+h1,h2,h3{font-family:var(--f-head);text-wrap:balance;margin:0}
+.band{background:#005826;color:#fff;margin-inline:-16px;padding:28px 16px 26px}
+.band-in{max-width:1080px;margin:0 auto;display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+.brand{font-family:var(--f-head);font-weight:800;letter-spacing:.16em;font-size:13px;text-transform:uppercase;color:#F9B738}
+.band h1{font-size:clamp(24px,4vw,32px);font-weight:700;margin-top:6px}
+.tag{font-size:14px;opacity:.85;font-style:italic}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media (max-width:820px){.grid2{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px;min-width:0}
+.card h2{font-size:15px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--primary);margin-bottom:16px}
+h3{font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--secondary);margin-bottom:10px}
+
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:18px}
+.field:last-child{margin-bottom:0}
+.frow{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.frow label{font-weight:700;font-size:15px}
+.num{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:8px;background:var(--bg);padding:0 10px;min-width:0}
+.num span{color:var(--muted);font-size:14px}
+.num input{border:0;background:transparent;color:var(--ink);font:700 16px var(--f-body);width:130px;text-align:right;padding:7px 4px;font-variant-numeric:tabular-nums}
+.num input:focus{outline:none}
+.num:focus-within{border-color:var(--primary);box-shadow:0 0 0 2px color-mix(in srgb,var(--primary) 25%,transparent)}
+.hint{font-size:13px;color:var(--muted)}
+input[type=range]{width:100%;accent-color:var(--primary)}
+input[type=month]{border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:700 15px var(--f-body);padding:6px 10px}
+
+.emi{background:var(--soft);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:2px}
+.emi .k,.kk{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.emi .v{font-family:var(--f-head);font-size:clamp(30px,5vw,40px);font-weight:800;color:var(--primary);font-variant-numeric:tabular-nums}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+@media (max-width:420px){.stats{grid-template-columns:1fr}}
+.stat{border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.stat .k{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+.stat .v{font-family:var(--f-head);font-weight:700;font-size:17px;font-variant-numeric:tabular-nums}
+.split{margin-top:16px}
+.bar{height:14px;border-radius:7px;overflow:hidden;display:flex;background:var(--line)}
+.bar i{display:block;height:100%}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:14px;margin-top:8px}
+.legend b{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:middle}
+.note{margin-top:14px;font-size:14px;background:var(--soft2);border-radius:10px;padding:10px 12px}
+
+/* Prepayment planner */
+.pp{display:grid;grid-template-columns:1.1fr 1fr;gap:24px}
+@media (max-width:900px){.pp{grid-template-columns:1fr}}
+.strats{display:flex;flex-direction:column;gap:10px;min-width:0}
+.strat{border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;transition:border-color .15s,background .15s}
+.strat.on{border-color:var(--primary);background:color-mix(in srgb,var(--soft) 55%,transparent)}
+.sw{display:flex;gap:10px;align-items:center;font-weight:700;cursor:pointer}
+.sw input{width:18px;height:18px;accent-color:var(--primary);flex:none}
+.sw .n{font-family:var(--f-head);font-size:12px;color:var(--muted);font-weight:700}
+.sin{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;font-size:15px;padding-left:28px}
+.sin .num input{width:auto}
+.alone{padding-left:28px;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.alone strong{color:var(--primary)}
+.strat.off .sin{opacity:.55}
+.mode{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin-top:4px}
+
+.res{display:flex;flex-direction:column;gap:14px;min-width:0}
+.hero{background:var(--soft);border-radius:12px;padding:16px 18px}
+.hero .v{font-family:var(--f-head);font-size:clamp(28px,4.5vw,36px);font-weight:800;color:var(--primary);font-variant-numeric:tabular-nums;line-height:1.15}
+.hero .s{font-size:15px;margin-top:4px}
+.cmp{width:100%;border-collapse:collapse;font-size:15px;font-variant-numeric:tabular-nums}
+.cmp th{position:static;background:none;color:var(--muted);font:700 12px var(--f-head);letter-spacing:.05em;text-transform:uppercase;padding:6px 8px;text-align:right;border-bottom:1px solid var(--line)}
+.cmp th:first-child,.cmp td:first-child{text-align:left}
+.cmp td{padding:7px 8px;border-top:1px solid var(--line);text-align:right;white-space:normal;background:none!important}
+.cmp td.plan{font-weight:700;color:var(--primary)}
+.box{border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.box.gold{background:var(--gold-soft);border-color:transparent}
+.box .row{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;font-size:15px}
+.box .big{font-family:var(--f-head);font-weight:800;font-size:22px;font-variant-numeric:tabular-nums}
+.lede{margin:-6px 0 16px;max-width:80ch}
+.pvi-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.pvi-top{display:grid!important;grid-template-columns:1.5fr 1fr;gap:24px;margin-bottom:16px}
+@media (max-width:760px){.pvi-top{grid-template-columns:1fr}}
+.pin{display:flex;flex-direction:column;gap:8px;justify-content:center}
+.cin{font-size:15px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+@media (max-width:900px){.pvi-grid{grid-template-columns:1fr}}
+.pcol,.path{border-radius:12px;padding:16px;min-width:0;display:flex;flex-direction:column;gap:8px}
+.pcol{background:var(--gold-soft)}
+.path{border:1px solid var(--line)}
+.path.win{border-color:var(--primary);box-shadow:inset 0 0 0 1px var(--primary)}
+.ptag{font:700 11px var(--f-head);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between}
+.path.win .ptag::after{content:"Best of the three";color:var(--primary)}
+h4{font-family:var(--f-head);font-size:17px;margin:0}
+.xlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:15px}
+.xlist li{display:flex;justify-content:space-between;gap:12px;border-bottom:1px dashed color-mix(in srgb,var(--accent) 60%,transparent);padding-bottom:6px}
+.xlist li span:last-child{font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+.xlist li small{display:block;color:var(--muted);font-size:13px}
+.xlist li.tot{border:0;font-weight:700;padding-top:2px}
+.xlist li.none{color:var(--muted);border:0}
+.steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:15px;flex:1}
+.steps strong{font-variant-numeric:tabular-nums}
+.pval{border-top:1px solid var(--line);padding-top:10px;display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.pval .v{font-family:var(--f-head);font-weight:800;font-size:24px;font-variant-numeric:tabular-nums}
+.path.win .pval .v{color:var(--primary)}
+.taxn{display:block;text-transform:none;letter-spacing:0;font-weight:400;font-family:var(--f-body);font-size:12px}
+.verdict{margin-top:16px;background:var(--soft);border-radius:12px;padding:14px 16px;font-size:15px;display:flex;flex-direction:column;gap:10px}
+.scale{position:relative;height:28px;margin:18px 6px 18px}
+.scale .track{position:absolute;left:0;right:0;top:12px;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--secondary) 0,var(--secondary) var(--be),var(--primary) var(--be),var(--primary) 100%);opacity:.75}
+.scale .mk{position:absolute;top:0;transform:translateX(-50%);font-size:12px;white-space:nowrap;text-align:center;font-variant-numeric:tabular-nums}
+.scale .mk::before{content:"";display:block;width:2px;height:16px;margin:4px auto 2px;background:var(--ink)}
+.scale .mk.you{display:flex;flex-direction:column-reverse;align-items:center;top:-16px;font-weight:700}
+.scale .mk.you::before{width:12px;height:12px;border-radius:50%;background:var(--accent);border:2px solid var(--surface);margin:7px auto 0}
+.scale .lab{position:absolute;top:30px;font-size:12px;color:var(--muted)}
+.yy summary{cursor:pointer;color:var(--primary);font:700 13px var(--f-head);margin-top:14px}
+.sch tr.closed td{background:color-mix(in srgb,var(--accent) 22%,transparent)!important}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.pair div{border-radius:10px;padding:10px 12px;background:var(--surface);border:1px solid var(--line)}
+.pair .win{border-color:var(--primary);box-shadow:inset 0 0 0 1px var(--primary)}
+.pair .v{font-family:var(--f-head);font-weight:700;font-size:17px;font-variant-numeric:tabular-nums}
+
+.chart-wrap{overflow-x:auto}
+svg text{fill:var(--muted);font-family:var(--f-body);font-size:11px}
+.tip{font-size:14px;color:var(--muted);min-height:21px;margin-top:6px;font-variant-numeric:tabular-nums}
+
+.thead{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.thead h2{margin:0}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;background:var(--bg)}
+.seg button{border:0;background:transparent;color:var(--ink);font:700 13px var(--f-head);padding:6px 14px;border-radius:999px;cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--primary);color:#fff}
+.seg button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.xl{font:700 13px var(--f-head);border-radius:999px;padding:7px 16px;cursor:pointer;border:1px solid var(--primary);background:transparent;color:var(--primary)}
+.xl:hover{background:var(--soft)}
+.xl:disabled{opacity:.6;cursor:progress}
+.xl:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.xlmsg{font-size:13px;color:var(--muted);margin:-4px 0 10px;text-align:right}
+.tbl{overflow:auto;max-height:520px;border:1px solid var(--line);border-radius:10px}
+table.sch{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:15px}
+.sch th{position:sticky;top:0;background:var(--primary);color:#fff;font:600 12px var(--f-head);letter-spacing:.05em;text-transform:uppercase;padding:10px 12px;text-align:right;white-space:nowrap}
+.sch th:first-child,.sch td:first-child{text-align:left}
+.sch td{padding:8px 12px;text-align:right;border-top:1px solid var(--line);white-space:nowrap}
+.sch tbody tr:nth-child(even) td{background:color-mix(in srgb,var(--bg) 60%,transparent)}
+.sch td.pre{color:var(--secondary);font-weight:700}
+.sch tfoot td{font-weight:700;background:var(--soft);border-top:2px solid var(--primary)}
+.summary{border-left:4px solid var(--accent)}
+.summary ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.foot{font-size:13px;color:var(--muted);text-align:center;max-width:80ch;margin:0 auto}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<header class="band">
+  <div class="band-in">
+    <div><div class="brand">Abundance</div><h1>Loan Amortisation Planner</h1></div>
+    <div class="tag">Designing Portfolio, Delivering Peace.</div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="grid2">
+    <section class="card" aria-labelledby="h-in">
+      <h2 id="h-in">Loan details</h2>
+      <div class="field">
+        <div class="frow"><label for="amtN">Loan amount</label><div class="num"><span>₹</span><input id="amtN" inputmode="numeric"></div></div>
+        <input type="range" id="amt" min="100000" max="50000000" step="50000" value="5000000" aria-label="Loan amount">
+        <div class="hint" id="amtWords"></div>
+      </div>
+      <div class="field">
+        <div class="frow"><label for="rateN">Interest rate (p.a.)</label><div class="num"><input id="rateN" inputmode="decimal" style="width:70px"><span>%</span></div></div>
+        <input type="range" id="rate" min="5" max="20" step="0.05" value="8.5" aria-label="Interest rate">
+      </div>
+      <div class="field">
+        <div class="frow"><label for="yrsN">Tenure</label><div class="num"><input id="yrsN" inputmode="numeric" style="width:50px"><span>years</span></div></div>
+        <input type="range" id="yrs" min="1" max="30" step="1" value="20" aria-label="Tenure in years">
+      </div>
+      <div class="field">
+        <div class="frow"><label for="start">First EMI month</label><input type="month" id="start"></div>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="h-out">
+      <h2 id="h-out">Regular EMI</h2>
+      <div class="emi"><span class="k">Monthly EMI</span><span class="v" id="emiV">–</span></div>
+      <div class="stats">
+        <div class="stat"><div class="k">Principal</div><div class="v" id="pV"></div></div>
+        <div class="stat"><div class="k">Total interest</div><div class="v" id="iV"></div></div>
+        <div class="stat"><div class="k">Total payable</div><div class="v" id="tV"></div></div>
+      </div>
+      <div class="split">
+        <div class="bar"><i id="barP" style="background:var(--primary)"></i><i id="barI" style="background:var(--secondary)"></i></div>
+        <div class="legend"><span><b style="background:var(--primary)"></b>Principal <strong id="pPct"></strong></span><span><b style="background:var(--secondary)"></b>Interest <strong id="iPct"></strong></span></div>
+      </div>
+      <div class="note" id="note"></div>
+    </section>
+  </div>
+
+  <section class="card" aria-labelledby="h-pp">
+    <h2 id="h-pp">Prepayment &amp; foreclosure planner</h2>
+    <div class="pp">
+      <div class="strats">
+        <div class="strat" id="sExtra">
+          <label class="sw"><input type="checkbox" id="onExtra" checked><span><span class="n">1</span> Pay extra EMIs every year</span></label>
+          <div class="sin">Pay <span class="num"><input id="extra" type="number" min="1" max="12" value="1" style="width:48px"></span> extra EMI(s) a year, with every 12th EMI</div>
+          <div class="alone" id="aExtra"></div>
+        </div>
+        <div class="strat" id="sAnnual">
+          <label class="sw"><input type="checkbox" id="onAnnual"><span><span class="n">2</span> Prepay a fixed amount every year</span></label>
+          <div class="sin"><span class="num"><span>₹</span><input id="annual" inputmode="numeric" value="1,00,000" style="width:110px"></span> every year from year <span class="num"><input id="from" type="number" min="1" max="30" value="1" style="width:48px"></span></div>
+          <div class="alone" id="aAnnual"></div>
+        </div>
+        <div class="strat" id="sStep">
+          <label class="sw"><input type="checkbox" id="onStep"><span><span class="n">3</span> Increase the EMI every year</span></label>
+          <div class="sin">Raise the EMI by <span class="num"><input id="step" type="number" min="1" max="25" step="0.5" value="5" style="width:56px"><span>%</span></span> each year, in line with income growth</div>
+          <div class="alone" id="aStep"></div>
+        </div>
+        <div class="strat" id="sOne">
+          <label class="sw"><input type="checkbox" id="onOne"><span><span class="n">4</span> One-time lump sum</span></label>
+          <div class="sin"><span class="num"><span>₹</span><input id="one" inputmode="numeric" value="5,00,000" style="width:110px"></span> at the end of year <span class="num"><input id="oneY" type="number" min="1" max="30" value="3" style="width:48px"></span> (bonus, FD or policy maturity)</div>
+          <div class="alone" id="aOne"></div>
+        </div>
+        <div class="mode">
+          <span class="kk">After each prepayment</span>
+          <div class="seg" role="group" aria-label="After prepayment">
+            <button id="mT" aria-pressed="true">Reduce tenure</button>
+            <button id="mE" aria-pressed="false">Reduce EMI</button>
+          </div>
+        </div>
+        <div class="hint" id="modeHint"></div>
+      </div>
+
+      <div class="res">
+        <div class="hero">
+          <div class="kk">Interest saved with your plan</div>
+          <div class="v" id="saveV">–</div>
+          <div class="s" id="saveS"></div>
+        </div>
+        <table class="cmp" aria-label="Regular vs your plan">
+          <thead><tr><th></th><th>Regular</th><th>Your plan</th></tr></thead>
+          <tbody id="cmp"></tbody>
+        </table>
+
+        <div class="box">
+          <h3>Foreclose the loan</h3>
+          <div class="row">Close fully at the end of year <span class="num"><input id="fcY" type="number" min="1" max="30" value="5" style="width:48px"></span> Charge <span class="num"><input id="fcC" type="number" min="0" max="5" step="0.5" value="0" style="width:48px"><span>%</span></span></div>
+          <div id="fcOut" style="margin-top:10px"></div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="h-pvi">
+    <h2 id="h-pvi">Prepay or invest?</h2>
+    <p class="lede">Same money, three ways to use it. Each month the client sets aside the regular EMI plus the extra amounts in their plan. We compare what each path leaves in hand in <strong id="pviEnd"></strong>, when the original loan would have ended. In every path the loan is fully repaid by then.</p>
+    <div class="pcol pvi-top">
+      <div>
+        <h3>Extra money in your plan</h3>
+        <ul class="xlist" id="xlist"></ul>
+      </div>
+      <div class="pin">
+        <div class="row">Fund return <span class="num"><input id="ret" type="number" min="4" max="18" step="0.5" value="12" style="width:56px"><span>% p.a.</span></span></div>
+        <div class="row">Tax on fund gains <span class="num"><input id="tax" type="number" min="0" max="40" step="0.5" value="12.5" style="width:56px"><span>%</span></span></div>
+        <div class="hint">12.5% is the long-term capital gains rate on equity funds. Use 0 to compare before tax.</div>
+      </div>
+    </div>
+    <div class="pvi-grid">
+      <div class="path" id="pathA">
+        <div class="ptag">Path A</div><h4>Prepay, then invest</h4>
+        <ol class="steps" id="stepsA"></ol>
+        <div class="pval"><span class="kk">Fund value in <span class="endM"></span><span class="taxn" id="taxA"></span></span><span class="v" id="valA"></span></div>
+      </div>
+      <div class="path" id="pathC">
+        <div class="ptag">Path C</div><h4>Invest, then prepay</h4>
+        <div class="row cin">Invest for <span class="num"><input id="cN" type="number" min="1" max="10" value="3" style="width:44px"><span>years</span></span> at a time</div>
+        <ol class="steps" id="stepsC"></ol>
+        <div class="pval"><span class="kk">Fund value in <span class="endM"></span><span class="taxn" id="taxC"></span></span><span class="v" id="valC"></span></div>
+      </div>
+      <div class="path" id="pathB">
+        <div class="ptag">Path B</div><h4>Invest the extra</h4>
+        <ol class="steps" id="stepsB"></ol>
+        <div class="pval"><span class="kk">Fund value in <span class="endM"></span><span class="taxn" id="taxB"></span></span><span class="v" id="valB"></span></div>
+      </div>
+    </div>
+    <div class="verdict" id="pviV"></div>
+    <details class="yy" id="pviYY">
+      <summary>Year-by-year: where the extra money goes</summary>
+      <div class="tbl" style="margin-top:10px"><table class="sch">
+        <thead><tr><th>Year</th><th>Extra money</th><th>A: to loan</th><th>A: to fund</th><th>A: fund value</th><th>C: to loan</th><th>C: fund value</th><th>B: to fund</th><th>B: fund value</th></tr></thead>
+        <tbody id="yyB"></tbody>
+      </table></div>
+    </details>
+  </section>
+
+  <section class="card" aria-labelledby="h-ch">
+    <h2 id="h-ch">Where each year's payments go</h2>
+    <div class="chart-wrap"><svg id="chart" role="img" aria-label="Yearly principal, interest and prepayment with outstanding balance"></svg></div>
+    <div class="tip" id="tip">Hover or tap a bar to see that year's split.</div>
+    <div class="legend"><span><b style="background:var(--primary)"></b>Principal (EMI)</span><span><b style="background:var(--accent)"></b>Prepayment</span><span><b style="background:var(--secondary)"></b>Interest</span><span><b style="background:var(--ink);height:3px"></b>Balance with plan</span><span><b style="background:var(--muted);height:2px"></b>Balance without prepayment (dashed)</span></div>
+  </section>
+
+  <section class="card" aria-labelledby="h-tb">
+    <div class="thead">
+      <h2 id="h-tb">Repayment schedule <span id="schTag" class="hint" style="text-transform:none;letter-spacing:0;font-family:var(--f-body)"></span></h2>
+      <div class="tools">
+        <div class="seg" role="group" aria-label="Schedule view">
+          <button id="vY" aria-pressed="true">Yearly</button>
+          <button id="vM" aria-pressed="false">Monthly</button>
+        </div>
+        <button class="xl" id="xlBtn" title="Excel file with live formulas">⬇ Download Excel</button>
+      </div>
+    </div>
+    <div class="xlmsg" id="xlMsg" hidden></div>
+    <div class="tbl"><table class="sch">
+      <thead><tr><th id="c1">Year</th><th>Opening balance</th><th>EMI paid</th><th>Principal</th><th>Interest</th><th>Prepayment</th><th>Closing balance</th></tr></thead>
+      <tbody id="tb"></tbody><tfoot id="tf"></tfoot>
+    </table></div>
+  </section>
+
+  <section class="card summary" aria-labelledby="h-sum">
+    <h2 id="h-sum">Summary</h2>
+    <ul id="sum"></ul>
+  </section>
+
+  <p class="foot">Illustrative only. Assumes a fixed interest rate for the full tenure and all payments made on time. Extra EMIs and yearly prepayments are paid with every 12th EMI. Prepay-vs-invest ignores tax: home-loan interest deductions and capital gains tax on fund returns can shift the answer, and fund returns are not guaranteed. Check prepayment and foreclosure charges with the lender. The Excel download keeps every figure as a formula.</p>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+const inr=n=>'₹'+Math.round(n).toLocaleString('en-IN');
+function short(n){n=Math.round(n);const s=n<0?'-':'';n=Math.abs(n);if(n>=1e7)return s+'₹'+(n/1e7).toFixed(2).replace(/\.?0+$/,'')+' Cr';if(n>=1e5)return s+'₹'+(n/1e5).toFixed(2).replace(/\.?0+$/,'')+' L';return s+inr(n);}
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const dur=m=>{const y=Math.floor(m/12),mo=m%12;return [y?y+(y>1?' yrs':' yr'):'',mo?mo+(mo>1?' mths':' mth'):''].filter(Boolean).join(' ')||'0 mths';};
+const money=s=>+String(s).replace(/[^\d.]/g,'')||0;
+let view='Y',mode='tenure';
+
+// ---------- Loan engine (mirrors the Excel formulas exactly) ----------
+function pmt(r,n,pv){return r?pv*r/(1-Math.pow(1+r,-n)):pv/n;}
+// o = {extra, annual, from, step, one, oneK, mode:'tenure'|'emi'}
+function simulate(P,rate,years,o){
+  o=Object.assign({extra:0,annual:0,from:1,step:0,one:0,oneK:0,mode:'tenure'},o||{});
+  const r=rate/1200,n=years*12,base=pmt(r,n,P);let bal=P;const rows=[];
+  for(let k=1;k<=n&&bal>0.005;k++){
+    const y=Math.ceil(k/12);
+    const K=o.mode==='emi'?pmt(r,n-k+1,bal):base*Math.pow(1+o.step/100,y-1);
+    const int=bal*r,emi=Math.min(K,bal+int),prin=emi-int;
+    let pre=(k%12===0?o.extra*K+(y>=o.from?o.annual:0):0)+(k===o.oneK?o.one:0);
+    pre=Math.min(pre,bal-prin);
+    const close=bal-prin-pre;
+    rows.push({i:k,y,open:bal,emi,int,prin,pre,close});bal=close;
+  }
+  const totI=rows.reduce((a,x)=>a+x.int,0),totPre=rows.reduce((a,x)=>a+x.pre,0),totEmi=rows.reduce((a,x)=>a+x.emi,0);
+  return {base,rows,n,r,totI,totPre,totEmi,months:rows.length};
+}
+// What the borrower sets aside each month under the plan (used for prepay-vs-invest)
+function budget(base,k,o){
+  const y=Math.ceil(k/12),K=base*Math.pow(1+(o.mode==='emi'?0:o.step)/100,y-1);
+  return K+(k%12===0?o.extra*K+(y>=o.from?o.annual:0):0)+(k===o.oneK?o.one:0);
+}
+// Detailed prepay-vs-invest: same monthly budget, two uses. Returns totals, yearly trail, breakeven.
+function pviDetail(P,rate,years,o,ret,tax,skipBE){
+  tax=(tax||0)/100;
+  const reg=simulate(P,rate,years,{}),plan=simulate(P,rate,years,o),n=reg.n,base=reg.base;
+  const fv=(r)=>{const i=Math.pow(1+r/100,1/12)-1;let A=0,B=0;
+    let ia=0,ib=0;for(let k=1;k<=n;k++){const b=budget(base,k,o),row=plan.rows[k-1],pa=row?row.emi+row.pre:0,pb=reg.rows[k-1]?reg.rows[k-1].emi:0;A=A*(1+i)+(b-pa);B=B*(1+i)+(b-pb);ia+=b-pa;ib+=b-pb;}
+    return {A:A-tax*Math.max(0,A-ia),B:B-tax*Math.max(0,B-ib)};};
+  const i=Math.pow(1+ret/100,1/12)-1,s=(o.mode==='emi'?0:o.step)/100;
+  const parts={step:0,extra:0,annual:0,one:0};let A=0,B=0,inA=0,inB=0,toLoan=0;const yrs=[];
+  for(let k=1;k<=n;k++){
+    const y=Math.ceil(k/12),K=base*Math.pow(1+s,y-1);
+    const pStep=K-base,pExtra=k%12===0?o.extra*K:0,pAnn=(k%12===0&&y>=o.from)?o.annual:0,pOne=k===o.oneK?o.one:0;
+    parts.step+=pStep;parts.extra+=pExtra;parts.annual+=pAnn;parts.one+=pOne;
+    const b=base+pStep+pExtra+pAnn+pOne,row=plan.rows[k-1],pa=row?row.emi+row.pre:0,pb=reg.rows[k-1]?reg.rows[k-1].emi:0;
+    const fa=b-pa,fb=b-pb;A=A*(1+i)+fa;B=B*(1+i)+fb;inA+=fa;inB+=fb;toLoan+=Math.max(0,pa-pb);
+    if(!yrs[y-1])yrs[y-1]={y,extra:0,loanA:0,fundA:0,fundB:0,valA:0,valB:0,open:!!row};
+    const Y=yrs[y-1];Y.extra+=b-base;Y.loanA+=Math.max(0,pa-pb);Y.fundA+=fa;Y.fundB+=fb;Y.valA=A;Y.valB=B;if(row)Y.open=true;
+  }
+  // breakeven return: where both paths end equal
+  let lo=0,hi=30,be=null;const g=r=>{const v=fv(r);return v.B-v.A;};
+  if(!skipBE&&g(lo)<0&&g(hi)>0){for(let t=0;t<50;t++){const m=(lo+hi)/2;g(m)>0?hi=m:lo=m;}be=(lo+hi)/2;}
+  const closeK=plan.months;
+  const preA=A,preB=B;A=A-tax*Math.max(0,A-inA);B=B-tax*Math.max(0,B-inB);
+  return {A,B,preA,preB,taxA:preA-A,taxB:preB-B,inA,inB,toLoan,parts,totalExtra:parts.step+parts.extra+parts.annual+parts.one,yrs,be,closeK,n,base,
+          afterClose:closeK<n?budget(base,closeK+1,o):0,monthsAfter:n-closeK};
+}
+
+// Path C: extra money goes into a fund; every N years the fund (after tax on gains) is withdrawn and prepaid.
+function simC(P,rate,years,o,ret,tax,N){
+  const r=rate/1200,n=years*12,base=pmt(r,n,P),i=Math.pow(1+ret/100,1/12)-1,t=(tax||0)/100;
+  let bal=P,V=0,C=0,totI=0,closeK=0,inv=0,inLate=0,taxPaid=0;const lumps=[],yrs=[];
+  for(let k=1;k<=n;k++){
+    const y=Math.ceil(k/12),b=budget(base,k,o);let paid=0;
+    if(bal>0.005){const int=bal*r,emi=Math.min(base,bal+int);bal-=emi-int;totI+=int;paid=emi;if(bal<=0.005){bal=0;closeK=k;}}
+    const put=b-paid;V=V*(1+i)+put;C+=put;inv+=put;if(closeK&&k>closeK)inLate+=put;
+    let lump=0;
+    if(bal>0.005&&k%(12*N)===0&&V>0){
+      const avail=V-t*Math.max(0,V-C),f=Math.min(1,bal/avail),gross=f*V,tx=t*f*Math.max(0,V-C);
+      lump=gross-tx;taxPaid+=tx;bal-=lump;V-=gross;C-=f*C;lumps.push({k,y,amt:lump,tax:tx});
+      if(bal<=0.005){bal=0;closeK=k;}
+    }
+    if(!yrs[y-1])yrs[y-1]={y,toLoan:0,val:0};yrs[y-1].toLoan+=lump;yrs[y-1].val=V;
+  }
+  const finalTax=t*Math.max(0,V-C);
+  return {value:V-finalTax,pre:V,finalTax,taxPaid,totI,closeK:closeK||n,lumps,yrs,inv,base,
+          lumpTotal:lumps.reduce((a,l)=>a+l.amt,0)};
+}
+
+function prepayVsInvest(P,rate,years,o,ret){
+  const reg=simulate(P,rate,years,{}),plan=simulate(P,rate,years,o),n=reg.n,i=Math.pow(1+ret/100,1/12)-1;
+  let A=0,B=0;
+  for(let k=1;k<=n;k++){
+    const b=budget(reg.base,k,o),row=plan.rows[k-1],paidA=row?row.emi+row.pre:0,paidB=reg.rows[k-1]?reg.rows[k-1].emi:0;
+    A=A*(1+i)+(b-paidA);B=B*(1+i)+(b-paidB);
+  }
+  return {prepay:A,invest:B};
+}
+
+
+(function initStart(){const d=new Date();d.setMonth(d.getMonth()+1);$('start').value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');})();
+function bind(r,n,fmt,parse){
+  const sync=()=>{n.value=fmt(+r.value)};
+  r.addEventListener('input',()=>{sync();calc()});
+  n.addEventListener('change',()=>{let v=parse(n.value);if(isNaN(v))v=+r.value;v=Math.min(+r.max,Math.max(+r.min,v));r.value=v;sync();calc()});
+  sync();
+}
+bind($('amt'),$('amtN'),v=>v.toLocaleString('en-IN'),s=>+s.replace(/[^\d.]/g,''));
+bind($('rate'),$('rateN'),v=>(+v).toFixed(2),s=>+s);
+bind($('yrs'),$('yrsN'),v=>String(v),s=>Math.round(+s));
+['start','extra','from','step','oneY','fcY','fcC','ret','tax','cN','onExtra','onAnnual','onStep','onOne'].forEach(id=>{$(id).addEventListener('input',calc);$(id).addEventListener('change',calc);});
+['annual','one'].forEach(id=>{$(id).addEventListener('change',()=>{$(id).value=money($(id).value).toLocaleString('en-IN');calc();});$(id).addEventListener('input',calc);});
+$('vY').onclick=()=>{view='Y';$('vY').setAttribute('aria-pressed','true');$('vM').setAttribute('aria-pressed','false');calc()};
+$('vM').onclick=()=>{view='M';$('vM').setAttribute('aria-pressed','true');$('vY').setAttribute('aria-pressed','false');calc()};
+$('mT').onclick=()=>{mode='tenure';$('mT').setAttribute('aria-pressed','true');$('mE').setAttribute('aria-pressed','false');calc()};
+$('mE').onclick=()=>{mode='emi';$('mE').setAttribute('aria-pressed','true');$('mT').setAttribute('aria-pressed','false');calc()};
+
+function clampInt(id,lo,hi){const el=$(id);let v=Math.round(+el.value);if(isNaN(v))v=lo;v=Math.min(hi,Math.max(lo,v));return v;}
+function readPlan(yrs){
+  const on={extra:$('onExtra').checked,annual:$('onAnnual').checked,step:$('onStep').checked&&mode==='tenure',one:$('onOne').checked};
+  const vals={extra:clampInt('extra',1,12),annual:money($('annual').value),from:clampInt('from',1,30),step:Math.max(0,+$('step').value||0),one:money($('one').value),oneY:clampInt('oneY',1,30)};
+  const mk=(sel)=>({extra:sel.extra?vals.extra:0,annual:sel.annual?vals.annual:0,from:vals.from,step:sel.step?vals.step:0,
+                    one:sel.one?vals.one:0,oneK:sel.one?Math.min(vals.oneY,yrs)*12:0,mode});
+  return {plan:mk(on),mk,on};
+}
+function getInputs(){
+  const P=+$('amt').value,rate=+$('rate').value,yrs=+$('yrs').value;
+  const [sy,sm]=($('start').value||'2026-10').split('-').map(Number);
+  return {P,rate,yrs,sy,sm};
+}
+
+function calc(){
+  const {P,rate,yrs,sy,sm}=getInputs();
+  const reg=simulate(P,rate,yrs,{}),{plan:o,mk,on}=readPlan(yrs),pl=simulate(P,rate,yrs,o);
+  const monLabel=i=>{const t=(sm-1)+(i-1);return MON[t%12]+' '+(sy+Math.floor(t/12));};
+  const regI=reg.totI,tot=P+regI;
+
+  // Regular EMI card
+  $('amtWords').textContent=short(P);$('emiV').textContent=inr(reg.base);
+  $('pV').textContent=short(P);$('iV').textContent=short(regI);$('tV').textContent=short(tot);
+  const pp=P/tot*100;$('barP').style.width=pp+'%';$('barI').style.width=(100-pp)+'%';
+  $('pPct').textContent=pp.toFixed(0)+'%';$('iPct').textContent=(100-pp).toFixed(0)+'%';
+  const cross=reg.rows.find(r=>r.prin>=r.int);
+  $('note').innerHTML=`In the first EMI, <strong>${(reg.rows[0].int/reg.base*100).toFixed(0)}%</strong> goes to interest. `+(cross?`From <strong>${monLabel(cross.i)}</strong> onward, more of each EMI repays principal than interest.`:'');
+
+  // Strategy cards: state + each strategy on its own
+  const cards=[['Extra','extra'],['Annual','annual'],['Step','step'],['One','one']];
+  cards.forEach(([id,key])=>{
+    const el=$('s'+id),checked=$('on'+id).checked,disabled=key==='step'&&mode==='emi';
+    el.classList.toggle('on',checked&&!disabled);el.classList.toggle('off',!checked||disabled);
+    $('on'+id).disabled=disabled;
+    const sel={extra:false,annual:false,step:false,one:false};sel[key]=true;
+    const a=simulate(P,rate,yrs,mk(sel)),saved=regI-a.totI,ms=reg.months-a.months;
+    $('a'+id).innerHTML=disabled?'Works with “Reduce tenure” only.'
+      :`On its own: saves <strong>${short(saved)}</strong> in interest${mode==='tenure'?` and ends the loan <strong>${dur(ms)}</strong> sooner`:''}${a.totPre?` · prepays ${short(a.totPre)}`:''}`;
+  });
+  $('modeHint').textContent=mode==='tenure'?'Your EMI stays the same and the loan ends sooner. This saves the most interest.'
+    :'The loan keeps its original end date and the EMI drops after each prepayment. This helps monthly cash flow but saves less interest.';
+
+  // Plan results
+  const saved=regI-pl.totI,ms=reg.months-pl.months,any=pl.totPre>0||o.step>0;
+  $('saveV').textContent=any?inr(saved):'₹0';
+  $('saveS').innerHTML=any?(mode==='tenure'?`Loan ends in <strong>${monLabel(pl.months)}</strong> instead of ${monLabel(reg.months)}, <strong>${dur(ms)}</strong> earlier.`
+      :(()=>{const fp=pl.rows.find(r=>r.pre>0.5),nx=fp&&pl.rows[fp.i];return nx?`EMI drops from ${inr(reg.base)} to <strong>${inr(nx.emi)}</strong> after the first prepayment and keeps falling after each one${ms>0?`. The loan ends ${dur(ms)} early`:''}.`:'The EMI stays the same.';})())
+    :'Tick a strategy on the left to see the savings.';
+  $('cmp').innerHTML=[
+    ['Loan ends',monLabel(reg.months),monLabel(pl.months)],
+    ['Tenure',dur(reg.months),dur(pl.months)],
+    ['Total interest',inr(regI),inr(pl.totI)],
+    ['Extra paid (prepayments)','–',inr(pl.totPre)],
+    ['Total paid',inr(tot),inr(pl.totEmi+pl.totPre)],
+  ].map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td class="plan">${r[2]}</td></tr>`).join('');
+
+  // Foreclosure
+  const fcY=clampInt('fcY',1,30),fcC=Math.max(0,+$('fcC').value||0),k=fcY*12,fr=pl.rows.find(r=>r.i===k);
+  if(fcY>=yrs){$('fcOut').innerHTML=`<span class="hint">Pick a year before year ${yrs}, the last year of the loan.</span>`;}
+  else if(!fr){$('fcOut').innerHTML=`Your plan already closes the loan in <strong>${monLabel(pl.months)}</strong>, before the end of year ${fcY}.`;}
+  else{
+    const charge=fr.close*fcC/100,after=pl.rows.filter(r=>r.i>k).reduce((a,r)=>a+r.int,0);
+    $('fcOut').innerHTML=`<div class="kk">Amount needed in ${monLabel(k)}</div><div class="big">${inr(fr.close+charge)}</div>
+      <div class="hint" style="font-size:14px">Outstanding ${inr(fr.close)}${fcC?` + ${fcC}% charge ${inr(charge)}`:''}. Closing then saves a further <strong style="color:var(--primary)">${inr(after-charge)}</strong> in interest${fcC?' after the charge':''}${any?' compared with continuing your plan':''}.</div>`;
+  }
+
+  // Prepay vs invest
+  renderPVI(P,rate,yrs,o,reg,pl,any,monLabel);
+
+  // Chart, table, summary
+  drawChart(reg,pl,yrs,P,monLabel);
+  $('schTag').textContent=any?'· with your plan':'· regular EMIs';
+  $('c1').textContent=view==='Y'?'Year':'Month';
+  const tr=(a,x)=>`<tr><td>${a}</td><td>${inr(x.open)}</td><td>${inr(x.emi)}</td><td>${inr(x.prin)}</td><td>${inr(x.int)}</td><td class="${x.pre>0.5?'pre':''}">${x.pre>0.5?inr(x.pre):'–'}</td><td>${inr(x.close)}</td></tr>`;
+  const years=groupYears(pl.rows);
+  $('tb').innerHTML=view==='Y'
+    ?years.map(x=>{const f=(x.y-1)*12+1,l=f+x.cnt-1;return tr(`Year ${x.y} <span class="hint">(${monLabel(f)} – ${monLabel(l)})</span>`,x);}).join('')
+    :pl.rows.map(x=>tr(`${x.i}. ${monLabel(x.i)}`,x)).join('');
+  $('tf').innerHTML=`<tr><td>Total</td><td></td><td>${inr(pl.totEmi)}</td><td>${inr(P-pl.totPre)}</td><td>${inr(pl.totI)}</td><td>${inr(pl.totPre)}</td><td></td></tr>`;
+
+  const half=reg.rows.find(r=>r.close<=P/2);
+  const items=[
+    `A loan of <strong>${short(P)}</strong> at <strong>${rate.toFixed(2)}%</strong> for <strong>${yrs} years</strong> needs an EMI of <strong>${inr(reg.base)}</strong>. Interest alone is <strong>${short(regI)}</strong>, or ${(regI/P*100).toFixed(0)}% of the loan.`,
+    half?`Paying only the regular EMI, half the loan is repaid by <strong>${monLabel(half.i)}</strong>.`:'',
+  ];
+  if(any){
+    const parts=[];if(o.extra)parts.push(`${o.extra} extra EMI${o.extra>1?'s':''} a year`);if(o.annual)parts.push(`${short(o.annual)} every year from year ${o.from}`);
+    if(o.step)parts.push(`a ${o.step}% EMI increase each year`);if(o.one)parts.push(`${short(o.one)} once in year ${o.oneK/12}`);
+    items.push(`With ${parts.join(', ')}, you save <strong>${short(saved)}</strong> in interest${mode==='tenure'?` and become debt-free <strong>${dur(ms)}</strong> earlier`:''}.`);
+    const best=cards.map(([id,key])=>{if(key==='step'&&mode==='emi')return null;const sel={extra:false,annual:false,step:false,one:false};sel[key]=true;const a=simulate(P,rate,yrs,mk(sel));return {key,save:regI-a.totI,pre:a.totPre};}).filter(Boolean);
+    const eff=best.filter(b=>b.pre>0).map(b=>({...b,per:b.save/b.pre})).sort((a,b)=>b.per-a.per)[0];
+    const names={extra:'extra EMIs',annual:'yearly prepayment',one:'one-time lump sum'};
+    if(eff)items.push(`Each rupee prepaid early saves more than one prepaid late. Of the options that use prepayments, <strong>${names[eff.key]}</strong> saves the most per rupee: ₹${eff.per.toFixed(2)} of interest for every ₹1.`);
+  }else items.push('No prepayment strategy is selected, so the schedule shows regular EMIs only.');
+  $('sum').innerHTML=items.filter(Boolean).map(s=>`<li>${s}</li>`).join('');
+}
+
+function renderPVI(P,rate,yrs,o,reg,pl,any,monLabel){
+  const ret=Math.max(0,+$('ret').value||0),endM=monLabel(reg.months);
+  $('pviEnd').textContent=endM;document.querySelectorAll('.endM').forEach(e=>e.textContent=endM);
+  if(!any){
+    $('xlist').innerHTML='<li class="none">No strategy selected. Tick one in the planner above to compare.</li>';
+    $('stepsA').innerHTML=$('stepsB').innerHTML=$('stepsC').innerHTML='';$('valA').textContent=$('valB').textContent=$('valC').textContent='–';
+    ['pathA','pathB','pathC'].forEach(id=>$(id).classList.remove('win'));['taxA','taxB','taxC'].forEach(id=>$(id).textContent='');
+    $('pviV').innerHTML='<span class="hint">Choose a prepayment strategy to see the comparison.</span>';$('yyB').innerHTML='';return;
+  }
+  const tax=Math.max(0,+$('tax').value||0),d=pviDetail(P,rate,yrs,o,ret,tax),base=reg.base,L=x=>short(x);
+  // extra money list
+  const li=[];
+  if(o.extra){const grow=o.step&&mode==='tenure';li.push([`${o.extra} extra EMI${o.extra>1?'s':''} every year`,grow?`${inr(base*o.extra)} in year 1, rising ${o.step}% a year, × ${yrs} yrs`:`${inr(base*o.extra)} × ${yrs} yrs, with every 12th EMI`,d.parts.extra]);}
+  if(o.annual){const c=Math.max(0,yrs-o.from+1);li.push([`${L(o.annual)} every year`,`from year ${o.from}: ${L(o.annual)} × ${c} yrs`,d.parts.annual]);}
+  if(o.step&&mode==='tenure')li.push([`EMI raised ${o.step}% a year`,`the increase over the regular ${inr(base)} EMI`,d.parts.step]);
+  if(o.one)li.push([`One-time lump sum`,`end of year ${o.oneK/12}`,d.parts.one]);
+  $('xlist').innerHTML=li.map(x=>`<li><span>${x[0]}<small>${x[1]}</small></span><span>${L(x[2])}</span></li>`).join('')+
+    `<li class="tot"><span>Total extra over ${yrs} yrs</span><span>${L(d.totalExtra)}</span></li>`;
+  // Path A steps
+  const early=d.closeK<d.n,saved=reg.totI-pl.totI;
+  const A=[];
+  A.push(early?`Until the loan closes, the extra money goes into it as prepayments: <strong>${L(d.toLoan)}</strong> of the ${L(d.totalExtra)}.`:`The extra money goes into the loan as prepayments: <strong>${L(d.toLoan)}</strong> in total.`);
+  if(early){
+    A.push(`The loan closes in <strong>${monLabel(d.closeK)}</strong>, ${dur(d.n-d.closeK)} early, saving <strong>${L(saved)}</strong> in interest.`);
+    A.push(`From then on, the EMI no longer needed (<strong>${inr(d.afterClose)}</strong> a month)${o.extra||o.annual?' plus the yearly extra money':''} goes into the fund for ${dur(d.monthsAfter)}.`);
+  }else{
+    A.push(`Each prepayment lowers the EMI. The amount saved each month goes into the fund. Interest saved: <strong>${L(saved)}</strong>.`);
+  }
+  A.push(`Total put into the fund: <strong>${L(d.inA)}</strong>. That's ${L(d.inA-d.inB)} more than Path B, which is exactly the interest saved. It goes in late, though, mostly after ${early?monLabel(d.closeK):'the prepayments'}.`);
+  $('stepsA').innerHTML=A.map(x=>`<li>${x}</li>`).join('');
+  // Path B steps
+  $('stepsB').innerHTML=[
+    `The client pays only the regular EMI of <strong>${inr(base)}</strong> until ${endM}.`,
+    `Each extra amount goes into the fund in the same month it would have gone to the loan.`,
+    `Total put into the fund: <strong>${L(d.inB)}</strong>. That's less money than Path A, but it starts in year 1, so it compounds for longer.`
+  ].map(x=>`<li>${x}</li>`).join('');
+  // Path C: invest for N years, then prepay
+  const N=clampInt('cN',1,10),c=simC(P,rate,yrs,o,ret,tax,N),cEarly=c.closeK<d.n,cSaved=reg.totI-c.totI;
+  const lumpTxt=c.lumps.length?(c.lumps.length<=4?c.lumps.map(l=>`year ${l.y}: <strong>${L(l.amt)}</strong>`).join(', ')
+      :c.lumps.slice(0,3).map(l=>`year ${l.y}: <strong>${L(l.amt)}</strong>`).join(', ')+`, and ${c.lumps.length-3} more`):'';
+  const C=[`The client pays the regular EMI of <strong>${inr(base)}</strong>. The extra money goes into the fund instead of the loan.`];
+  C.push(c.lumps.length?`Every ${N} year${N>1?'s':''}, the fund is cashed out${tax?' (after tax on gains)':''} and prepaid as a lump sum: ${lumpTxt}. Total prepaid: <strong>${L(c.lumpTotal)}</strong>.`
+      :`The loan ends before the first ${N}-year cash-out, so nothing is prepaid.`);
+  C.push(cEarly?`The loan closes in <strong>${monLabel(c.closeK)}</strong>${c.closeK!==d.closeK?` (Path A: ${monLabel(d.closeK)})`:', the same month as Path A'}, saving <strong>${L(cSaved)}</strong> in interest.`
+      :`The loan runs its full term. Interest saved: <strong>${L(cSaved)}</strong>.`);
+  if(cEarly)C.push(`After that, the EMI no longer needed and the extra money go into the fund until ${endM}.`);
+  $('stepsC').innerHTML=C.map(x=>`<li>${x}</li>`).join('');
+
+  $('valA').textContent=L(d.A);$('valB').textContent=L(d.B);$('valC').textContent=L(c.value);
+  const tt=x=>tax?`after ${L(x)} tax on gains`:'before tax';
+  $('taxA').textContent=tt(d.taxA);$('taxB').textContent=tt(d.taxB);$('taxC').textContent=tax?`after ${L(c.taxPaid+c.finalTax)} tax on gains`:'before tax';
+  const vals={A:d.A,B:d.B,C:c.value},best=Object.keys(vals).sort((x,y)=>vals[y]-vals[x])[0];
+  ['A','B','C'].forEach(k=>$('path'+k).classList.toggle('win',k===best));
+  const invWin=d.B>d.A,names={A:'Path A (prepay)',B:'Path B (invest)',C:'Path C (invest, then prepay)'};
+  // verdict + breakeven scale
+  const ranked=Object.keys(vals).sort((x,y)=>vals[y]-vals[x]);
+  let v=`<div>At a ${ret}% fund return${tax?` and ${tax}% tax on gains`:''}, <strong>${names[ranked[0]]}</strong> leaves the most: ${L(vals[ranked[0]])}. Then ${names[ranked[1]]} at ${L(vals[ranked[1]])}, then ${names[ranked[2]]} at ${L(vals[ranked[2]])}.</div>`;
+  // C vs A break-even
+  const cMinusA=r=>simC(P,rate,yrs,o,r,tax,N).value-pviDetail(P,rate,yrs,o,r,tax,true).A;
+  let lo=0,hi=30,beC=null;if(cMinusA(lo)<0&&cMinusA(hi)>0){for(let t=0;t<40;t++){const m=(lo+hi)/2;cMinusA(m)>0?hi=m:lo=m;}beC=(lo+hi)/2;}
+  const diffCA=c.value-d.A;
+  v+=`<div><strong>Path C vs Path A:</strong> investing first and prepaying every ${N} year${N>1?'s':''} ${diffCA>=0?`beats prepaying straight away by <strong>${L(diffCA)}</strong>`:`trails prepaying straight away by <strong>${L(-diffCA)}</strong>`}${beC!=null?`. It only wins if the fund earns more than <strong>${beC.toFixed(1)}%</strong> in every ${N}-year stretch. At any return that high, Path B wins by much more`:''}.</div>`;
+  if(d.be!=null){
+    const max=20,pos=x=>Math.min(100,Math.max(0,x/max*100));
+    v+=`<div><strong>Path A vs Path B</strong> break-even return: <strong>${d.be.toFixed(1)}%</strong>${tax?' before tax':''}. Prepaying earns a guaranteed ${rate}% (${(100*(Math.pow(1+rate/1200,12)-1)).toFixed(1)}% a year once monthly compounding is counted)${tax?', and that saving is not taxed':''}. The fund has to beat this for investing to win.</div>
+      <div class="scale" style="--be:${pos(d.be)}%"><div class="track"></div>
+        <div class="mk" style="left:${pos(d.be)}%">${d.be.toFixed(1)}%</div>
+        <div class="mk you" style="left:${pos(ret)}%">Your ${ret}%</div>
+        <span class="lab" style="left:0">← Prepay wins</span><span class="lab" style="right:0">Invest wins →</span></div>`;
+  }
+  v+=`<div class="hint">Path C always lands between A and B. Its real value is flexibility: the money stays accessible for emergencies until it's prepaid. Its risk is that a weak ${N}-year market leaves less to prepay. The interest saved by prepaying is already counted in A and C. Not included: the ₹1.25 L yearly capital gains exemption, home-loan tax deductions, and market ups and downs.</div>`;
+  $('pviV').innerHTML=v;
+  // year-by-year
+  $('yyB').innerHTML=d.yrs.map(y=>{const cl=early&&y.y===Math.ceil(d.closeK/12);
+    return `<tr class="${cl?'closed':''}"><td>Year ${y.y}${cl?' <span class="hint">· loan closes</span>':''}</td><td>${inr(y.extra)}</td><td>${y.loanA>0.5?inr(y.loanA):'–'}</td><td>${y.fundA>0.5?inr(y.fundA):'–'}</td><td>${inr(y.valA)}</td><td>${c.yrs[y.y-1]&&c.yrs[y.y-1].toLoan>0.5?inr(c.yrs[y.y-1].toLoan):'–'}</td><td>${inr(c.yrs[y.y-1]?c.yrs[y.y-1].val:0)}</td><td>${inr(y.fundB)}</td><td>${inr(y.valB)}</td></tr>`;}).join('');
+}
+
+function groupYears(rows){
+  const m=new Map();rows.forEach(r=>{let g=m.get(r.y);if(!g){g={y:r.y,open:r.open,emi:0,prin:0,int:0,pre:0,close:0,cnt:0};m.set(r.y,g);}
+    g.emi+=r.emi;g.prin+=r.prin;g.int+=r.int;g.pre+=r.pre;g.close=r.close;g.cnt++;});
+  return [...m.values()];
+}
+
+function drawChart(reg,pl,yrs,P,monLabel){
+  const svg=$('chart'),years=groupYears(pl.rows),regY=groupYears(reg.rows),n=yrs;
+  const W=Math.max(640,n*28+80),H=280,L=62,R=16,T=14,B=30;
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);svg.setAttribute('width',W);svg.setAttribute('height',H);
+  svg.style.width='100%';svg.style.minWidth=Math.min(W,640)+'px';svg.style.height='auto';
+  const maxBar=Math.max(...years.map(y=>y.emi+y.pre),...regY.map(y=>y.emi));
+  const step=niceStep(maxBar/4),top=Math.ceil(maxBar/step)*step,pw=W-L-R,ph=H-T-B,bw=pw/n;
+  const ys=v=>T+ph-(v/top)*ph,yb=v=>T+ph-(v/P)*ph;
+  let s='';
+  for(let v=0;v<=top+1;v+=step)s+=`<line x1="${L}" x2="${W-R}" y1="${ys(v)}" y2="${ys(v)}" stroke="var(--grid)"/><text x="${L-8}" y="${ys(v)+4}" text-anchor="end">${short(v)}</text>`;
+  years.forEach((y,i)=>{
+    const x=L+i*bw+bw*.15,w=bw*.7,hp=y.prin/top*ph,hq=y.pre/top*ph,hi=y.int/top*ph;let b=T+ph;
+    s+=`<g class="yb" data-i="${i}" tabindex="0" style="cursor:pointer"><rect x="${L+i*bw}" y="${T}" width="${bw}" height="${ph}" fill="transparent"/>`;
+    s+=`<rect x="${x}" y="${b-hp}" width="${w}" height="${hp}" fill="var(--primary)"/>`;b-=hp;
+    if(hq>0.2){s+=`<rect x="${x}" y="${b-hq}" width="${w}" height="${hq}" fill="var(--accent)"/>`;b-=hq;}
+    s+=`<rect x="${x}" y="${b-hi}" width="${w}" height="${hi}" fill="var(--secondary)"/></g>`;
+  });
+  for(let i=0;i<n;i++){const every=n>20?5:n>10?2:1;if((i+1)%every===0||i===0)s+=`<text x="${L+i*bw+bw/2}" y="${H-10}" text-anchor="middle">Y${i+1}</text>`;}
+  const line=(ys2,extra)=>`<polyline points="${[[L,yb(P)]].concat(ys2.map((y,i)=>[L+(y.y-1)*bw+bw*(y.cnt/12),yb(y.close)])).map(p=>p.join(',')).join(' ')}" fill="none" ${extra}/>`;
+  s+=line(regY,'stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 4"');
+  s+=line(years,'stroke="var(--ink)" stroke-width="2.5"');
+  const last=years[years.length-1],ex=L+(last.y-1)*bw+bw*(last.cnt/12);
+  if(pl.months<reg.months)s+=`<circle cx="${ex}" cy="${yb(0)}" r="5" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"/><text x="${Math.min(ex+8,W-R-70)}" y="${yb(0)-10}" style="fill:var(--ink);font-weight:700">Debt-free ${monLabel(pl.months)}</text>`;
+  svg.innerHTML=s;
+  svg.querySelectorAll('.yb').forEach(g=>{
+    const show=()=>{const y=years[+g.dataset.i];$('tip').innerHTML=`<strong style="color:var(--ink)">Year ${y.y}</strong> · Principal ${inr(y.prin)} · Prepayment ${inr(y.pre)} · Interest ${inr(y.int)} · Balance left ${inr(y.close)}`;};
+    g.addEventListener('mouseenter',show);g.addEventListener('focus',show);g.addEventListener('click',show);
+  });
+}
+function niceStep(x){const p=Math.pow(10,Math.floor(Math.log10(x))),f=x/p;return (f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*p;}
+
+// ---------- Excel export with live formulas (needs ExcelJS global + simulate()) ----------
+async function buildLoanWorkbook(P,rate,yrs,sy,sm,o,fc){
+  const MAXN=360,H=21,R0=H+1,R1=H+MAXN;                 // monthly table rows 22..381
+  const reg=simulate(P,rate,yrs,{}),plan=simulate(P,rate,yrs,o),rows=plan.rows,n=yrs*12;
+  const GREEN='FF005826',BROWN='FF934E32',GOLD='FFF9B738',DARK='FF39293E',INPUT='FFFFF4D6',SOFT='FFE6F0EA',MUTED='FF6B6170',ALT='FFF0F8FF';
+  const INR='[>=10000000]"₹"##\\,##\\,##\\,##0;[>=100000]"₹"##\\,##\\,##0;"₹"#,##0';
+  const wb=new ExcelJS.Workbook();wb.creator='Abundance';wb.calcProperties={fullCalcOnLoad:true};
+  const f=(formula,result)=>({formula,result});
+  const solid=a=>({type:'pattern',pattern:'solid',fgColor:{argb:a}});
+  const head=(cell,text)=>{cell.value=text;cell.font={name:'Montserrat',bold:true,color:{argb:'FFFFFFFF'},size:10};
+    cell.fill=solid(GREEN);cell.alignment={horizontal:'center',vertical:'middle',wrapText:true};};
+  const ws=wb.addWorksheet('Loan Schedule',{views:[{state:'frozen',ySplit:H,showGridLines:false}]});
+  ws.columns=[{width:9},{width:7},{width:12},{width:17},{width:15},{width:15},{width:15},{width:17},{width:17}];
+  ws.mergeCells('A1:I1');ws.getCell('A1').value='Abundance · Loan Amortisation & Prepayment Plan';
+  ws.getCell('A1').font={name:'Montserrat',bold:true,size:16,color:{argb:GREEN}};
+  ws.mergeCells('A2:I2');ws.getCell('A2').value='Designing Portfolio, Delivering Peace.';
+  ws.getCell('A2').font={name:'Calibri',italic:true,size:11,color:{argb:BROWN}};
+  const sec=(a,t)=>{const c=ws.getCell(a);c.value=t;c.font={name:'Montserrat',bold:true,size:10,color:{argb:BROWN}};};
+  const lblL=(r,t)=>{ws.mergeCells(`A${r}:C${r}`);const c=ws.getCell('A'+r);c.value=t;c.font={name:'Calibri',bold:true,color:{argb:DARK}};};
+  const lblR=(r,t)=>{ws.mergeCells(`F${r}:G${r}`);const c=ws.getCell('F'+r);c.value=t;c.font={name:'Calibri',bold:true,color:{argb:DARK}};};
+  const box={top:{style:'thin',color:{argb:GOLD}},bottom:{style:'thin',color:{argb:GOLD}},left:{style:'thin',color:{argb:GOLD}},right:{style:'thin',color:{argb:GOLD}}};
+  const inp=(a,v,fmt)=>{const c=ws.getCell(a);c.value=v;c.numFmt=fmt;c.fill=solid(INPUT);c.font={name:'Calibri',bold:true,size:12,color:{argb:DARK}};c.border=box;};
+  const out=(a,formula,result,fmt,big)=>{const c=ws.getCell(a);c.value=f(formula,result);c.numFmt=fmt;
+    c.font={name:'Calibri',bold:true,size:big?14:12,color:{argb:big?GREEN:DARK}};if(big)c.fill=solid(SOFT);};
+  for(let r=4;r<=19;r++)ws.mergeCells(`D${r}:E${r}`);
+
+  // Loan inputs (left)
+  sec('A3','LOAN INPUTS (yellow cells)');
+  lblL(4,'Loan amount');lblL(5,'Interest rate (p.a.)');lblL(6,'Tenure (years, max 30)');lblL(7,'First EMI month');
+  inp('D4',P,INR);inp('D5',rate/100,'0.00%');inp('D6',yrs,'0');inp('D7',new Date(Date.UTC(sy,sm-1,1)),'mmm-yyyy');
+  sec('A9','CALCULATED');
+  lblL(10,'Monthly rate');lblL(11,'Number of EMIs (original)');lblL(12,'Regular EMI');
+  out('D10','D5/12',rate/1200,'0.0000%');out('D11','D6*12',n,'0');out('D12','PMT(D10,D11,-D4)',reg.base,INR,true);
+
+  // Prepayment inputs (right)
+  sec('F3','PREPAYMENT PLAN (set 0 to switch off)');
+  lblR(4,'Extra EMIs every year');lblR(5,'Annual lump sum');lblR(6,'Lump sum from year');lblR(7,'EMI step-up each year');
+  lblR(8,'One-time lump sum');lblR(9,'One-time paid with EMI no.');lblR(10,'After prepayment');lblR(11,'Foreclosure charge');lblR(12,'Foreclose after EMI no.');
+  inp('H4',o.extra,'0');inp('H5',o.annual,INR);inp('H6',o.from,'0');inp('H7',o.step/100,'0.0%');
+  inp('H8',o.one,INR);inp('H9',o.oneK,'0');inp('H10',o.mode==='emi'?'Reduce EMI':'Reduce tenure','@');
+  ws.getCell('H10').dataValidation={type:'list',allowBlank:false,formulae:['"Reduce tenure,Reduce EMI"']};
+  inp('H11',(fc.charge||0)/100,'0.0%');inp('H12',fc.after||0,'0');
+  ws.getCell('I4').value='paid with every 12th EMI';ws.getCell('I7').value='Reduce tenure only';ws.getCell('I12').value='0 = no foreclosure';
+  ['I4','I7','I12'].forEach(a=>ws.getCell(a).font={name:'Calibri',italic:true,size:9,color:{argb:MUTED}});
+
+  // Results
+  const E=`E${R0}:E${R1}`,F=`F${R0}:F${R1}`,Hc=`H${R0}:H${R1}`,Ic=`I${R0}:I${R1}`,Ac=`A${R0}:A${R1}`;
+  const fcRow=fc.after?rows.find(x=>x.i===fc.after):null;
+  sec('A14','RESULTS');
+  lblL(15,'Interest without prepayment');lblL(16,'Interest with your plan');lblL(17,'Interest saved');lblL(18,'Total paid with plan');
+  out('D15','D12*D11-D4',reg.base*n-P,INR);
+  out('D16',`SUM(${F})`,plan.totI,INR);
+  out('D17','D15-D16',reg.base*n-P-plan.totI,INR,true);
+  out('D18',`SUM(${E})+SUM(${Hc})`,plan.totEmi+plan.totPre,INR);
+  lblR(15,'Loan closes after (EMIs)');lblR(16,'EMIs saved');lblR(17,'Total prepaid');lblR(18,'Foreclosure amount');lblR(19,'Interest saved by foreclosing');
+  out('H15',`COUNT(${E})`,plan.months,'0');out('H16','D11-H15',n-plan.months,'0');
+  out('H17',`SUM(${Hc})`,plan.totPre,INR);
+  out('H18',`IF(H12>0,IFERROR(INDEX(${Ic},MATCH(H12,${Ac},0))*(1+H11),"Closed earlier"),"-")`,
+      fc.after?(fcRow?fcRow.close*(1+(fc.charge||0)/100):'Closed earlier'):'-',INR,true);
+  out('H19',`IF(H12>0,SUMIFS(${F},${Ac},">"&H12),"-")`,fc.after?rows.filter(x=>x.i>fc.after).reduce((a,x)=>a+x.int,0):'-',INR);
+
+  // Monthly table
+  ['EMI No.','Year','Month','Opening Balance','EMI','Interest','Principal','Prepayment','Closing Balance'].forEach((t,i)=>head(ws.getRow(H).getCell(i+1),t));
+  ws.getRow(H).height=30;
+  for(let i=0;i<MAXN;i++){
+    const r=R0+i,k=i+1,x=rows[i],on=!!x,row=ws.getRow(r);
+    const g=i===0?`IF(A${r}>$D$11,"",`:`IF(OR(A${r}>$D$11,N(I${r-1})<0.005),"",`;
+    const K=`IF($H$10="Reduce EMI",PMT($D$10,$D$11-A${r}+1,-D${r}),$D$12*(1+$H$7)^(B${r}-1))`;
+    row.getCell(1).value=k;
+    row.getCell(2).value=f(`${g}ROUNDUP(A${r}/12,0))`,on?x.y:'');
+    row.getCell(3).value=f(`${g}EDATE($D$7,A${r}-1))`,on?new Date(Date.UTC(sy,sm-1+i,1)):'');
+    row.getCell(4).value=f(`${g}${i===0?'$D$4':'I'+(r-1)})`,on?x.open:'');
+    row.getCell(5).value=f(`${g}MIN(${K},D${r}+F${r}))`,on?x.emi:'');
+    row.getCell(6).value=f(`${g}D${r}*$D$10)`,on?x.int:'');
+    row.getCell(7).value=f(`${g}E${r}-F${r})`,on?x.prin:'');
+    row.getCell(8).value=f(`${g}MIN(D${r}-G${r},IF(MOD(A${r},12)=0,$H$4*${K}+IF(B${r}>=$H$6,$H$5,0),0)+IF(A${r}=$H$9,$H$8,0)))`,on?x.pre:'');
+    row.getCell(9).value=f(`${g}D${r}-G${r}-H${r})`,on?x.close:'');
+    row.getCell(3).numFmt='mmm-yyyy';for(let c=4;c<=9;c++)row.getCell(c).numFmt=INR;
+    row.getCell(1).alignment=row.getCell(2).alignment={horizontal:'center'};
+    if(Math.ceil(k/12)%2===0)for(let c=1;c<=9;c++)row.getCell(c).fill=solid(ALT);
+  }
+  ws.getCell('A'+(R1+2)).value='Illustrative only. Fixed rate for the full tenure; EMIs and prepayments paid on time. Extra EMIs and annual lump sums are paid with every 12th EMI.';
+  ws.getCell('A'+(R1+2)).font={name:'Calibri',italic:true,size:9,color:{argb:MUTED}};
+
+  // Yearly summary
+  const ys=wb.addWorksheet('Yearly Summary',{views:[{state:'frozen',ySplit:4,showGridLines:false}]});
+  ys.columns=[{width:8},{width:17},{width:15},{width:15},{width:15},{width:15},{width:17}];
+  ys.mergeCells('A1:G1');ys.getCell('A1').value='Abundance · Year-wise Summary';ys.getCell('A1').font={name:'Montserrat',bold:true,size:14,color:{argb:GREEN}};
+  ys.mergeCells('A2:G2');ys.getCell('A2').value='Linked to the Loan Schedule sheet. Change the yellow cells there and this updates.';
+  ys.getCell('A2').font={name:'Calibri',italic:true,size:10,color:{argb:BROWN}};
+  ['Year','Opening Balance','EMIs Paid','Principal','Interest','Prepayment','Closing Balance'].forEach((t,i)=>head(ys.getRow(4).getCell(i+1),t));
+  ys.getRow(4).height=30;
+  const S="'Loan Schedule'!",rg=c=>`${S}$${c}$${R0}:$${c}$${R1}`;
+  for(let y=1;y<=30;y++){
+    const r=4+y,sl=rows.filter(x=>x.y===y),on=sl.length>0,row=ys.getRow(r),g=`IF(COUNTIFS(${rg('B')},A${r})=0,"",`;
+    const sum=k=>sl.reduce((a,x)=>a+x[k],0);
+    row.getCell(1).value=y;row.getCell(1).alignment={horizontal:'center'};
+    row.getCell(2).value=f(`${g}INDEX(${rg('D')},MATCH((A${r}-1)*12+1,${rg('A')},0)))`,on?sl[0].open:'');
+    row.getCell(3).value=f(`${g}SUMIFS(${rg('E')},${rg('B')},A${r}))`,on?sum('emi'):'');
+    row.getCell(4).value=f(`${g}SUMIFS(${rg('G')},${rg('B')},A${r}))`,on?sum('prin'):'');
+    row.getCell(5).value=f(`${g}SUMIFS(${rg('F')},${rg('B')},A${r}))`,on?sum('int'):'');
+    row.getCell(6).value=f(`${g}SUMIFS(${rg('H')},${rg('B')},A${r}))`,on?sum('pre'):'');
+    row.getCell(7).value=f(`${g}B${r}-D${r}-F${r})`,on?sl[sl.length-1].close:'');
+    for(let c=2;c<=7;c++)row.getCell(c).numFmt=INR;
+  }
+  const tr=ys.getRow(35);tr.getCell(1).value='Total';
+  tr.getCell(3).value=f('SUM(C5:C34)',plan.totEmi);tr.getCell(4).value=f('SUM(D5:D34)',P-plan.totPre);
+  tr.getCell(5).value=f('SUM(E5:E34)',plan.totI);tr.getCell(6).value=f('SUM(F5:F34)',plan.totPre);
+  for(let c=1;c<=7;c++){const cl=tr.getCell(c);cl.font={name:'Calibri',bold:true};cl.fill=solid(SOFT);cl.border={top:{style:'medium',color:{argb:GREEN}}};if(c>1)cl.numFmt=INR;}
+  return wb.xlsx.writeBuffer();
+}
+
+
+const dlReady=(window.claude&&window.claude.use)?window.claude.use('downloads').catch(()=>null):Promise.resolve(null);
+$('xlBtn').onclick=async()=>{
+  const b=$('xlBtn'),msg=$('xlMsg');msg.hidden=true;
+  if(typeof ExcelJS==='undefined'){msg.hidden=false;msg.textContent='The Excel builder did not load. Check your internet connection and try again.';return;}
+  const {P,rate,yrs,sy,sm}=getInputs(),{plan:o}=readPlan(yrs);
+  const fcY=clampInt('fcY',1,30),fc={after:fcY<yrs?fcY*12:0,charge:Math.max(0,+$('fcC').value||0)};
+  const name=`Abundance_Loan_${short(P).replace(/[₹\s]/g,'')}_${rate}pct_${yrs}y.xlsx`;
+  b.disabled=true;b.textContent='Preparing…';
+  try{
+    const buf=await buildLoanWorkbook(P,rate,yrs,sy,sm,o,fc),dl=await dlReady;
+    if(dl){
+      try{await dl.save({filename:name,data:new Blob([buf])});msg.textContent='Saved '+name;msg.hidden=false;}
+      catch(e){if(e&&e.code!=='declined'){msg.textContent='Download is not available here. Open the HTML file in your browser to download.';msg.hidden=false;}}
+    }else{
+      const url=URL.createObjectURL(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
+      const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),4000);
+    }
+  }catch(e){msg.textContent='Could not build the Excel file. Try again.';msg.hidden=false;}
+  b.disabled=false;b.textContent='⬇ Download Excel';
+};
+calc();
+</script>

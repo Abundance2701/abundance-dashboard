@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Abundance SIP Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--primary:#005826;--secondary:#934E32;--accent:#F9B738;--bg:#F0F8FF;--dark:#39293E;--muted:#6d6472;--line:#d6e2ea;--card:#fff;--err:#b3261e}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--dark);font-family:Calibri,Carlito,"Segoe UI",Arial,sans-serif;font-size:16px;line-height:1.4}
+.wrap{max-width:880px;margin:0 auto;padding:28px 16px 48px}
+header{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:8px;border-bottom:3px solid var(--primary);padding-bottom:12px;margin-bottom:22px}
+h1,h2{font-family:Montserrat,Calibri,sans-serif;margin:0}
+h1{font-size:24px;color:var(--primary);font-weight:700}
+.tag{font-family:Montserrat,sans-serif;font-size:12px;color:var(--secondary);letter-spacing:.04em}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px;margin-bottom:18px}
+.howto{font-size:14px;color:var(--muted);margin:0 0 16px}
+.toggle{display:inline-flex;border:1px solid var(--primary);border-radius:8px;overflow:hidden;margin-bottom:18px}
+.toggle button{border:0;background:#fff;color:var(--primary);padding:8px 14px;font:600 13px Montserrat,sans-serif;cursor:pointer}
+.toggle button.on{background:var(--primary);color:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.field label{display:block;font:600 13px Montserrat,sans-serif;margin-bottom:6px}
+.field label small{font:400 12px Calibri,sans-serif;color:var(--muted)}
+.inp{display:flex;align-items:center;border:1.5px solid var(--line);border-radius:8px;background:#fff;transition:border-color .15s}
+.inp:focus-within{border-color:var(--primary)}
+.inp span{padding:0 10px;color:var(--muted);font-size:15px;white-space:nowrap}
+.inp input{flex:1;min-width:0;border:0;outline:0;padding:10px 4px;font:17px Calibri,sans-serif;color:var(--dark);background:transparent}
+.hint{font-size:12.5px;color:var(--muted);min-height:17px;margin-top:4px}
+.field.solved .inp{border-color:var(--accent);background:#fff8e6}
+.field.solved input{font-weight:700;color:var(--primary)}
+.field.solved .hint{color:var(--secondary);font-weight:600}
+.actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+.btn{border:0;border-radius:8px;padding:11px 22px;font:600 14px Montserrat,sans-serif;cursor:pointer}
+.btn.primary{background:var(--primary);color:#fff}
+.btn.ghost{background:#fff;color:var(--secondary);border:1.5px solid var(--secondary)}
+.msg{margin-top:14px;font-size:14.5px;min-height:20px}
+.msg.err{color:var(--err)}
+.res h2{font-size:16px;color:var(--primary);margin-bottom:14px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.stat{background:var(--bg);border-radius:10px;padding:12px 14px}
+.stat .k{font-size:13px;color:var(--muted)}
+.stat .v{font:700 20px Montserrat,sans-serif;color:var(--dark);margin-top:2px}
+.stat .w{font-size:12.5px;color:var(--secondary)}
+.stat.main{background:var(--primary)}
+.stat.main .k,.stat.main .w{color:#d8eadd}
+.stat.main .v{color:#fff}
+.notes{font-size:12.5px;color:var(--muted);margin-top:14px}
+.notes li{margin-bottom:3px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>SIP · Step-up SIP · PV/FV Calculator</h1>
+  <div class="tag">ABUNDANCE · Designing Portfolio, Delivering Peace.</div>
+</header>
+
+<div class="card">
+  <p class="howto">Fill in any five fields and leave <b>one blank</b>. The calculator solves for the blank field. Use 0 for anything not applicable (e.g. PV = 0 for a pure SIP, SIP = 0 for a lumpsum).</p>
+
+  <div class="toggle" role="group" aria-label="Step-up type">
+    <button type="button" id="modePct" class="on">Step-up in %</button>
+    <button type="button" id="modeAmt">Step-up in ₹</button>
+  </div>
+
+  <div class="grid">
+    <div class="field" id="f-nper">
+      <label for="nper">Period <small>(years)</small></label>
+      <div class="inp"><input id="nper" inputmode="decimal" placeholder="e.g. 15"><span>yrs</span></div>
+      <div class="hint" id="h-nper"></div>
+    </div>
+    <div class="field" id="f-rate">
+      <label for="rate">Expected return <small>(annual)</small></label>
+      <div class="inp"><input id="rate" inputmode="decimal" placeholder="e.g. 12"><span>% p.a.</span></div>
+      <div class="hint" id="h-rate"></div>
+    </div>
+    <div class="field" id="f-pv">
+      <label for="pv">Lumpsum today <small>(PV)</small></label>
+      <div class="inp"><span>₹</span><input id="pv" inputmode="decimal" placeholder="0" data-money></div>
+      <div class="hint" id="h-pv"></div>
+    </div>
+    <div class="field" id="f-pmt">
+      <label for="pmt">Monthly SIP <small>(first year)</small></label>
+      <div class="inp"><span>₹</span><input id="pmt" inputmode="decimal" placeholder="e.g. 10,000" data-money></div>
+      <div class="hint" id="h-pmt"></div>
+    </div>
+    <div class="field" id="f-fv">
+      <label for="fv">Target / future value <small>(FV)</small></label>
+      <div class="inp"><span>₹</span><input id="fv" inputmode="decimal" placeholder="e.g. 1,00,00,000" data-money></div>
+      <div class="hint" id="h-fv"></div>
+    </div>
+    <div class="field" id="f-step">
+      <label for="step" id="stepLabel">Annual step-up <small>(% increase in SIP each year)</small></label>
+      <div class="inp"><span id="stepPre" hidden>₹</span><input id="step" inputmode="decimal" value="0"><span id="stepPost">% p.a.</span></div>
+      <div class="hint" id="h-step"></div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn primary" id="calc">Calculate</button>
+    <button class="btn ghost" id="clear">Clear all</button>
+  </div>
+  <div class="msg" id="msg"></div>
+</div>
+
+<div class="card res" id="res" hidden>
+  <h2 id="resTitle">Result</h2>
+  <div class="stats">
+    <div class="stat main"><div class="k" id="mainK"></div><div class="v" id="mainV"></div><div class="w" id="mainW"></div></div>
+    <div class="stat"><div class="k">Value at end of period</div><div class="v" id="fvV"></div><div class="w" id="fvW"></div></div>
+    <div class="stat"><div class="k">Total invested</div><div class="v" id="invV"></div><div class="w" id="invW"></div></div>
+    <div class="stat"><div class="k">Wealth gained</div><div class="v" id="gainV"></div><div class="w" id="gainW"></div></div>
+  </div>
+  <ul class="notes">
+    <li>Monthly rate = (1 + annual rate)<sup>1/12</sup> − 1, so the annual rate is an effective (CAGR-equivalent) return.</li>
+    <li>SIP installments are invested at the start of each month. Step-up applies once a year, from month 13 onward.</li>
+    <li>Lumpsum (PV) is invested on day one. Period is rounded to the nearest whole month.</li>
+  </ul>
+</div>
+</div>
+
+<script>
+(function(){
+const FIELDS=['nper','rate','pv','pmt','fv','step'];
+const NAMES={nper:'Period',rate:'Expected return',pv:'Lumpsum today (PV)',pmt:'Monthly SIP',fv:'Future value',step:'Annual step-up'};
+let mode='pct', lastSolved=null;
+const $=id=>document.getElementById(id);
+
+/* ---------- formatting ---------- */
+const inr=n=>'₹'+Math.round(n).toLocaleString('en-IN');
+function words(n){
+  if(n==null||!isFinite(n))return '';
+  const a=Math.abs(n), s=n<0?'−':'';
+  if(a>=1e7)return s+'₹'+(a/1e7).toLocaleString('en-IN',{maximumFractionDigits:2})+' Cr';
+  if(a>=1e5)return s+'₹'+(a/1e5).toLocaleString('en-IN',{maximumFractionDigits:2})+' L';
+  if(a>=1e3)return s+'₹'+(a/1e3).toLocaleString('en-IN',{maximumFractionDigits:1})+' K';
+  return '';
+}
+function ym(months){const y=Math.floor(months/12),m=months%12;return (y?y+(y===1?' year':' years'):'')+(y&&m?' ':'')+(m?m+(m===1?' month':' months'):'')||'0 months';}
+function read(id){const v=$(id).value.replace(/[,₹\s%]/g,'');if(v==='')return null;const n=Number(v);return isFinite(n)?n:NaN;}
+function isMoney(id){return id==='pv'||id==='pmt'||id==='fv'||(id==='step'&&mode==='amt');}
+function setVal(id,n){
+  if(isMoney(id))$(id).value=Math.round(n).toLocaleString('en-IN');
+  else if(id==='nper')$(id).value=+n.toFixed(2);
+  else $(id).value=+n.toFixed(2);
+}
+function refreshHints(){
+  FIELDS.forEach(id=>{
+    if(lastSolved===id)return;
+    const v=read(id),h=$('h-'+id);
+    if(isMoney(id))h.textContent=(v!=null&&!isNaN(v))?words(v):'';
+    else if(id==='nper')h.textContent=(v!=null&&v>0)?ym(Math.round(v*12)):'';
+    else h.textContent='';
+  });
+}
+
+/* ---------- core maths ---------- */
+const mrate=r=>Math.pow(1+r,1/12)-1;
+function sipAmt(p,step,y){return mode==='pct'?p*Math.pow(1+step,y):p+step*y;}
+// o: {months, r (annual, decimal), pv, pmt, step (decimal if %, ₹ if amount)}
+function sim(o){
+  const i=mrate(o.r);let bal=o.pv,inv=o.pv;
+  for(let m=0;m<o.months;m++){const p=sipAmt(o.pmt,o.step,Math.floor(m/12));bal=(bal+p)*(1+i);inv+=p;}
+  return {fv:bal,invested:inv};
+}
+function bisect(f,lo,hi,target){
+  let flo=f(lo)-target,fhi=f(hi)-target;
+  if(flo>0||fhi<0)return null;
+  for(let k=0;k<300;k++){const mid=(lo+hi)/2;if(f(mid)<target)lo=mid;else hi=mid;if(hi-lo<1e-12*Math.max(1,Math.abs(hi)))break;}
+  return (lo+hi)/2;
+}
+
+function solve(target,v){
+  const o={months:v.nper!=null?Math.round(v.nper*12):null,r:v.rate!=null?v.rate/100:null,pv:v.pv,pmt:v.pmt,
+           step:v.step!=null?(mode==='pct'?v.step/100:v.step):null};
+  switch(target){
+    case 'fv': return {value:sim(o).fv,o};
+    case 'pv':{
+      const sipOnly=sim({...o,pv:0}).fv;
+      const pv=(v.fv-sipOnly)/Math.pow(1+mrate(o.r),o.months);
+      if(pv<0)throw 'The SIP alone already exceeds the target (it reaches '+inr(sipOnly)+'). No lumpsum is needed.';
+      o.pv=pv;return {value:pv,o};
+    }
+    case 'pmt':{
+      const base=sim({...o,pmt:0}).fv, unit=sim({...o,pmt:1}).fv-base;
+      const p=(v.fv-base)/unit;
+      if(p<0)throw 'The lumpsum'+(mode==='amt'&&o.step>0?' and step-up amount':'')+' alone already exceed the target (reaches '+inr(base)+'). No SIP is needed.';
+      o.pmt=p;return {value:p,o};
+    }
+    case 'rate':{
+      if(o.pv===0&&o.pmt===0)throw 'Enter a lumpsum or a SIP amount to solve for return.';
+      const r=bisect(x=>sim({...o,r:x}).fv,-0.99,10,v.fv);
+      if(r==null)throw 'No return between −99% and 1000% p.a. reaches this target. Please check the inputs.';
+      o.r=r;return {value:r*100,o};
+    }
+    case 'step':{
+      if(o.months<=12)throw 'Step-up only applies from year 2. The period must be more than 12 months.';
+      if(o.pmt===0&&mode==='pct')throw 'Enter a monthly SIP amount to solve for a % step-up.';
+      const zero=sim({...o,step:0}).fv;
+      if(zero>=v.fv)throw 'The target is already reached without any step-up (plain SIP gives '+inr(zero)+').';
+      const hi=mode==='pct'?5:Math.max(v.fv,1);
+      const s=bisect(x=>sim({...o,step:x}).fv,0,hi,v.fv);
+      if(s==null)throw 'Even a '+(mode==='pct'?'500%':inr(hi))+' annual step-up cannot reach this target.';
+      o.step=s;return {value:mode==='pct'?s*100:s,o};
+    }
+    case 'nper':{
+      if(o.pv===0&&o.pmt===0)throw 'Enter a lumpsum or a SIP amount to solve for period.';
+      if(o.pv>=v.fv)throw 'The lumpsum already meets the target today.';
+      const i=mrate(o.r);let bal=o.pv;
+      for(let m=0;m<1200;m++){
+        bal=(bal+sipAmt(o.pmt,o.step,Math.floor(m/12)))*(1+i);
+        if(bal>=v.fv){o.months=m+1;return {value:(m+1)/12,o};}
+      }
+      throw 'The target is not reached within 100 years at these inputs.';
+    }
+  }
+}
+
+/* ---------- UI ---------- */
+function clearSolved(){FIELDS.forEach(id=>$('f-'+id).classList.remove('solved'));}
+function showErr(t){$('msg').className='msg err';$('msg').textContent=t;$('res').hidden=true;}
+
+function calculate(){
+  $('msg').textContent='';
+  const v={};const blanks=[];
+  for(const id of FIELDS){
+    const x=read(id);
+    if(x===null){blanks.push(id);continue;}
+    if(isNaN(x))return showErr(NAMES[id]+' is not a valid number.');
+    v[id]=x;
+  }
+  let target;
+  if(blanks.length===1)target=blanks[0];
+  else if(blanks.length===0&&lastSolved){target=lastSolved;delete v[target];}
+  else if(blanks.length===0)return showErr('All fields are filled. Clear the one you want to calculate.');
+  else return showErr('Leave only one field blank. Currently blank: '+blanks.map(b=>NAMES[b]).join(', ')+'.');
+
+  // validation
+  if(v.nper!=null&&!(v.nper>0))return showErr('Period must be more than 0 years.');
+  if(v.nper!=null&&Math.round(v.nper*12)<1)return showErr('Period must be at least 1 month.');
+  if(v.rate!=null&&!(v.rate>-100))return showErr('Expected return must be above −100%.');
+  for(const k of ['pv','pmt','fv','step'])if(v[k]!=null&&v[k]<0)return showErr(NAMES[k]+' cannot be negative.');
+  if(target!=='fv'&&!(v.fv>0))return showErr('Enter a future value greater than 0.');
+
+  let out;
+  try{out=solve(target,v);}catch(e){return showErr(typeof e==='string'?e:'Could not calculate. Please check the inputs.');}
+
+  clearSolved();
+  lastSolved=target;
+  setVal(target,out.value);
+  $('f-'+target).classList.add('solved');
+  refreshHints();
+
+  const o=out.o, res=sim(o);
+  let mk,mv,mw='';
+  switch(target){
+    case 'nper':mk='Time to reach target';mv=ym(o.months);mw=o.months+' months';$('h-nper').textContent='Solved: '+ym(o.months);break;
+    case 'rate':mk='Required return';mv=out.value.toFixed(2)+'% p.a.';mw='Effective annual (CAGR)';$('h-rate').textContent='Solved';break;
+    case 'step':mk='Required annual step-up';
+      if(mode==='pct'){mv=out.value.toFixed(2)+'% p.a.';mw='Last-year SIP: '+inr(sipAmt(o.pmt,o.step,Math.floor((o.months-1)/12)))+'/month';}
+      else{mv=inr(out.value)+' / year';mw='Last-year SIP: '+inr(sipAmt(o.pmt,o.step,Math.floor((o.months-1)/12)))+'/month';}
+      $('h-step').textContent='Solved';break;
+    case 'pmt':mk='Required monthly SIP';mv=inr(out.value);mw=words(out.value);$('h-pmt').textContent='Solved · '+words(out.value);break;
+    case 'pv':mk='Required lumpsum today';mv=inr(out.value);mw=words(out.value);$('h-pv').textContent='Solved · '+words(out.value);break;
+    case 'fv':mk='Future value';mv=inr(out.value);mw=words(out.value);$('h-fv').textContent='Solved · '+words(out.value);break;
+  }
+  $('resTitle').textContent='Solved for: '+NAMES[target];
+  $('mainK').textContent=mk;$('mainV').textContent=mv;$('mainW').textContent=mw;
+  $('fvV').textContent=inr(res.fv);$('fvW').textContent=words(res.fv)+(target==='nper'?' (first month target is crossed)':'');
+  $('invV').textContent=inr(res.invested);$('invW').textContent=words(res.invested);
+  $('gainV').textContent=inr(res.fv-res.invested);$('gainW').textContent=words(res.fv-res.invested);
+  $('res').hidden=false;
+}
+
+function setMode(m){
+  if(mode===m)return;mode=m;
+  $('modePct').classList.toggle('on',m==='pct');$('modeAmt').classList.toggle('on',m==='amt');
+  $('stepLabel').innerHTML=m==='pct'?'Annual step-up <small>(% increase in SIP each year)</small>':'Annual step-up <small>(₹ added to SIP each year)</small>';
+  $('stepPre').hidden=m==='pct';$('stepPost').hidden=m!=='pct';
+  $('step').placeholder=m==='pct'?'e.g. 10':'e.g. 1,000';
+  if(lastSolved==='step'){lastSolved=null;}
+  $('f-step').classList.remove('solved');
+  $('step').value='0';$('h-step').textContent='';$('res').hidden=true;$('msg').textContent='';
+}
+
+$('modePct').onclick=()=>setMode('pct');
+$('modeAmt').onclick=()=>setMode('amt');
+$('calc').onclick=calculate;
+$('clear').onclick=()=>{FIELDS.forEach(id=>{$(id).value=id==='step'?'0':'';$('h-'+id).textContent='';});lastSolved=null;clearSolved();$('res').hidden=true;$('msg').textContent='';};
+FIELDS.forEach(id=>{
+  const el=$(id);
+  el.addEventListener('input',()=>{if(lastSolved===id){lastSolved=null;$('f-'+id).classList.remove('solved');}refreshHints();});
+  el.addEventListener('blur',()=>{const x=read(id);if(isMoney(id)&&x!=null&&!isNaN(x))el.value=Math.round(x).toLocaleString('en-IN');});
+  el.addEventListener('keydown',e=>{if(e.key==='Enter')calculate();});
+});
+})();
+</script>
+</body>
+</html>

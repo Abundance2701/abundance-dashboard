@@ -1,0 +1,474 @@
+<title>Abundance Transaction Summariser</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Carlito:wght@400;700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+/* Layout: brand band → upload strip → KPI row → category summary + asset/type side panel → fund-wise table */
+:root{
+  --primary:#005826; --secondary:#934E32; --accent:#F9B738;
+  --bg:#F0F8FF; --surface:#FFFFFF; --ink:#39293E; --muted:#6B6170;
+  --line:#DCE6EE; --soft:#E6F0EA; --soft2:#F6ECE6; --track:#E8EEF3;
+  --c-eq:#005826; --c-hy:#F9B738; --c-debt:#934E32; --c-com:#8A7A3A; --c-oth:#9A8FA0;
+  --f-head:"Montserrat",system-ui,sans-serif;
+  --f-body:Calibri,"Carlito","Segoe UI",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --primary:#3FAE6A; --secondary:#C9876A; --bg:#1C1620; --surface:#271F2C; --ink:#F1ECF3; --muted:#B3A8B8;
+  --line:#3A3140; --soft:#1F3328; --soft2:#3A2A24; --track:#352C3A;
+  --c-eq:#3FAE6A; --c-debt:#C9876A; --c-com:#C2B06A; --c-oth:#8C8192; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --primary:#3FAE6A; --secondary:#C9876A; --bg:#1C1620; --surface:#271F2C; --ink:#F1ECF3; --muted:#B3A8B8;
+  --line:#3A3140; --soft:#1F3328; --soft2:#3A2A24; --track:#352C3A;
+  --c-eq:#3FAE6A; --c-debt:#C9876A; --c-com:#C2B06A; --c-oth:#8C8192; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5;padding-inline:16px;padding-block:0 40px}
+.wrap{max-width:1100px;margin:20px auto 0;display:flex;flex-direction:column;gap:20px}
+h1,h2{font-family:var(--f-head);text-wrap:balance;margin:0}
+.band{background:#005826;color:#fff;margin-inline:-16px;padding:28px 16px 26px}
+.band-in{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+.brand{font-family:var(--f-head);font-weight:800;letter-spacing:.16em;font-size:13px;text-transform:uppercase;color:#F9B738}
+.band h1{font-size:clamp(24px,4vw,32px);font-weight:700;margin-top:6px}
+.tag{font-size:14px;opacity:.85;font-style:italic}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px;min-width:0}
+.card h2{font-size:15px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--primary);margin-bottom:14px}
+
+.drop{display:flex;align-items:center;gap:16px;flex-wrap:wrap;border:2px dashed var(--line);border-radius:14px;padding:18px 20px;background:var(--surface);transition:border-color .15s,background .15s}
+.drop.over{border-color:var(--primary);background:var(--soft)}
+.drop .txt{flex:1;min-width:220px}
+.vh{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;clip:rect(0 0 0 0)}
+.paste{flex-basis:100%;font-size:14px}
+.paste summary{cursor:pointer;color:var(--primary);font-weight:700;font-family:var(--f-head);font-size:13px}
+.paste textarea{width:100%;margin-top:8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:14px var(--f-body);padding:8px 10px;resize:vertical}
+.paste textarea:focus{outline:2px solid var(--primary);outline-offset:0}
+body.dragging .drop{border-color:var(--primary);background:var(--soft)}
+.drop strong{font-family:var(--f-head);font-size:16px}
+.drop .sub{font-size:14px;color:var(--muted)}
+.btn{font:700 14px var(--f-head);border-radius:999px;padding:10px 18px;cursor:pointer;border:1px solid var(--primary);background:var(--primary);color:#fff}
+.btn.ghost{background:transparent;color:var(--primary)}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.status{font-size:14px;padding:8px 12px;border-radius:8px;background:var(--soft2)}
+.status.sample{background:#F9B73833}
+.status.err{background:#C0392B22;color:var(--ink)}
+
+.kpis{display:grid;grid-template-columns:2fr repeat(3,1fr) 1.6fr;gap:12px}
+@media (max-width:860px){.kpis{grid-template-columns:1fr 1fr}.kpis .big{grid-column:1/-1}}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;min-width:0}
+.kpi .k{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;font-weight:700}
+.kpi .v{font-family:var(--f-head);font-weight:700;font-size:20px;font-variant-numeric:tabular-nums}
+.kpi.big{background:var(--soft);border-color:transparent}
+.kpi.big .v{font-size:clamp(26px,4vw,34px);color:var(--primary);font-weight:800}
+
+.grid2{display:grid;grid-template-columns:1.6fr 1fr;gap:20px}
+@media (max-width:860px){.grid2{grid-template-columns:1fr}}
+.side{display:flex;flex-direction:column;gap:20px;min-width:0}
+
+.cat{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1.4fr) auto;gap:6px 14px;align-items:center}
+.cat .row{display:contents;cursor:pointer}
+.cat .nm{font-weight:700;display:flex;gap:8px;align-items:center;min-width:0}
+.cat .nm small{font-weight:400;color:var(--muted)}
+.dot{width:10px;height:10px;border-radius:3px;flex:none}
+.track{height:10px;background:var(--track);border-radius:5px;overflow:hidden}
+.track i{display:block;height:100%;border-radius:5px}
+.amt{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.amt small{color:var(--muted);margin-left:6px;display:inline-block;min-width:44px}
+.cat .funds{grid-column:1/-1;margin:-2px 0 8px 18px;border-left:2px solid var(--line);padding-left:12px;font-size:14px;display:flex;flex-direction:column;gap:2px}
+.cat .funds div{display:flex;justify-content:space-between;gap:12px}
+.cat .funds span:last-child{font-variant-numeric:tabular-nums;white-space:nowrap}
+.caret{color:var(--muted);font-size:12px;width:10px;flex:none}
+.hint{font-size:13px;color:var(--muted)}
+
+.stack{display:flex;height:16px;border-radius:8px;overflow:hidden;background:var(--track)}
+.stack i{display:block;height:100%}
+.leg{display:flex;flex-direction:column;gap:6px;margin-top:12px;font-size:15px}
+.leg div{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.leg span:first-child{display:flex;gap:8px;align-items:center}
+.leg span:last-child{font-variant-numeric:tabular-nums}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:6px 12px;font:600 13px var(--f-head);cursor:pointer;display:flex;gap:6px;align-items:center}
+.chip[aria-pressed=true]{background:var(--primary);border-color:var(--primary);color:#fff}
+.chip small{font:400 13px var(--f-body);opacity:.85}
+.chip:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+
+.thead{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.thead h2{margin:0}
+.tbl{overflow:auto;border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:15px}
+th{position:sticky;top:0;background:var(--primary);color:#fff;font:600 12px var(--f-head);letter-spacing:.05em;text-transform:uppercase;padding:0;text-align:right;white-space:nowrap}
+th.ns{padding:10px 12px}
+th button{all:unset;box-sizing:border-box;display:flex;gap:6px;align-items:center;justify-content:flex-end;width:100%;padding:10px 12px;cursor:pointer;font:inherit;letter-spacing:inherit;text-transform:inherit;color:#fff}
+th.l button{justify-content:flex-start}
+th button:hover{background:rgba(255,255,255,.12)}
+th button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+th .ar{font-size:11px;opacity:.55;width:10px;text-align:center}
+th[aria-sort=ascending] .ar,th[aria-sort=descending] .ar{opacity:1;color:#F9B738}
+.sortby{display:flex;gap:8px;align-items:center;font-size:14px;color:var(--muted)}
+.sortby select{max-width:none;font-weight:700}
+.filters{display:flex;flex-direction:column;gap:10px;margin-bottom:12px;padding:12px 14px;border-radius:12px;background:color-mix(in srgb,var(--soft) 60%,transparent)}
+.frow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.flab{font:700 12px var(--f-head);letter-spacing:.07em;text-transform:uppercase;color:var(--muted);min-width:72px}
+.chip.sm{padding:4px 10px;font-size:12px}
+.chip .dot{width:8px;height:8px}
+.chip[aria-pressed=true] .dot{box-shadow:0 0 0 1.5px #fff}
+.fsearch{flex:1;min-width:180px;max-width:340px;font:15px var(--f-body);color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 14px}
+.fsearch:focus{outline:2px solid var(--primary);outline-offset:0}
+.linkbtn{all:unset;cursor:pointer;color:var(--primary);font:700 13px var(--f-head)}
+.linkbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.linkbtn[hidden]{display:none}
+tfoot tr.all td{background:transparent;font-weight:400;color:var(--muted);border-top:1px solid var(--line)}
+.empty td{text-align:center;color:var(--muted);padding:18px}
+th.l,td.l{text-align:left}
+td{padding:8px 12px;text-align:right;border-top:1px solid var(--line);white-space:nowrap}
+td.fund{white-space:normal;min-width:220px}
+tbody tr:nth-child(even) td{background:color-mix(in srgb,var(--bg) 60%,transparent)}
+tfoot td{font-weight:700;background:var(--soft);border-top:2px solid var(--primary)}
+select{font:15px var(--f-body);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:3px 6px;max-width:190px}
+select.guess{border-color:var(--accent)}
+.summary{border-left:4px solid var(--accent)}
+.summary ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.foot{font-size:13px;color:var(--muted);text-align:center}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<header class="band">
+  <div class="band-in">
+    <div><div class="brand">Abundance</div><h1>Transaction Summariser</h1></div>
+    <div class="tag">Designing Portfolio, Delivering Peace.</div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="drop" id="drop">
+    <div class="txt">
+      <strong>Upload a transaction report</strong>
+      <div class="sub">Drop an .xlsx, .xls or .csv anywhere on this page, or choose a file. It needs a Scheme Name and an Amount column. The file stays on your device.</div>
+    </div>
+    <input type="file" id="file" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" class="vh">
+    <button type="button" class="btn" id="pick">Choose file</button>
+    <details class="paste" id="pasteWrap">
+      <summary>File won't upload? Paste the rows instead</summary>
+      <div class="sub">In Excel, select the report from the header row down (Ctrl+A works), copy it, then click in the box below and paste.</div>
+      <textarea id="paste" rows="3" placeholder="Click here and press Ctrl+V (⌘V on Mac)"></textarea>
+    </details>
+  </div>
+  <div class="status sample" id="status"></div>
+
+  <section class="kpis" aria-label="Totals">
+    <div class="kpi big"><div class="k">Total amount</div><div class="v" id="kTot">–</div></div>
+    <div class="kpi"><div class="k">Transactions</div><div class="v" id="kTx">–</div></div>
+    <div class="kpi"><div class="k">Funds</div><div class="v" id="kFunds">–</div></div>
+    <div class="kpi"><div class="k">Categories</div><div class="v" id="kCats">–</div></div>
+    <div class="kpi"><div class="k">Period</div><div class="v" id="kPer" style="font-size:16px">–</div></div>
+  </section>
+
+  <div class="grid2">
+    <section class="card" aria-labelledby="h-cat">
+      <h2 id="h-cat">Category-wise total</h2>
+      <div class="cat" id="cat"></div>
+      <div class="hint" style="margin-top:10px">Click a category to see the funds inside it.</div>
+    </section>
+    <div class="side">
+      <section class="card" aria-labelledby="h-ac">
+        <h2 id="h-ac">Asset class</h2>
+        <div class="stack" id="stack"></div>
+        <div class="leg" id="acLeg"></div>
+      </section>
+      <section class="card" aria-labelledby="h-tt">
+        <h2 id="h-tt">Transaction types</h2>
+        <div class="chips" id="types"></div>
+        <div class="hint" style="margin-top:10px">Totals include the selected types only. Tap a type to include or exclude it.</div>
+      </section>
+    </div>
+  </div>
+
+  <section class="card" aria-labelledby="h-f">
+    <div class="thead">
+      <h2 id="h-f">Fund-wise total</h2>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <label class="sortby" for="sortSel">Sort by
+          <select id="sortSel">
+            <option value="amt:-1">Amount: high to low</option>
+            <option value="amt:1">Amount: low to high</option>
+            <option value="pct:-1">Share %: high to low</option>
+            <option value="pct:1">Share %: low to high</option>
+            <option value="fund:1">Fund name: A to Z</option>
+            <option value="fund:-1">Fund name: Z to A</option>
+            <option value="cat:1">Category: A to Z</option>
+            <option value="n:-1">Transactions: most first</option>
+          </select>
+        </label>
+        <button class="btn ghost" id="copyBtn">Copy for Excel</button>
+      </div>
+    </div>
+    <div class="filters" role="group" aria-label="Filter funds">
+      <div class="frow"><span class="flab">Category</span><div class="chips" id="catChips"></div></div>
+      <div class="frow"><span class="flab">Fund</span>
+        <input type="search" id="fq" class="fsearch" placeholder="Search by fund or AMC name" aria-label="Search funds">
+        <button type="button" class="linkbtn" id="fClear" hidden>Clear filters</button>
+        <span class="hint" id="fCount"></span>
+      </div>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr>
+        <th class="l" data-k="fund"><button type="button">Fund<span class="ar"></span></button></th>
+        <th class="l" data-k="cat"><button type="button">Category<span class="ar"></span></button></th>
+        <th data-k="n"><button type="button">Txns<span class="ar"></span></button></th>
+        <th class="ns">Units</th>
+        <th data-k="amt"><button type="button">Amount<span class="ar"></span></button></th>
+        <th data-k="pct"><button type="button">Share %<span class="ar"></span></button></th>
+      </tr></thead>
+      <tbody id="ftb"></tbody><tfoot id="ftf"></tfoot>
+    </table></div>
+    <div class="hint" style="margin-top:10px">Pick one or more categories to see only those funds; tap a selected one again to remove it. Share % is always of the full total. Categories are read from the fund name. Change any that look wrong; a gold outline marks funds the tool could not place. Your changes are remembered in this browser.</div>
+  </section>
+
+  <section class="card summary" aria-labelledby="h-sum">
+    <h2 id="h-sum">Summary</h2>
+    <ul id="sum"></ul>
+  </section>
+
+  <p class="foot">Amounts are summed as they appear in the report (like SUMIF). Redemptions are added, not subtracted; untick them under Transaction types to see purchases alone.</p>
+</main>
+
+<script>
+const SAMPLE=[["23/09/2026","Axis Small Cap Fund - Regular Plan","SIP Purchase",999.95,8.472],["21/09/2026","Kotak Small Cap Fund - Regular Plan","SIP Purchase",999.95,3.618],["21/09/2026","Kotak Small Cap Fund - Regular Plan","SIP Purchase",999.95,3.618],["18/09/2026","Kotak Multi Asset Allocation Fund - Regular Plan","SIP Purchase",999.95,62.858],["18/09/2026","Nippon India Flexi Cap Fund - Regular Plan","SIP Purchase",1999.9,121.341],["18/09/2026","Nippon India Flexi Cap Fund - Regular Plan","SIP Purchase",1999.9,121.341],["15/09/2026","Kotak Mid Cap Fund - Regular Plan","SIP Purchase",999.95,7.059],["15/09/2026","WhiteOak Capital Mid Cap Fund - Regular Plan","SIP Purchase",999.95,46.38],["15/09/2026","Mirae Asset Large Cap Fund - Regular Plan","SIP Purchase",999.95,9.264],["15/09/2026","Mirae Asset Flexi Cap Fund - Regular Plan","SIP Purchase",999.95,63.144],["15/09/2026","Mirae Asset Large and Mid Cap Fund - Regular Plan","SIP Purchase",999.95,6.547],["11/09/2026","Nippon India Growth Mid Cap Fund","SIP Purchase",999.95,0.224],["10/09/2026","Nippon India Growth Mid Cap Fund","SIP Purchase",999.95,0.223],["10/09/2026","Nippon India Growth Mid Cap Fund","SIP Purchase",999.95,0.223],["10/09/2026","Mahindra Manulife Small Cap Fund - Regular Plan","SIP Purchase",999.95,43.379],["10/09/2026","Mahindra Manulife Small Cap Fund - Regular Plan","SIP Purchase",999.95,43.379],["10/09/2026","Mahindra Manulife Flexi Cap Fund - Regular Plan","SIP Purchase",1999.9,125.913],["10/09/2026","Mahindra Manulife Flexi Cap Fund - Regular Plan","SIP Purchase",1999.9,125.913],["10/09/2026","WhiteOak Capital Mid Cap Fund - Regular Plan","SIP Purchase",999.95,45.249],["09/09/2026","Mahindra Manulife Flexi Cap Fund - Regular Plan","SIP Purchase",999.95,62.932],["07/09/2026","Nippon India Flexi Cap Fund - Regular Plan","SIP Purchase",999.95,59.842],["07/09/2026","Kotak Large Cap Fund - Regular Plan","SIP Purchase",999.95,1.778],["07/09/2026","Kotak Large Cap Fund - Regular Plan","SIP Purchase",1999.9,3.557],["07/09/2026","Kotak Large Cap Fund - Regular Plan","SIP Purchase",1999.9,3.557]];
+const $=id=>document.getElementById(id);
+const inr=n=>'₹'+n.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+const inr0=n=>'₹'+Math.round(n).toLocaleString('en-IN');
+const short=n=>n>=1e7?'₹'+(n/1e7).toFixed(2)+' Cr':n>=1e5?'₹'+(n/1e5).toFixed(2)+' L':inr0(n);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+// ---- Category rules (checked in order; first match wins) ----
+const RULES=[
+ [/gold|silver|precious/i,'Gold & Silver','Commodity'],
+ [/target maturity|crisil ibx|\bsdl\b|g-sec index|gilt index|bond index|debt index|bharat bond/i,'Target Maturity','Debt'],
+ [/overnight/i,'Overnight','Debt'],[/liquid/i,'Liquid','Debt'],[/money market/i,'Money Market','Debt'],
+ [/ultra short/i,'Ultra Short Duration','Debt'],[/low duration/i,'Low Duration','Debt'],
+ [/short (duration|term)/i,'Short Duration','Debt'],[/medium to long|medium duration/i,'Medium Duration','Debt'],
+ [/long duration/i,'Long Duration','Debt'],[/corporate bond/i,'Corporate Bond','Debt'],
+ [/banking\s*(&|and)\s*psu/i,'Banking & PSU','Debt'],[/gilt|constant maturity/i,'Gilt','Debt'],
+ [/dynamic bond/i,'Dynamic Bond','Debt'],[/credit risk/i,'Credit Risk','Debt'],[/floater|floating/i,'Floater','Debt'],
+ [/arbitrage/i,'Arbitrage','Hybrid'],[/multi asset/i,'Multi Asset','Hybrid'],
+ [/balanced advantage|dynamic asset|asset allocation/i,'Balanced Advantage','Hybrid'],
+ [/equity savings/i,'Equity Savings','Hybrid'],
+ [/conservative hybrid|regular savings|hybrid debt|monthly income/i,'Conservative Hybrid','Hybrid'],
+ [/aggressive hybrid|equity hybrid|hybrid equity|balanced fund|equity\s*&\s*debt/i,'Aggressive Hybrid','Hybrid'],
+ [/elss|tax saver|taxsaver|long term equity|tax relief/i,'ELSS','Equity'],
+ [/\bindex\b|\betf\b|nifty|sensex/i,'Index / ETF','Equity'],
+ [/nasdaq|s&p 500|\bus\b|global|international|world|overseas|greater china|japan|europe/i,'International','Equity'],
+ [/large\s*(&|and)\s*mid|emerging bluechip/i,'Large & Mid Cap','Equity'],
+ [/small\s*cap|smallcap/i,'Small Cap','Equity'],[/mid\s*cap|midcap/i,'Mid Cap','Equity'],
+ [/large\s*cap|largecap|bluechip|blue chip|top 100|frontline/i,'Large Cap','Equity'],
+ [/flexi/i,'Flexi Cap','Equity'],[/multi\s*cap|multicap/i,'Multi Cap','Equity'],
+ [/focused|focus/i,'Focused','Equity'],[/value/i,'Value','Equity'],[/contra/i,'Contra','Equity'],
+ [/dividend yield/i,'Dividend Yield','Equity'],
+ [/bank|financial|pharma|health|tech|digital|infra|consumption|consumer|psu|manufactur|thematic|innovation|business cycle|mnc|energy|auto|transport|defence|esg|momentum|quant|special opportunit|housing|commodit|natural resources/i,'Sectoral / Thematic','Equity'],
+ [/retirement|children|child/i,'Solution Oriented','Hybrid'],
+];
+const CATS=[...new Set(RULES.map(r=>r[1])),'Other'];
+const CLASS_OF=Object.fromEntries(RULES.map(r=>[r[1],r[2]]));CLASS_OF['Other']='Other';
+const CLASS_COL={Equity:'var(--c-eq)',Hybrid:'var(--c-hy)',Debt:'var(--c-debt)',Commodity:'var(--c-com)',Other:'var(--c-oth)'};
+const CAT_COLORS=['#005826','#934E32','#F9B738','#3F8F5E','#C47A57','#8A7A3A','#6A5A72','#2E6F8E','#B8932E','#7FA88A','#9A8FA0'];
+function guessCat(name){for(const [re,c] of RULES)if(re.test(name))return c;return 'Other';}
+
+let overrides={};try{overrides=JSON.parse(localStorage.getItem('abundance-cat-overrides')||'{}')}catch(e){}
+const saveOv=()=>{try{localStorage.setItem('abundance-cat-overrides',JSON.stringify(overrides))}catch(e){}};
+const catOf=f=>overrides[f]||guessCat(f);
+
+let DATA=[],TYPES={},PERIOD='',open=new Set(),sortK='amt',sortDir=-1,catFilter=new Set(),fq='';
+try{const v=(localStorage.getItem('abundance-fund-sort')||'').split(':');if(['amt','pct','fund','cat','n'].includes(v[0])){sortK=v[0];sortDir=+v[1]===1?1:-1;}}catch(e){}
+function sortFunds(list){return [...list].sort((a,b)=>{const x=a[sortK],y=b[sortK];
+  const c=typeof x==='string'?x.localeCompare(y,'en',{sensitivity:'base'}):x-y;return c*sortDir||a.fund.localeCompare(b.fund)||0;});}
+function applyFilter(fl){const q=fq.trim().toLowerCase();
+  return fl.filter(f=>(!catFilter.size||catFilter.has(f.cat))&&(!q||f.fund.toLowerCase().includes(q)));}
+function setSort(k,d){sortK=k;sortDir=d;try{localStorage.setItem('abundance-fund-sort',k+':'+d)}catch(e){}render();}
+
+// ---- File parsing ----
+const num=v=>typeof v==='number'?v:v==null?NaN:parseFloat(String(v).replace(/[₹,\s"']/g,''));
+function toDate(v){
+  if(typeof v==='number'){const d=new Date(Date.UTC(1899,11,30)+Math.round(v)*864e5);return d;} // rounding fixes 18:30 UTC timestamps
+  if(v instanceof Date)return v;
+  if(typeof v==='string'){const m=v.match(/(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/);if(m){const y=+m[3]<100?2000+ +m[3]:+m[3];return new Date(Date.UTC(y,m[2]-1,+m[1]));}}
+  return null;
+}
+const fmtD=d=>d?String(d.getUTCDate()).padStart(2,'0')+'/'+String(d.getUTCMonth()+1).padStart(2,'0')+'/'+d.getUTCFullYear():'';
+
+function parseAOA(aoa){
+  let h=-1;
+  for(let i=0;i<Math.min(aoa.length,40);i++){
+    const r=(aoa[i]||[]).map(c=>String(c??'').toLowerCase());
+    if(r.some(c=>/scheme|fund name/.test(c))&&r.some(c=>/amount/.test(c))){h=i;break;}
+  }
+  if(h<0)return null;
+  const hd=aoa[h].map(c=>String(c??'').toLowerCase().trim());
+  const col=(re,not)=>hd.findIndex(c=>re.test(c)&&!(not&&not.test(c)));
+  const ci={scheme:col(/scheme|fund name/),amt:col(/amount/),type:col(/transaction type|txn type|^type$|trxn type/),
+            units:col(/^units?$|^unit/),date:col(/date/,/nav date/)};
+  let title='';for(let i=0;i<h;i++){const t=(aoa[i]||[]).filter(Boolean).join(' ');if(t)title+=t+' ';}
+  const m=title.match(/from\s+([\d\/\-.]+)\s+to\s+([\d\/\-.]+)/i);
+  const rows=[];
+  for(let i=h+1;i<aoa.length;i++){
+    const r=aoa[i]||[];const s=r[ci.scheme];
+    if(!s||/^\s*(grand\s*)?total/i.test(String(r[0]??''))||/^\s*total/i.test(String(s)))continue;
+    const a=num(r[ci.amt]);if(isNaN(a))continue;
+    rows.push({fund:String(s).trim(),type:ci.type>=0?String(r[ci.type]??'').trim()||'Unspecified':'All',
+      amt:a,units:ci.units>=0?(num(r[ci.units])||0):0,date:ci.date>=0?toDate(r[ci.date]):null});
+  }
+  return {rows,period:m?m[1]+' – '+m[2]:''};
+}
+
+function load(rows,period,label,isSample){
+  DATA=rows;TYPES={};rows.forEach(r=>{if(!(r.type in TYPES))TYPES[r.type]=true;});
+  if(!period){const ds=rows.map(r=>r.date).filter(Boolean).sort((a,b)=>a-b);if(ds.length)period=fmtD(ds[0])+' – '+fmtD(ds[ds.length-1]);}
+  PERIOD=period;open.clear();catFilter.clear();fq='';$('fq').value='';
+  const st=$('status');st.className='status'+(isSample?' sample':'');st.textContent=label;
+  render();
+}
+
+
+// Excel reader: cdnjs first, jsDelivr as a backup
+let xlsxReady=null;
+function ensureXLSX(){
+  if(window.XLSX)return Promise.resolve(true);
+  if(!xlsxReady)xlsxReady=new Promise(res=>{const sc=document.createElement('script');
+    sc.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';sc.onload=()=>res(!!window.XLSX);sc.onerror=()=>res(false);document.head.appendChild(sc);});
+  return xlsxReady;
+}
+async function handleFile(f){
+  const st=$('status');st.className='status';st.textContent=`Reading ${f.name}…`;
+  if(!(await ensureXLSX())){err('The Excel reader could not load, so the file could not be read. Check your internet connection, or use “Paste the rows instead”.');return;}
+  let wb;
+  try{wb=XLSX.read(await f.arrayBuffer(),{type:'array'});}
+  catch(e){err(`Couldn't open ${f.name}. If it is password-protected or an old format, open it in Excel, save as .xlsx, and try again.`);return;}
+  for(const n of wb.SheetNames){
+    const p=parseAOA(XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:true,defval:null}));
+    if(p&&p.rows.length){load(p.rows,p.period,`Showing ${f.name} · sheet “${n}” · ${p.rows.length} transactions read`,false);return;}
+  }
+  err(`Couldn't find a Scheme Name and Amount column in ${f.name}. Check that the header row has both, then upload again.`);
+}
+function handleText(t,label){
+  const aoa=t.replace(/\r/g,'').split('\n').filter(l=>l.trim()).map(l=>l.split('\t').map(c=>{c=c.trim().replace(/^"(.*)"$/,'$1');return c===''?null:c;}));
+  const p=parseAOA(aoa);
+  if(p&&p.rows.length){load(p.rows,p.period,`Showing ${label} · ${p.rows.length} transactions read`,false);$('pasteWrap').open=false;$('paste').value='';return true;}
+  err('The pasted rows need a header row with Scheme Name and Amount. Copy again starting from the header row.');return false;
+}
+function err(t){const st=$('status');st.className='status err';st.textContent=t;}
+
+$('pick').addEventListener('click',()=>$('file').click());
+$('file').addEventListener('change',e=>{const f=e.target.files&&e.target.files[0];if(f)handleFile(f);e.target.value='';});
+// accept a drop anywhere on the page
+let dragDepth=0;
+const hasFiles=e=>e.dataTransfer&&[...(e.dataTransfer.types||[])].includes('Files');
+window.addEventListener('dragenter',e=>{if(!hasFiles(e))return;e.preventDefault();dragDepth++;document.body.classList.add('dragging');});
+window.addEventListener('dragover',e=>{if(!hasFiles(e))return;e.preventDefault();e.dataTransfer.dropEffect='copy';});
+window.addEventListener('dragleave',e=>{if(!hasFiles(e))return;dragDepth=Math.max(0,dragDepth-1);if(!dragDepth)document.body.classList.remove('dragging');});
+window.addEventListener('drop',e=>{if(!hasFiles(e))return;e.preventDefault();dragDepth=0;document.body.classList.remove('dragging');const f=e.dataTransfer.files[0];if(f)handleFile(f);});
+// paste: into the box, or anywhere on the page when not typing in a field
+$('paste').addEventListener('paste',e=>{const t=e.clipboardData&&e.clipboardData.getData('text/plain');if(t){e.preventDefault();handleText(t,'pasted rows');}});
+document.addEventListener('paste',e=>{
+  if(e.target&&e.target.id==='paste')return;
+  if(e.target&&/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName))return;
+  const f=e.clipboardData&&e.clipboardData.files&&e.clipboardData.files[0];if(f){e.preventDefault();handleFile(f);return;}
+  const t=e.clipboardData&&e.clipboardData.getData('text/plain');if(t&&t.includes('\t')){e.preventDefault();handleText(t,'pasted rows');}
+});
+
+// ---- Aggregation + render ----
+function aggregate(){
+  const rows=DATA.filter(r=>TYPES[r.type]);
+  const funds={};
+  rows.forEach(r=>{const f=funds[r.fund]||(funds[r.fund]={fund:r.fund,n:0,amt:0,units:0});f.n++;f.amt+=r.amt;f.units+=r.units;});
+  const total=rows.reduce((a,r)=>a+r.amt,0);
+  const fl=Object.values(funds).map(f=>({...f,cat:catOf(f.fund),pct:total?f.amt/total*100:0}));
+  const cats={};fl.forEach(f=>{const c=cats[f.cat]||(cats[f.cat]={cat:f.cat,amt:0,n:0,funds:[]});c.amt+=f.amt;c.n+=f.n;c.funds.push(f);});
+  const cl=Object.values(cats).sort((a,b)=>b.amt-a.amt);
+  const ac={};cl.forEach(c=>{const k=CLASS_OF[c.cat];ac[k]=(ac[k]||0)+c.amt;});
+  return {rows,total,fl,cl,ac};
+}
+
+function render(){
+  const {rows,total,fl,cl,ac}=aggregate();
+  $('kTot').textContent=inr(total);$('kTx').textContent=rows.length;$('kFunds').textContent=fl.length;
+  $('kCats').textContent=cl.length;$('kPer').textContent=PERIOD||'–';
+
+  const max=cl.length?cl[0].amt:1;
+  $('cat').innerHTML=cl.map((c,i)=>{
+    const col=CAT_COLORS[i%CAT_COLORS.length],isOpen=open.has(c.cat);
+    const fr=isOpen?`<div class="funds">${c.funds.sort((a,b)=>b.amt-a.amt).map(f=>`<div><span>${esc(f.fund)}</span><span>${inr(f.amt)}</span></div>`).join('')}</div>`:'';
+    return `<div class="row" data-c="${esc(c.cat)}" tabindex="0" role="button" aria-expanded="${isOpen}">
+      <div class="nm"><span class="caret">${isOpen?'▾':'▸'}</span><span class="dot" style="background:${col}"></span><span>${esc(c.cat)} <small>${c.funds.length} fund${c.funds.length>1?'s':''}</small></span></div>
+      <div class="track"><i style="width:${c.amt/max*100}%;background:${col}"></i></div>
+      <div class="amt">${inr(c.amt)}<small>${total?(c.amt/total*100).toFixed(1):0}%</small></div></div>${fr}`;
+  }).join('')||'<div class="hint">No transactions for the selected types.</div>';
+  $('cat').querySelectorAll('.row').forEach(el=>{
+    const t=()=>{const c=el.dataset.c;open.has(c)?open.delete(c):open.add(c);render();};
+    el.addEventListener('click',t);el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();t();}});
+  });
+
+  const order=['Equity','Hybrid','Debt','Commodity','Other'].filter(k=>ac[k]);
+  $('stack').innerHTML=order.map(k=>`<i style="width:${ac[k]/total*100}%;background:${CLASS_COL[k]}" title="${k}"></i>`).join('');
+  $('acLeg').innerHTML=order.map(k=>`<div><span><span class="dot" style="background:${CLASS_COL[k]}"></span>${k}</span><span>${inr0(ac[k])} · ${(ac[k]/total*100).toFixed(1)}%</span></div>`).join('');
+
+  const tAll={};DATA.forEach(r=>{tAll[r.type]=(tAll[r.type]||{n:0,amt:0});tAll[r.type].n++;tAll[r.type].amt+=r.amt;});
+  $('types').innerHTML=Object.entries(tAll).map(([t,v])=>`<button class="chip" data-t="${esc(t)}" aria-pressed="${TYPES[t]}">${esc(t)} <small>${v.n} · ${short(v.amt)}</small></button>`).join('');
+  $('types').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{TYPES[b.dataset.t]=!TYPES[b.dataset.t];render();});
+
+  // filter chips (categories present in the data, biggest first)
+  [...catFilter].forEach(c=>{if(!cl.some(x=>x.cat===c))catFilter.delete(c);});
+  $('catChips').innerHTML=`<button class="chip sm" data-c="" aria-pressed="${!catFilter.size}">All <small>${fl.length}</small></button>`+
+    cl.map((c,i)=>`<button class="chip sm" data-c="${esc(c.cat)}" aria-pressed="${catFilter.has(c.cat)}"><span class="dot" style="background:${CAT_COLORS[i%CAT_COLORS.length]}"></span>${esc(c.cat)} <small>${c.funds.length}</small></button>`).join('');
+  $('catChips').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{const c=b.dataset.c;if(!c)catFilter.clear();else catFilter.has(c)?catFilter.delete(c):catFilter.add(c);render();});
+  const shown=applyFilter(fl),filtered=shown.length!==fl.length;
+  $('fClear').hidden=!(catFilter.size||fq.trim());
+  const sAmt=shown.reduce((a,f)=>a+f.amt,0),sN=shown.reduce((a,f)=>a+f.n,0);
+  $('fCount').textContent=filtered?`Showing ${shown.length} of ${fl.length} funds`:'';
+  const sorted=sortFunds(shown);
+  $('ftb').innerHTML=sorted.length?sorted.map(f=>{
+    const guessed=!overrides[f.fund]&&f.cat==='Other';
+    return `<tr><td class="l fund">${esc(f.fund)}</td><td class="l"><select data-f="${esc(f.fund)}" class="${guessed?'guess':''}" aria-label="Category for ${esc(f.fund)}">${CATS.map(c=>`<option${c===f.cat?' selected':''}>${c}</option>`).join('')}</select></td>
+      <td>${f.n}</td><td>${f.units.toLocaleString('en-IN',{maximumFractionDigits:3})}</td><td>${inr(f.amt)}</td><td>${f.pct.toFixed(1)}%</td></tr>`;}).join('')
+    :`<tr class="empty"><td colspan="6">No funds match these filters. <button type="button" class="linkbtn" onclick="clearFilters()">Clear filters</button></td></tr>`;
+  $('ftf').innerHTML=filtered
+    ?`<tr><td class="l">Filtered total <span class="hint">(${shown.length} fund${shown.length===1?'':'s'})</span></td><td></td><td>${sN}</td><td></td><td>${inr(sAmt)}</td><td>${total?(sAmt/total*100).toFixed(1):0}%</td></tr>
+      <tr class="all"><td class="l">All funds</td><td></td><td>${rows.length}</td><td></td><td>${inr(total)}</td><td>100%</td></tr>`
+    :`<tr><td class="l">Total</td><td></td><td>${rows.length}</td><td></td><td>${inr(total)}</td><td>100%</td></tr>`;
+  $('ftb').querySelectorAll('select').forEach(s=>s.onchange=()=>{const f=s.dataset.f;if(s.value===guessCat(f))delete overrides[f];else overrides[f]=s.value;saveOv();render();});
+  document.querySelectorAll('th[data-k]').forEach(th=>{const on=th.dataset.k===sortK;
+    th.setAttribute('aria-sort',on?(sortDir<0?'descending':'ascending'):'none');th.querySelector('.ar').textContent=on?(sortDir<0?'▼':'▲'):'↕';});
+  const sv=sortK+':'+sortDir,sel=$('sortSel');if([...sel.options].some(o=>o.value===sv))sel.value=sv;else sel.selectedIndex=-1;
+
+  // summary
+  const topF=[...fl].sort((a,b)=>b.amt-a.amt)[0],topC=cl[0];
+  const eq=ac.Equity||0;
+  $('sum').innerHTML=total?[
+    `<strong>${rows.length}</strong> transactions totalling <strong>${inr(total)}</strong> across <strong>${fl.length}</strong> funds${PERIOD?` (${PERIOD})`:''}.`,
+    `Largest category: <strong>${esc(topC.cat)}</strong> at ${inr(topC.amt)} (${(topC.amt/total*100).toFixed(1)}%).`,
+    `Largest fund: <strong>${esc(topF.fund)}</strong> at ${inr(topF.amt)} over ${topF.n} transaction${topF.n>1?'s':''}.`,
+    `Equity share: <strong>${(eq/total*100).toFixed(1)}%</strong>${order.length>1?'; the rest is '+order.filter(k=>k!=='Equity').map(k=>`${k.toLowerCase()} ${(ac[k]/total*100).toFixed(1)}%`).join(', '):''}.`,
+    fl.some(f=>f.cat==='Other')?`${fl.filter(f=>f.cat==='Other').length} fund(s) are marked Other. Set their category in the fund table.`:''
+  ].filter(Boolean).map(s=>`<li>${s}</li>`).join(''):'<li>No transactions for the selected types.</li>';
+}
+
+document.querySelectorAll('th[data-k] button').forEach(bt=>bt.onclick=()=>{const k=bt.parentElement.dataset.k;
+  if(sortK===k)setSort(k,-sortDir);else setSort(k,(k==='fund'||k==='cat')?1:-1);});
+function clearFilters(){catFilter.clear();fq='';$('fq').value='';render();}
+$('fq').addEventListener('input',e=>{fq=e.target.value;render();});
+$('fClear').onclick=clearFilters;
+$('sortSel').onchange=e=>{const [k,d]=e.target.value.split(':');setSort(k,+d);};
+
+$('copyBtn').onclick=async()=>{
+  const {total,fl,cl}=aggregate();
+  let t='Category\tFunds\tTransactions\tAmount\tShare %\n'+cl.map(c=>[c.cat,c.funds.length,c.n,c.amt.toFixed(2),(c.amt/total*100).toFixed(2)].join('\t')).join('\n')+`\nTotal\t${fl.length}\t\t${total.toFixed(2)}\t100\n\n`;
+  const shown=applyFilter(fl),sAmt=shown.reduce((a,f)=>a+f.amt,0),flt=shown.length!==fl.length;
+  if(flt)t+=`Filter: ${catFilter.size?[...catFilter].join(', '):'all categories'}${fq.trim()?` · search "${fq.trim()}"`:''}\n`;
+  t+='Fund\tCategory\tTransactions\tUnits\tAmount\tShare %\n'+sortFunds(shown).map(f=>[f.fund,f.cat,f.n,f.units.toFixed(3),f.amt.toFixed(2),f.pct.toFixed(2)].join('\t')).join('\n')+(flt?`\nFiltered total\t\t\t\t${sAmt.toFixed(2)}\t${(sAmt/total*100).toFixed(2)}`:'')+`\nTotal\t\t\t\t${total.toFixed(2)}\t100`;
+  const b=$('copyBtn');
+  try{await navigator.clipboard.writeText(t);b.textContent='Copied. Paste into Excel';}
+  catch(e){const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');b.textContent='Copied. Paste into Excel';}catch(_){b.textContent='Copy failed';}ta.remove();}
+  setTimeout(()=>b.textContent='Copy for Excel',2500);
+};
+
+load(SAMPLE.map(r=>({date:toDate(r[0]),fund:r[1],type:r[2],amt:r[3],units:r[4]})),'30/08/2026 – 30/09/2026',
+  'Showing sample data (Recent Transaction Report, 30/08/2026 – 30/09/2026). Upload a file to replace it.',true);
+</script>

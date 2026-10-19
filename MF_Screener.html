@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fund Screener — Abundance</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&display=swap');
+
+  :root{
+    --primary:#005826;
+    --primary-soft:#0a6e33;
+    --secondary:#934E32;
+    --accent:#F9B738;
+    --bg:#F0F8FF;
+    --dark:#39293E;
+    --panel:#ffffff;
+    --line:#dbe6df;
+    --up:#0a7a3c;
+    --down:#a3341f;
+    --muted:#6b6470;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--bg); color:var(--dark); font-family:Calibri, "Segoe UI", Arial, sans-serif; -webkit-font-smoothing:antialiased;}
+  h1,h2,h3{font-family:Montserrat, sans-serif;}
+  .wrap{max-width:1400px; margin:0 auto; padding:28px 24px 60px;}
+
+  .top{display:flex; align-items:flex-end; justify-content:space-between; gap:20px; padding-bottom:18px; margin-bottom:20px; border-bottom:2px solid var(--primary);}
+  .top h1{margin:0; font-size:26px; font-weight:800; color:var(--primary); letter-spacing:-0.01em;}
+  .top p{margin:4px 0 0; color:var(--muted); font-size:13.5px;}
+  .tagline{font-family:Montserrat, sans-serif; font-size:12px; font-weight:600; color:var(--secondary); text-align:right;}
+
+  .panel{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:18px 20px; margin-bottom:18px;}
+  .panel h3{margin:0 0 12px; font-size:14px; font-weight:800; color:var(--primary); text-transform:uppercase; letter-spacing:.04em;}
+  .panel h3 .sub{font-family:Calibri, sans-serif; text-transform:none; letter-spacing:0; font-weight:400; color:var(--muted); font-size:13px; margin-left:6px;}
+
+  .controls{display:flex; flex-wrap:wrap; gap:14px 18px; align-items:flex-start;}
+  .controls .checkline{padding-top:30px;}
+  .field{display:flex; flex-direction:column; gap:6px;}
+  .field label{font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--secondary);}
+  select, input[type="text"], input[type="number"]{
+    font-family:Calibri, sans-serif; font-size:14.5px; padding:9px 12px;
+    border:1.5px solid var(--line); border-radius:7px; background:#fff; color:var(--dark);
+    min-width:170px; outline:none;
+  }
+  input[type="number"]{min-width:0; width:100px;}
+  select:focus, input:focus{border-color:var(--primary);}
+  .checkline{display:flex; align-items:center; gap:8px; font-size:13.5px; color:var(--dark); padding-bottom:9px;}
+  .checkline input{accent-color:var(--primary); width:16px; height:16px;}
+
+  button{font-family:Montserrat, sans-serif; font-weight:700; font-size:13.5px; cursor:pointer; letter-spacing:.01em; border-radius:7px; padding:10px 18px;}
+  button.primary{background:var(--primary); color:#fff; border:none;}
+  button.primary:hover{background:var(--primary-soft);}
+  button.fav{background:var(--accent); color:var(--dark); border:none;}
+  button.fav:hover{filter:brightness(.96);}
+  button.ghost{background:#fff; color:var(--primary); border:1.5px solid var(--primary);}
+  button:disabled{opacity:.55; cursor:not-allowed;}
+  .linkbtn{background:none; border:none; color:var(--secondary); text-decoration:underline; cursor:pointer; font-family:Calibri, sans-serif; font-weight:400; font-size:12.5px; padding:0;}
+  .btnrow{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:14px;}
+  .btnrow .spacer{flex:1;}
+
+  .chips-group{display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-bottom:8px;}
+  .chips-group .gl{font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--secondary); width:62px;}
+  .chip{display:inline-flex; align-items:center; border:1.5px solid var(--line); border-radius:999px; padding:4px 12px; font-size:13px; cursor:pointer; background:#fff; user-select:none;}
+  .chip input{display:none;}
+  .chip:hover{border-color:var(--primary);}
+  .chip.on{background:var(--primary); border-color:var(--primary); color:#fff;}
+  .custom-row{display:flex; align-items:center; gap:8px; margin-top:6px;}
+  .custom-row .gl{font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--secondary); width:62px;}
+  .selcount{font-size:12.5px; color:var(--muted);}
+
+  .picker{position:relative; max-width:640px;}
+  .picker input{width:100%;}
+  .suggest{position:absolute; top:100%; left:0; right:0; background:#fff; border:1px solid var(--line); border-radius:7px; box-shadow:0 8px 24px rgba(57,41,62,.12); max-height:340px; overflow:auto; z-index:30; display:none; margin-top:4px;}
+  .suggest div{padding:8px 12px; cursor:pointer; font-size:13.5px; border-bottom:1px solid #f1f1f1;}
+  .suggest div:hover{background:#F6FBF7;}
+  .suggest div span{display:block; font-size:11.5px; color:var(--muted);}
+  .picked{display:flex; flex-wrap:wrap; gap:6px; margin-top:10px;}
+  .pchip{background:#E8F3EC; color:var(--primary); border-radius:999px; padding:4px 6px 4px 12px; font-size:12.5px; font-weight:600; display:inline-flex; align-items:center; gap:6px;}
+  .pchip button{border:none; background:var(--primary); color:#fff; border-radius:50%; width:18px; height:18px; font-size:11px; line-height:18px; padding:0; font-family:Calibri, sans-serif;}
+
+  .note{font-size:12.5px; color:var(--muted); margin-top:4px; line-height:1.55; background:#FBF6EA; border-left:3px solid var(--accent); padding:9px 12px; border-radius:4px;}
+  .note strong{color:var(--secondary);}
+  details.note summary{cursor:pointer; font-weight:700; color:var(--secondary);}
+  details.note ul{margin:8px 0 2px; padding-left:18px;}
+  details.note li{margin-bottom:4px;}
+
+  .status{display:flex; align-items:center; gap:10px; font-size:13.5px; color:var(--secondary); margin-bottom:12px; min-height:18px;}
+  .spinner{width:14px; height:14px; border-radius:50%; border:2.5px solid var(--accent); border-top-color:var(--primary); animation:spin .8s linear infinite; flex:none;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .toolbar{display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:12px;}
+  .tabs{display:flex; gap:6px;}
+  .tab{padding:7px 14px; border:1.5px solid var(--line); background:#fff; border-radius:7px; font-size:12.5px; color:var(--dark);}
+  .tab.on{background:var(--dark); color:#fff; border-color:var(--dark);}
+  .count-row{display:flex; gap:16px; align-items:center; font-size:12.5px; color:var(--muted); flex-wrap:wrap;}
+
+  .legend{display:flex; gap:10px; flex-wrap:wrap; align-items:center; font-size:12px; color:var(--muted); margin-bottom:10px;}
+
+  table{width:100%; border-collapse:collapse; font-size:13.5px;}
+  thead th{text-align:right; font-family:Montserrat, sans-serif; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.03em; color:#fff; background:var(--primary); padding:11px 10px; cursor:pointer; user-select:none; white-space:nowrap;}
+  thead th.l{text-align:left;}
+  thead th.c{text-align:center;}
+  thead th:first-child{border-radius:8px 0 0 0; position:sticky; left:0; z-index:2;}
+  thead th:last-child{border-radius:0 8px 0 0;}
+  thead th .arrow{opacity:.75; font-size:9px; margin-left:3px;}
+  tbody td{padding:9px 10px; text-align:right; border-bottom:1px solid var(--line); white-space:nowrap;}
+  tbody td.l{text-align:left;}
+  tbody td.c{text-align:center; padding:6px 4px;}
+  tbody td:first-child{text-align:left; font-weight:600; color:var(--dark); white-space:normal; min-width:220px; max-width:280px; position:sticky; left:0; background:#fff; z-index:1;}
+  tbody td.cat{white-space:normal; max-width:160px; color:var(--secondary); font-size:12.5px; font-weight:600;}
+  tbody tr:nth-child(even) td{background:#FAFCFE;}
+  tbody tr:hover td{background:#F6FBF7;}
+
+  .up{color:var(--up); font-weight:600;}
+  .down{color:var(--down); font-weight:600;}
+  .na{color:#b8b2bb;}
+  .fund-meta{display:block; font-size:11px; font-weight:400; color:var(--muted); margin-top:1px;}
+
+  /* quartile 4-block bar: Q1 dark green, Q2 light green, Q3 light red, Q4 dark red */
+  .qcell{display:inline-flex; flex-direction:column; align-items:center; gap:2px;}
+  .qbar{display:inline-flex; gap:2px; padding:2px; border:1px solid #cfd6d2; border-radius:4px; background:#fff;}
+  .qbar i{display:block; width:9px; height:15px; border-radius:2px; background:#ECEFEE;}
+  .qbar i.q1{background:#178A3E;}
+  .qbar i.q2{background:#7CC48F;}
+  .qbar i.q3{background:#F0A3A0;}
+  .qbar i.q4{background:#B3261E;}
+  .qbar.nr{opacity:.5;}
+  .qbar.v{flex-direction:column; gap:2px; padding:2px;}
+  .qbar.v i{width:22px; height:6px;}
+  .qr{font-size:10.5px; color:var(--dark); font-weight:600; line-height:1.1;}
+  .qp{font-size:10.5px; line-height:1.1;}
+
+  /* category view bar */
+  .catbar{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; padding-bottom:12px; border-bottom:1px solid var(--line);}
+  .cbtn{font-family:Calibri, sans-serif; font-weight:600; font-size:13px; padding:6px 12px; border-radius:999px; border:1.5px solid var(--line); background:#fff; color:var(--dark);}
+  .cbtn span{display:inline-block; margin-left:5px; font-size:11px; color:var(--muted); font-weight:700;}
+  .cbtn.on{background:var(--primary); border-color:var(--primary); color:#fff;}
+  .cbtn.on span{color:#d6efe0;}
+  .cbtn.all{border-style:dashed;}
+  tr.grp td{position:static !important; background:#EAF3EE !important; color:var(--primary); font-family:Montserrat, sans-serif; font-weight:800; font-size:12px; text-transform:uppercase; letter-spacing:.04em; text-align:left; padding:10px;}
+  .namecell{display:flex; gap:8px; align-items:flex-start;}
+  .namecell .nm{min-width:0;}
+  .rk{flex:none; display:inline-block; min-width:22px; height:20px; line-height:20px; text-align:center; border-radius:5px; background:var(--dark); color:#fff; font-size:11px; font-weight:700; margin-top:1px;}
+  .stale{color:var(--down);}
+  .rankcap{font-size:12px; color:var(--muted);}
+  .rankcap b{color:var(--dark);}
+  .rk.top{background:var(--accent); color:var(--dark);}
+  .fundlink{color:var(--dark); text-decoration:none; border-bottom:1px dashed #b9b2bd; cursor:pointer;}
+  .fundlink:hover{color:var(--primary); border-bottom-color:var(--primary);}
+  .hint{font-size:11.5px; color:var(--muted); max-width:200px; line-height:1.3;}
+
+  /* fund detail drawer */
+  .overlay{position:fixed; inset:0; background:rgba(57,41,62,.45); z-index:100; display:flex; justify-content:flex-end;}
+  .overlay[hidden]{display:none;}
+  .drawer{width:min(760px, 100%); height:100%; overflow:auto; background:var(--bg); padding:24px 26px 40px; box-shadow:-10px 0 30px rgba(0,0,0,.15);}
+  .drawer h2{margin:0; font-size:19px; color:var(--primary); line-height:1.3; padding-right:40px;}
+  .drawer .sub{color:var(--secondary); font-size:13px; font-weight:600; margin:4px 0 16px;}
+  .drawer .close{position:absolute; right:22px; top:18px; background:#fff; border:1.5px solid var(--line); color:var(--dark); padding:6px 11px;}
+  .drawer-inner{position:relative;}
+  .stats{display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; margin-bottom:16px;}
+  .stat{background:#fff; border:1px solid var(--line); border-radius:8px; padding:9px 11px;}
+  .stat .k{font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--secondary);}
+  .stat .v{font-size:16px; font-weight:700; margin-top:2px;}
+  .stat .m{font-size:11px; color:var(--muted);}
+  .chartbox{background:#fff; border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-bottom:16px;}
+  .charthead{display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:6px;}
+  .seg{display:inline-flex; border:1.5px solid var(--line); border-radius:7px; overflow:hidden;}
+  .seg button{border:none; border-radius:0; background:#fff; padding:5px 10px; font-size:11.5px; color:var(--dark);}
+  .seg button.on{background:var(--dark); color:#fff;}
+  .chartlegend{font-size:12px; color:var(--muted); display:flex; gap:14px; margin-top:4px;}
+  .chartlegend b{display:inline-block; width:14px; height:3px; vertical-align:middle; margin-right:5px;}
+  .cytable{width:100%; background:#fff; border:1px solid var(--line); border-radius:10px; overflow:hidden;}
+  .cytable td{position:static !important; background:#fff !important; min-width:0 !important;}
+  .cytable th{position:static !important; border-radius:0 !important;}
+  @media (max-width:640px){ .stats{grid-template-columns:repeat(2, 1fr);} }
+
+  .empty{text-align:center; padding:50px 20px; color:var(--muted); font-size:14px;}
+  footer{margin-top:24px; text-align:center; font-size:11.5px; color:var(--muted);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <div>
+      <h1>Fund Screener</h1>
+      <p>Trailing returns, risk ratios &amp; calendar-year quartile ranks — Abundance</p>
+    </div>
+    <div class="tagline">Designing Portfolio, Delivering Peace.</div>
+  </div>
+
+  <!-- ===== Categories ===== -->
+  <div class="panel">
+    <h3>Categories <span class="sub">pick one or many, or hit Favorites</span></h3>
+    <div id="chipWrap"></div>
+    <div class="custom-row">
+      <span class="gl">Custom</span>
+      <input type="text" id="customKeyword" placeholder="Optional keyword, e.g. PSU, Infrastructure, Banking" style="min-width:320px;">
+    </div>
+    <div class="btnrow">
+      <button class="fav" id="favBtn">★ Favorites</button>
+      <button class="primary" id="loadCatsBtn">Load selected</button>
+      <button class="ghost" id="allBtn">All categories</button>
+      <button class="ghost" id="clearCatsBtn">Clear</button>
+      <span class="selcount" id="selCount"></span>
+      <span class="spacer"></span>
+      <button class="linkbtn" id="saveFavLink">Save current selection as Favorites</button>
+      <button class="linkbtn" id="resetFavLink">Reset Favorites</button>
+    </div>
+  </div>
+
+  <!-- ===== Specific funds ===== -->
+  <div class="panel">
+    <h3>Specific funds <span class="sub">compare hand-picked schemes (quartiles still ranked against their full category)</span></h3>
+    <div class="picker">
+      <input type="text" id="fundSearch" placeholder="Type 3+ letters of a fund name, e.g. parag flexi" autocomplete="off">
+      <div class="suggest" id="suggest"></div>
+    </div>
+    <div class="picked" id="pickedWrap"></div>
+    <div class="btnrow">
+      <button class="primary" id="loadFundsBtn">Load picked funds</button>
+      <button class="ghost" id="clearFundsBtn">Clear</button>
+    </div>
+  </div>
+
+  <!-- ===== Settings ===== -->
+  <div class="panel">
+    <div class="controls">
+      <div class="field">
+        <label for="planType">Plan · Option</label>
+        <select id="planType">
+          <option value="regular_growth" selected>Regular Plan · Growth</option>
+          <option value="direct_growth">Direct Plan · Growth</option>
+          <option value="all">All plans</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="rankBy">Rank by</label>
+        <select id="rankBy">
+          <optgroup label="Returns">
+            <option value="r1w">1 Week</option>
+            <option value="r1m">1 Month</option>
+            <option value="r3m">3 Months</option>
+            <option value="r6m">6 Months</option>
+            <option value="r1y" selected>1 Year</option>
+            <option value="r3y">3 Years</option>
+            <option value="r5y">5 Years</option>
+            <option value="r10y">10 Years</option>
+            <option value="aum">AUM (largest first)</option>
+          </optgroup>
+          <optgroup label="Risk">
+            <option value="sharpe">Sharpe (highest)</option>
+            <option value="sortino">Sortino (highest)</option>
+            <option value="alpha">Alpha (highest)</option>
+            <option value="sd">Std Dev (lowest)</option>
+            <option value="maxdd">Max Drawdown (smallest)</option>
+          </optgroup>
+          <optgroup label="Consistency">
+            <option value="cons">Years in top half</option>
+            <option value="avgQ">Average quartile</option>
+          </optgroup>
+        </select>
+      </div>
+      <div class="field">
+        <label for="riskWindow">Risk window</label>
+        <select id="riskWindow">
+          <option value="36" selected>3 Years (monthly)</option>
+          <option value="60">5 Years (monthly)</option>
+        </select>
+        <span class="hint">How far back the Risk tab looks when measuring ups and downs.</span>
+      </div>
+      <div class="field">
+        <label for="rfRate">Risk-free %</label>
+        <input type="number" id="rfRate" value="6.5" step="0.1" min="0" max="15">
+        <span class="hint">"Safe" return (≈ T-bill / FD rate) that Sharpe, Sortino &amp; Alpha are measured above.</span>
+      </div>
+      <div class="checkline">
+        <input type="checkbox" id="includeIndex">
+        <label for="includeIndex">Include Index Funds</label>
+      </div>
+    </div>
+    <details class="note" style="margin-top:14px;">
+      <summary>How the numbers are calculated (read before using with clients)</summary>
+      <ul>
+        <li><strong>Category matching</strong> uses each fund's SEBI sub-category, not its name. "Include Index Funds" adds <em>all</em> index funds, since SEBI treats them as one category.</li>
+        <li><strong>Returns:</strong> under 1 year are absolute; 1Y and longer are CAGR. A fund younger than the period shows "—".</li>
+        <li><strong>Quartiles:</strong> each calendar year's return is ranked within the same SEBI sub-category <em>and</em> plan (Regular vs Direct ranked separately). Q1 = top 25%. Needs at least 4 funds with data that year. The latest year is year-to-date.</li>
+        <li><strong>Peer set caveat:</strong> only currently active schemes are ranked, so funds that were merged or closed are missing from older years (survivorship bias). SEBI's 2017–18 recategorisation also means some funds ran a different mandate before 2018 — treat 2016–2018 ranks with care.</li>
+        <li><strong>Risk ratios</strong> follow Value Research's published approach: month-end NAVs for the trailing 3 (or 5) years up to the last completed month. Std Dev is annualised. Sharpe and Sortino use the risk-free rate you enter; Sortino's downside counts only negative months. Alpha is Jensen's alpha, annualised. Max Drawdown is the worst peak-to-trough fall in daily NAV over the window.</li>
+        <li><strong>Beta &amp; Alpha benchmark:</strong> a direct-plan index fund is used as a proxy for the index (Nifty 50 for Large Cap, Midcap 150 for Mid Cap, Smallcap 250 for Small Cap, LargeMidcap 250 for Large &amp; Mid, Nifty 500 for Flexi/Multi/Focused/Value/ELSS/Sectoral/Aggressive Hybrid). Proxy returns sit slightly below the TRI due to the index fund's expense ratio. Debt and other hybrids show no Beta/Alpha.</li>
+        <li><strong>AUM</strong> is the latest AMFI quarterly average per plan, in ₹ Cr.</li>
+      </ul>
+    </details>
+  </div>
+
+  <div class="status" id="status"></div>
+
+  <div class="panel" id="resultsPanel" style="display:none;">
+    <div class="catbar" id="catBar"></div>
+    <div class="toolbar">
+      <div class="tabs">
+        <button class="tab on" data-view="returns">Returns</button>
+        <button class="tab" data-view="nav">NAV</button>
+        <button class="tab" data-view="risk">Risk</button>
+        <button class="tab" data-view="quartiles">Quartiles</button>
+      </div>
+      <div class="count-row">
+        <span class="rankcap" id="rankCap"></span>
+        <span id="countLabel"></span>
+        <span id="asOfLabel"></span>
+        <button class="ghost" id="exportBtn" style="padding:6px 12px; font-size:12px;">Export CSV</button>
+      </div>
+    </div>
+    <div class="legend" id="qLegend" style="display:none;">
+      <span class="qbar v"><i class="q1"></i><i></i><i></i><i></i></span> Q1 · top 25%
+      <span class="qbar v"><i></i><i class="q2"></i><i></i><i></i></span> Q2
+      <span class="qbar v"><i></i><i></i><i class="q3"></i><i></i></span> Q3
+      <span class="qbar v"><i></i><i></i><i></i><i class="q4"></i></span> Q4 · bottom 25%
+      <span style="margin-left:6px;">Top block = Q1 (best). Number below = rank / funds in category that year.</span>
+      <label class="checkline" style="padding:0; margin-left:auto;"><input type="checkbox" id="showYearRet"> Show yearly return</label>
+    </div>
+    <div style="overflow-x:auto;">
+      <table id="resultsTable">
+        <thead id="thead"></thead>
+        <tbody id="resultsBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="overlay" id="overlay" hidden>
+    <div class="drawer"><div class="drawer-inner">
+      <button class="close" id="closeDrawer" title="Close (Esc)">✕</button>
+      <div id="drawerBody"></div>
+    </div></div>
+  </div>
+
+  <div class="empty" id="emptyState">Pick categories (or click ★ Favorites), or add specific funds, then load. Tip: click any fund name for its NAV chart and year-by-year ranks.</div>
+
+  <footer>Data: AMFI (via tigzig.com's open NAV/AUM mirror). Calculated from NAV — always spot-check against the factsheet before using in client conversations.</footer>
+</div>
+
+<script>
+const API_BASE = 'https://api.tigzig.com/mf/v1';
+const DAY = 86400000;
+
+// ---------- category definitions (matched against category_sub + category, lower-cased) ----------
+const CATEGORY_DEFS = {
+  large_cap: { includes: ['large cap'], excludes: ['large & mid', 'large and mid'] },
+  large_mid_cap: { includes: ['large & mid', 'large and mid'] },
+  mid_cap: { includes: ['mid cap'], excludes: ['large & mid', 'large and mid'] },
+  small_cap: { includes: ['small cap'] },
+  multi_cap: { includes: ['multi cap'] },
+  flexi_cap: { includes: ['flexi cap'] },
+  focused: { includes: ['focused'] },
+  value_contra: { includes: ['value fund', 'contra fund', 'value', 'contra'] },
+  dividend_yield: { includes: ['dividend yield'] },
+  elss: { includes: ['elss', 'tax sav'] },
+  sectoral_thematic: { includes: ['sectoral', 'thematic'], excludes: ['debt scheme'] },
+
+  overnight: { includes: ['overnight'] },
+  liquid: { includes: ['liquid'] },
+  ultra_short: { includes: ['ultra short'], excludes: ['ultra short to short'] },
+  low_duration: { includes: ['low duration', 'ultra short to short'] },
+  money_market: { includes: ['money market'] },
+  short_duration: { includes: ['short duration', 'short term'], excludes: ['ultra short', 'medium'] },
+  medium_duration: { includes: ['medium duration', 'medium term'], excludes: ['medium to long'] },
+  medium_long_duration: { includes: ['medium to long'] },
+  long_duration: { includes: ['long duration', 'long term'], excludes: ['medium to long', 'short'] },
+  dynamic_bond: { includes: ['dynamic bond', 'dynamic term'] },
+  corporate_bond: { includes: ['corporate bond'] },
+  credit_risk: { includes: ['credit risk'] },
+  banking_psu: { includes: ['banking and psu', 'banking & psu', 'banking psu'] },
+  gilt: { includes: ['gilt'], excludes: ['10 year', '10-year'] },
+  gilt_10y: { includes: ['10 year', '10-year'], requires: ['gilt'] },
+  floater: { includes: ['floater', 'floating rate', 'floating interest'] },
+
+  conservative_hybrid: { includes: ['conservative hybrid'] },
+  balanced_hybrid: { includes: ['balanced hybrid'] },
+  aggressive_hybrid: { includes: ['aggressive hybrid'] },
+  dynamic_asset: { includes: ['dynamic asset', 'balanced advantage'] },
+  multi_asset: { includes: ['multi asset'] },
+  arbitrage: { includes: ['arbitrage'] },
+  equity_savings: { includes: ['equity savings'] },
+
+  index_fund: { includes: ['index'] },
+  etf: { includes: ['etf'] },
+  fof_domestic: { includes: ['fund of funds', 'fof domestic'], excludes: ['overseas', 'international', 'global', 'nasdaq', 's&p', 'emerging', 'china', 'europe', 'us equity', 'us fund'] },
+  fof_overseas: { includes: ['fund of funds', 'fof overseas'], requires: ['overseas'] },
+  gold_silver: { includes: ['gold', 'silver'] },
+  solution_oriented: { includes: ['retirement', 'children'] },
+};
+
+const GROUPS = [
+  { label: 'Equity', items: [['large_cap','Large Cap'],['large_mid_cap','Large & Mid Cap'],['mid_cap','Mid Cap'],['small_cap','Small Cap'],['multi_cap','Multi Cap'],['flexi_cap','Flexi Cap'],['focused','Focused'],['value_contra','Value / Contra'],['dividend_yield','Dividend Yield'],['elss','ELSS'],['sectoral_thematic','Sectoral / Thematic']] },
+  { label: 'Debt', items: [['overnight','Overnight'],['liquid','Liquid'],['ultra_short','Ultra Short'],['low_duration','Low Duration'],['money_market','Money Market'],['short_duration','Short Duration'],['medium_duration','Medium Duration'],['medium_long_duration','Medium to Long'],['long_duration','Long Duration'],['dynamic_bond','Dynamic Bond'],['corporate_bond','Corporate Bond'],['credit_risk','Credit Risk'],['banking_psu','Banking & PSU'],['gilt','Gilt'],['gilt_10y','Gilt 10Y'],['floater','Floater']] },
+  { label: 'Hybrid', items: [['conservative_hybrid','Conservative'],['balanced_hybrid','Balanced'],['aggressive_hybrid','Aggressive'],['dynamic_asset','BAF / Dynamic'],['multi_asset','Multi Asset'],['arbitrage','Arbitrage'],['equity_savings','Equity Savings']] },
+  { label: 'Other', items: [['index_fund','Index Funds'],['etf','ETF'],['fof_domestic','FoF Domestic'],['fof_overseas','FoF Overseas'],['gold_silver','Gold / Silver'],['solution_oriented','Retirement / Children']] },
+];
+const CAT_LABEL = {};
+GROUPS.forEach(g => g.items.forEach(([v, l]) => CAT_LABEL[v] = l));
+
+const DEFAULT_FAVS = ['large_cap', 'flexi_cap', 'small_cap', 'mid_cap', 'large_mid_cap'];
+const FAV_KEY = 'abundance_screener_favorites_v1';
+
+// Benchmark proxies — resolved at runtime to the largest direct-plan index fund matching the pattern
+const BENCHMARKS = {
+  nifty50:     { label: 'Nifty 50',              test: n => n.includes('nifty 50 index') },
+  midcap150:   { label: 'Nifty Midcap 150',      test: n => n.includes('midcap 150 index') },
+  smallcap250: { label: 'Nifty Smallcap 250',    test: n => n.includes('smallcap 250 index') },
+  largemid250: { label: 'Nifty LargeMidcap 250', test: n => /large ?midcap 250 index/.test(n) },
+  nifty500:    { label: 'Nifty 500',             test: n => n.includes('nifty 500 index') },
+};
+
+// ---------- state ----------
+let masterData = null;
+let currentRows = [];
+let YEARS = [];            // e.g. [2026(YTD), 2025, ... 2016]
+let LATEST_YEAR = null;
+let view = 'returns';
+let sortKey = 'r1y';
+let sortDir = -1;
+const picked = new Map();  // scheme_code -> row
+let NAVS = {};             // scheme_code -> ascending [{t, nav}] for the last load
+let CATS = [];             // [{key, n}] categories in the current result, in display order
+let activeCat = '__all__'; // which category is shown in the table
+let RISK_PERIOD = '';
+const MONTHS = ['january','february','march','april','may','june','july','august','september','october','november','december'];
+const MON3 = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function parseAumQuarter(s) {   // "September-2026" -> {y, m}
+  const m = /([a-z]+)[^0-9]*(\d{4})/i.exec(s || ''); if (!m) return null;
+  const mi = MONTHS.findIndex(x => x.startsWith(m[1].toLowerCase().slice(0, 3)));
+  return mi < 0 ? null : { y: +m[2], m: mi };
+}
+function aumQuarterKey(s) { const q = parseAumQuarter(s); return q ? q.y * 12 + q.m : 0; }
+function aumPeriodLabel(s) {
+  const q = parseAumQuarter(s); if (!q) return s || '';
+  const startM = (q.m + 10) % 12;
+  return `${MON3[startM]}–${MON3[q.m]} ${q.y} avg`;
+}
+const CAT_ORDER = GROUPS.flatMap(g => g.items.map(([v]) => v));
+
+// ---------- elements ----------
+const $ = id => document.getElementById(id);
+const chipWrap = $('chipWrap'), customKeyword = $('customKeyword');
+const planType = $('planType'), rankBy = $('rankBy'), includeIndex = $('includeIndex');
+const riskWindow = $('riskWindow'), rfRate = $('rfRate');
+const statusEl = $('status'), resultsPanel = $('resultsPanel'), resultsBody = $('resultsBody'), thead = $('thead');
+const countLabel = $('countLabel'), asOfLabel = $('asOfLabel'), emptyState = $('emptyState');
+const fundSearch = $('fundSearch'), suggest = $('suggest'), pickedWrap = $('pickedWrap');
+const qLegend = $('qLegend'), showYearRet = $('showYearRet');
+const allButtons = () => document.querySelectorAll('#favBtn,#loadCatsBtn,#allBtn,#loadFundsBtn');
+
+function setStatus(html) { statusEl.innerHTML = html; }
+function setBusy(b) { allButtons().forEach(x => x.disabled = b); }
+
+// ---------- favorites ----------
+function getFavs() {
+  try { const v = JSON.parse(localStorage.getItem(FAV_KEY)); if (Array.isArray(v) && v.length) return v; } catch (e) {}
+  return DEFAULT_FAVS.slice();
+}
+function saveFavs(a) { try { localStorage.setItem(FAV_KEY, JSON.stringify(a)); return true; } catch (e) { return false; } }
+function refreshFavBtn() {
+  const f = getFavs();
+  $('favBtn').textContent = `★ Favorites (${f.length})`;
+  $('favBtn').title = f.map(v => CAT_LABEL[v] || v).join(', ');
+}
+
+// ---------- category chips ----------
+chipWrap.innerHTML = GROUPS.map(g => `
+  <div class="chips-group"><span class="gl">${g.label}</span>
+    ${g.items.map(([v, l]) => `<label class="chip"><input type="checkbox" value="${v}">${l}</label>`).join('')}
+  </div>`).join('');
+chipWrap.addEventListener('change', e => {
+  if (e.target.matches('input')) e.target.parentElement.classList.toggle('on', e.target.checked);
+  updateSelCount();
+});
+function setSelected(vals) {
+  chipWrap.querySelectorAll('input').forEach(i => { i.checked = vals.includes(i.value); i.parentElement.classList.toggle('on', i.checked); });
+  updateSelCount();
+}
+function getSelected() { return [...chipWrap.querySelectorAll('input:checked')].map(i => i.value); }
+function updateSelCount() { const n = getSelected().length; $('selCount').textContent = n ? `${n} selected` : ''; }
+
+$('favBtn').addEventListener('click', () => { const f = getFavs(); setSelected(f); loadByCategories(f); });
+$('loadCatsBtn').addEventListener('click', () => {
+  const vals = getSelected();
+  if (customKeyword.value.trim()) vals.push('custom');
+  if (!vals.length) { setStatus('Select at least one category (or type a custom keyword).'); return; }
+  loadByCategories(vals);
+});
+$('allBtn').addEventListener('click', () => loadByCategories(['all_categories']));
+$('clearCatsBtn').addEventListener('click', () => { setSelected([]); customKeyword.value = ''; });
+$('saveFavLink').addEventListener('click', () => {
+  const vals = getSelected();
+  if (!vals.length) { setStatus('Select the categories you want as Favorites first.'); return; }
+  setStatus(saveFavs(vals) ? `Favorites saved: ${vals.map(v => CAT_LABEL[v]).join(', ')}.` : 'Could not save Favorites in this browser.');
+  refreshFavBtn();
+});
+$('resetFavLink').addEventListener('click', () => {
+  try { localStorage.removeItem(FAV_KEY); } catch (e) {}
+  refreshFavBtn(); setStatus('Favorites reset to Large, Flexi, Small, Mid, Large & Mid Cap.');
+});
+refreshFavBtn();
+
+// ---------- fetch helpers with CORS-proxy fallback ----------
+async function fetchVia(url, as) {
+  const attempts = [url, 'https://corsproxy.io/?url=' + encodeURIComponent(url), 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url)];
+  let lastErr;
+  for (const a of attempts) {
+    try {
+      const r = await fetch(a);
+      if (!r.ok) { lastErr = new Error('HTTP ' + r.status); continue; }
+      return as === 'json' ? await r.json() : await r.text();
+    } catch (e) { lastErr = e; }
+  }
+  throw lastErr || new Error('All fetch attempts failed');
+}
+
+// ---------- CSV ----------
+function parseCSVLine(line) {
+  const out = []; let cur = '', inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (inQ) { if (c === '"') { if (line[i + 1] === '"') { cur += '"'; i++; } else inQ = false; } else cur += c; }
+    else { if (c === '"') inQ = true; else if (c === ',') { out.push(cur); cur = ''; } else cur += c; }
+  }
+  out.push(cur); return out;
+}
+function parseCSV(text) {
+  const lines = text.split(/\r?\n/).filter(l => l.length > 0);
+  const header = parseCSVLine(lines[0]);
+  return lines.slice(1).map(l => { const v = parseCSVLine(l); const o = {}; header.forEach((h, j) => o[h] = v[j]); return o; });
+}
+async function ensureMasterData() {
+  if (masterData) return masterData;
+  setStatus('<div class="spinner"></div> Loading the full fund universe (~9 MB, one-time per session)…');
+  masterData = parseCSV(await fetchVia(`${API_BASE}/download?format=latest`, 'text'));
+  return masterData;
+}
+
+// ---------- row helpers ----------
+const isActive = r => ['True', 'true', '1'].includes(r.is_active);
+const normName = s => (s || '').toLowerCase().replace(/[-_]/g, ' ').replace(/\s+/g, ' ').trim();
+const rawCat = r => (r.category_sub || (r.category || '').replace(/^(Equity|Debt|Hybrid|Other) Scheme - /i, '') || '').trim();
+// AMCs file the same SEBI category under different wordings (e.g. "Balanced Advantage Fund/ Dynamic Asset Allocation"
+// vs "Dynamic Asset Allocation or Balanced Advantage"). Map every wording to one canonical name so tabs, peer groups
+// and quartile ranks treat them as one category.
+const CANON_LABEL = {
+  large_cap: 'Large Cap Fund', large_mid_cap: 'Large & Mid Cap Fund', mid_cap: 'Mid Cap Fund', small_cap: 'Small Cap Fund',
+  multi_cap: 'Multi Cap Fund', flexi_cap: 'Flexi Cap Fund', focused: 'Focused Fund', value_contra: 'Value / Contra Fund',
+  dividend_yield: 'Dividend Yield Fund', elss: 'ELSS (Tax Saver)', sectoral_thematic: 'Sectoral / Thematic',
+  overnight: 'Overnight Fund', liquid: 'Liquid Fund', ultra_short: 'Ultra Short Duration Fund', low_duration: 'Low Duration Fund',
+  money_market: 'Money Market Fund', short_duration: 'Short Duration Fund', medium_duration: 'Medium Duration Fund',
+  medium_long_duration: 'Medium to Long Duration Fund', long_duration: 'Long Duration Fund', dynamic_bond: 'Dynamic Bond Fund',
+  corporate_bond: 'Corporate Bond Fund', credit_risk: 'Credit Risk Fund', banking_psu: 'Banking & PSU Fund', gilt: 'Gilt Fund',
+  gilt_10y: 'Gilt Fund with 10 Year Constant Duration', floater: 'Floater Fund',
+  conservative_hybrid: 'Conservative Hybrid Fund', balanced_hybrid: 'Balanced Hybrid Fund', aggressive_hybrid: 'Aggressive Hybrid Fund',
+  dynamic_asset: 'Balanced Advantage / Dynamic Asset Allocation', multi_asset: 'Multi Asset Allocation Fund', arbitrage: 'Arbitrage Fund',
+  equity_savings: 'Equity Savings Fund', index_fund: 'Index Funds', etf: 'ETFs', fof_domestic: 'Fund of Funds (Domestic)',
+  fof_overseas: 'Fund of Funds (Overseas)', gold_silver: 'Gold / Silver', solution_oriented: 'Retirement / Children\'s Fund',
+};
+const _canonCache = new Map();
+const normCat = r => {
+  const raw = rawCat(r), ck = raw + '|' + (r.category || '');
+  if (_canonCache.has(ck)) return _canonCache.get(ck);
+  let out = raw;
+  for (const k of CAT_ORDER) { if (matchesCategory({ category_sub: raw, category: r.category || '', scheme_name: '' }, k)) { out = CANON_LABEL[k] || raw; break; } }
+  _canonCache.set(ck, out);
+  return out;
+};
+const planGroup = r => r.scheme_plan === 'Direct' ? 'Direct' : 'Regular';
+const peerKey = r => normCat(r).toLowerCase() + '|' + planGroup(r);
+
+function matchesCategory(row, catVal) {
+  if (catVal === 'all_categories') return true;
+  if (catVal === 'custom') {
+    const kw = customKeyword.value.trim().toLowerCase();
+    if (!kw) return false;
+    return ((row.category_sub || '') + ' ' + (row.category || '') + ' ' + (row.scheme_name || '')).toLowerCase().includes(kw);
+  }
+  const def = CATEGORY_DEFS[catVal]; if (!def) return false;
+  const hay = ((row.category_sub || '') + ' ' + (row.category || '')).toLowerCase();
+  if (!def.includes.some(s => hay.includes(s))) return false;
+  if (def.excludes && def.excludes.some(s => hay.includes(s))) return false;
+  if (def.requires && !def.requires.every(s => hay.includes(s))) return false;
+  return true;
+}
+function matchesPlanType(row) {
+  if (row.scheme_option !== 'Growth') return false;
+  const v = planType.value;
+  if (v === 'all') return true;
+  if (v === 'direct_growth') return row.scheme_plan === 'Direct';
+  return row.scheme_plan === 'Regular' || row.scheme_plan === 'Other';
+}
+function benchmarkKeyFor(cat) {
+  const c = cat.toLowerCase();
+  if (c.includes('index') || c.includes('etf') || c.includes('fund of fund')) return null;
+  if (c.includes('large & mid') || c.includes('large and mid')) return 'largemid250';
+  if (c.includes('large cap')) return 'nifty50';
+  if (c.includes('mid cap')) return 'midcap150';
+  if (c.includes('small cap')) return 'smallcap250';
+  if (/flexi cap|multi cap|focused|value|contra|dividend yield|elss|tax sav|sectoral|thematic|aggressive hybrid/.test(c)) return 'nifty500';
+  return null;
+}
+function catOrderOf(catKey) {
+  const fake = { category_sub: catKey.split(' · ')[0], category: '' };
+  const i = CAT_ORDER.findIndex(k => matchesCategory(fake, k));
+  return i < 0 ? 999 : i;
+}
+function resolveBenchmark(data, key) {
+  const b = BENCHMARKS[key];
+  const cands = data.filter(r => isActive(r) && r.scheme_option === 'Growth' && r.scheme_plan === 'Direct'
+    && normCat(r).toLowerCase().includes('index') && !normName(r.scheme_name).includes('etf') && b.test(normName(r.scheme_name)));
+  if (!cands.length) return null;
+  cands.sort((x, y) => (parseFloat(y.aaum_cr_quarterly_avg) || 0) - (parseFloat(x.aaum_cr_quarterly_avg) || 0));
+  return cands[0];
+}
+
+// ---------- fund picker ----------
+let suggestTimer = null;
+fundSearch.addEventListener('focus', () => { ensureMasterData().then(() => setStatus('')).catch(() => {}); });
+fundSearch.addEventListener('input', () => { clearTimeout(suggestTimer); suggestTimer = setTimeout(runSuggest, 180); });
+document.addEventListener('click', e => { if (!e.target.closest('.picker')) suggest.style.display = 'none'; });
+async function runSuggest() {
+  const q = normName(fundSearch.value);
+  if (q.length < 3) { suggest.style.display = 'none'; return; }
+  const data = await ensureMasterData(); setStatus('');
+  const toks = q.split(' ');
+  const hits = data.filter(r => isActive(r) && matchesPlanType(r) && !picked.has(r.scheme_code) && toks.every(t => normName(r.scheme_name).includes(t))).slice(0, 20);
+  suggest.innerHTML = hits.length
+    ? hits.map(r => `<div data-code="${r.scheme_code}">${r.scheme_name}<span>${normCat(r)} · ${planGroup(r)}</span></div>`).join('')
+    : '<div style="cursor:default;color:#888;">No match for this plan type. Try fewer words, or switch Plan to "All plans".</div>';
+  suggest.style.display = 'block';
+}
+suggest.addEventListener('click', e => {
+  const d = e.target.closest('[data-code]'); if (!d) return;
+  const row = masterData.find(r => r.scheme_code === d.dataset.code);
+  if (row) picked.set(row.scheme_code, row);
+  fundSearch.value = ''; suggest.style.display = 'none'; renderPicked(); fundSearch.focus();
+});
+function renderPicked() {
+  pickedWrap.innerHTML = [...picked.values()].map(r => `<span class="pchip">${r.scheme_name}<button data-code="${r.scheme_code}" title="Remove">✕</button></span>`).join('');
+}
+pickedWrap.addEventListener('click', e => { const b = e.target.closest('button[data-code]'); if (b) { picked.delete(b.dataset.code); renderPicked(); } });
+$('clearFundsBtn').addEventListener('click', () => { picked.clear(); renderPicked(); });
+$('loadFundsBtn').addEventListener('click', () => {
+  if (!picked.size) { setStatus('Search and add at least one fund first.'); return; }
+  runLoad([...picked.values()], { isAll: false, label: 'picked funds' });
+});
+
+// ---------- date / NAV math ----------
+function parseISO(d) { const [y, m, dd] = d.split('-').map(Number); return Date.UTC(y, m - 1, dd); }
+function addMonths(t, m) {
+  const d = new Date(t); const day = d.getUTCDate();
+  d.setUTCDate(1); d.setUTCMonth(d.getUTCMonth() + m);
+  const dim = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)).getUTCDate();
+  d.setUTCDate(Math.min(day, dim)); return d.getTime();
+}
+function idxOnOrBefore(arr, t) {   // arr ascending by t
+  let lo = 0, hi = arr.length - 1, ans = -1;
+  while (lo <= hi) { const mid = (lo + hi) >> 1; if (arr[mid].t <= t) { ans = mid; lo = mid + 1; } else hi = mid - 1; }
+  return ans;
+}
+function navOnOrBefore(arr, t, tol) { const i = idxOnOrBefore(arr, t); return (i >= 0 && t - arr[i].t <= tol * DAY) ? arr[i] : null; }
+function navNear(arr, t, tol) {
+  const p = navOnOrBefore(arr, t, tol); if (p) return p;
+  const j = idxOnOrBefore(arr, t) + 1;
+  return (j < arr.length && arr[j].t - t <= tol * DAY) ? arr[j] : null;
+}
+
+function computeTrailing(arr) {
+  const last = arr[arr.length - 1];
+  const out = { asOfDate: new Date(last.t) };
+  const specs = [['r1w', 7, 0, 5, 0], ['r1m', 0, 1, 6, 0], ['r3m', 0, 3, 8, 0], ['r6m', 0, 6, 10, 0],
+                 ['r1y', 0, 12, 10, 1], ['r3y', 0, 36, 12, 3], ['r5y', 0, 60, 15, 5], ['r10y', 0, 120, 20, 10]];
+  for (const [k, days, months, tol, yrs] of specs) {
+    const t = days ? last.t - days * DAY : addMonths(last.t, -months);
+    const h = navNear(arr, t, tol);
+    if (!h || h.nav <= 0) { out[k] = null; continue; }
+    out[k] = yrs ? (Math.pow(last.nav / h.nav, 1 / yrs) - 1) * 100 : (last.nav / h.nav - 1) * 100;
+  }
+  return out;
+}
+function calendarYears(arr) {
+  const out = {}; const last = arr[arr.length - 1];
+  for (const y of YEARS) {
+    const start = navOnOrBefore(arr, Date.UTC(y - 1, 11, 31), 10);
+    const end = y === LATEST_YEAR ? last : navOnOrBefore(arr, Date.UTC(y, 11, 31), 10);
+    out[y] = (start && end && end.t > start.t && start.nav > 0) ? (end.nav / start.nav - 1) * 100 : null;
+  }
+  return out;
+}
+// Month-end NAVs ending at the last completed month (Value Research-style "trailing 3 years, monthly")
+const lastMonthEnd = anchor => { const d = new Date(anchor); return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 0); };
+function monthEnd(anchor, back) { const d = new Date(lastMonthEnd(anchor)); return Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1 - back, 0); }
+function monthlyReturns(arr, anchor, months) {
+  const pts = [];
+  for (let i = months; i >= 0; i--) { const p = navOnOrBefore(arr, monthEnd(anchor, i), 7); if (!p) return null; pts.push(p.nav); }
+  const r = []; for (let i = 1; i < pts.length; i++) r.push(pts[i] / pts[i - 1] - 1);
+  return r;
+}
+function maxDrawdown(arr, startT) {
+  let peak = -Infinity, mdd = 0;
+  for (let i = Math.max(0, idxOnOrBefore(arr, startT)); i < arr.length; i++) {
+    const v = arr[i].nav; if (v > peak) peak = v;
+    const dd = v / peak - 1; if (dd < mdd) mdd = dd;
+  }
+  return mdd * 100;
+}
+function navStats(arr) {
+  const last = arr[arr.length - 1];
+  const from = idxOnOrBefore(arr, addMonths(last.t, -12)) + 1;
+  let hi = -Infinity, lo = Infinity, hiT = 0, loT = 0;
+  for (let i = from; i < arr.length; i++) {
+    if (arr[i].nav > hi) { hi = arr[i].nav; hiT = arr[i].t; }
+    if (arr[i].nav < lo) { lo = arr[i].nav; loT = arr[i].t; }
+  }
+  let ath = -Infinity, athT = 0;
+  for (const p of arr) if (p.nav > ath) { ath = p.nav; athT = p.t; }
+  return {
+    nav: last.nav, navT: last.t,
+    hi52: hi, hi52T: hiT, lo52: lo, lo52T: loT,
+    offHi: (last.nav / hi - 1) * 100,
+    ath, athT, offAth: (last.nav / ath - 1) * 100,
+    since: arr[0].t, age: (last.t - arr[0].t) / (365.25 * DAY),
+  };
+}
+const mean = a => a.reduce((s, x) => s + x, 0) / a.length;
+function riskMetrics(fr, br, rfAnnual) {
+  const n = fr.length, m = mean(fr);
+  const sd = Math.sqrt(fr.reduce((s, x) => s + (x - m) ** 2, 0) / (n - 1));
+  const rfm = Math.pow(1 + rfAnnual, 1 / 12) - 1;
+  const down = Math.sqrt(fr.reduce((s, x) => s + Math.min(0, x) ** 2, 0) / n);   // downside = negative months only
+  const out = {
+    sd: sd * Math.sqrt(12) * 100,
+    sharpe: sd > 0 ? (m - rfm) / sd * Math.sqrt(12) : null,
+    sortino: down > 0 ? ((m - rfm) * 12) / (down * Math.sqrt(12)) : null,
+    beta: null, alpha: null,
+  };
+  if (br && br.length === n) {
+    const mb = mean(br);
+    let cov = 0, vb = 0;
+    for (let i = 0; i < n; i++) { cov += (fr[i] - m) * (br[i] - mb); vb += (br[i] - mb) ** 2; }
+    if (vb > 0) {
+      out.beta = cov / vb;
+      out.alpha = ((m - rfm) - out.beta * (mb - rfm)) * 12 * 100;
+    }
+  }
+  return out;
+}
+
+async function fetchWithConcurrency(items, worker, concurrency, onProgress) {
+  let idx = 0, done = 0;
+  async function runOne() {
+    while (idx < items.length) {
+      const my = idx++;
+      try { await worker(items[my]); } catch (e) {}
+      done++; if (onProgress) onProgress(done, items.length);
+    }
+  }
+  await Promise.all(Array.from({ length: concurrency }, runOne));
+}
+function chunk(arr, size) { const o = []; for (let i = 0; i < arr.length; i += size) o.push(arr.slice(i, i + size)); return o; }
+
+// ---------- load flows ----------
+async function loadByCategories(catVals) {
+  setBusy(true);
+  try {
+    const data = await ensureMasterData();
+    const display = data.filter(r => isActive(r) && matchesPlanType(r) &&
+      (catVals.some(c => matchesCategory(r, c)) || (includeIndex.checked && matchesCategory(r, 'index_fund'))));
+    if (!display.length) { setStatus('No funds matched. Try "All plans", a different category, or another keyword.'); return; }
+    await runLoad(display, { isAll: catVals.includes('all_categories') });
+  } catch (err) {
+    setStatus('Something went wrong: ' + err.message + '. This may be a network/CORS restriction — try again.');
+  } finally { setBusy(false); }
+}
+
+async function runLoad(displayIn, { isAll }) {
+  setBusy(true);
+  emptyState.style.display = 'none';
+  try {
+    const data = await ensureMasterData();
+    let display = [...displayIn].sort((a, b) => a.scheme_name.localeCompare(b.scheme_name));
+    const DCAP = isAll ? 900 : 600;
+    const matchedCount = display.length;
+    if (display.length > DCAP) display = display.slice(0, DCAP);
+
+    // Peers = every active Growth scheme in the same SEBI sub-category + plan group (for fair quartiles)
+    let peers = [];
+    if (!isAll) {
+      const keys = new Set(display.map(peerKey));
+      peers = data.filter(r => isActive(r) && r.scheme_option === 'Growth' && keys.has(peerKey(r)));
+    }
+
+    // Benchmarks needed
+    const benchRows = {};
+    for (const k of new Set(display.map(r => benchmarkKeyFor(normCat(r))).filter(Boolean))) {
+      const b = resolveBenchmark(data, k); if (b) benchRows[k] = b;
+    }
+
+    const fetchMap = new Map();
+    display.forEach(r => fetchMap.set(r.scheme_code, r));
+    Object.values(benchRows).forEach(r => fetchMap.set(r.scheme_code, r));
+    let peersTrimmed = false;
+    for (const r of peers) {
+      if (fetchMap.size >= 1400) { peersTrimmed = true; break; }
+      fetchMap.set(r.scheme_code, r);
+    }
+
+    const codes = [...fetchMap.keys()];
+    const batches = chunk(codes, 50);
+    const navStore = {};
+    setStatus(`<div class="spinner"></div> Fetching full NAV history for ${codes.length} schemes (${display.length} shown + category peers + benchmarks)… 0 / ${batches.length} batches`);
+    await fetchWithConcurrency(batches, async (cs) => {
+      const resp = await fetchVia(`${API_BASE}/nav?schemes=${cs.join(',')}`, 'json');
+      const list = resp.schemes ? resp.schemes : [resp];
+      for (const s of list) {
+        if (!s || !s.scheme_code || !s.data) continue;
+        navStore[String(s.scheme_code)] = s.data
+          .map(p => ({ t: parseISO(p.date), nav: parseFloat(p.nav) }))
+          .filter(p => !isNaN(p.nav) && p.nav > 0)
+          .sort((a, b) => a.t - b.t);
+      }
+    }, 4, (d, total) => setStatus(`<div class="spinner"></div> Fetching full NAV history… ${d} / ${total} batches`));
+
+    // Anchor = most recent NAV date in the set
+    let anchor = 0;
+    for (const arr of Object.values(navStore)) if (arr.length) anchor = Math.max(anchor, arr[arr.length - 1].t);
+    if (!anchor) { setStatus('Matched funds, but NAV history could not be retrieved. The data source may be unavailable right now.'); return; }
+    LATEST_YEAR = new Date(anchor).getUTCFullYear();
+    YEARS = Array.from({ length: 11 }, (_, i) => LATEST_YEAR - i);   // YTD + 10 full years
+
+    setStatus('<div class="spinner"></div> Calculating returns, quartiles and risk ratios…');
+    await new Promise(r => setTimeout(r, 20));
+
+    // Per-scheme calcs
+    const calc = {};
+    for (const [code, row] of fetchMap) {
+      const arr = navStore[code]; if (!arr || !arr.length) continue;
+      calc[code] = { row, trail: computeTrailing(arr), cy: calendarYears(arr), yq: {} };
+    }
+
+    // Quartiles within peer groups
+    const groups = {};
+    const rankPool = isAll ? display : [...display, ...peers];
+    const seen = new Set();
+    for (const r of rankPool) {
+      if (seen.has(r.scheme_code) || !calc[r.scheme_code]) continue;
+      seen.add(r.scheme_code);
+      (groups[peerKey(r)] = groups[peerKey(r)] || []).push(r.scheme_code);
+    }
+    const groupSize = {};
+    for (const [gk, cs] of Object.entries(groups)) {
+      groupSize[gk] = cs.length;
+      for (const y of YEARS) {
+        const list = cs.filter(c => calc[c].cy[y] != null).sort((a, b) => calc[b].cy[y] - calc[a].cy[y]);
+        const n = list.length;
+        list.forEach((c, i) => {
+          const rank = i + 1;
+          calc[c].yq[y] = { ret: calc[c].cy[y], rank, n, q: n >= 4 ? Math.ceil(4 * rank / n) : null, pct: n > 1 ? (rank - 1) / (n - 1) : 0 };
+        });
+      }
+    }
+
+    // Risk
+    const months = parseInt(riskWindow.value, 10);
+    const rf = (parseFloat(rfRate.value) || 0) / 100;
+    const benchSeries = {};
+    for (const [k, r] of Object.entries(benchRows)) {
+      const arr = navStore[r.scheme_code];
+      benchSeries[k] = arr ? monthlyReturns(arr, anchor, months) : null;
+    }
+
+    currentRows = [];
+    for (const row of display) {
+      const c = calc[row.scheme_code]; if (!c) continue;
+      const arr = navStore[row.scheme_code];
+      const bk = benchmarkKeyFor(normCat(row));
+      const fr = monthlyReturns(arr, anchor, months);
+      const risk = fr ? riskMetrics(fr, bk ? benchSeries[bk] : null, rf) : { sd: null, sharpe: null, sortino: null, beta: null, alpha: null };
+      const maxdd = fr ? maxDrawdown(arr, monthEnd(anchor, months)) : null;
+
+      const full = YEARS.filter(y => y !== LATEST_YEAR).map(y => c.yq[y]).filter(v => v && v.q);
+      const top = full.filter(v => v.q <= 2).length;
+      const aumValue = parseFloat(row.aaum_cr_quarterly_avg);
+
+      currentRows.push({
+        code: row.scheme_code,
+        name: row.scheme_name,
+        category: normCat(row),
+        plan: planGroup(row),
+        aumValue: isNaN(aumValue) ? null : aumValue,
+        aumQuarter: row.aaum_quarter || '',
+        ...c.trail,
+        years: c.yq,
+        peerN: groupSize[peerKey(row)] || 0,
+        cons: full.length >= 3 ? top / full.length : null,
+        consText: full.length >= 3 ? `${top}/${full.length}` : null,
+        avgQ: full.length >= 3 ? mean(full.map(v => v.q)) : null,
+        ...risk,
+        maxdd,
+        ...navStats(arr),
+        benchLabel: bk && benchRows[bk] && benchSeries[bk] ? BENCHMARKS[bk].label : null,
+        benchFund: bk && benchRows[bk] ? benchRows[bk].scheme_name : null,
+        benchCode: bk && benchRows[bk] ? benchRows[bk].scheme_code : null,
+      });
+    }
+
+    if (!currentRows.length) { setStatus('Matched funds, but NAV history could not be retrieved.'); return; }
+    NAVS = navStore;
+    RISK_PERIOD = `${fmtDate(monthEnd(anchor, months))} – ${fmtDate(lastMonthEnd(anchor))}`;
+    const qKeys = currentRows.map(r => aumQuarterKey(r.aumQuarter)).filter(Boolean);
+    const latestQ = qKeys.length ? Math.max(...qKeys) : 0;
+    currentRows.forEach(r => {
+      const k = aumQuarterKey(r.aumQuarter);
+      r.aumPeriod = aumPeriodLabel(r.aumQuarter);
+      r.aumStale = !!(k && latestQ && k < latestQ);
+    });
+
+    // Category grouping for the table (split by plan too if both plans are loaded)
+    const multiPlan = new Set(currentRows.map(r => r.plan)).size > 1;
+    currentRows.forEach(r => r.catKey = multiPlan ? `${r.category} · ${r.plan}` : r.category);
+    const counts = {};
+    currentRows.forEach(r => counts[r.catKey] = (counts[r.catKey] || 0) + 1);
+    CATS = Object.keys(counts).map(k => ({ key: k, n: counts[k], order: catOrderOf(k) }))
+      .sort((a, b) => a.order - b.order || a.key.localeCompare(b.key));
+    activeCat = CATS.length > 1 ? CATS[0].key : '__all__';
+
+    let msg = `Loaded ${currentRows.length} funds.`;
+    if (matchedCount > DCAP) msg += ` (${matchedCount} matched — showing first ${DCAP} alphabetically${isAll ? '; quartiles are ranked only among these' : ''}.)`;
+    if (display.length - currentRows.length > 0) msg += ` ${display.length - currentRows.length} fund(s) failed to load.`;
+    if (peersTrimmed) msg += ' Peer group was trimmed for speed, so quartiles may be approximate.';
+    const missingBench = [...new Set(display.map(r => benchmarkKeyFor(normCat(r))).filter(k => k && !benchRows[k]))];
+    if (missingBench.length) msg += ` No benchmark proxy found for ${missingBench.map(k => BENCHMARKS[k].label).join(', ')} — Beta/Alpha left blank there.`;
+    setStatus(msg);
+
+    countLabel.textContent = `${currentRows.length} funds`;
+    asOfLabel.textContent = `Most recent NAV: ${fmtDate(anchor)}`;
+
+    applyRankBy();
+    resultsPanel.style.display = 'block';
+    resultsPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch (err) {
+    setStatus('Something went wrong: ' + err.message + '. This may be a network/CORS restriction — try again.');
+  } finally { setBusy(false); }
+}
+
+// ---------- formatting ----------
+function fmtDate(t) { const d = new Date(t); return `${String(d.getUTCDate()).padStart(2, '0')}/${String(d.getUTCMonth() + 1).padStart(2, '0')}/${d.getUTCFullYear()}`; }
+function fmtIndianNumber(n) {
+  const x = Math.round(n), s = Math.abs(x).toString();
+  let last3 = s.length > 3 ? s.slice(-3) : s, rest = s.length > 3 ? s.slice(0, -3) : '';
+  if (rest !== '') last3 = ',' + last3;
+  rest = rest.replace(/\B(?=(\d{2})+(?!\d))/g, ',');
+  return (x < 0 ? '-' : '') + rest + last3;
+}
+const NA = '<span class="na">—</span>';
+const isNum = v => v !== null && v !== undefined && !isNaN(v);
+function fmtPct(v) { if (!isNum(v)) return NA; return `<span class="${v >= 0 ? 'up' : 'down'}">${v >= 0 ? '+' : ''}${v.toFixed(2)}%</span>`; }
+function fmtRatio(v) { if (!isNum(v)) return NA; return `<span class="${v >= 0 ? '' : 'down'}">${v.toFixed(2)}</span>`; }
+function qBlocks(q) { return [1, 2, 3, 4].map(i => `<i class="${q === i ? 'q' + i : ''}"></i>`).join(''); }
+function fmtQ(y, yr) {
+  if (!y || !isNum(y.ret)) return NA;
+  const p = `${y.ret >= 0 ? '+' : ''}${y.ret.toFixed(1)}%`;
+  const lbl = yr === LATEST_YEAR ? `${yr} YTD` : yr;
+  const ret = showYearRet.checked ? `<span class="qp ${y.ret >= 0 ? 'up' : 'down'}">${p}</span>` : '';
+  if (!y.q) {
+    return `<span class="qcell" title="${lbl}: ${p} · only ${y.n} fund(s) with data, not ranked"><span class="qbar v nr">${qBlocks(0)}</span><span class="qr">${y.rank}/${y.n}</span>${ret}</span>`;
+  }
+  return `<span class="qcell" title="${lbl}: ${p} · Q${y.q} · rank ${y.rank} of ${y.n}"><span class="qbar v">${qBlocks(y.q)}</span><span class="qr">${y.rank}/${y.n}</span>${ret}</span>`;
+}
+function fmtNav(v) { return isNum(v) ? '₹' + v.toLocaleString('en-IN', { minimumFractionDigits: 4, maximumFractionDigits: 4 }) : NA; }
+function fmtRupee(v) { return isNum(v) ? '₹' + fmtIndianNumber(v) : NA; }
+
+// ---------- columns / views ----------
+function columnsFor(v) {
+  const base = [
+    { key: 'name', label: 'Fund', l: true },
+    { key: 'category', label: 'Category', l: true },
+    { key: 'aum', label: 'AUM ₹ Cr', title: 'AMFI quarterly average AUM for this plan (Regular or Direct, not the combined fund)' },
+  ];
+  if (v === 'returns') return base.concat(
+    [{ key: 'nav', label: 'NAV', fmt: 'nav', title: 'Latest NAV (date shown under the fund name)' }],
+    [['r1w', '1W'], ['r1m', '1M'], ['r3m', '3M'], ['r6m', '6M'], ['r1y', '1Y'], ['r3y', '3Y'], ['r5y', '5Y'], ['r10y', '10Y']]
+      .map(([k, l]) => ({ key: k, label: l, fmt: 'pct', title: ['r1w', 'r1m', 'r3m', 'r6m'].includes(k) ? 'Absolute return' : 'CAGR' })));
+  if (v === 'nav') return base.concat([
+    { key: 'nav', label: 'Latest NAV', fmt: 'nav', title: 'Latest NAV (date shown under the fund name)' },
+    { key: 'hi52', label: '52W High', fmt: 'navd', dateKey: 'hi52T' },
+    { key: 'lo52', label: '52W Low', fmt: 'navd', dateKey: 'lo52T' },
+    { key: 'offHi', label: 'From 52W High', fmt: 'pct', title: 'How far the NAV is below its 52-week high' },
+    { key: 'ath', label: 'All-time High', fmt: 'navd', dateKey: 'athT', title: 'Highest NAV in the available history' },
+    { key: 'offAth', label: 'From ATH', fmt: 'pct', title: 'How far the NAV is below its all-time high' },
+    { key: 'since', label: 'Data since', fmt: 'since', title: 'First NAV in the data. Direct plans start Jan 2013 at the earliest; older regular-plan history may also be cut off.' },
+  ]);
+  if (v === 'risk') {
+    const w = riskWindow.value === '60' ? '5Y' : '3Y';
+    return base.concat([
+      { key: 'sd', label: `Std Dev ${w}`, fmt: 'sd', title: 'Annualised volatility of monthly returns. Lower = smoother ride.' },
+      { key: 'sharpe', label: 'Sharpe', fmt: 'ratio', title: 'Excess return per unit of total risk. Higher is better.' },
+      { key: 'sortino', label: 'Sortino', fmt: 'ratio', title: 'Excess return per unit of downside risk only. Higher is better.' },
+      { key: 'beta', label: 'Beta', fmt: 'ratio', title: 'Sensitivity to the benchmark. 1 = moves with it; below 1 = less volatile.' },
+      { key: 'alpha', label: 'Alpha', fmt: 'pct', title: "Jensen's alpha (annualised): return beyond what its beta would predict." },
+      { key: 'maxdd', label: `Max DD ${w}`, fmt: 'pct', title: 'Worst peak-to-trough fall in NAV over the window.' },
+    ]);
+  }
+  return base.concat(YEARS.map(y => ({ key: 'y_' + y, label: y === LATEST_YEAR ? `${y} YTD` : String(y), fmt: 'q', c: true, year: y })),
+    [{ key: 'cons', label: 'Top half', fmt: 'cons', c: true, title: 'Full calendar years in Q1 or Q2 / years ranked' },
+     { key: 'avgQ', label: 'Avg Q', fmt: 'avgq', c: true, title: 'Average quartile across full years (1.0 = always top quartile)' }]);
+}
+const LOWER_BETTER = k => k === 'sd' || k === 'avgQ' || k.startsWith('y_');
+const defaultDir = k => (k === 'name' || k === 'category' || LOWER_BETTER(k)) ? 1 : -1;
+const isTextKey = k => k === 'name' || k === 'category';
+function viewFor(k) {
+  if (['sd', 'sharpe', 'sortino', 'beta', 'alpha', 'maxdd'].includes(k)) return 'risk';
+  if (['hi52', 'lo52', 'offHi', 'ath', 'offAth', 'since'].includes(k)) return 'nav';
+  if (k === 'cons' || k === 'avgQ' || k.startsWith('y_')) return 'quartiles';
+  return 'returns';
+}
+function sortVal(r, k) {
+  if (isTextKey(k)) return (r[k] || '').toLowerCase();
+  if (k === 'aum') return r.aumValue;
+  if (k.startsWith('y_')) { const y = r.years[k.slice(2)]; return y && isNum(y.ret) ? (y.q ? y.pct : null) : null; }
+  return r[k];
+}
+const isNullVal = v => v === null || v === undefined || (typeof v === 'number' && isNaN(v));
+
+function renderHeader() {
+  const cols = columnsFor(view);
+  thead.innerHTML = '<tr>' + cols.map(c =>
+    `<th data-key="${c.key}" class="${c.l ? 'l' : ''}${c.c ? 'c' : ''}" title="${c.title || ''}">${c.label}<span class="arrow">${c.key === sortKey ? (sortDir === 1 ? '▲' : '▼') : ''}</span></th>`
+  ).join('') + '</tr>';
+  thead.querySelectorAll('th').forEach(th => th.addEventListener('click', () => {
+    const k = th.dataset.key;
+    if (sortKey === k) sortDir *= -1; else { sortKey = k; sortDir = defaultDir(k); }
+    renderHeader(); renderTable();
+  }));
+}
+function cell(r, c) {
+  switch (c.key) {
+    case 'name': {
+      const rk = r._rank ? `<span class="rk ${r._rank <= 3 ? 'top' : ''}" title="Rank in this category by the column you sorted on">${r._rank}</span>` : '';
+      return `<td><div class="namecell">${rk}<div class="nm"><a class="fundlink" data-code="${r.code}" title="Open NAV chart & details">${r.name}</a><span class="fund-meta">NAV as of ${fmtDate(r.navT)}</span></div></div></td>`;
+    }
+    case 'category': {
+      let meta = r.plan;
+      if (view === 'quartiles') meta += ` · ${r.peerN} peers`;
+      if (view === 'risk') meta += r.benchLabel ? ` · vs ${r.benchLabel}` : ' · no benchmark';
+      return `<td class="l cat">${r.category || NA}<span class="fund-meta" ${view === 'risk' && r.benchFund ? `title="Proxy: ${r.benchFund}"` : ''}>${meta}</span></td>`;
+    }
+    case 'aum': return `<td>${isNum(r.aumValue) && r.aumValue ? '₹' + fmtIndianNumber(r.aumValue) + `<span class="fund-meta ${r.aumStale ? 'stale' : ''}" title="${r.aumStale ? 'Older than the latest quarter in the data — AMFI figure not updated for this plan' : 'Average AUM over this quarter'}">${r.aumPeriod}${r.aumStale ? ' (old)' : ''}</span>` : NA}</td>`;
+  }
+  const v = r[c.key];
+  switch (c.fmt) {
+    case 'pct': return `<td>${fmtPct(v)}</td>`;
+    case 'ratio': return `<td>${fmtRatio(v)}</td>`;
+    case 'sd': return `<td>${isNum(v) ? v.toFixed(2) + '%' : NA}</td>`;
+    case 'nav': return `<td>${fmtNav(v)}</td>`;
+    case 'navd': return `<td>${fmtNav(v)}<span class="fund-meta">${r[c.dateKey] ? fmtDate(r[c.dateKey]) : ''}</span></td>`;
+    case 'since': return `<td>${fmtDate(v)}<span class="fund-meta">${r.age.toFixed(1)} yrs of data</span></td>`;
+    case 'q': return `<td class="c">${fmtQ(r.years[c.year], c.year)}</td>`;
+    case 'cons': return `<td class="c">${r.consText ? `<span class="${r.cons >= 0.7 ? 'up' : r.cons <= 0.3 ? 'down' : ''}">${r.consText}</span>` : NA}</td>`;
+    case 'avgq': return `<td class="c">${isNum(r.avgQ) ? r.avgQ.toFixed(1) : NA}</td>`;
+  }
+  return `<td>${v ?? NA}</td>`;
+}
+function sortRows(rows) {
+  return [...rows].sort((a, b) => {
+    const av = sortVal(a, sortKey), bv = sortVal(b, sortKey);
+    const an = isNullVal(av), bn = isNullVal(bv);
+    if (an && bn) return 0; if (an) return 1; if (bn) return -1;
+    if (typeof av === 'string') return sortDir * av.localeCompare(bv);
+    return sortDir * (av - bv);
+  });
+}
+function visibleGroups() {
+  const keys = activeCat === '__all__' ? CATS.map(c => c.key) : [activeCat];
+  return keys.map(k => {
+    const rows = sortRows(currentRows.filter(r => r.catKey === k));
+    let n = 0;
+    rows.forEach(r => { r._rank = (!isTextKey(sortKey) && !isNullVal(sortVal(r, sortKey))) ? ++n : null; });
+    return { key: k, rows };
+  });
+}
+function renderCatBar() {
+  const bar = $('catBar');
+  if (CATS.length <= 1) { bar.style.display = 'none'; return; }
+  bar.style.display = 'flex';
+  bar.innerHTML = CATS.map((c, i) => `<button class="cbtn ${c.key === activeCat ? 'on' : ''}" data-i="${i}">${c.key}<span>${c.n}</span></button>`).join('')
+    + `<button class="cbtn all ${activeCat === '__all__' ? 'on' : ''}" data-i="all">All, grouped by category</button>`;
+}
+$('catBar').addEventListener('click', e => {
+  const b = e.target.closest('.cbtn'); if (!b) return;
+  activeCat = b.dataset.i === 'all' ? '__all__' : CATS[+b.dataset.i].key;
+  renderCatBar(); renderTable();
+});
+function renderTable() {
+  const cols = columnsFor(view);
+  const groups = visibleGroups();
+  const showHeads = groups.length > 1;
+  let html = '', shown = 0;
+  for (const g of groups) {
+    if (showHeads) html += `<tr class="grp"><td colspan="${cols.length}">${g.key} · ${g.rows.length} funds</td></tr>`;
+    html += g.rows.map(r => '<tr>' + cols.map(c => cell(r, c)).join('') + '</tr>').join('');
+    shown += g.rows.length;
+  }
+  resultsBody.innerHTML = html;
+  countLabel.textContent = activeCat === '__all__' ? `${shown} funds` : `${shown} of ${currentRows.length} funds`;
+  const sc = columnsFor(viewFor(sortKey)).find(c => c.key === sortKey);
+  const scLabel = sc ? sc.label : sortKey;
+  $('rankCap').innerHTML = isTextKey(sortKey) ? 'Sorted by name — no ranking'
+    : `<b>#</b> = rank in category by <b>${scLabel}</b> ${sortDir === 1 ? '(lowest first)' : '(highest first)'}`
+      + (view === 'risk' ? ` · risk period ${RISK_PERIOD}` : '');
+  qLegend.style.display = view === 'quartiles' ? 'flex' : 'none';
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.view === view));
+}
+function applyRankBy() {
+  sortKey = rankBy.value; sortDir = defaultDir(sortKey);
+  view = viewFor(sortKey);
+  renderCatBar(); renderHeader(); renderTable();
+}
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => { view = t.dataset.view; renderHeader(); renderTable(); }));
+rankBy.addEventListener('change', () => { if (currentRows.length) applyRankBy(); });
+showYearRet.addEventListener('change', renderTable);
+resultsBody.addEventListener('click', e => { const a = e.target.closest('.fundlink'); if (a) openFund(a.dataset.code); });
+
+// ---------- fund detail drawer ----------
+const overlay = $('overlay'), drawerBody = $('drawerBody');
+let drawerState = { code: null, months: 60, mode: 'growth' };
+$('closeDrawer').addEventListener('click', () => overlay.hidden = true);
+overlay.addEventListener('click', e => { if (e.target === overlay) overlay.hidden = true; });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') overlay.hidden = true; });
+
+function stat(k, v, m) { return `<div class="stat"><div class="k">${k}</div><div class="v">${v}</div>${m ? `<div class="m">${m}</div>` : ''}</div>`; }
+function openFund(code) {
+  const r = currentRows.find(x => x.code === code); if (!r) return;
+  drawerState = { code, months: 60, mode: 'growth' };
+  const cyRows = YEARS.map(y => {
+    const v = r.years[y];
+    const lbl = y === LATEST_YEAR ? `${y} YTD` : y;
+    if (!v || !isNum(v.ret)) return `<tr><td class="l">${lbl}</td><td>${NA}</td><td class="c">${NA}</td><td class="c">${NA}</td></tr>`;
+    return `<tr><td class="l">${lbl}</td><td>${fmtPct(v.ret)}</td><td class="c"><span class="qbar ${v.q ? '' : 'nr'}">${qBlocks(v.q || 0)}</span> ${v.q ? 'Q' + v.q : ''}</td><td class="c">${v.rank} of ${v.n}</td></tr>`;
+  }).join('');
+  drawerBody.innerHTML = `
+    <h2>${r.name}</h2>
+    <div class="sub">${r.category} · ${r.plan} plan · ${r.peerN} peers${r.benchLabel ? ` · benchmark proxy: ${r.benchLabel}` : ''}</div>
+    <div class="stats">
+      ${stat('Latest NAV', fmtNav(r.nav), fmtDate(r.navT))}
+      ${stat('52W High', fmtNav(r.hi52), `${fmtDate(r.hi52T)} · ${r.offHi.toFixed(1)}% away`)}
+      ${stat('52W Low', fmtNav(r.lo52), fmtDate(r.lo52T))}
+      ${stat('All-time High', fmtNav(r.ath), `${fmtDate(r.athT)} · ${r.offAth.toFixed(1)}% away`)}
+      ${stat('1Y', fmtPct(r.r1y))}
+      ${stat('3Y CAGR', fmtPct(r.r3y))}
+      ${stat('5Y CAGR', fmtPct(r.r5y))}
+      ${stat('10Y CAGR', fmtPct(r.r10y))}
+      ${stat('AUM', isNum(r.aumValue) ? '₹' + fmtIndianNumber(r.aumValue) + ' Cr' : NA, r.aumPeriod + (r.aumStale ? ' (old)' : ''))}
+      ${stat('Std Dev', isNum(r.sd) ? r.sd.toFixed(2) + '%' : NA, 'annualised')}
+      ${stat('Sharpe / Beta', `${isNum(r.sharpe) ? r.sharpe.toFixed(2) : '—'} / ${isNum(r.beta) ? r.beta.toFixed(2) : '—'}`)}
+      ${stat('Data since', fmtDate(r.since), `${r.age.toFixed(1)} yrs of NAV`)}
+    </div>
+    <div class="chartbox">
+      <div class="charthead">
+        <div class="seg" id="modeSeg"><button data-m="growth" class="on">Growth of ₹10,000</button><button data-m="nav">NAV</button></div>
+        <div class="seg" id="rangeSeg">${[['12', '1Y'], ['36', '3Y'], ['60', '5Y'], ['120', '10Y'], ['0', 'Max']].map(([m, l]) => `<button data-r="${m}" class="${m === '60' ? 'on' : ''}">${l}</button>`).join('')}</div>
+      </div>
+      <div id="chartArea"></div>
+      <div class="chartlegend" id="chartLegend"></div>
+    </div>
+    <table class="cytable">
+      <thead><tr><th class="l">Calendar year</th><th>Return</th><th class="c">Quartile</th><th class="c">Rank in category</th></tr></thead>
+      <tbody>${cyRows}</tbody>
+    </table>`;
+  overlay.hidden = false;
+  $('modeSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; drawerState.mode = b.dataset.m; $('modeSeg').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); drawChart(); });
+  $('rangeSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; drawerState.months = +b.dataset.r; $('rangeSeg').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); drawChart(); });
+  drawChart();
+}
+
+function drawChart() {
+  const r = currentRows.find(x => x.code === drawerState.code); if (!r) return;
+  const arr = NAVS[r.code]; const barr = r.benchCode ? NAVS[r.benchCode] : null;
+  const last = arr[arr.length - 1];
+  const start = drawerState.months ? Math.max(addMonths(last.t, -drawerState.months), arr[0].t) : arr[0].t;
+  const i0 = Math.max(0, idxOnOrBefore(arr, start));
+  const raw = arr.slice(i0);
+  const step = Math.max(1, Math.ceil(raw.length / 450));
+  const pts = raw.filter((_, i) => i % step === 0 || i === raw.length - 1);
+  const growth = drawerState.mode === 'growth';
+  const base = pts[0].nav;
+  const f = pts.map(p => ({ t: p.t, v: growth ? 10000 * p.nav / base : p.nav }));
+
+  let b = null;
+  if (growth && barr && barr.length) {
+    const bStart = navOnOrBefore(barr, pts[0].t, 10) || barr.find(p => p.t >= pts[0].t);
+    if (bStart) {
+      const fAtB = navOnOrBefore(arr, bStart.t, 10) || pts[0];
+      const scale = (10000 * fAtB.nav / base) / bStart.nav;
+      b = pts.map(p => { const q = navOnOrBefore(barr, p.t, 10); return q && q.t >= bStart.t ? { t: p.t, v: q.nav * scale } : null; });
+    }
+  }
+
+  const W = 700, H = 280, L = 64, R = 14, T = 12, B = 28;
+  const all = f.map(p => p.v).concat(b ? b.filter(Boolean).map(p => p.v) : []);
+  let lo = Math.min(...all), hi = Math.max(...all); const pad = (hi - lo) * 0.06 || 1; lo -= pad; hi += pad;
+  const t0 = f[0].t, t1 = f[f.length - 1].t;
+  const X = t => L + (W - L - R) * (t - t0) / Math.max(1, t1 - t0);
+  const Y = v => T + (H - T - B) * (1 - (v - lo) / (hi - lo));
+  const path = s => s.reduce((acc, p, i) => { if (!p) return acc + ''; const cmd = (i === 0 || !s[i - 1]) ? 'M' : 'L'; return acc + `${cmd}${X(p.t).toFixed(1)},${Y(p.v).toFixed(1)}`; }, '');
+  const fmtV = v => growth ? '₹' + fmtIndianNumber(v) : '₹' + v.toFixed(v < 100 ? 2 : 0);
+  let grid = '';
+  for (let i = 0; i <= 4; i++) { const v = lo + (hi - lo) * i / 4; grid += `<line x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}" stroke="#e3e9e5"/><text x="${L - 8}" y="${Y(v) + 4}" text-anchor="end" font-size="11" fill="#6b6470">${fmtV(v)}</text>`; }
+  for (let i = 0; i <= 4; i++) { const t = t0 + (t1 - t0) * i / 4; const d = new Date(t); grid += `<text x="${X(t)}" y="${H - 8}" text-anchor="${i === 0 ? 'start' : i === 4 ? 'end' : 'middle'}" font-size="11" fill="#6b6470">${String(d.getUTCMonth() + 1).padStart(2, '0')}/${d.getUTCFullYear()}</text>`; }
+  $('chartArea').innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block; font-family:Calibri, sans-serif;">
+    ${grid}
+    ${growth ? `<line x1="${L}" x2="${W - R}" y1="${Y(10000)}" y2="${Y(10000)}" stroke="#b9b2bd" stroke-dasharray="3 3"/>` : ''}
+    ${b ? `<path d="${path(b)}" fill="none" stroke="#934E32" stroke-width="1.6" stroke-dasharray="5 3"/>` : ''}
+    <path d="${path(f)}" fill="none" stroke="#005826" stroke-width="2"/>
+    <line id="hx" y1="${T}" y2="${H - B}" stroke="#39293E" stroke-width="1" opacity="0"/>
+    <circle id="hc" r="4" fill="#005826" opacity="0"/>
+    <g id="htip" opacity="0"><rect id="htr" rx="5" fill="#39293E" height="${b ? 52 : 36}" width="190"/><text id="htt" fill="#fff" font-size="11.5"></text></g>
+    <rect x="${L}" y="${T}" width="${W - L - R}" height="${H - T - B}" fill="transparent" id="hz"/>
+  </svg>`;
+  const endF = f[f.length - 1].v, endB = b && b[b.length - 1] ? b[b.length - 1].v : null;
+  $('chartLegend').innerHTML = growth
+    ? `<span><b style="background:#005826"></b>Fund: ${fmtV(endF)}</span>${b ? `<span><b style="background:#934E32"></b>${r.benchLabel || 'Benchmark'} proxy: ${endB ? fmtV(endB) : '—'}</span>` : '<span>No benchmark for this category</span>'}`
+    : `<span><b style="background:#005826"></b>NAV from ${fmtNav(pts[0].nav)} to ${fmtNav(last.nav)}</span>`;
+
+  const svg = $('chartArea').querySelector('svg');
+  const hz = svg.querySelector('#hz'), hx = svg.querySelector('#hx'), hc = svg.querySelector('#hc'), htip = svg.querySelector('#htip'), htt = svg.querySelector('#htt'), htr = svg.querySelector('#htr');
+  hz.addEventListener('mousemove', ev => {
+    const box = svg.getBoundingClientRect();
+    const x = (ev.clientX - box.left) * W / box.width;
+    const t = t0 + (x - L) / (W - L - R) * (t1 - t0);
+    let i = f.findIndex(p => p.t >= t); if (i < 0) i = f.length - 1;
+    const p = f[i], px = X(p.t), py = Y(p.v);
+    hx.setAttribute('x1', px); hx.setAttribute('x2', px); hx.setAttribute('opacity', .35);
+    hc.setAttribute('cx', px); hc.setAttribute('cy', py); hc.setAttribute('opacity', 1);
+    const lines = [fmtDate(p.t), `Fund: ${fmtV(p.v)}`]; if (b && b[i]) lines.push(`${r.benchLabel}: ${fmtV(b[i].v)}`);
+    htt.innerHTML = lines.map((s, k) => `<tspan x="0" dy="${k ? 15 : 0}">${s}</tspan>`).join('');
+    const tx = px + 200 > W ? px - 200 : px + 10, ty = T + 6;
+    htr.setAttribute('x', tx); htr.setAttribute('y', ty); htr.setAttribute('height', 14 + lines.length * 15);
+    htt.setAttribute('transform', `translate(${tx + 10},${ty + 18})`);
+    htt.querySelectorAll('tspan').forEach(s => s.setAttribute('x', 0));
+    htip.setAttribute('opacity', 1);
+  });
+  hz.addEventListener('mouseleave', () => { [hx, hc, htip].forEach(el => el.setAttribute('opacity', 0)); });
+}
+
+// ---------- CSV export (current view, current category) ----------
+$('exportBtn').addEventListener('click', () => {
+  const cols = columnsFor(view);
+  const esc = s => `"${String(s ?? '').replace(/"/g, '""')}"`;
+  const raw = (r, c) => {
+    if (c.key === 'aum') return isNum(r.aumValue) ? r.aumValue.toFixed(0) : '';
+    if (isTextKey(c.key)) return r[c.key];
+    if (c.fmt === 'q') { const y = r.years[c.year]; return y && isNum(y.ret) ? `${y.q ? 'Q' + y.q : 'NR'} ${y.rank}/${y.n} (${y.ret.toFixed(2)}%)` : ''; }
+    if (c.key === 'cons') return r.consText || '';
+    if (c.fmt === 'since') return fmtDate(r.since);
+    const v = r[c.key]; return isNum(v) ? v.toFixed(c.fmt === 'nav' || c.fmt === 'navd' ? 4 : 2) : '';
+  };
+  const rows = visibleGroups().flatMap(g => g.rows);
+  const lines = [['Rank'].concat(cols.map(c => c.label)).map(esc).join(',')]
+    .concat(rows.map(r => [r._rank || ''].concat(cols.map(c => raw(r, c))).map(esc).join(',')));
+  const blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `abundance_screener_${view}${activeCat === '__all__' ? '' : '_' + activeCat.replace(/[^a-z0-9]+/gi, '_').toLowerCase()}.csv`;
+  a.click();
+});
+</script>
+</body>
+</html>
