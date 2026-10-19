@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#005826">
+<title>Market Pulse · Abundance</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Carlito:wght@400;700&display=swap">
+<style>
+:root{
+  --bg:#F0F8FF; --surface:#ffffff; --ink:#39293E; --muted:#6b6470; --line:#dbe6df;
+  --primary:#005826; --primary-soft:#e3f1e8; --secondary:#934E32; --accent:#F9B738; --accent-soft:#fdf1d3;
+  --up:#1f7a45; --down:#b3591a; --band:#005826; --band-ink:#ffffff; --band-muted:#cfe6d8;
+  --f-display:Montserrat,"Segoe UI",Arial,sans-serif; --f-body:Calibri,Carlito,"Segoe UI",Arial,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5;margin:0}
+.wrap{max-width:1120px;margin:0 auto;padding:20px 16px 48px}
+.crumbs{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;font-size:14px}
+.crumbs a{color:var(--primary);text-decoration:none;font-weight:700}
+.crumbs a:hover{text-decoration:underline}
+.upd{color:var(--muted);display:flex;align-items:center;gap:10px}
+.upd button{font:600 13px var(--f-display);border:1.5px solid var(--primary);background:var(--surface);color:var(--primary);border-radius:999px;padding:4px 12px;cursor:pointer}
+.upd button:hover{background:var(--primary-soft)}
+header.top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:8px 20px;border-bottom:2px solid var(--primary);padding-bottom:12px;margin-bottom:16px}
+.brand h1{font:800 26px/1.15 var(--f-display);color:var(--primary);margin:0;letter-spacing:-.01em}
+.brand p{margin:2px 0 0;color:var(--muted);font-size:14px}
+.tag{font:600 12px var(--f-display);color:var(--secondary)}
+.days{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px}
+.days button{flex:none;font:600 13px var(--f-display);border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 12px;cursor:pointer}
+.days button[aria-pressed="true"]{background:var(--primary);border-color:var(--primary);color:#fff}
+button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.band{background:var(--band);color:var(--band-ink);border-radius:14px;padding:18px 20px;display:grid;gap:12px;margin-bottom:18px}
+.band .k{font:700 11px var(--f-display);text-transform:uppercase;letter-spacing:.08em;color:var(--band-muted)}
+.band h2{font:700 21px/1.3 var(--f-display);margin:0}
+.band p{margin:0;opacity:.92;max-width:80ch}
+.stats{display:flex;flex-wrap:wrap;gap:8px}
+.stat{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:6px 10px;min-width:118px}
+.stat .n{font:700 11px var(--f-display);letter-spacing:.04em;color:var(--band-muted);text-transform:uppercase}
+.stat .v{font:700 16px var(--f-display);font-variant-numeric:tabular-nums;white-space:nowrap}
+.stat .c{font-size:13px;font-variant-numeric:tabular-nums}
+.stat .c.up{color:#b8f0cc}.stat .c.down{color:#ffd0a8}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.chips button{font:600 13px var(--f-body);border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:4px 11px;cursor:pointer}
+.chips button[aria-pressed="true"]{border-color:var(--secondary);color:var(--secondary);background:var(--accent-soft)}
+.chips .cnt{color:var(--muted);font-weight:400;margin-left:4px}
+.feed{background:var(--surface);border:1px solid var(--line);border-radius:12px}
+.item{display:grid;grid-template-columns:8px minmax(0,1fr);gap:12px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.item:last-child{border-bottom:0}
+.item .bar{border-radius:4px;background:var(--line)}
+.item.up .bar{background:var(--up)}.item.down .bar{background:var(--down)}.item.watch .bar{background:var(--accent)}
+.item .meta{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:12.5px;color:var(--muted)}
+.cat{font:700 10.5px var(--f-display);text-transform:uppercase;letter-spacing:.06em;color:var(--secondary)}
+.item h3{margin:2px 0 3px;font:700 16px/1.35 var(--f-display)}
+.item h3 a{color:var(--ink);text-decoration:none;border-bottom:1px solid transparent}
+.item h3 a:hover{border-bottom-color:var(--primary);color:var(--primary)}
+.item .why{margin:0;font-size:15px}
+.item .why b{color:var(--primary)}
+.pill{display:inline-block;font-size:11.5px;padding:0 8px;border-radius:999px;background:var(--primary-soft);color:var(--primary);font-weight:700}
+aside .box{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:14px}
+aside h4{margin:0 0 8px;font:700 12px var(--f-display);text-transform:uppercase;letter-spacing:.07em;color:var(--secondary)}
+.ev{display:grid;grid-template-columns:54px minmax(0,1fr);gap:10px;padding:7px 0;border-top:1px solid var(--line);font-size:14px}
+.ev:first-child{border-top:0}
+.ev .d{font:700 13px var(--f-display);color:var(--primary);line-height:1.2}
+.ev .d small{display:block;font:600 11px var(--f-body);color:var(--muted)}
+.ev .t{font-weight:700}.ev .x{color:var(--muted);font-size:13px}
+.empty{padding:28px 18px;text-align:center;color:var(--muted)}
+.note{font-size:12.5px;color:var(--muted);margin-top:14px}
+@media (max-width:860px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="crumbs">
+    <a href="index.html">← All tools</a>
+    <span class="upd"><span id="upd"></span><button type="button" id="reload">Refresh</button></span>
+  </div>
+  <header class="top">
+    <div class="brand"><h1>Market Pulse</h1><p>What moved Indian markets, what's coming, and what changed in mutual funds. Internal read for the Abundance team.</p></div>
+    <div class="tag">Designing Portfolio. Delivering Peace.</div>
+  </header>
+
+  <nav class="days" id="days" aria-label="Choose a day"></nav>
+
+  <section class="band" aria-live="polite">
+    <span class="k" id="bandK">Loading</span>
+    <h2 id="bandH">Fetching the latest brief…</h2>
+    <p id="bandP"></p>
+    <div class="stats" id="stats"></div>
+  </section>
+
+  <div class="grid">
+    <main>
+      <div class="chips" id="chips" role="group" aria-label="Filter by topic"></div>
+      <div class="feed" id="feed"><div class="empty">Loading stories…</div></div>
+      <p class="note">Each story is checked against at least one primary or major financial source and linked. Bars: <span style="color:var(--up)">green</span> = supportive for markets/investors, <span style="color:var(--down)">orange</span> = negative, <span style="color:#b98600">yellow</span> = watch. Internal research, not investment advice.</p>
+    </main>
+    <aside>
+      <div class="box"><h4>Coming up</h4><div id="events"></div></div>
+    </aside>
+  </div>
+</div>
+
+<script>
+(() => {
+  const CATS = [['markets','Why markets moved'],['triggers','Triggers & data'],['global','Global & oil'],['mf','Mutual funds & AMCs'],['manager','Fund manager changes'],['rules','SEBI · AMFI · RBI'],['stocks','Companies & results']];
+  const CL = Object.fromEntries(CATS);
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const MON = 'Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec'.split(' ');
+  const DOW = 'Sun Mon Tue Wed Thu Fri Sat'.split(' ');
+  const dd = iso => { const [y,m,d] = iso.split('-'); return `${d}/${m}/${y}`; };
+  const short = iso => { const t = new Date(iso + 'T00:00:00Z'); return `${DOW[t.getUTCDay()]} ${t.getUTCDate()} ${MON[t.getUTCMonth()]}`; };
+  const host = u => { try { return new URL(u).hostname.replace(/^www\./,'') } catch (e) { return '' } };
+  let days = [], items = [], events = [], cur = null, filt = '';
+  try { filt = localStorage.getItem('pulse_filter') || '' } catch (e) {}
+
+  function render() {
+    const day = days.find(d => d.date === cur);
+    $('days').innerHTML = days.slice(0, 14).map(d => `<button type="button" aria-pressed="${d.date === cur}" data-d="${d.date}">${short(d.date)}</button>`).join('');
+    if (!day) {
+      $('bandK').textContent = 'No brief yet'; $('bandH').textContent = 'The first morning brief will appear here.';
+      $('bandP').textContent = ''; $('stats').innerHTML = '';
+    } else {
+      $('bandK').textContent = `${short(day.date)} · ${dd(day.date)}${day.session ? ' · ' + day.session : ''}`;
+      $('bandH').textContent = day.headline || '';
+      $('bandP').textContent = day.summary || '';
+      $('stats').innerHTML = (day.stats || []).map(s => `<div class="stat"><div class="n">${esc(s.k)}</div><div class="v">${esc(s.v)}</div>${s.c ? `<div class="c ${/^[−-]/.test(s.c) ? 'down' : 'up'}">${esc(s.c)}</div>` : ''}</div>`).join('');
+    }
+    const its = items.filter(i => i.date === cur);
+    const counts = {}; its.forEach(i => counts[i.cat] = (counts[i.cat] || 0) + 1);
+    if (filt && !counts[filt]) filt = '';
+    $('chips').innerHTML = `<button type="button" data-c="" aria-pressed="${!filt}">All<span class="cnt">${its.length}</span></button>` +
+      CATS.filter(([k]) => counts[k]).map(([k,l]) => `<button type="button" data-c="${k}" aria-pressed="${filt === k}">${l}<span class="cnt">${counts[k]}</span></button>`).join('');
+    const shown = its.filter(i => !filt || i.cat === filt).sort((a,b) => (a.rank ?? 99) - (b.rank ?? 99));
+    $('feed').innerHTML = shown.length ? shown.map(i => `<article class="item ${esc(i.impact || '')}"><span class="bar" aria-hidden="true"></span><div>
+        <div class="meta"><span class="cat">${esc(CL[i.cat] || i.cat)}</span>${(i.tags || []).map(t => `<span class="pill">${esc(t)}</span>`).join('')}</div>
+        <h3>${i.url ? `<a href="${esc(i.url)}" target="_blank" rel="noopener">${esc(i.title)}</a>` : esc(i.title)}</h3>
+        <p class="why">${i.why ? '<b>Why it matters:</b> ' + esc(i.why) : ''}</p>
+        <div class="meta">${esc(i.src || host(i.url))}</div></div></article>`).join('')
+      : `<div class="empty">${its.length ? 'Nothing in this topic for the day.' : 'No stories for this day yet.'}</div>`;
+    const today = new Date().toISOString().slice(0, 10);
+    const from = cur && cur < today ? cur : today;
+    const up = events.filter(e => e.date >= from).sort((a,b) => a.date.localeCompare(b.date)).slice(0, 10);
+    $('events').innerHTML = up.length ? up.map(e => `<div class="ev"><div class="d">${e.date.slice(8)}<small>${MON[+e.date.slice(5,7) - 1]}</small></div><div><div class="t">${esc(e.title)}</div>${e.note ? `<div class="x">${esc(e.note)}</div>` : ''}</div></div>`).join('') : '<div class="x">Nothing scheduled.</div>';
+  }
+
+  async function load() {
+    $('upd').textContent = 'Loading…';
+    try {
+      const r = await fetch('market-pulse.json?t=' + Date.now(), { cache: 'no-store' });
+      if (!r.ok) throw new Error(r.status);
+      const data = await r.json();
+      days = (data.days || []).filter(d => d && d.date).sort((a,b) => b.date.localeCompare(a.date));
+      items = data.items || []; events = data.events || [];
+      if (!cur || !days.some(d => d.date === cur)) cur = days[0] ? days[0].date : null;
+      if (data.updated) {
+        const t = new Date(data.updated);
+        $('upd').textContent = 'Updated ' + t.toLocaleString('en-IN', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit', timeZone:'Asia/Kolkata' }) + ' IST';
+      } else $('upd').textContent = '';
+      render();
+    } catch (e) {
+      $('upd').textContent = '';
+      $('bandK').textContent = 'Unavailable'; $('bandH').textContent = 'Could not load market-pulse.json.';
+      $('bandP').textContent = 'Check that the data file sits in the same folder as this page.';
+      $('feed').innerHTML = '<div class="empty">No data loaded.</div>'; $('events').innerHTML = '';
+    }
+  }
+
+  $('days').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; cur = b.dataset.d; render(); });
+  $('chips').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; filt = b.dataset.c; try { localStorage.setItem('pulse_filter', filt) } catch (x) {} render(); });
+  $('reload').addEventListener('click', load);
+  load();
+})();
+</script>
+</body>
+</html>
