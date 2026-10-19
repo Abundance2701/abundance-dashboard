@@ -1,6 +1,48 @@
 {
- "updated": "2026-10-19T07:07:03Z",
+ "updated": "2026-10-19T11:21:27Z",
  "days": [
+  {
+   "date": "2026-10-19",
+   "headline": "Sensex falls 876 points as private banks and IT stocks sell off after results; PSU banks buck the trend",
+   "session": "Monday close",
+   "stats": [
+    {
+     "c": "−1.17%",
+     "k": "Sensex",
+     "v": "73,853"
+    },
+    {
+     "c": "−1.11%",
+     "k": "Nifty 50",
+     "v": "22,889"
+    },
+    {
+     "c": "−1.09%",
+     "k": "Nifty Midcap 100",
+     "v": "—"
+    },
+    {
+     "c": "−1.01%",
+     "k": "Nifty Smallcap 100",
+     "v": "—"
+    },
+    {
+     "c": "−1.85%",
+     "k": "Nifty Private Bank",
+     "v": "—"
+    },
+    {
+     "c": "+2.4%",
+     "k": "Nifty PSU Bank",
+     "v": "—"
+    },
+    {
+     "k": "FII / DII net (₹ cr)",
+     "v": "Not yet published"
+    }
+   ],
+   "summary": "The market gave back Friday's gain and more: the Nifty slipped below 23,000 as investors sold private banks after the weekend results and booked profits in IT ahead of Infosys on Thursday. Mid and small caps fell about as much as the large caps. Public sector banks were the only sector that rose. Tuesday 20/10 is a market holiday (Dussehra)."
+  },
   {
    "date": "2026-10-17",
    "headline": "Big bank results: ICICI and Axis strong, HDFC Bank slow; markets react on Monday",
@@ -22,7 +64,7 @@
      "v": "₹7,003 cr"
     }
    ],
-   "summary": "Three of the most widely held stocks in Indian equity funds reported Q2 on Saturday. ICICI Bank's bad loans fell to multi-year lows, Axis Bank's profit jumped 38%, and HDFC Bank grew profit under 5%. By noon Monday the market had sold off private banks (Axis −4.5% early), pulling the Sensex down about 0.8%, while PSU banks rallied on their own results."
+   "summary": "Three of the most widely held stocks in Indian equity funds reported Q2 on Saturday. ICICI Bank's bad loans fell to multi-year lows, Axis Bank's profit jumped 38%, and HDFC Bank grew profit under 5%. See Monday 19/10 for how the market reacted."
   },
   {
    "date": "2026-10-16",
@@ -438,21 +480,6 @@
    "why": "In line with the 37–43% growth analysts expected. The margin dip was expected because of costlier foreign-currency deposits."
   },
   {
-   "cat": "markets",
-   "date": "2026-10-17",
-   "impact": "down",
-   "rank": 1,
-   "src": "Business Standard (live blog)",
-   "tags": [
-    "Banks",
-    "Intraday",
-    "VIX"
-   ],
-   "title": "Monday midday: private banks drag the market after results; Sensex −567 pts to 74,162, Nifty near 22,989 at noon",
-   "url": "https://www.business-standard.com/amp/markets/news/stock-market-live-october-19-nse-bse-sensex-today-nifty50-gift-nifty-crude-oil-prices-bond-yields-q2-results-hind-zinc-share-price-today-ipo-today-126101900052_1.html",
-   "why": "Large-cap and banking funds will give back part of last week's gain if this holds to the close. Axis Bank fell 4.5% in early trade and HDFC Bank was among the top Nifty losers; Nifty Financial Services was down over 1%, while mid and small caps were nearly flat. India VIX (the market's 'fear gauge') rose 5.6% to 14.84. Intraday figures as of 12:00 IST, not the close."
-  },
-  {
    "cat": "mf",
    "date": "2026-10-17",
    "impact": "watch",
@@ -480,6 +507,79 @@
    "title": "PSU banks rally on Q2: Union Bank profit +30.3% to ₹5,537 cr; PNB up to 7.7%",
    "url": "https://www.business-standard.com/amp/markets/news/stock-market-live-october-19-nse-bse-sensex-today-nifty50-gift-nifty-crude-oil-prices-bond-yields-q2-results-hind-zinc-share-price-today-ipo-today-126101900052_1.html",
    "why": "While private banks fell, public sector banks gained on results, helping PSU and value-oriented funds. Union Bank rose up to 4.9% and PNB (net interest income +10.8%) up to 7.7% on Monday morning."
+  },
+  {
+   "cat": "markets",
+   "date": "2026-10-19",
+   "impact": "down",
+   "rank": 1,
+   "src": "Business Standard",
+   "tags": [
+    "Sensex",
+    "Nifty",
+    "Broad sell-off"
+   ],
+   "title": "Sensex −876 pts (−1.17%) to 73,853; Nifty −1.11% to 22,889 as private banks and IT drag",
+   "url": "https://www.business-standard.com/markets/news/stock-market-live-october-19-nse-bse-sensex-today-nifty50-gift-nifty-crude-oil-prices-bond-yields-q2-results-hind-zinc-share-price-today-ipo-today-126101900052_1.html",
+   "why": "Most equity fund NAVs will be down about 1% for the day, wiping out Friday's gain; the fall was broad, with mid and small caps down about 1% too. Reasons cited: selling in private banks after results, profit-taking in IT, cautious global cues and crude oil still near $107 despite a ~2% dip. LKP Securities sees 22,800 as the next support level for the Nifty."
+  },
+  {
+   "cat": "stocks",
+   "date": "2026-10-19",
+   "impact": "watch",
+   "rank": 2,
+   "src": "Business Standard",
+   "tags": [
+    "Banks",
+    "Q2 results",
+    "PSU banks"
+   ],
+   "title": "Private banks −1.85% after results, PSU banks +2.4%: the only sector in the green",
+   "url": "https://www.business-standard.com/markets/news/stock-market-live-october-19-nse-bse-sensex-today-nifty50-gift-nifty-crude-oil-prices-bond-yields-q2-results-hind-zinc-share-price-today-ipo-today-126101900052_1.html",
+   "why": "Large-cap, flexi-cap and banking funds are heavy in private banks, so they felt this most; Axis Bank was among the top losers, while SBI rose over 1%. PSU and value-style funds, which hold more public sector banks, held up better."
+  },
+  {
+   "cat": "markets",
+   "date": "2026-10-19",
+   "impact": "watch",
+   "rank": 3,
+   "src": "Business Standard",
+   "tags": [
+    "IT",
+    "Infosys"
+   ],
+   "title": "IT index slips 1.28% after last week's 11% rally; Infosys among the top Sensex losers",
+   "url": "https://www.business-standard.com/markets/news/stock-market-live-october-19-nse-bse-sensex-today-nifty50-gift-nifty-crude-oil-prices-bond-yields-q2-results-hind-zinc-share-price-today-ipo-today-126101900052_1.html",
+   "why": "Some profit-taking was expected after IT's best week since 2008. Infosys reports on 23/10, which will decide whether the rebound in IT-heavy funds holds."
+  },
+  {
+   "cat": "triggers",
+   "date": "2026-10-19",
+   "impact": "watch",
+   "rank": 4,
+   "src": "Business Standard (Reuters)",
+   "tags": [
+    "IPO",
+    "Jio",
+    "Liquidity"
+   ],
+   "title": "Jio Platforms anchor book nearly 30 times oversubscribed; Fidelity, GIC, ADIA and BlackRock among bidders",
+   "url": "https://www.business-standard.com/companies/news/jio-platforms-ipo-anchor-investor-quota-nearly-30-times-oversubscribed-126101900538_1.html",
+   "why": "Strong demand from large global investors ahead of the public issue opening Wednesday 21/10. Clients will ask about applying; for funds, a ₹30,213 cr issue can briefly pull money away from listed stocks while investors raise cash to bid."
+  },
+  {
+   "cat": "stocks",
+   "date": "2026-10-19",
+   "impact": "watch",
+   "rank": 5,
+   "src": "Business Standard",
+   "tags": [
+    "Cement",
+    "Q2 results"
+   ],
+   "title": "UltraTech Cement Q2: profit up 21.3% to ₹1,493.77 cr, yet the stock fell 2.9%",
+   "url": "https://www.business-standard.com/markets/news/stock-market-live-october-19-nse-bse-sensex-today-nifty50-gift-nifty-crude-oil-prices-bond-yields-q2-results-hind-zinc-share-price-today-ipo-today-126101900052_1.html",
+   "why": "UltraTech is a common holding in large-cap and infrastructure funds. Decent growth did not stop selling on a weak day; it was among the top Sensex losers along with Bajaj Finance and Trent."
   }
  ],
  "events": [
