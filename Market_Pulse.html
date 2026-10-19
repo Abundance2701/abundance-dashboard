@@ -10,7 +10,7 @@
 :root{
   --bg:#F0F8FF; --surface:#ffffff; --ink:#39293E; --muted:#6b6470; --line:#dbe6df;
   --primary:#005826; --primary-soft:#e3f1e8; --secondary:#934E32; --accent:#F9B738; --accent-soft:#fdf1d3;
-  --up:#1f7a45; --down:#b3591a; --band:#005826; --band-ink:#ffffff; --band-muted:#cfe6d8;
+  --up:#1f7a45; --down:#b3591a;
   --f-display:Montserrat,"Segoe UI",Arial,sans-serif; --f-body:Calibri,Carlito,"Segoe UI",Arial,sans-serif;
   color-scheme:light;
 }
@@ -31,16 +31,16 @@ header.top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items
 .days button{flex:none;font:600 13px var(--f-display);border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 12px;cursor:pointer}
 .days button[aria-pressed="true"]{background:var(--primary);border-color:var(--primary);color:#fff}
 button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.band{background:var(--band);color:var(--band-ink);border-radius:14px;padding:18px 20px;display:grid;gap:12px;margin-bottom:18px}
-.band .k{font:700 11px var(--f-display);text-transform:uppercase;letter-spacing:.08em;color:var(--band-muted)}
-.band h2{font:700 21px/1.3 var(--f-display);margin:0}
-.band p{margin:0;opacity:.92;max-width:80ch}
+.band{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-left:4px solid var(--primary);border-radius:12px;padding:18px 20px;display:grid;gap:12px;margin-bottom:18px}
+.band .k{font:700 11px var(--f-display);text-transform:uppercase;letter-spacing:.08em;color:var(--secondary)}
+.band h2{font:700 21px/1.3 var(--f-display);margin:0;color:var(--ink)}
+.band p{margin:0;color:var(--muted);max-width:80ch}
 .stats{display:flex;flex-wrap:wrap;gap:8px}
-.stat{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:6px 10px;min-width:118px}
-.stat .n{font:700 11px var(--f-display);letter-spacing:.04em;color:var(--band-muted);text-transform:uppercase}
-.stat .v{font:700 16px var(--f-display);font-variant-numeric:tabular-nums;white-space:nowrap}
+.stat{background:#f6f8f7;border:1px solid var(--line);border-radius:10px;padding:6px 10px;min-width:118px}
+.stat .n{font:700 11px var(--f-display);letter-spacing:.04em;color:var(--muted);text-transform:uppercase}
+.stat .v{font:700 16px var(--f-display);font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--ink)}
 .stat .c{font-size:13px;font-variant-numeric:tabular-nums}
-.stat .c.up{color:#b8f0cc}.stat .c.down{color:#ffd0a8}
+.stat .up{color:var(--up)!important}.stat .down{color:var(--down)!important}
 .grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
 .chips button{font:600 13px var(--f-body);border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:4px 11px;cursor:pointer}
@@ -127,7 +127,7 @@ aside h4{margin:0 0 8px;font:700 12px var(--f-display);text-transform:uppercase;
       $('bandK').textContent = `${short(day.date)} · ${dd(day.date)}${day.session ? ' · ' + day.session : ''}`;
       $('bandH').textContent = day.headline || '';
       $('bandP').textContent = day.summary || '';
-      $('stats').innerHTML = (day.stats || []).map(s => `<div class="stat"><div class="n">${esc(s.k)}</div><div class="v">${esc(s.v)}</div>${s.c ? `<div class="c ${/^[−-]/.test(s.c) ? 'down' : 'up'}">${esc(s.c)}</div>` : ''}</div>`).join('');
+      $('stats').innerHTML = (day.stats || []).map(s => `<div class="stat"><div class="n">${esc(s.k)}</div><div class="v ${/^[+]\d/.test(s.v) ? 'up' : /^[−-]\d/.test(s.v) ? 'down' : ''}">${esc(s.v)}</div>${s.c ? `<div class="c ${/^[−-]/.test(s.c) ? 'down' : 'up'}">${esc(s.c)}</div>` : ''}</div>`).join('');
     }
     const its = items.filter(i => i.date === cur);
     const counts = {}; its.forEach(i => counts[i.cat] = (counts[i.cat] || 0) + 1);

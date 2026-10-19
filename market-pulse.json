@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-19T11:21:27Z",
+ "updated": "2026-10-19T11:43:15Z",
  "days": [
   {
    "date": "2026-10-19",
@@ -17,28 +17,28 @@
      "v": "22,889"
     },
     {
-     "c": "−1.09%",
+     "c": "",
      "k": "Nifty Midcap 100",
-     "v": "—"
+     "v": "−1.09%"
     },
     {
-     "c": "−1.01%",
+     "c": "",
      "k": "Nifty Smallcap 100",
-     "v": "—"
+     "v": "−1.01%"
     },
     {
-     "c": "−1.85%",
+     "c": "",
      "k": "Nifty Private Bank",
-     "v": "—"
+     "v": "−1.85%"
     },
     {
-     "c": "+2.4%",
+     "c": "",
      "k": "Nifty PSU Bank",
-     "v": "—"
+     "v": "+2.4%"
     },
     {
      "k": "FII / DII net (₹ cr)",
-     "v": "Not yet published"
+     "v": "Due after 6 pm"
     }
    ],
    "summary": "The market gave back Friday's gain and more: the Nifty slipped below 23,000 as investors sold private banks after the weekend results and booked profits in IT ahead of Infosys on Thursday. Mid and small caps fell about as much as the large caps. Public sector banks were the only sector that rose. Tuesday 20/10 is a market holiday (Dussehra)."
