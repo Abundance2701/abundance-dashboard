@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Carlito:wght@400;700&display=swap">
 <style>
 :root{
-  --bg:#F0F8FF; --surface:#ffffff; --ink:#39293E; --muted:#6b6470; --line:#dbe6df;
+  --bg:#E8F1FA; --surface:#ffffff; --ink:#39293E; --muted:#6b6470; --line:#dbe6df;
   --primary:#005826; --primary-soft:#e3f1e8; --secondary:#934E32; --accent:#F9B738; --accent-soft:#fdf1d3;
   --up:#1f7a45; --down:#b3591a;
   --f-display:Montserrat,"Segoe UI",Arial,sans-serif; --f-body:Calibri,Carlito,"Segoe UI",Arial,sans-serif;
@@ -31,13 +31,13 @@ header.top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items
 .days button{flex:none;font:600 13px var(--f-display);border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 12px;cursor:pointer}
 .days button[aria-pressed="true"]{background:var(--primary);border-color:var(--primary);color:#fff}
 button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.band{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-left:4px solid var(--primary);border-radius:12px;padding:18px 20px;display:grid;gap:12px;margin-bottom:18px}
+.band{background:#F3E6DE;color:var(--ink);border:1px solid #E3CDBF;border-left:5px solid var(--secondary);border-radius:12px;padding:18px 20px;display:grid;gap:12px;margin-bottom:18px}
 .band .k{font:700 11px var(--f-display);text-transform:uppercase;letter-spacing:.08em;color:var(--secondary)}
 .band h2{font:700 21px/1.3 var(--f-display);margin:0;color:var(--ink)}
-.band p{margin:0;color:var(--muted);max-width:80ch}
+.band p{margin:0;color:#5a4650;max-width:80ch}
 .stats{display:flex;flex-wrap:wrap;gap:8px}
-.stat{background:#f6f8f7;border:1px solid var(--line);border-radius:10px;padding:6px 10px;min-width:118px}
-.stat .n{font:700 11px var(--f-display);letter-spacing:.04em;color:var(--muted);text-transform:uppercase}
+.stat{background:#FBF5F1;border:1px solid #E3CDBF;border-radius:10px;padding:6px 10px;min-width:118px}
+.stat .n{font:700 11px var(--f-display);letter-spacing:.04em;color:var(--secondary);text-transform:uppercase}
 .stat .v{font:700 16px var(--f-display);font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--ink)}
 .stat .c{font-size:13px;font-variant-numeric:tabular-nums}
 .stat .up{color:var(--up)!important}.stat .down{color:var(--down)!important}
