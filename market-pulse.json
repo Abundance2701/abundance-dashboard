@@ -1,6 +1,49 @@
 {
- "updated": "2026-10-19T11:43:15Z",
+ "updated": "2026-10-21T02:45:11Z",
  "days": [
+  {
+   "date": "2026-10-20",
+   "headline": "No trading in India; oil slipped back from a five-month high near $112 and Wall Street rose, so GIFT Nifty points to a higher open on Wednesday",
+   "session": "Tuesday · markets closed (Dussehra)",
+   "stats": [
+    {
+     "c": "+131 pts",
+     "k": "GIFT Nifty (Wed 8:07 am)",
+     "v": "23,020"
+    },
+    {
+     "c": "−0.69%",
+     "k": "Brent crude (Dec, settle)",
+     "v": "$108.79"
+    },
+    {
+     "c": "+1.02%",
+     "k": "Dow Jones",
+     "v": "52,495.88"
+    },
+    {
+     "c": "−0.02%",
+     "k": "Nasdaq",
+     "v": "26,424.82"
+    },
+    {
+     "c": "−3 bp",
+     "k": "US 10-year yield",
+     "v": "5.12%"
+    },
+    {
+     "c": "−3.73%",
+     "k": "Kospi",
+     "v": "5,552.74"
+    },
+    {
+     "c": "−1.30%",
+     "k": "Nikkei 225",
+     "v": "64,075.42"
+    }
+   ],
+   "summary": "NSE and BSE were shut for Dussehra, so fund NAVs did not change. Brent touched $111.99 on Houthi attacks on Saudi sites but settled 0.7% lower at $108.79 on hopes of Iran talks, the Dow rose 1% and the US 10-year yield eased to 5.12%, while Korean and Japanese stocks fell on chip-stock weakness. Jio Platforms raised ₹8,110 cr from anchor investors, including 25 Indian fund houses, and its IPO opens on Wednesday 21/10, when GIFT Nifty was trading about 23,020."
+  },
   {
    "date": "2026-10-19",
    "headline": "Sensex falls 876 points as private banks and IT stocks sell off after results; PSU banks buck the trend",
@@ -17,31 +60,32 @@
      "v": "22,889"
     },
     {
-     "c": "",
-     "k": "Nifty Midcap 100",
-     "v": "−1.09%"
+     "c": "−0.64%",
+     "k": "Bank Nifty",
+     "v": "55,488"
     },
     {
      "c": "",
-     "k": "Nifty Smallcap 100",
-     "v": "−1.01%"
+     "k": "Midcap 100 / Smallcap 100",
+     "v": "−1.09% / −1.01%"
+    },
+    {
+     "c": "−0.3%",
+     "k": "Brent crude (settle)",
+     "v": "$109.55"
+    },
+    {
+     "c": "+0.02",
+     "k": "USD/INR",
+     "v": "94.91"
     },
     {
      "c": "",
-     "k": "Nifty Private Bank",
-     "v": "−1.85%"
-    },
-    {
-     "c": "",
-     "k": "Nifty PSU Bank",
-     "v": "+2.4%"
-    },
-    {
      "k": "FII / DII net (₹ cr)",
-     "v": "Due after 6 pm"
+     "v": "FII sold 1,149 · DII bought 3,201"
     }
    ],
-   "summary": "The market gave back Friday's gain and more: the Nifty slipped below 23,000 as investors sold private banks after the weekend results and booked profits in IT ahead of Infosys on Thursday. Mid and small caps fell about as much as the large caps. Public sector banks were the only sector that rose. Tuesday 20/10 is a market holiday (Dussehra)."
+   "summary": "The market gave back Friday's gain and more: the Nifty slipped below 23,000 as investors sold private banks after the weekend results and booked profits in IT ahead of Infosys on Thursday. Mid and small caps fell about as much as large caps, and only PSU banks rose. Domestic institutions bought ₹3,201 cr while foreign investors sold ₹1,149 cr; Bajaj Finance reported strong Q2 numbers after the close. Tuesday 20/10 is a market holiday (Dussehra), so the next session is Wednesday 21/10."
   },
   {
    "date": "2026-10-17",
@@ -113,329 +157,384 @@
  "items": [
   {
    "cat": "markets",
-   "date": "2026-10-16",
+   "date": "2026-10-20",
+   "impact": "watch",
+   "rank": 1,
+   "src": "TradingView (Moody's/Mint)",
+   "tags": [
+    "Holiday",
+    "GIFT Nifty",
+    "Asia"
+   ],
+   "title": "Indian markets shut for Dussehra; GIFT Nifty flat at 22,889 while Kospi falls 3.5% and Nikkei 1.2%",
+   "url": "https://www.tradingview.com/news/moodys:942f65a04f67c:0-global-markets-today-gift-nifty-nikkei-225-kospi-slide-on-tuesday-20-october-nasdaq-s-p-djia-rise-up-to-1/",
+   "why": "No NAV change for Indian funds today. Weak Asian tech stocks and costlier oil point to a cautious start on Wednesday 21/10, though Wall Street rose overnight. GIFT Nifty is a Nifty futures contract traded in GIFT City that hints at how India may open."
+  },
+  {
+   "cat": "global",
+   "date": "2026-10-20",
+   "impact": "down",
+   "rank": 2,
+   "src": "The National",
+   "tags": [
+    "Oil",
+    "West Asia",
+    "Inflation"
+   ],
+   "title": "Brent rises about 1.5% to ~$111, a five-month high, as Houthi attacks on Saudi sites continue",
+   "url": "https://www.thenationalnews.com/business/energy/2026/10/20/oil-prices-hit-five-month-high-as-more-houthi-attacks-prompt-supply-and-inflation-fears/",
+   "why": "This is the biggest risk for Wednesday's open: costlier oil raises inflation, pressures the rupee and makes further RBI rate hikes more likely, which hurts both equity and debt fund returns. US crude rose about 2.3% to $100.80."
+  },
+  {
+   "cat": "triggers",
+   "date": "2026-10-20",
+   "impact": "watch",
+   "rank": 3,
+   "src": "Business Today",
+   "tags": [
+    "IPO",
+    "Jio",
+    "MF participation"
+   ],
+   "title": "Jio Platforms raises ₹8,109.85 cr from 212 anchor investors at ₹1,119; 25 Indian fund houses bid through 95 schemes",
+   "url": "https://www.businesstoday.in/markets/ipo-corner/story/jio-platforms-raises-rs-8110-crore-from-over-200-anchor-investors-draws-rs-2-5-lakh-cr-demand-562601-2026-10-20",
+   "why": "Many large funds (SBI, HDFC, ICICI Prudential, Kotak, Nippon, Axis and others) will hold Jio from listing day (28/10), so its debut will move their NAVs. Anchor investors are large institutions given shares before the public issue. The IPO opens 21/10 and closes 23/10; the minimum bid is 12 shares."
+  },
+  {
+   "cat": "mf",
+   "date": "2026-10-20",
+   "impact": "down",
+   "rank": 4,
+   "src": "Business Today (Market Today)",
+   "tags": [
+    "RBI",
+    "Debt funds",
+    "Interest rates"
+   ],
+   "title": "PPFAS debt CIO Tejas Soman expects the RBI to raise rates further this financial year",
+   "url": "https://www.businesstoday.in/amp/bt-tv/market-today/video/more-rbi-rate-hikes-ahead-ppfas-mutual-fund-cio-shares-his-outlook-562454-2026-10-20",
+   "why": "If rates keep rising, longer-duration debt funds (those holding long-dated bonds) can see NAV dips, while short-term and floating-rate funds are less affected. He cites crude, fertilizer and commodity inflation, and sees growth near 7% holding up."
+  },
+  {
+   "cat": "global",
+   "date": "2026-10-20",
+   "impact": "watch",
+   "rank": 5,
+   "src": "Forbes",
+   "tags": [
+    "Fed",
+    "US rates",
+    "FII flows"
+   ],
+   "title": "US Fed: markets now price a hold on 28/10 (about 80–85%) but expect a hike on 09/12",
+   "url": "https://www.forbes.com/sites/simonmoore/2026/10/19/what-to-look-for-from-the-feds-october-meeting/",
+   "why": "A pause would ease pressure on US bond yields and on foreign selling of Indian stocks for now. Sources differ slightly: Forbes cites about 80% odds of a hold, another 20/10 report about 85%. The Fed's rate is 3.75–4%."
+  },
+  {
+   "cat": "triggers",
+   "date": "2026-10-20",
+   "impact": "watch",
+   "rank": 6,
+   "src": "Goodreturns",
+   "tags": [
+    "Q2 results",
+    "Eternal",
+    "Dividend"
+   ],
+   "title": "Wednesday 21/10: about 40 Q2 results, including Eternal, Adani Green, Indian Hotels and M&M Financial; Bajaj Finance reacts to its results",
+   "url": "https://www.goodreturns.in/news/stock-market-holiday-today-20-10-2026-trading-bse-nse-closed-for-dussehra-dividends-q2-results-ahead-1542621.html",
+   "why": "Eternal (formerly Zomato) and Bajaj Finance are widely held in large-cap, flexi-cap and consumption funds. Also on 21/10: record date for ICICI Prudential AMC's ₹30 a share interim dividend."
+  },
+  {
+   "cat": "markets",
+   "date": "2026-10-20",
    "impact": "up",
+   "rank": 7,
+   "src": "Business Standard; Kotak Neo",
+   "tags": [
+    "GIFT Nifty",
+    "Open",
+    "Nifty levels"
+   ],
+   "title": "GIFT Nifty points to a higher open on Wednesday: about 23,020, up 131 points, at 8:07 am",
+   "url": "https://www.business-standard.com/markets/news/stock-market-live-october-21-bse-sensex-today-nifty50-gift-nifty-crude-oil-prices-jio-platforms-ipo-today-hd-fire-protect-share-price-126102100078_1.html",
+   "why": "Equity fund NAVs may win back part of Monday's 1% fall if the gap holds, with Bajaj Finance reacting to strong results and Eternal reporting today. Sources differ on the size: Business Standard quotes +131 points at 8:07 am, Kotak Neo +78 points (23,012.5) at 7:35 am. Analysts see 22,800 as support and 23,000–23,200 as resistance for the Nifty."
+  },
+  {
+   "cat": "global",
+   "date": "2026-10-20",
+   "impact": "up",
+   "rank": 8,
+   "src": "Capp Notes",
+   "tags": [
+    "US markets",
+    "Bond yields",
+    "FII flows"
+   ],
+   "title": "Wall Street rises: Dow +1.02% to 52,495.88, S&P 500 +0.28%, Nasdaq flat (−0.02%); US 10-year yield falls to 5.12%",
+   "url": "https://cappnotes.substack.com/p/closing-look-tuesday-october-20-2026",
+   "why": "Lower US bond yields ease the pull of money away from emerging markets like India and help US-focused and international fund NAVs. Yields fell after weak US housing data; small caps led (Russell 2000 +1.65%) while big tech lagged ahead of Meta's results on Wednesday."
+  },
+  {
+   "cat": "global",
+   "date": "2026-10-20",
+   "impact": "watch",
+   "rank": 9,
+   "src": "Capp Notes; Business Standard",
+   "tags": [
+    "Oil",
+    "West Asia",
+    "Inflation"
+   ],
+   "title": "Oil reverses: Brent hits $111.99, then settles 0.69% lower at $108.79 on hopes of Iran talks; it is back near $110 early Wednesday",
+   "url": "https://cappnotes.substack.com/p/closing-look-tuesday-october-20-2026",
+   "why": "Oil swinging around $110 remains the main risk for both equity and debt fund returns, since it feeds inflation and weakens the rupee. Reports differ on Wednesday morning: Business Standard has Brent up 1.34% at $110.02 on Red Sea shipping worries, while Kotak Neo notes it slipped 1.1% from the five-month high. US crude (December) settled at $98.28."
+  },
+  {
+   "cat": "triggers",
+   "date": "2026-10-20",
+   "impact": "watch",
+   "rank": 10,
+   "src": "Business Standard; IIFL",
+   "tags": [
+    "IPO",
+    "Jio",
+    "GMP"
+   ],
+   "title": "Wednesday 21/10: Jio Platforms and Paras Healthcare IPOs open; HD Fire Protect lists",
+   "url": "https://www.indiainfoline.com/news/ipo/jio-platforms-ipo-gmp-today-grey-market-premium-rises-to-225-ahead-of-october-21-opening",
+   "why": "Clients will ask about Jio. The grey market premium (an unofficial, unregulated price for shares before listing) was ₹225 on 16/10, about 20% over the ₹1,119 upper price, but it can change quickly and is no guarantee of listing gains. Many large equity funds already hold Jio through the anchor book, so its listing on 28/10 will move their NAVs."
+  },
+  {
+   "cat": "markets",
+   "date": "2026-10-19",
+   "impact": "down",
+   "rank": 1,
+   "src": "Business Standard",
+   "tags": [
+    "Sensex",
+    "Nifty",
+    "Broad sell-off"
+   ],
+   "title": "Sensex −876 pts (−1.17%) to 73,853; Nifty −1.11% to 22,889 as private banks and IT drag",
+   "url": "https://www.business-standard.com/markets/news/stock-market-live-october-19-nse-bse-sensex-today-nifty50-gift-nifty-crude-oil-prices-bond-yields-q2-results-hind-zinc-share-price-today-ipo-today-126101900052_1.html",
+   "why": "Most equity fund NAVs will be down about 1% for the day, wiping out Friday's gain; the fall was broad, with mid and small caps down about 1% too. Reasons cited: selling in private banks after results, profit-taking in IT, cautious global cues and crude oil still near $107 despite a ~2% dip. LKP Securities sees 22,800 as the next support level for the Nifty."
+  },
+  {
+   "cat": "stocks",
+   "date": "2026-10-19",
+   "impact": "watch",
+   "rank": 2,
+   "src": "Business Standard",
+   "tags": [
+    "Banks",
+    "Q2 results",
+    "PSU banks"
+   ],
+   "title": "Private banks −1.85% after results, PSU banks +2.4%: the only sector in the green",
+   "url": "https://www.business-standard.com/markets/news/stock-market-live-october-19-nse-bse-sensex-today-nifty50-gift-nifty-crude-oil-prices-bond-yields-q2-results-hind-zinc-share-price-today-ipo-today-126101900052_1.html",
+   "why": "Large-cap, flexi-cap and banking funds are heavy in private banks, so they felt this most; Axis Bank was among the top losers, while SBI rose over 1%. PSU and value-style funds, which hold more public sector banks, held up better."
+  },
+  {
+   "cat": "markets",
+   "date": "2026-10-19",
+   "impact": "watch",
    "rank": 3,
    "src": "Business Standard",
    "tags": [
     "IT",
-    "Large caps"
+    "Infosys"
    ],
-   "title": "IT stocks lead a second day of gains after encouraging Q2 results; Nifty IT up about 4%",
-   "url": "https://www.business-standard.com/amp/markets/news/stock-market-live-october-16-nse-bse-sensex-today-nifty50-gift-nifty-crude-oil-prices-q2-results-ipo-today-126101600083_1.html",
-   "why": "IT was the sector fund managers sold most in September (net −₹3,700 cr). Funds that held on benefit; watch whether the rebound lasts beyond a few results."
+   "title": "IT index slips 1.28% after last week's 11% rally; Infosys among the top Sensex losers",
+   "url": "https://www.business-standard.com/markets/news/stock-market-live-october-19-nse-bse-sensex-today-nifty50-gift-nifty-crude-oil-prices-bond-yields-q2-results-hind-zinc-share-price-today-ipo-today-126101900052_1.html",
+   "why": "Some profit-taking was expected after IT's best week since 2008. Infosys reports on 23/10, which will decide whether the rebound in IT-heavy funds holds."
+  },
+  {
+   "cat": "triggers",
+   "date": "2026-10-19",
+   "impact": "watch",
+   "rank": 4,
+   "src": "Business Standard (Reuters)",
+   "tags": [
+    "IPO",
+    "Jio",
+    "Liquidity"
+   ],
+   "title": "Jio Platforms anchor book nearly 30 times oversubscribed; Fidelity, GIC, ADIA and BlackRock among bidders",
+   "url": "https://www.business-standard.com/companies/news/jio-platforms-ipo-anchor-investor-quota-nearly-30-times-oversubscribed-126101900538_1.html",
+   "why": "Strong demand from large global investors ahead of the public issue opening Wednesday 21/10. Clients will ask about applying; for funds, a ₹30,213 cr issue can briefly pull money away from listed stocks while investors raise cash to bid."
+  },
+  {
+   "cat": "stocks",
+   "date": "2026-10-19",
+   "impact": "watch",
+   "rank": 5,
+   "src": "Business Standard",
+   "tags": [
+    "Cement",
+    "Q2 results"
+   ],
+   "title": "UltraTech Cement Q2: profit up 21.3% to ₹1,493.77 cr, yet the stock fell 2.9%",
+   "url": "https://www.business-standard.com/markets/news/stock-market-live-october-19-nse-bse-sensex-today-nifty50-gift-nifty-crude-oil-prices-bond-yields-q2-results-hind-zinc-share-price-today-ipo-today-126101900052_1.html",
+   "why": "UltraTech is a common holding in large-cap and infrastructure funds. Decent growth did not stop selling on a weak day; it was among the top Sensex losers along with Bajaj Finance and Trent."
   },
   {
    "cat": "markets",
-   "date": "2026-10-16",
+   "date": "2026-10-19",
    "impact": "watch",
    "rank": 6,
-   "src": "Business Standard",
+   "src": "Whalesbook; ThePrint (PTI)",
    "tags": [
-    "Mid caps",
-    "Small caps"
+    "FII/DII flows"
    ],
-   "title": "Recovery is selective: mid and small caps ended flat while the Nifty rose",
-   "url": "https://www.business-standard.com/amp/markets/news/stock-market-live-october-16-nse-bse-sensex-today-nifty50-gift-nifty-crude-oil-prices-q2-results-ipo-today-126101600083_1.html",
-   "why": "Mid and small cap funds are lagging large-cap funds in this bounce. Analysts want broader buying and a return of foreign money before calling it a recovery."
+   "title": "Foreign investors sold ₹1,148.64 cr, domestic institutions bought ₹3,201.19 cr",
+   "url": "https://www.whalesbook.com/news/English/sebiexchange/Nifty-Falls-11percent-as-Private-Bank-Sell-Off-Outweighs-DII-Buying/6ad61f8b79a16deaeaf7047e",
+   "why": "Mutual funds and other domestic institutions (DIIs) kept buying on a down day, but it was not enough to offset selling in private banks, IT and FMCG. Foreign selling was the smallest single-day outflow this month, which is a mildly better sign."
+  },
+  {
+   "cat": "stocks",
+   "date": "2026-10-19",
+   "impact": "up",
+   "rank": 7,
+   "src": "Upstox",
+   "tags": [
+    "NBFC",
+    "Q2 results"
+   ],
+   "title": "Bajaj Finance Q2 (after the close): profit up 28.7% to ₹6,366.57 cr, AUM up 26% to ₹5.85 lakh cr",
+   "url": "https://upstox.com/news/market-news/earnings/bajaj-finance-q2-results-profit-soars-29-yo-y-to-6-367-crore-nii-grows-to-13-335-crore-check-numbers/article-202104/",
+   "why": "Bajaj Finance is a large holding in many large-cap and flexi-cap funds, and the stock fell 2.52% to ₹957.35 on Monday before the results. Bad loans also fell (gross NPA, or loans not being repaid, at 1.06% vs 1.24% a year ago). The market reacts on Wednesday 21/10."
   },
   {
    "cat": "global",
-   "date": "2026-10-16",
+   "date": "2026-10-19",
    "impact": "down",
-   "rank": 4,
-   "src": "FinanceFeeds; Nation Thailand",
+   "rank": 8,
+   "src": "Nation Thailand (Reuters)",
    "tags": [
     "Oil",
     "Rupee",
     "West Asia"
    ],
-   "title": "Brent crude jumps 3.7% to settle at $109.86, its highest since 19/05",
-   "url": "https://financefeeds.com/brent-crude-oil-price-110-week-ahead-highest-settle-since-may-bull-115-bear-100/",
-   "why": "Costlier oil is the biggest threat to this rally: it raises inflation, weakens the rupee and keeps foreign investors cautious. The jump came after a missile was aimed at a Saudi export port and a Russian refinery was hit; Brent eased about 1.3% to $108.43 early Monday after the US waived some Russia sanctions."
+   "title": "Oil stays near a five-month high: Brent settles at $109.55, US crude jumps 2.2% to $103.66 after Houthi attacks on Saudi sites",
+   "url": "https://www.nationthailand.com/news/world/40072496",
+   "why": "Oil around $110 is still the main risk for Indian equity and debt funds: it pushes up inflation and weakens the rupee (94.91 to the dollar). Tanker data from Kpler show Gulf crude flows down to about 8.5 million barrels a day from over 20 million the week before; Saudi Arabia has not confirmed the attack claims."
   },
   {
-   "cat": "triggers",
-   "date": "2026-10-16",
-   "impact": "watch",
-   "rank": 10,
-   "src": "Upstox",
-   "tags": [
-    "FII/DII flows"
-   ],
-   "title": "Foreign investors sold ₹30,294 cr in the week to 09/10; domestic institutions bought ₹30,313 cr",
-   "url": "https://upstox.com/news/market-news/trading/week-ahead-india-and-us-inflation-hdfc-bank-earnings-trump-s-diesel-deal-and-fi-is-activity-among-key-market-triggers-to-watch/article-201640/",
-   "why": "Mutual fund and SIP money is absorbing almost all of the foreign selling, which is why the fall has been orderly rather than a crash."
-  },
-  {
-   "cat": "rules",
-   "date": "2026-10-16",
-   "impact": "down",
-   "rank": 11,
-   "src": "Upstox / APAC News",
-   "tags": [
-    "RBI",
-    "Debt funds"
-   ],
-   "title": "RBI raised the repo rate by 0.25% to 5.50% on 07/10 and added steps to steady the rupee",
-   "url": "https://apacnewsnetwork.com/2026/10/why-stock-market-falling-today-sensex-nifty-fii-outflows/",
-   "why": "Higher rates mean costlier loans and some short-term pressure on bond prices (and debt fund NAVs). The rupee measures include a dollar window for oil companies."
-  },
-  {
-   "cat": "mf",
-   "date": "2026-10-16",
+   "cat": "global",
+   "date": "2026-10-19",
    "impact": "up",
-   "rank": 12,
-   "src": "INDmoney (AMFI data)",
-   "tags": [
-    "AMFI data",
-    "Flows"
-   ],
-   "title": "Investors put ₹38,306 cr into equity funds in September, up from ₹29,329 cr in August",
-   "url": "https://www.indmoney.com/blog/mutual-funds/stocks-bought-by-mutual-funds-september-2026",
-   "why": "Investors kept buying through an eight-week fall. Small cap funds (₹9,039 cr) and mid cap funds (₹7,835 cr) took the most; large cap funds only about ₹859 cr."
-  },
-  {
-   "cat": "mf",
-   "date": "2026-10-16",
-   "impact": "watch",
-   "rank": 13,
-   "src": "Abundance holdings analysis (AMC portfolio files)",
-   "tags": [
-    "Money flow"
-   ],
-   "title": "What fund managers did in September: bought finance and pharma, trimmed IT and banks",
-   "url": "",
-   "why": "Net buying of ₹33,768 cr across 431 active schemes. Finance (+₹12,908 cr) and pharma (+₹8,725 cr) were bought as prices fell; IT (−₹3,700 cr) and banks (−₹2,838 cr) were cut. Full detail is in the screener's Money flow tab."
-  },
-  {
-   "cat": "manager",
-   "date": "2026-10-16",
-   "impact": "watch",
-   "rank": 14,
-   "src": "Value Research",
-   "tags": [
-    "Edelweiss"
-   ],
-   "title": "Edelweiss reshuffles co-managers in its Flexi Cap, Focused, Mid Cap and Multi Cap funds (from 14/10/2026)",
-   "url": "https://www.valueresearchonline.com/stories/229906/fund-manager-revisions-in-some-schemes-of-edelweiss-mutual-fund/",
-   "why": "Mostly additions (Dhruv Bhatia, Nikhil Gada, Sumanta Khan, Ashwani Kumar Agarwalla); Sumanta Khan leaves the Focused fund. Lead manager Trideep Bhattacharya stays on all four, so the impact should be small."
-  },
-  {
-   "cat": "manager",
-   "date": "2026-10-16",
-   "impact": "watch",
-   "rank": 17,
-   "src": "Value Research",
-   "tags": [
-    "Invesco"
-   ],
-   "title": "Invesco adds an arbitrage manager to five equity funds (from 01/10/2026)",
-   "url": "https://www.valueresearchonline.com/stories/229829/fund-manager-changes-in-a-few-funds-of-invesco-mutual-fund/",
-   "why": "Deepak Gupta joins Contra, Flexi Cap, Large & Mid Cap, Large Cap and Multi Cap to manage the arbitrage/cash portion. The equity managers are unchanged, so stock picking is not affected."
-  },
-  {
-   "cat": "manager",
-   "date": "2026-10-16",
-   "impact": "watch",
-   "rank": 18,
-   "src": "Value Research",
-   "tags": [
-    "Axis"
-   ],
-   "title": "Axis Services Opportunities Fund: Nikhil Walecha joins Sachin Relekar (from 01/10/2026)",
-   "url": "https://www.valueresearchonline.com/stories/229805/fund-manager-changes-in-the-axis-services-opportunities-fund/",
-   "why": "An addition, not a replacement. Relekar continues."
-  },
-  {
-   "cat": "rules",
-   "date": "2026-10-16",
-   "impact": "watch",
-   "rank": 15,
-   "src": "TaxGuru",
-   "tags": [
-    "SEBI",
-    "Advertising",
-    "Final"
-   ],
-   "title": "SEBI moves fund advertising to its common advertisement code (Mutual Funds Second Amendment, 2026)",
-   "url": "https://taxguru.in/sebi/sebi-mutual-funds-amendment-2026-aligns-advertisement-rules-common-code.html",
-   "why": "Final rule, effective 180 days after gazette publication: AMC ads will follow SEBI's common code on disclaimers, return claims, rankings, incentives and 'dark patterns' (designs that nudge people into choices). Whether distributor material is covered needs checking in the code itself. Sources differ on the date: TaxGuru shows the notification dated 08/10/2026; our earlier note said 10/10."
-  },
-  {
-   "cat": "markets",
-   "date": "2026-10-16",
-   "impact": "up",
-   "rank": 1,
-   "src": "Liquide (weekly review); CNBC-TV18",
-   "tags": [
-    "Weekly recap",
-    "FII/DII",
-    "IT"
-   ],
-   "title": "Nifty's best week in months: +2.78% for the week, IT index up about 11.7%; foreign investors turned buyers on Friday",
-   "url": "https://blog.liquide.life/weekly-review-indian-stock-market-prediction-oct-19th-oct-23rd-2026/",
-   "why": "Large-cap and IT-heavy funds should show a clear NAV bounce this week, with IT stocks having their best week since 2008. Foreign investors still sold a net ₹8,991 cr over the week, while domestic institutions (mutual funds, insurers) bought ₹7,813 cr; on Friday the roles flipped (FIIs +₹1,166 cr, DIIs −₹3,661 cr)."
-  },
-  {
-   "cat": "rules",
-   "date": "2026-10-16",
-   "impact": "watch",
-   "rank": 8,
-   "src": "Corplaw Updates; HDFC Sky",
-   "tags": [
-    "SEBI",
-    "Closing price",
-    "F&O"
-   ],
-   "title": "SEBI finalizes a 10-minute closing auction (3:30–3:40 pm) from 07/12/2026; F&O expiry stays on 30-minute VWAP",
-   "url": "https://www.corplawupdates.in/updates/sebi-closing-auction-session-final-framework-cas-october-2026-2",
-   "why": "From 07/12, each stock's closing price, which is what fund NAVs are calculated from, will be set by a short end-of-day auction instead of the current method. VWAP (volume-weighted average price) keeps derivative expiry settlement on the last 30 minutes of trading. This is a final circular dated 15/10/2026, not a proposal."
-  },
-  {
-   "cat": "triggers",
-   "date": "2026-10-16",
-   "impact": "watch",
-   "rank": 5,
-   "src": "Upstox",
-   "tags": [
-    "IPO",
-    "Reliance",
-    "Liquidity"
-   ],
-   "title": "Jio Platforms IPO, India's largest ever at ₹30,213 cr, opens 21/10 (closes 23/10, lists 28/10)",
-   "url": "https://upstox.com/news/market-news/ipo/jio-platforms-ipo-date-issue-opens-oct-21-check-key-details/article-201859/",
-   "why": "Clients will ask about it, and a share sale this big can pull money away from listed stocks for a few days as funds and investors raise cash to bid. Price band ₹1,065–1,119; anchor bidding is on 19/10; it is a fresh issue only (no promoter selling)."
-  },
-  {
-   "cat": "triggers",
-   "date": "2026-10-16",
-   "impact": "watch",
-   "rank": 7,
-   "src": "Business Upturn",
-   "tags": [
-    "Q2 results",
-    "Infosys",
-    "Holiday"
-   ],
-   "title": "Big results week (four trading days; Tuesday 20/10 is the Dussehra holiday)",
-   "url": "https://businessupturn.com/finance/stock-market/quarterly-results/top-q2-results-next-week-october-19-24-infosys-bajaj-finance-swiggy-bank-of-india-and-adani-power-among-companies-to-report-earnings/",
-   "why": "Several of the most widely held fund stocks report: Bajaj Finance and UltraTech (19/10), Eternal (21/10), Infosys, IndusInd Bank, Dr Reddy's, Tata Motors, JSW Steel and Shriram Finance (23/10), and Kotak Mahindra Bank (24/10). Infosys decides whether the IT rally lasts."
-  },
-  {
-   "cat": "manager",
-   "date": "2026-10-16",
-   "impact": "watch",
    "rank": 9,
-   "src": "Value Research",
+   "src": "TheStreet",
    "tags": [
-    "Navi",
-    "Lead change",
-    "Flexi cap"
+    "US markets",
+    "Tech"
    ],
-   "title": "Navi MF: Rushabh Patel replaces Ashutosh Shirwaikar as equity manager on 17 schemes (from 06/10/2026)",
-   "url": "https://www.valueresearchonline.com/stories/229885/fund-manager-changes-in-a-few-schemes-of-navi-mutual-fund/",
-   "why": "A real change of equity manager, not just an addition. It matters most for the two active funds, Navi Flexi Cap and Navi Large & Midcap; the other 15 are mostly index funds and FoFs, where the impact is small. In Navi Aggressive Hybrid, Patel takes equity and Tanmay Sethi stays on debt."
+   "title": "US stocks rebound overnight: Nasdaq +1.1%, S&P 500 +0.41%, Dow −0.07% as tech recovers",
+   "url": "https://www.thestreet.com/stock-market-today/stock-market-today-oct-19-2026-nasdaq-futures-climb-as-tech-rebound-from-sell-off",
+   "why": "A calmer US market and easing Treasury yields help international and US-focused fund NAVs and support global risk appetite before India reopens on Wednesday. Tech results from Netflix, Tesla and Meta this week will test the recovery."
+  },
+  {
+   "cat": "stocks",
+   "date": "2026-10-19",
+   "impact": "up",
+   "rank": 10,
+   "src": "Business Standard",
+   "tags": [
+    "Metals",
+    "Silver",
+    "Q2 results"
+   ],
+   "title": "Hindustan Zinc Q2: profit more than doubles to ₹6,412 cr on higher metal prices; silver revenue up 141%",
+   "url": "https://www.business-standard.com/companies/quarterly-results/hindustan-zinc-profit-more-than-doubles-to-rs-6-412-cr-on-higher-prices-126101900701_1.html",
+   "why": "Relevant to metals, PSU-style and dividend funds that hold it. Business Standard puts profit growth at 142% (from ₹2,649 cr); some outlets report 149%. Revenue rose about 77% to ₹15,093 cr."
   },
   {
    "cat": "manager",
-   "date": "2026-10-16",
+   "date": "2026-10-19",
    "impact": "watch",
-   "rank": 16,
-   "src": "Value Research",
-   "tags": [
-    "Franklin",
-    "Debt funds"
-   ],
-   "title": "Franklin Templeton: Pallab Roy exits nine debt and hybrid schemes (from 01/10/2026)",
-   "url": "https://www.valueresearchonline.com/stories/229804/fund-manager-changes-in-a-few-schemes-of-franklin-templeton-mutual-fund/",
-   "why": "Low impact: Rohan Maru continues on all nine. Anuj Tagra joins Arbitrage, Floating Interest Rates, Multi Asset Allocation and Retirement; Chandni Gupta joins Liquid, Overnight and Retirement."
-  },
-  {
-   "cat": "manager",
-   "date": "2026-10-16",
-   "impact": "watch",
-   "rank": 19,
-   "src": "Value Research",
-   "tags": [
-    "Mirae Asset",
-    "Passive"
-   ],
-   "title": "Mirae Asset: Ekta Gala exits 57 ETFs, index funds and FoFs; Sudip Shere and others take over (from 07/10/2026)",
-   "url": "https://www.valueresearchonline.com/stories/229877/fund-manager-revisions-in-various-schemes-of-mirae-asset-mutual-fund/",
-   "why": "Low impact: these are passive funds that copy an index, so the manager does not pick stocks. Includes the Nifty 50, Sensex, Midcap 150 and Gold/Silver ETFs."
-  },
-  {
-   "cat": "manager",
-   "date": "2026-10-16",
-   "impact": "watch",
-   "rank": 20,
+   "rank": 11,
    "src": "Value Research",
    "tags": [
     "Groww",
-    "Co-manager"
+    "Passive"
    ],
-   "title": "Groww MF adds Hitesh Das to five equity funds (from 30/09/2026)",
-   "url": "https://www.valueresearchonline.com/stories/229814/fund-manager-changes-in-a-few-funds-of-groww-mutual-fund/",
-   "why": "An addition only; the existing three managers stay. Covers Banking & Financial Services, Large Cap, Multicap, Small Cap and Value funds."
+   "title": "Groww MF: assistant fund manager Ameya Sakpal exits six gold, silver, liquid and overnight schemes (from 16/10/2026)",
+   "url": "https://www.valueresearchonline.com/stories/229963/fund-manager-changes-under-some-schemes-of-groww-mutual-fund/",
+   "why": "Low impact: these are passive or cash-like funds and the existing managers stay. Kaustubh Sule and Wilfred Peter Gonsalves cover Groww Gold ETF and FoF, Silver ETF and FoF, Nifty 1D Rate Liquid ETF and Overnight Fund."
   },
   {
    "cat": "manager",
-   "date": "2026-10-16",
+   "date": "2026-10-19",
    "impact": "watch",
-   "rank": 21,
+   "rank": 12,
    "src": "Value Research",
    "tags": [
-    "Edelweiss",
+    "Axis",
     "Arbitrage"
    ],
-   "title": "Edelweiss Arbitrage Fund adds Rakesh Prajapati as equity manager (from 07/10/2026)",
-   "url": "https://www.valueresearchonline.com/stories/229846/fund-manager-changes-in-the-edelweiss-arbitrage-fund/",
-   "why": "An addition only; all four existing managers stay. Little impact on an arbitrage fund's returns."
+   "title": "Axis Arbitrage Fund adds Pawan Jhangiani as a manager (from 21/10/2026)",
+   "url": "https://www.valueresearchonline.com/stories/229962/fund-manager-changes-in-the-axis-arbitrage-fund/",
+   "why": "Low impact: an addition only. Sachin Jain and Devang Shah (debt) continue, and arbitrage fund returns depend little on the manager."
   },
   {
    "cat": "mf",
-   "date": "2026-10-16",
+   "date": "2026-10-19",
    "impact": "watch",
-   "rank": 22,
+   "rank": 13,
    "src": "Value Research",
    "tags": [
-    "Zerodha",
-    "AMC"
-   ],
-   "title": "Zerodha's AMC is renamed Zerodha CASE Asset Management Limited (from 07/10/2026)",
-   "url": "https://www.valueresearchonline.com/stories/229895/change-in-amc-name-of-zerodha-mutual-fund/",
-   "why": "A name change only; investors' units and schemes are unaffected. Expect the new name on statements."
-  },
-  {
-   "cat": "mf",
-   "date": "2026-10-16",
-   "impact": "down",
-   "rank": 2,
-   "src": "Cafemutual; Angel One",
-   "tags": [
-    "Gold FoF",
-    "SEBI/AMFI",
+    "Union MF",
     "SIP"
    ],
-   "title": "17+ fund houses stop new money into gold ETF fund-of-funds from 15–16/10; existing SIPs continue",
-   "url": "https://cafemutual.com/news/passives/39072-as-per-sebi-instructions-fund-houses-halt-fresh-inflows-into-gold-etf-fofs",
-   "why": "Clients cannot start new SIPs, add lumpsums, switch in or step up SIPs in gold FoFs (funds that invest in gold ETFs) at AMCs including HDFC, ICICI Prudential, SBI, Nippon, Kotak, Axis, UTI, Tata and DSP. SIPs and STPs registered earlier keep running and redemptions are allowed. Shriram MF said this follows SEBI instructions relayed through AMFI; other reports say reasons were not disclosed. No end date was given."
+   "title": "Union Multicap Fund cuts its minimum SIP from ₹500 to ₹250 (from 22/10/2026)",
+   "url": "https://www.valueresearchonline.com/stories/229964/change-in-minimum-sip-amount-of-union-multi-cap-fund/",
+   "why": "Applies to monthly, weekly and fortnightly SIPs. Useful for clients starting small, such as young investors or children's goal SIPs."
   },
   {
-   "cat": "manager",
-   "date": "2026-10-16",
+   "cat": "mf",
+   "date": "2026-10-19",
    "impact": "watch",
-   "rank": 23,
-   "src": "Value Research",
+   "rank": 14,
+   "src": "Cafemutual",
    "tags": [
-    "ABSL",
-    "Debt funds",
-    "Co-manager"
+    "NFO",
+    "Small cap",
+    "New AMC"
    ],
-   "title": "Aditya Birla Sun Life Gilt Fund: Vighnesh Gupta joins Bhupesh Bameta (from 16/10/2026)",
-   "url": "https://www.valueresearchonline.com/stories/229924/fund-manager-changes-in-the-aditya-birla-sun-life-gilt-fund/",
-   "why": "Low impact: an addition, not a replacement. Bameta continues on the fund, which invests only in government bonds."
+   "title": "New AMC Carnelian MF launches a small cap NFO (16/10–30/10) with a ₹5,000 cr size cap",
+   "url": "https://cafemutual.com/news/nfo/39063-carnelian-mf-debuts-with-a-smallcap-fund",
+   "why": "A first fund from a new fund house, so there is no track record for the AMC yet. The size cap means lumpsums stop once it reaches ₹5,000 cr, which helps a small cap fund stay nimble. It will hold 30–50 stocks against the Nifty Smallcap 250 TRI; managers are Deepak Malik and Viraj Parekh."
+  },
+  {
+   "cat": "rules",
+   "date": "2026-10-19",
+   "impact": "watch",
+   "rank": 15,
+   "src": "Cafemutual",
+   "tags": [
+    "AMFI",
+    "MFD compliance",
+    "Social media"
+   ],
+   "title": "AMFI: every distributor must file social media details on the ARN portal, even those with no accounts ('Not Applicable')",
+   "url": "https://cafemutual.com/news/industry/39080-even-mfds-without-social-media-accounts-must-submit-declaration-amfi",
+   "why": "This applies to Abundance as a distributor (MFD). Final requirement, issued under SEBI's directive on securities-market content online: update it via AMFI website → Distributor Corner → ARN login → Social Media Details. AMFI asks for it immediately; the report gives no exact deadline."
+  },
+  {
+   "cat": "mf",
+   "date": "2026-10-19",
+   "impact": "watch",
+   "rank": 16,
+   "src": "Cafemutual",
+   "tags": [
+    "GIFT City",
+    "Overseas investing",
+    "NRI"
+   ],
+   "title": "Aditya Birla Sun Life AMC launches two retail fund-of-funds from GIFT City in US dollars (announced 18/10)",
+   "url": "https://cafemutual.com/news/cafe-alt/39083-absl-amc-launches-two-retail-fofs-from-gift-city",
+   "why": "A dollar-denominated route for Indian residents to invest abroad under LRS (the Liberalised Remittance Scheme, the yearly overseas remittance limit) and for NRIs or foreign investors to buy Indian equities. ABSL Emerging Market Equity Fund invests mainly in the ARGA Emerging Market Equity Fund; ABSL India Growth Fund invests in ABSL's own equity schemes. Minimum US$500."
   },
   {
    "cat": "stocks",
@@ -510,76 +609,329 @@
   },
   {
    "cat": "markets",
-   "date": "2026-10-19",
-   "impact": "down",
+   "date": "2026-10-16",
+   "impact": "up",
    "rank": 1,
-   "src": "Business Standard",
+   "src": "Liquide (weekly review); CNBC-TV18",
    "tags": [
-    "Sensex",
-    "Nifty",
-    "Broad sell-off"
+    "Weekly recap",
+    "FII/DII",
+    "IT"
    ],
-   "title": "Sensex −876 pts (−1.17%) to 73,853; Nifty −1.11% to 22,889 as private banks and IT drag",
-   "url": "https://www.business-standard.com/markets/news/stock-market-live-october-19-nse-bse-sensex-today-nifty50-gift-nifty-crude-oil-prices-bond-yields-q2-results-hind-zinc-share-price-today-ipo-today-126101900052_1.html",
-   "why": "Most equity fund NAVs will be down about 1% for the day, wiping out Friday's gain; the fall was broad, with mid and small caps down about 1% too. Reasons cited: selling in private banks after results, profit-taking in IT, cautious global cues and crude oil still near $107 despite a ~2% dip. LKP Securities sees 22,800 as the next support level for the Nifty."
+   "title": "Nifty's best week in months: +2.78% for the week, IT index up about 11.7%; foreign investors turned buyers on Friday",
+   "url": "https://blog.liquide.life/weekly-review-indian-stock-market-prediction-oct-19th-oct-23rd-2026/",
+   "why": "Large-cap and IT-heavy funds should show a clear NAV bounce this week, with IT stocks having their best week since 2008. Foreign investors still sold a net ₹8,991 cr over the week, while domestic institutions (mutual funds, insurers) bought ₹7,813 cr; on Friday the roles flipped (FIIs +₹1,166 cr, DIIs −₹3,661 cr)."
   },
   {
-   "cat": "stocks",
-   "date": "2026-10-19",
-   "impact": "watch",
+   "cat": "mf",
+   "date": "2026-10-16",
+   "impact": "down",
    "rank": 2,
-   "src": "Business Standard",
+   "src": "Cafemutual; Angel One",
    "tags": [
-    "Banks",
-    "Q2 results",
-    "PSU banks"
+    "Gold FoF",
+    "SEBI/AMFI",
+    "SIP"
    ],
-   "title": "Private banks −1.85% after results, PSU banks +2.4%: the only sector in the green",
-   "url": "https://www.business-standard.com/markets/news/stock-market-live-october-19-nse-bse-sensex-today-nifty50-gift-nifty-crude-oil-prices-bond-yields-q2-results-hind-zinc-share-price-today-ipo-today-126101900052_1.html",
-   "why": "Large-cap, flexi-cap and banking funds are heavy in private banks, so they felt this most; Axis Bank was among the top losers, while SBI rose over 1%. PSU and value-style funds, which hold more public sector banks, held up better."
+   "title": "17+ fund houses stop new money into gold ETF fund-of-funds from 15–16/10; existing SIPs continue",
+   "url": "https://cafemutual.com/news/passives/39072-as-per-sebi-instructions-fund-houses-halt-fresh-inflows-into-gold-etf-fofs",
+   "why": "Clients cannot start new SIPs, add lumpsums, switch in or step up SIPs in gold FoFs (funds that invest in gold ETFs) at AMCs including HDFC, ICICI Prudential, SBI, Nippon, Kotak, Axis, UTI, Tata and DSP. SIPs and STPs registered earlier keep running and redemptions are allowed. Shriram MF said this follows SEBI instructions relayed through AMFI; other reports say reasons were not disclosed. No end date was given."
   },
   {
    "cat": "markets",
-   "date": "2026-10-19",
-   "impact": "watch",
+   "date": "2026-10-16",
+   "impact": "up",
    "rank": 3,
    "src": "Business Standard",
    "tags": [
     "IT",
-    "Infosys"
+    "Large caps"
    ],
-   "title": "IT index slips 1.28% after last week's 11% rally; Infosys among the top Sensex losers",
-   "url": "https://www.business-standard.com/markets/news/stock-market-live-october-19-nse-bse-sensex-today-nifty50-gift-nifty-crude-oil-prices-bond-yields-q2-results-hind-zinc-share-price-today-ipo-today-126101900052_1.html",
-   "why": "Some profit-taking was expected after IT's best week since 2008. Infosys reports on 23/10, which will decide whether the rebound in IT-heavy funds holds."
+   "title": "IT stocks lead a second day of gains after encouraging Q2 results; Nifty IT up about 4%",
+   "url": "https://www.business-standard.com/amp/markets/news/stock-market-live-october-16-nse-bse-sensex-today-nifty50-gift-nifty-crude-oil-prices-q2-results-ipo-today-126101600083_1.html",
+   "why": "IT was the sector fund managers sold most in September (net −₹3,700 cr). Funds that held on benefit; watch whether the rebound lasts beyond a few results."
+  },
+  {
+   "cat": "global",
+   "date": "2026-10-16",
+   "impact": "down",
+   "rank": 4,
+   "src": "FinanceFeeds; Nation Thailand",
+   "tags": [
+    "Oil",
+    "Rupee",
+    "West Asia"
+   ],
+   "title": "Brent crude jumps 3.7% to settle at $109.86, its highest since 19/05",
+   "url": "https://financefeeds.com/brent-crude-oil-price-110-week-ahead-highest-settle-since-may-bull-115-bear-100/",
+   "why": "Costlier oil is the biggest threat to this rally: it raises inflation, weakens the rupee and keeps foreign investors cautious. The jump came after a missile was aimed at a Saudi export port and a Russian refinery was hit; Brent eased about 1.3% to $108.43 early Monday after the US waived some Russia sanctions."
   },
   {
    "cat": "triggers",
-   "date": "2026-10-19",
-   "impact": "watch",
-   "rank": 4,
-   "src": "Business Standard (Reuters)",
-   "tags": [
-    "IPO",
-    "Jio",
-    "Liquidity"
-   ],
-   "title": "Jio Platforms anchor book nearly 30 times oversubscribed; Fidelity, GIC, ADIA and BlackRock among bidders",
-   "url": "https://www.business-standard.com/companies/news/jio-platforms-ipo-anchor-investor-quota-nearly-30-times-oversubscribed-126101900538_1.html",
-   "why": "Strong demand from large global investors ahead of the public issue opening Wednesday 21/10. Clients will ask about applying; for funds, a ₹30,213 cr issue can briefly pull money away from listed stocks while investors raise cash to bid."
-  },
-  {
-   "cat": "stocks",
-   "date": "2026-10-19",
+   "date": "2026-10-16",
    "impact": "watch",
    "rank": 5,
+   "src": "Upstox",
+   "tags": [
+    "IPO",
+    "Reliance",
+    "Liquidity"
+   ],
+   "title": "Jio Platforms IPO, India's largest ever at ₹30,213 cr, opens 21/10 (closes 23/10, lists 28/10)",
+   "url": "https://upstox.com/news/market-news/ipo/jio-platforms-ipo-date-issue-opens-oct-21-check-key-details/article-201859/",
+   "why": "Clients will ask about it, and a share sale this big can pull money away from listed stocks for a few days as funds and investors raise cash to bid. Price band ₹1,065–1,119; anchor bidding is on 19/10; it is a fresh issue only (no promoter selling)."
+  },
+  {
+   "cat": "markets",
+   "date": "2026-10-16",
+   "impact": "watch",
+   "rank": 6,
    "src": "Business Standard",
    "tags": [
-    "Cement",
-    "Q2 results"
+    "Mid caps",
+    "Small caps"
    ],
-   "title": "UltraTech Cement Q2: profit up 21.3% to ₹1,493.77 cr, yet the stock fell 2.9%",
-   "url": "https://www.business-standard.com/markets/news/stock-market-live-october-19-nse-bse-sensex-today-nifty50-gift-nifty-crude-oil-prices-bond-yields-q2-results-hind-zinc-share-price-today-ipo-today-126101900052_1.html",
-   "why": "UltraTech is a common holding in large-cap and infrastructure funds. Decent growth did not stop selling on a weak day; it was among the top Sensex losers along with Bajaj Finance and Trent."
+   "title": "Recovery is selective: mid and small caps ended flat while the Nifty rose",
+   "url": "https://www.business-standard.com/amp/markets/news/stock-market-live-october-16-nse-bse-sensex-today-nifty50-gift-nifty-crude-oil-prices-q2-results-ipo-today-126101600083_1.html",
+   "why": "Mid and small cap funds are lagging large-cap funds in this bounce. Analysts want broader buying and a return of foreign money before calling it a recovery."
+  },
+  {
+   "cat": "triggers",
+   "date": "2026-10-16",
+   "impact": "watch",
+   "rank": 7,
+   "src": "Business Upturn",
+   "tags": [
+    "Q2 results",
+    "Infosys",
+    "Holiday"
+   ],
+   "title": "Big results week (four trading days; Tuesday 20/10 is the Dussehra holiday)",
+   "url": "https://businessupturn.com/finance/stock-market/quarterly-results/top-q2-results-next-week-october-19-24-infosys-bajaj-finance-swiggy-bank-of-india-and-adani-power-among-companies-to-report-earnings/",
+   "why": "Several of the most widely held fund stocks report: Bajaj Finance and UltraTech (19/10), Eternal (21/10), Infosys, IndusInd Bank, Dr Reddy's, Tata Motors, JSW Steel and Shriram Finance (23/10), and Kotak Mahindra Bank (24/10). Infosys decides whether the IT rally lasts."
+  },
+  {
+   "cat": "rules",
+   "date": "2026-10-16",
+   "impact": "watch",
+   "rank": 8,
+   "src": "Corplaw Updates; HDFC Sky",
+   "tags": [
+    "SEBI",
+    "Closing price",
+    "F&O"
+   ],
+   "title": "SEBI finalizes a 10-minute closing auction (3:30–3:40 pm) from 07/12/2026; F&O expiry stays on 30-minute VWAP",
+   "url": "https://www.corplawupdates.in/updates/sebi-closing-auction-session-final-framework-cas-october-2026-2",
+   "why": "From 07/12, each stock's closing price, which is what fund NAVs are calculated from, will be set by a short end-of-day auction instead of the current method. VWAP (volume-weighted average price) keeps derivative expiry settlement on the last 30 minutes of trading. This is a final circular dated 15/10/2026, not a proposal."
+  },
+  {
+   "cat": "manager",
+   "date": "2026-10-16",
+   "impact": "watch",
+   "rank": 9,
+   "src": "Value Research",
+   "tags": [
+    "Navi",
+    "Lead change",
+    "Flexi cap"
+   ],
+   "title": "Navi MF: Rushabh Patel replaces Ashutosh Shirwaikar as equity manager on 17 schemes (from 06/10/2026)",
+   "url": "https://www.valueresearchonline.com/stories/229885/fund-manager-changes-in-a-few-schemes-of-navi-mutual-fund/",
+   "why": "A real change of equity manager, not just an addition. It matters most for the two active funds, Navi Flexi Cap and Navi Large & Midcap; the other 15 are mostly index funds and FoFs, where the impact is small. In Navi Aggressive Hybrid, Patel takes equity and Tanmay Sethi stays on debt."
+  },
+  {
+   "cat": "triggers",
+   "date": "2026-10-16",
+   "impact": "watch",
+   "rank": 10,
+   "src": "Upstox",
+   "tags": [
+    "FII/DII flows"
+   ],
+   "title": "Foreign investors sold ₹30,294 cr in the week to 09/10; domestic institutions bought ₹30,313 cr",
+   "url": "https://upstox.com/news/market-news/trading/week-ahead-india-and-us-inflation-hdfc-bank-earnings-trump-s-diesel-deal-and-fi-is-activity-among-key-market-triggers-to-watch/article-201640/",
+   "why": "Mutual fund and SIP money is absorbing almost all of the foreign selling, which is why the fall has been orderly rather than a crash."
+  },
+  {
+   "cat": "rules",
+   "date": "2026-10-16",
+   "impact": "down",
+   "rank": 11,
+   "src": "Upstox / APAC News",
+   "tags": [
+    "RBI",
+    "Debt funds"
+   ],
+   "title": "RBI raised the repo rate by 0.25% to 5.50% on 07/10 and added steps to steady the rupee",
+   "url": "https://apacnewsnetwork.com/2026/10/why-stock-market-falling-today-sensex-nifty-fii-outflows/",
+   "why": "Higher rates mean costlier loans and some short-term pressure on bond prices (and debt fund NAVs). The rupee measures include a dollar window for oil companies."
+  },
+  {
+   "cat": "mf",
+   "date": "2026-10-16",
+   "impact": "up",
+   "rank": 12,
+   "src": "INDmoney (AMFI data)",
+   "tags": [
+    "AMFI data",
+    "Flows"
+   ],
+   "title": "Investors put ₹38,306 cr into equity funds in September, up from ₹29,329 cr in August",
+   "url": "https://www.indmoney.com/blog/mutual-funds/stocks-bought-by-mutual-funds-september-2026",
+   "why": "Investors kept buying through an eight-week fall. Small cap funds (₹9,039 cr) and mid cap funds (₹7,835 cr) took the most; large cap funds only about ₹859 cr."
+  },
+  {
+   "cat": "mf",
+   "date": "2026-10-16",
+   "impact": "watch",
+   "rank": 13,
+   "src": "Abundance holdings analysis (AMC portfolio files)",
+   "tags": [
+    "Money flow"
+   ],
+   "title": "What fund managers did in September: bought finance and pharma, trimmed IT and banks",
+   "url": "",
+   "why": "Net buying of ₹33,768 cr across 431 active schemes. Finance (+₹12,908 cr) and pharma (+₹8,725 cr) were bought as prices fell; IT (−₹3,700 cr) and banks (−₹2,838 cr) were cut. Full detail is in the screener's Money flow tab."
+  },
+  {
+   "cat": "manager",
+   "date": "2026-10-16",
+   "impact": "watch",
+   "rank": 14,
+   "src": "Value Research",
+   "tags": [
+    "Edelweiss"
+   ],
+   "title": "Edelweiss reshuffles co-managers in its Flexi Cap, Focused, Mid Cap and Multi Cap funds (from 14/10/2026)",
+   "url": "https://www.valueresearchonline.com/stories/229906/fund-manager-revisions-in-some-schemes-of-edelweiss-mutual-fund/",
+   "why": "Mostly additions (Dhruv Bhatia, Nikhil Gada, Sumanta Khan, Ashwani Kumar Agarwalla); Sumanta Khan leaves the Focused fund. Lead manager Trideep Bhattacharya stays on all four, so the impact should be small."
+  },
+  {
+   "cat": "rules",
+   "date": "2026-10-16",
+   "impact": "watch",
+   "rank": 15,
+   "src": "TaxGuru",
+   "tags": [
+    "SEBI",
+    "Advertising",
+    "Final"
+   ],
+   "title": "SEBI moves fund advertising to its common advertisement code (Mutual Funds Second Amendment, 2026)",
+   "url": "https://taxguru.in/sebi/sebi-mutual-funds-amendment-2026-aligns-advertisement-rules-common-code.html",
+   "why": "Final rule, effective 180 days after gazette publication: AMC ads will follow SEBI's common code on disclaimers, return claims, rankings, incentives and 'dark patterns' (designs that nudge people into choices). Whether distributor material is covered needs checking in the code itself. Sources differ on the date: TaxGuru shows the notification dated 08/10/2026; our earlier note said 10/10."
+  },
+  {
+   "cat": "manager",
+   "date": "2026-10-16",
+   "impact": "watch",
+   "rank": 16,
+   "src": "Value Research",
+   "tags": [
+    "Franklin",
+    "Debt funds"
+   ],
+   "title": "Franklin Templeton: Pallab Roy exits nine debt and hybrid schemes (from 01/10/2026)",
+   "url": "https://www.valueresearchonline.com/stories/229804/fund-manager-changes-in-a-few-schemes-of-franklin-templeton-mutual-fund/",
+   "why": "Low impact: Rohan Maru continues on all nine. Anuj Tagra joins Arbitrage, Floating Interest Rates, Multi Asset Allocation and Retirement; Chandni Gupta joins Liquid, Overnight and Retirement."
+  },
+  {
+   "cat": "manager",
+   "date": "2026-10-16",
+   "impact": "watch",
+   "rank": 17,
+   "src": "Value Research",
+   "tags": [
+    "Invesco"
+   ],
+   "title": "Invesco adds an arbitrage manager to five equity funds (from 01/10/2026)",
+   "url": "https://www.valueresearchonline.com/stories/229829/fund-manager-changes-in-a-few-funds-of-invesco-mutual-fund/",
+   "why": "Deepak Gupta joins Contra, Flexi Cap, Large & Mid Cap, Large Cap and Multi Cap to manage the arbitrage/cash portion. The equity managers are unchanged, so stock picking is not affected."
+  },
+  {
+   "cat": "manager",
+   "date": "2026-10-16",
+   "impact": "watch",
+   "rank": 18,
+   "src": "Value Research",
+   "tags": [
+    "Axis"
+   ],
+   "title": "Axis Services Opportunities Fund: Nikhil Walecha joins Sachin Relekar (from 01/10/2026)",
+   "url": "https://www.valueresearchonline.com/stories/229805/fund-manager-changes-in-the-axis-services-opportunities-fund/",
+   "why": "An addition, not a replacement. Relekar continues."
+  },
+  {
+   "cat": "manager",
+   "date": "2026-10-16",
+   "impact": "watch",
+   "rank": 19,
+   "src": "Value Research",
+   "tags": [
+    "Mirae Asset",
+    "Passive"
+   ],
+   "title": "Mirae Asset: Ekta Gala exits 57 ETFs, index funds and FoFs; Sudip Shere and others take over (from 07/10/2026)",
+   "url": "https://www.valueresearchonline.com/stories/229877/fund-manager-revisions-in-various-schemes-of-mirae-asset-mutual-fund/",
+   "why": "Low impact: these are passive funds that copy an index, so the manager does not pick stocks. Includes the Nifty 50, Sensex, Midcap 150 and Gold/Silver ETFs."
+  },
+  {
+   "cat": "manager",
+   "date": "2026-10-16",
+   "impact": "watch",
+   "rank": 20,
+   "src": "Value Research",
+   "tags": [
+    "Groww",
+    "Co-manager"
+   ],
+   "title": "Groww MF adds Hitesh Das to five equity funds (from 30/09/2026)",
+   "url": "https://www.valueresearchonline.com/stories/229814/fund-manager-changes-in-a-few-funds-of-groww-mutual-fund/",
+   "why": "An addition only; the existing three managers stay. Covers Banking & Financial Services, Large Cap, Multicap, Small Cap and Value funds."
+  },
+  {
+   "cat": "manager",
+   "date": "2026-10-16",
+   "impact": "watch",
+   "rank": 21,
+   "src": "Value Research",
+   "tags": [
+    "Edelweiss",
+    "Arbitrage"
+   ],
+   "title": "Edelweiss Arbitrage Fund adds Rakesh Prajapati as equity manager (from 07/10/2026)",
+   "url": "https://www.valueresearchonline.com/stories/229846/fund-manager-changes-in-the-edelweiss-arbitrage-fund/",
+   "why": "An addition only; all four existing managers stay. Little impact on an arbitrage fund's returns."
+  },
+  {
+   "cat": "mf",
+   "date": "2026-10-16",
+   "impact": "watch",
+   "rank": 22,
+   "src": "Value Research",
+   "tags": [
+    "Zerodha",
+    "AMC"
+   ],
+   "title": "Zerodha's AMC is renamed Zerodha CASE Asset Management Limited (from 07/10/2026)",
+   "url": "https://www.valueresearchonline.com/stories/229895/change-in-amc-name-of-zerodha-mutual-fund/",
+   "why": "A name change only; investors' units and schemes are unaffected. Expect the new name on statements."
+  },
+  {
+   "cat": "manager",
+   "date": "2026-10-16",
+   "impact": "watch",
+   "rank": 23,
+   "src": "Value Research",
+   "tags": [
+    "ABSL",
+    "Debt funds",
+    "Co-manager"
+   ],
+   "title": "Aditya Birla Sun Life Gilt Fund: Vighnesh Gupta joins Bhupesh Bameta (from 16/10/2026)",
+   "url": "https://www.valueresearchonline.com/stories/229924/fund-manager-changes-in-the-aditya-birla-sun-life-gilt-fund/",
+   "why": "Low impact: an addition, not a replacement. Bameta continues on the fund, which invests only in government bonds."
   }
  ],
  "events": [
@@ -619,14 +971,29 @@
    "title": "Q2 results: Kotak Mahindra Bank, IDFC First, AU Small Finance Bank"
   },
   {
-   "date": "2026-10-28",
-   "note": "Decision lands early 29/10 India time.",
-   "title": "US Fed rate decision (FOMC meets 27–28/10)"
+   "date": "2026-10-27",
+   "note": "Scheduled board meetings; also ACC, Indus Towers, Tata Capital.",
+   "title": "Q2 results: L&T, Maruti Suzuki, Bajaj Auto, Cipla"
   },
   {
    "date": "2026-10-28",
    "note": "Scheduled listing date per the offer timetable.",
    "title": "Jio Platforms shares list"
+  },
+  {
+   "date": "2026-10-28",
+   "note": "Board will also consider an interim dividend.",
+   "title": "Q2 results: Hindustan Unilever"
+  },
+  {
+   "date": "2026-10-28",
+   "note": "Decision lands early 29/10 India time.",
+   "title": "US Fed rate decision (FOMC meets 27–28/10)"
+  },
+  {
+   "date": "2026-10-30",
+   "note": "Opened 16/10; ₹5,000 cr size cap.",
+   "title": "Carnelian Small Cap Fund NFO closes"
   }
  ]
 }
