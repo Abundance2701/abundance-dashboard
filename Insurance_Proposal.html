@@ -354,14 +354,20 @@ button:focus-visible{outline:2px solid var(--green); outline-offset:2px}
           '<div class="hint js-hhint"></div></div>'+
         '<div><label for="hp'+n+'">Persons covered</label>'+
           '<input type="text" id="hp'+n+'" class="js-hpersons" placeholder="Self, spouse, 2 children" autocomplete="off"></div>'+
-        '<div><label for="hr'+n+'">Premium (per year)</label>'+
+        '<div><label for="hr'+n+'">Premium \u2014 1 year</label>'+
           '<input type="text" id="hr'+n+'" class="js-hprem" inputmode="numeric" placeholder="32,000"></div>'+
+        '<div><label for="hr2'+n+'">Premium \u2014 2 years <span style="color:var(--muted)">(optional)</span></label>'+
+          '<input type="text" id="hr2'+n+'" class="js-hprem2" inputmode="numeric" placeholder="61,000"></div>'+
+        '<div><label for="hr3'+n+'">Premium \u2014 3 years <span style="color:var(--muted)">(optional)</span></label>'+
+          '<input type="text" id="hr3'+n+'" class="js-hprem3" inputmode="numeric" placeholder="86,400"></div>'+
       '</div>'+
       '<div class="err js-err"></div>';
 
     healths.appendChild(card);
     smartAmount(card.querySelector(".js-hsum"), card.querySelector(".js-hhint"));
     commas(card.querySelector(".js-hprem"), null);
+    commas(card.querySelector(".js-hprem2"), null);
+    commas(card.querySelector(".js-hprem3"), null);
     card.querySelector(".js-remove").addEventListener("click", function(){ card.remove(); showEmpty(); });
     showEmpty();
   }
@@ -371,19 +377,21 @@ button:focus-visible{outline:2px solid var(--green); outline-offset:2px}
     document.getElementById("healthEmpty").hidden = document.querySelectorAll(".health").length > 0;
   }
 
-  function healthRows(){
+  function healthPlans(){
     var out = [];
     document.querySelectorAll(".health").forEach(function(c){
       var nm = c.querySelector(".js-hname").value.trim();
       var s  = amountText(c.querySelector(".js-hsum"));
-      var pr = num(c.querySelector(".js-hprem"));
-      if(!nm || !s || !pr) return;
-      out.push([
-        nm,
-        s,
-        c.querySelector(".js-hpersons").value.trim() || "\u2014",
-        "\u20B9 " + inr(pr) + " p.a."
-      ]);
+      var p1 = num(c.querySelector(".js-hprem"));
+      if(!nm || !s || !p1) return;
+      out.push({
+        name: nm,
+        sum: s,
+        persons: c.querySelector(".js-hpersons").value.trim() || "\u2014",
+        p1: p1,
+        p2: num(c.querySelector(".js-hprem2")),
+        p3: num(c.querySelector(".js-hprem3"))
+      });
     });
     return out;
   }
@@ -632,13 +640,18 @@ button:focus-visible{outline:2px solid var(--green); outline-offset:2px}
       y = doc.lastAutoTable.finalY + 16;
     });
 
-    var hrows = healthRows();
-    if(hrows.length){
+    var plans = healthPlans();
+    if(plans.length){
+      var has2 = plans.some(function(p){ return p.p2 > 0; });
+      var has3 = plans.some(function(p){ return p.p3 > 0; });
+      var nPrem = 1 + (has2 ? 1 : 0) + (has3 ? 1 : 0);
+      var multi = nPrem > 1;
+
       var ped = pedText();
       var pedLines = ped ? doc.splitTextToSize(ped, W - 2*M) : [];
       var pedH = ped ? 6 + pedLines.length * 4.6 + 6 : 0;
 
-      if(y + 30 + pedH + hrows.length * 9 > H - BAND - 12){ doc.addPage(); y = 24; }
+      if(y + 30 + pedH + plans.length * (multi ? 12 : 9) > H - BAND - 12){ doc.addPage(); y = 24; }
       y = sectionHead(doc, y, "HEALTH INSURANCE");
 
       if(ped){
@@ -649,10 +662,48 @@ button:focus-visible{outline:2px solid var(--green); outline-offset:2px}
         y += pedH;
       }
 
+      function money(v){ return v > 0 ? "\u20B9 " + inr(v) : "\u2014"; }
+
+      var hrows = plans.map(function(p){
+        var r = [p.name, p.sum, p.persons, multi ? money(p.p1) : money(p.p1) + " p.a."];
+        if(has2) r.push(money(p.p2));
+        if(has3) r.push(money(p.p3));
+        return r;
+      });
+
+      var head;
+      if(!multi){
+        head = [["Plan","Sum assured","Persons covered","Premium"]];
+      }else{
+        var sub = ["1 year"];
+        if(has2) sub.push("2 years");
+        if(has3) sub.push("3 years");
+        head = [
+          [{ content:"Plan", rowSpan:2 },
+           { content:"Sum assured", rowSpan:2 },
+           { content:"Persons covered", rowSpan:2 },
+           { content:"Premium", colSpan:nPrem }],
+          sub
+        ];
+      }
+
+      var cw = nPrem === 1 ? [46, 32, 60, 36]
+             : nPrem === 2 ? [42, 30, 48, 27, 27]
+             :               [34, 28, 34, 26, 26, 26];
+
+      var cs = {};
+      cw.forEach(function(w, i){ cs[i] = { cellWidth: w, halign: "right" }; });
+      cs[0].halign = "left";  cs[0].fontStyle = "bold"; cs[0].textColor = GREEN;
+      cs[2].halign = "left";
+      for(var ci = 3; ci < cw.length; ci++){
+        cs[ci].textColor = GREEN;
+        if(!multi) cs[ci].fontStyle = "bold";
+      }
+
       doc.autoTable({
         startY: y,
         margin: { left:M, right:M, bottom: BAND + 10 },
-        head: [["Plan","Sum assured","Persons covered","Premium"]],
+        head: head,
         body: hrows,
         theme: "grid",
         styles: {
@@ -663,16 +714,11 @@ button:focus-visible{outline:2px solid var(--green); outline-offset:2px}
         headStyles: {
           font:"Mont", fontStyle:"bold", fontSize:7.2,
           fillColor:GREEN, textColor:[255,255,255],
-          halign:"center", lineColor:GREEN, lineWidth:0.15,
-          cellPadding:{ top:3.6, bottom:3.6, left:3, right:3 }
+          halign:"center", valign:"middle", lineColor:GREEN, lineWidth:0.15,
+          cellPadding:{ top:3.2, bottom:3.2, left:2.4, right:2.4 }
         },
         alternateRowStyles:{ fillColor:ZEBRA },
-        columnStyles:{
-          0:{ halign:"left",  cellWidth:46, fontStyle:"bold", textColor:GREEN },
-          1:{ halign:"right", cellWidth:32 },
-          2:{ halign:"left",  cellWidth:60 },
-          3:{ halign:"right", cellWidth:36, fontStyle:"bold", textColor:GREEN }
-        }
+        columnStyles: cs
       });
       y = doc.lastAutoTable.finalY + 14;
 
@@ -799,6 +845,8 @@ button:focus-visible{outline:2px solid var(--green); outline-offset:2px}
     var hs = hc.querySelector(".js-hsum");
     hs.value = "10,00,000"; hs.dispatchEvent(new Event("input"));
     hc.querySelector(".js-hprem").value = "32,000";
+    hc.querySelector(".js-hprem2").value = "61,000";
+    hc.querySelector(".js-hprem3").value = "86,400";
     document.getElementById("ped").value = "Hypertension \u2014 self, since 2019";
     document.getElementById("hnotes").value = "Room rent capped at a single private AC room. Pre-existing conditions carry a 3-year waiting period on both plans. Premium revises at the 41 and 46 age bands.";
     showEmpty();
