@@ -78,6 +78,11 @@ button:focus-visible{outline:2px solid var(--green); outline-offset:2px}
   text-transform:uppercase; color:var(--brown); margin-left:6px; vertical-align:1px}
 .status{font-size:12.5px; color:var(--green)}
 .note{font-size:12px; color:var(--muted); margin-top:18px; line-height:1.6}
+.sechead{display:flex; align-items:baseline; gap:10px; margin:26px 0 12px}
+.sechead h2{font-family:var(--f-head); font-size:14px; font-weight:600; color:var(--green); margin:0; letter-spacing:.04em}
+.sechead .bar{flex:1; height:1px; background:var(--rule)}
+.sechead .count{font-size:12px; color:var(--muted)}
+.empty{font-size:12.5px; color:var(--muted); padding:14px 2px}
 </style>
 
 <div class="wrap">
@@ -118,15 +123,32 @@ button:focus-visible{outline:2px solid var(--green); outline-offset:2px}
     <div class="err" id="clientErr"></div>
   </div>
 
+  <div class="sechead"><h2>Life insurance</h2><span class="bar"></span></div>
   <div id="policies"></div>
+  <div class="empty" id="lifeEmpty" hidden>No life policies on this quotation.</div>
+  <button type="button" class="b-ghost" id="addPolicy">Add a life policy</button>
+
+  <div class="sechead"><h2>Health insurance</h2><span class="bar"></span></div>
+  <div class="card">
+    <p class="eyebrow">Declared health</p>
+    <div class="grid">
+      <div>
+        <label for="ped">Pre-existing disease</label>
+        <input type="text" id="ped" placeholder="None declared" autocomplete="off">
+        <div class="hint">Applies to everyone covered under the plans below. Left blank, it is left off the PDF.</div>
+      </div>
+    </div>
+  </div>
+  <div id="healths"></div>
+  <div class="empty" id="healthEmpty" hidden>No health plans on this quotation.</div>
+  <button type="button" class="b-ghost" id="addHealth">Add a health plan</button>
 
   <div class="actions">
-    <button type="button" class="b-ghost" id="addPolicy">Add another policy</button>
     <button type="button" class="b-primary" id="download">Download PDF</button>
     <span class="status" id="status"></span>
   </div>
 
-  <p class="note">Leave a payment option blank to keep it out of the PDF. Totals multiply the premium by the number of years you pay — for monthly mode, enter the premium the insurer actually charges per month.</p>
+  <p class="note">Life and health both print on the same quotation; leave either section empty to drop it. Leave a payment option blank to keep it out of the PDF. Totals multiply the premium by the number of years you pay — for monthly mode, enter the premium the insurer actually charges per month.</p>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -170,6 +192,7 @@ button:focus-visible{outline:2px solid var(--green); outline-offset:2px}
     return a < 0 ? 0 : a;
   }
   function smokeText(){ return document.getElementById("clientSmoke").value; }
+  function pedText(){ return document.getElementById("ped").value.trim(); }
   function dobText(){
     var p = document.getElementById("clientDob").value.split("-");
     return p.length === 3 ? p[2] + "/" + p[1] + "/" + p[0] : "";
@@ -250,9 +273,7 @@ button:focus-visible{outline:2px solid var(--green); outline-offset:2px}
 
     pol.appendChild(card);
     commas(card.querySelector(".js-sum"), card.querySelector(".js-hint"));
-    card.querySelector(".js-remove").addEventListener("click", function(){
-      if(document.querySelectorAll(".policy").length > 1) card.remove();
-    });
+    card.querySelector(".js-remove").addEventListener("click", function(){ card.remove(); showEmpty(); });
     card.querySelector(".js-term").addEventListener("input", function(){ paint(card); });
 
     var yrsIn = card.querySelector(".js-customyrs");
@@ -274,6 +295,61 @@ button:focus-visible{outline:2px solid var(--green); outline-offset:2px}
     });
 
     paint(card);
+  }
+
+  var hseq = 0;
+  var healths = document.getElementById("healths");
+
+  function addHealth(){
+    hseq++;
+    var n = hseq;
+    var card = document.createElement("div");
+    card.className = "card health";
+    card.innerHTML =
+      '<div class="policyhead">'+
+        '<p class="eyebrow">Health plan '+String(n).padStart(2,"0")+'</p>'+
+        '<button type="button" class="b-link js-remove">Remove</button>'+
+      '</div>'+
+      '<div class="grid g2">'+
+        '<div><label for="hn'+n+'">Policy name</label>'+
+          '<input type="text" id="hn'+n+'" class="js-hname" placeholder="Optima Secure" autocomplete="off"></div>'+
+        '<div><label for="hs'+n+'">Sum assured</label>'+
+          '<input type="text" id="hs'+n+'" class="js-hsum" inputmode="numeric" placeholder="10,00,000">'+
+          '<div class="hint js-hhint"></div></div>'+
+        '<div><label for="hp'+n+'">Persons covered</label>'+
+          '<input type="text" id="hp'+n+'" class="js-hpersons" placeholder="Self, spouse, 2 children" autocomplete="off"></div>'+
+        '<div><label for="hr'+n+'">Premium (per year)</label>'+
+          '<input type="text" id="hr'+n+'" class="js-hprem" inputmode="numeric" placeholder="32,000"></div>'+
+      '</div>'+
+      '<div class="err js-err"></div>';
+
+    healths.appendChild(card);
+    commas(card.querySelector(".js-hsum"), card.querySelector(".js-hhint"));
+    commas(card.querySelector(".js-hprem"), null);
+    card.querySelector(".js-remove").addEventListener("click", function(){ card.remove(); showEmpty(); });
+    showEmpty();
+  }
+
+  function showEmpty(){
+    document.getElementById("lifeEmpty").hidden   = document.querySelectorAll(".policy").length > 0;
+    document.getElementById("healthEmpty").hidden = document.querySelectorAll(".health").length > 0;
+  }
+
+  function healthRows(){
+    var out = [];
+    document.querySelectorAll(".health").forEach(function(c){
+      var nm = c.querySelector(".js-hname").value.trim();
+      var s  = num(c.querySelector(".js-hsum"));
+      var pr = num(c.querySelector(".js-hprem"));
+      if(!nm || !s || !pr) return;
+      out.push([
+        nm,
+        "\u20B9 " + inr(s),
+        c.querySelector(".js-hpersons").value.trim() || "\u2014",
+        "\u20B9 " + inr(pr) + " p.a."
+      ]);
+    });
+    return out;
   }
 
   function paint(card){
@@ -328,7 +404,8 @@ button:focus-visible{outline:2px solid var(--green); outline-offset:2px}
 
   document.getElementById("clientDob").addEventListener("input", refreshAge);
   document.getElementById("quoteDate").addEventListener("input", refreshAge);
-  document.getElementById("addPolicy").addEventListener("click", addPolicy);
+  document.getElementById("addPolicy").addEventListener("click", function(){ addPolicy(); showEmpty(); });
+  document.getElementById("addHealth").addEventListener("click", addHealth);
 
   /* ---------------- PDF ---------------- */
 
@@ -395,6 +472,18 @@ button:focus-visible{outline:2px solid var(--green); outline-offset:2px}
     return y + 14;
   }
 
+  function sectionHead(doc, y, text){
+    if(y + 28 > H - BAND - 10){ doc.addPage(); y = 24; }
+    doc.setDrawColor(RULE[0],RULE[1],RULE[2]); doc.setLineWidth(0.35);
+    doc.line(M, y - 7, W - M, y - 7);
+    doc.setFont("Mont","bold"); doc.setFontSize(9);
+    doc.setTextColor(GREEN[0],GREEN[1],GREEN[2]);
+    doc.text(text, M, y + 1, { charSpace: 0.9 });
+    doc.setFillColor(GOLD[0],GOLD[1],GOLD[2]);
+    doc.rect(M, y + 3.6, 13, 0.9, "F");
+    return y + 16;
+  }
+
   function build(){
     var jsPDF = window.jspdf.jsPDF;
     var doc = new jsPDF({ orientation:"portrait", unit:"mm", format:"a4" });
@@ -422,6 +511,8 @@ button:focus-visible{outline:2px solid var(--green); outline-offset:2px}
     val(doc, dateStr, px + col, y + 33, "left", 11);
     y += 51;
 
+    if(document.querySelectorAll(".policy").length) y = sectionHead(doc, y, "LIFE INSURANCE");
+
     document.querySelectorAll(".policy").forEach(function(card, i){
       var pname = card.querySelector(".js-name").value.trim();
       var sum   = num(card.querySelector(".js-sum"));
@@ -445,8 +536,10 @@ button:focus-visible{outline:2px solid var(--green); outline-offset:2px}
       var need = 46 + (rows.length + 1) * 9;
       if(y + need > H - BAND - 12){ doc.addPage(); y = 24; }
 
-      doc.setDrawColor(RULE[0],RULE[1],RULE[2]); doc.setLineWidth(0.35);
-      doc.line(M, y - 7, W - M, y - 7);
+      if(i > 0){
+        doc.setDrawColor(RULE[0],RULE[1],RULE[2]); doc.setLineWidth(0.35);
+        doc.line(M, y - 7, W - M, y - 7);
+      }
 
       doc.setFont("Mont","bold"); doc.setFontSize(6.6);
       doc.setTextColor(BROWN[0],BROWN[1],BROWN[2]);
@@ -503,6 +596,51 @@ button:focus-visible{outline:2px solid var(--green); outline-offset:2px}
       y = doc.lastAutoTable.finalY + 16;
     });
 
+    var hrows = healthRows();
+    if(hrows.length){
+      var ped = pedText();
+      var pedLines = ped ? doc.splitTextToSize(ped, W - 2*M) : [];
+      var pedH = ped ? 7 + pedLines.length * 4.6 + 7 : 0;
+
+      if(y + 30 + pedH + hrows.length * 9 > H - BAND - 12){ doc.addPage(); y = 24; }
+      y = sectionHead(doc, y, "HEALTH INSURANCE");
+
+      if(ped){
+        label(doc, "Pre-existing disease", M, y);
+        doc.setFont("Carl","normal"); doc.setFontSize(10.5);
+        doc.setTextColor(INK[0],INK[1],INK[2]);
+        doc.text(pedLines, M, y + 7);
+        y += pedH;
+      }
+
+      doc.autoTable({
+        startY: y,
+        margin: { left:M, right:M, bottom: BAND + 10 },
+        head: [["Plan","Sum assured","Persons covered","Premium"]],
+        body: hrows,
+        theme: "grid",
+        styles: {
+          font:"Carl", fontSize:9.2, textColor:INK,
+          lineColor:RULE, lineWidth:0.15,
+          cellPadding:{ top:3.3, bottom:3.3, left:3.2, right:3.2 }
+        },
+        headStyles: {
+          font:"Mont", fontStyle:"bold", fontSize:7.2,
+          fillColor:GREEN, textColor:[255,255,255],
+          halign:"center", lineColor:GREEN, lineWidth:0.15,
+          cellPadding:{ top:3.6, bottom:3.6, left:3, right:3 }
+        },
+        alternateRowStyles:{ fillColor:ZEBRA },
+        columnStyles:{
+          0:{ halign:"left",  cellWidth:46, font:"Mont", fontStyle:"bold", fontSize:8.8, textColor:GREEN },
+          1:{ halign:"right", cellWidth:32 },
+          2:{ halign:"left",  cellWidth:60 },
+          3:{ halign:"right", cellWidth:36, fontStyle:"bold", textColor:GREEN }
+        }
+      });
+      y = doc.lastAutoTable.finalY + 16;
+    }
+
     if(y + 8 > H - BAND - 3){ doc.addPage(); y = 24; }
     doc.setDrawColor(RULE[0],RULE[1],RULE[2]); doc.setLineWidth(0.35);
     doc.line(M, y - 6, W - M, y - 6);
@@ -537,6 +675,17 @@ button:focus-visible{outline:2px solid var(--green); outline-offset:2px}
       var any = Array.prototype.some.call(card.querySelectorAll(".js-prem"), function(i){ return num(i) > 0; });
       if(!any){ e.textContent = "Enter a premium against at least one payment option"; ok = false; }
     });
+
+    document.querySelectorAll(".health").forEach(function(card){
+      var e = card.querySelector(".js-err"); e.textContent = "";
+      if(!card.querySelector(".js-hname").value.trim() || !num(card.querySelector(".js-hsum")) || !num(card.querySelector(".js-hprem"))){
+        e.textContent = "Policy name, sum assured and premium are all needed"; ok = false;
+      }
+    });
+
+    if(ok && !document.querySelectorAll(".policy").length && !document.querySelectorAll(".health").length){
+      cErr.textContent = "Add a life policy or a health plan first"; ok = false;
+    }
     if(!ok) return;
 
     try{
@@ -566,6 +715,16 @@ button:focus-visible{outline:2px solid var(--green); outline-offset:2px}
       p.value = vals[i] || "";
       p.dispatchEvent(new Event("input"));
     });
+
+    addHealth();
+    var hc = document.querySelector(".health");
+    hc.querySelector(".js-hname").value = "Optima Secure";
+    hc.querySelector(".js-hpersons").value = "Self, spouse, 2 children";
+    var hs = hc.querySelector(".js-hsum");
+    hs.value = "10,00,000"; hs.dispatchEvent(new Event("input"));
+    hc.querySelector(".js-hprem").value = "32,000";
+    document.getElementById("ped").value = "Hypertension \u2014 self, since 2019";
+    showEmpty();
   })();
 })();
 </script>
