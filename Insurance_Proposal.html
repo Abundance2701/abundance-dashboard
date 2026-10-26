@@ -42,9 +42,10 @@ body{background:var(--paper); color:var(--ink); font-family:var(--f-body); margi
 .g3{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
 .g2{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
 label{display:block; font-size:12px; color:var(--muted); margin-bottom:5px; letter-spacing:.01em}
-input,select{width:100%; min-width:0; padding:9px 10px; border:1px solid var(--field-line); border-radius:6px;
+textarea{resize:vertical; min-height:74px; line-height:1.55}
+input,select,textarea{width:100%; min-width:0; padding:9px 10px; border:1px solid var(--field-line); border-radius:6px;
   background:var(--field); color:var(--ink); font-family:var(--f-body); font-size:14.5px; font-variant-numeric:tabular-nums}
-input:focus,select:focus{outline:2px solid var(--green); outline-offset:1px; border-color:var(--green)}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--green); outline-offset:1px; border-color:var(--green)}
 .hint{font-size:11.5px; color:var(--brown); margin-top:4px; min-height:15px}
 .err{font-size:12px; color:var(--danger); margin-top:8px}
 
@@ -143,8 +144,20 @@ button:focus-visible{outline:2px solid var(--green); outline-offset:2px}
   <div class="empty" id="healthEmpty" hidden>No health plans on this quotation.</div>
   <button type="button" class="b-ghost" id="addHealth">Add a health plan</button>
 
+  <div class="card" style="margin-top:16px">
+    <p class="eyebrow">Notes</p>
+    <div class="grid">
+      <div>
+        <label for="hnotes">Comments on the health plans</label>
+        <textarea id="hnotes" placeholder="Room rent capped at single private AC. 3-year PED waiting period on both plans. Premiums rise at the 41 and 46 age bands."></textarea>
+        <div class="hint">Prints under the plans table. Left blank, it is left off the PDF.</div>
+      </div>
+    </div>
+  </div>
+
   <div class="actions">
     <button type="button" class="b-primary" id="download">Download PDF</button>
+    <button type="button" class="b-ghost" id="saveAs">Save as…</button>
     <span class="status" id="status"></span>
   </div>
 
@@ -193,6 +206,7 @@ button:focus-visible{outline:2px solid var(--green); outline-offset:2px}
   }
   function smokeText(){ return document.getElementById("clientSmoke").value; }
   function pedText(){ return document.getElementById("ped").value.trim(); }
+  function hNotesText(){ return document.getElementById("hnotes").value.trim(); }
   function dobText(){
     var p = document.getElementById("clientDob").value.split("-");
     return p.length === 3 ? p[2] + "/" + p[1] + "/" + p[0] : "";
@@ -503,7 +517,7 @@ button:focus-visible{outline:2px solid var(--green); outline-offset:2px}
     doc.text(text, M, y + 1, { charSpace: 0.9 });
     doc.setFillColor(GOLD[0],GOLD[1],GOLD[2]);
     doc.rect(M, y + 3.6, 13, 0.9, "F");
-    return y + 16;
+    return y + 11;
   }
 
   function build(){
@@ -520,18 +534,18 @@ button:focus-visible{outline:2px solid var(--green); outline-offset:2px}
 
     var PAD = 8, col = 52, px = M + PAD;
     doc.setFillColor(PANEL[0],PANEL[1],PANEL[2]);
-    doc.roundedRect(M, y, W - 2*M, 37, 1.6, 1.6, "F");
-    label(doc, "Client", px, y + 8);
-    label(doc, "Date of birth", px + col, y + 8);
-    label(doc, "Age", px + col * 2, y + 8);
-    val(doc, name, px, y + 16, "left", 12, GREEN, true);
-    val(doc, dobText(), px + col, y + 16, "left", 11);
-    val(doc, a + " years", px + col * 2, y + 16, "left", 11);
-    label(doc, "Tobacco use", px, y + 25);
-    label(doc, "Quotation date", px + col, y + 25);
-    val(doc, smokeText(), px, y + 33, "left", 11, smokeText() === "Smoker" ? BROWN : INK, smokeText() === "Smoker");
-    val(doc, dateStr, px + col, y + 33, "left", 11);
-    y += 51;
+    doc.roundedRect(M, y, W - 2*M, 31, 1.6, 1.6, "F");
+    label(doc, "Client", px, y + 7);
+    label(doc, "Date of birth", px + col, y + 7);
+    label(doc, "Age", px + col * 2, y + 7);
+    val(doc, name, px, y + 13, "left", 12, GREEN, true);
+    val(doc, dobText(), px + col, y + 13, "left", 11);
+    val(doc, a + " years", px + col * 2, y + 13, "left", 11);
+    label(doc, "Tobacco use", px, y + 21);
+    label(doc, "Quotation date", px + col, y + 21);
+    val(doc, smokeText(), px, y + 27, "left", 11, smokeText() === "Smoker" ? BROWN : INK, smokeText() === "Smoker");
+    val(doc, dateStr, px + col, y + 27, "left", 11);
+    y += 43;
 
     if(document.querySelectorAll(".policy").length) y = sectionHead(doc, y, "LIFE INSURANCE");
 
@@ -573,19 +587,19 @@ button:focus-visible{outline:2px solid var(--green); outline-offset:2px}
       y += 14;
 
       var sc = scale(sum);
-      var bh = sc ? 26 : 22;
+      var bh = sc ? 22 : 18;
       doc.setFillColor(PANEL[0],PANEL[1],PANEL[2]);
       doc.roundedRect(M, y, W - 2*M, bh, 1.6, 1.6, "F");
-      label(doc, "Sum assured", px, y + 8);
-      label(doc, "Cover term", px + col, y + 8);
-      label(doc, "Cover to age", px + col * 2, y + 8);
-      val(doc, "₹ " + inr(sum), px, y + 16, "left", 11.5, INK, true);
-      val(doc, term + " years", px + col, y + 16, "left", 11.5);
-      val(doc, String(a + term), px + col * 2, y + 16, "left", 11.5);
+      label(doc, "Sum assured", px, y + 7);
+      label(doc, "Cover term", px + col, y + 7);
+      label(doc, "Cover to age", px + col * 2, y + 7);
+      val(doc, "₹ " + inr(sum), px, y + 13.5, "left", 11.5, INK, true);
+      val(doc, term + " years", px + col, y + 13.5, "left", 11.5);
+      val(doc, String(a + term), px + col * 2, y + 13.5, "left", 11.5);
       if(sc){
         doc.setFont("Carl","normal"); doc.setFontSize(7.6);
         doc.setTextColor(MUTE[0],MUTE[1],MUTE[2]);
-        doc.text("(" + sc + ")", px, y + 21);
+        doc.text("(" + sc + ")", px, y + 18);
       }
       y += bh + 9;
 
@@ -622,7 +636,7 @@ button:focus-visible{outline:2px solid var(--green); outline-offset:2px}
     if(hrows.length){
       var ped = pedText();
       var pedLines = ped ? doc.splitTextToSize(ped, W - 2*M) : [];
-      var pedH = ped ? 7 + pedLines.length * 4.6 + 7 : 0;
+      var pedH = ped ? 6 + pedLines.length * 4.6 + 6 : 0;
 
       if(y + 30 + pedH + hrows.length * 9 > H - BAND - 12){ doc.addPage(); y = 24; }
       y = sectionHead(doc, y, "HEALTH INSURANCE");
@@ -631,7 +645,7 @@ button:focus-visible{outline:2px solid var(--green); outline-offset:2px}
         label(doc, "Pre-existing disease", M, y);
         doc.setFont("Carl","normal"); doc.setFontSize(10.5);
         doc.setTextColor(INK[0],INK[1],INK[2]);
-        doc.text(pedLines, M, y + 7);
+        doc.text(pedLines, M, y + 6);
         y += pedH;
       }
 
@@ -660,7 +674,18 @@ button:focus-visible{outline:2px solid var(--green); outline-offset:2px}
           3:{ halign:"right", cellWidth:36, fontStyle:"bold", textColor:GREEN }
         }
       });
-      y = doc.lastAutoTable.finalY + 16;
+      y = doc.lastAutoTable.finalY + 14;
+
+      var hn = hNotesText();
+      if(hn){
+        var nLines = doc.splitTextToSize(hn, W - 2*M);
+        if(y + 8 + nLines.length * 4.6 > H - BAND - 8){ doc.addPage(); y = 24; }
+        label(doc, "Notes", M, y);
+        doc.setFont("Carl","normal"); doc.setFontSize(10);
+        doc.setTextColor(INK[0],INK[1],INK[2]);
+        doc.text(nLines, M, y + 6);
+        y += 6 + nLines.length * 4.6 + 10;
+      }
     }
 
     if(y + 8 > H - BAND - 3){ doc.addPage(); y = 24; }
@@ -677,7 +702,7 @@ button:focus-visible{outline:2px solid var(--green); outline-offset:2px}
     return { doc:doc, name:name };
   }
 
-  document.getElementById("download").addEventListener("click", function(){
+  function makePdf(pick){
     var status = document.getElementById("status");
     var cErr = document.getElementById("clientErr");
     status.textContent = ""; cErr.textContent = "";
@@ -710,15 +735,44 @@ button:focus-visible{outline:2px solid var(--green); outline-offset:2px}
     }
     if(!ok) return;
 
-    try{
-      var out = build();
-      out.doc.save("Insurance quotation - " + out.name + ".pdf");
-      status.textContent = "Downloaded";
-      setTimeout(function(){ status.textContent = ""; }, 3500);
-    }catch(err){
-      status.textContent = "Could not build the PDF: " + err.message;
+    var out;
+    try{ out = build(); }
+    catch(err){ status.textContent = "Could not build the PDF: " + err.message; return; }
+
+    var fname = "Insurance quotation - " + out.name + ".pdf";
+
+    function fallback(msg){
+      out.doc.save(fname);
+      status.textContent = msg || "Downloaded";
+      setTimeout(function(){ status.textContent = ""; }, 5000);
     }
-  });
+
+    if(!pick || !window.showSaveFilePicker){ fallback(); return; }
+
+    status.textContent = "Choose a folder\u2026";
+    window.showSaveFilePicker({
+      suggestedName: fname,
+      types: [{ description: "PDF document", accept: { "application/pdf": [".pdf"] } }]
+    }).then(function(handle){
+      return handle.createWritable().then(function(w){
+        return Promise.resolve(w.write(out.doc.output("blob"))).then(function(){ return w.close(); });
+      });
+    }).then(function(){
+      status.textContent = "Saved";
+      setTimeout(function(){ status.textContent = ""; }, 3500);
+    }).catch(function(e){
+      if(e && e.name === "AbortError"){ status.textContent = ""; return; }
+      fallback("Save dialog unavailable here \u2014 sent to your downloads folder instead");
+    });
+  }
+
+  document.getElementById("download").addEventListener("click", function(){ makePdf(false); });
+  var saveAsBtn = document.getElementById("saveAs");
+  if(window.showSaveFilePicker){
+    saveAsBtn.addEventListener("click", function(){ makePdf(true); });
+  }else{
+    saveAsBtn.hidden = true;
+  }
 
   document.getElementById("clientDob").value = "1991-04-18";
   document.getElementById("clientSmoke").value = "Non-smoker";
@@ -746,6 +800,7 @@ button:focus-visible{outline:2px solid var(--green); outline-offset:2px}
     hs.value = "10,00,000"; hs.dispatchEvent(new Event("input"));
     hc.querySelector(".js-hprem").value = "32,000";
     document.getElementById("ped").value = "Hypertension \u2014 self, since 2019";
+    document.getElementById("hnotes").value = "Room rent capped at a single private AC room. Pre-existing conditions carry a 3-year waiting period on both plans. Premium revises at the 41 and 46 age bands.";
     showEmpty();
   })();
 })();
