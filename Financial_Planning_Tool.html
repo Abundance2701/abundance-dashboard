@@ -288,7 +288,7 @@ body.dr #selBar{left:auto;right:16px;transform:none;max-width:min(608px,calc(100
   <div class="tools">
     <label for="planMonth">Plan month <input type="month" id="planMonth"></label>
     <input type="file" id="file" accept=".xlsx,.xls,.json" hidden>
-    <button class="btn primary" id="uploadBtn">Upload or drop Excel / backup</button>
+    <button class="btn primary" id="uploadBtn">Upload or drop Excel / plan file</button>
   </div>
   <nav class="ws" aria-label="Workspace">
     <button data-pane="dataPanel">Client data</button><button data-pane="assmPanel">Assumptions</button><button data-pane="checksPane">Data checks <span class="cnt" id="chkCount"></span></button><button data-pane="notesPanel">Notes <span class="cnt" id="notesHint"></span></button><button data-pane="verifyPanel">Verify</button>
@@ -563,7 +563,7 @@ FP.boot = () => {
   FP.loadFile = async f => {
     try {
       if (/\.json$/i.test(f.name) && FP.restoreFile) return FP.restoreFile(f);
-      if (!/\.xlsx?$/i.test(f.name)) throw new Error(`"${f.name}" isn't an Excel or backup file. Use the .xlsx data-collection template or a Blueprint plan file (.json).`);
+      if (!/\.xlsx?$/i.test(f.name)) throw new Error(`"${f.name}" isn't an Excel or plan file. Use the .xlsx data-collection template or a Blueprint plan file (.json).`);
       const wb = XLSX.read(await f.arrayBuffer(), { cellDates: true });
       if (!wb.Sheets['Net Worth'] || !wb.Sheets['Inflows and Outflows']) throw new Error('This file is missing the "Net Worth" or "Inflows and Outflows" tab. Upload the Abundance data-collection template.');
       FP.base = FP.parse(wb); FP.key = (wb.Sheets['About You']?.C17?.v || FP.base.self?.name || f.name).toString().trim();
@@ -2988,7 +2988,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
    2. Plan file (.json, "Prateek N - 2026"): the Excel + your work in one file. With a WorkDrive folder linked (downloaded copy, Chrome/Edge),
       it saves itself to <folder>/<client>/<client> - <year>.json a few seconds after every change. */
 (() => {
-  let db = null, uid = null, on = true, status = 'local', err = '', timer = 0, root = null, wdState = 'off', wdAt = 0, wdErr = '', wdT = 0, wdSave = () => { };
+  let db = null, uid = null, on = true, status = 'local', err = '', timer = 0, root = null, wdState = 'off', wdAt = 0, wdErr = '', wdT = 0, wdSave = () => { }, dirty = false;
   try { on = localStorage.getItem('fp:cloud') !== 'off'; } catch (e) { }
   const safe = k => String(k || 'client').replace(/[^A-Za-z0-9_\-.~:@+]/g, '_').slice(0, 150);
   const stRef = k => db.collection('data/users/' + uid).doc('c_' + safe(k));
@@ -3012,7 +3012,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
   async function push() {
     if (!db || !on || FP.base?.sample || FP.key === 'sample') return;
     status = 'syncing'; show();
-    try { await stRef(FP.key).set({ st: JSON.stringify(FP.st), at: FP.st._at || Date.now(), name: who(), key: String(FP.key), v: 1 }); status = 'synced'; err = ''; }
+    try { await stRef(FP.key).set({ st: JSON.stringify(FP.st), at: FP.st._at || Date.now(), name: who(), key: String(FP.key), v: 1 }); status = 'synced'; err = ''; dirty = false; }
     catch (e) { status = 'error'; err = e?.code === 'quota_exceeded' ? 'Your saved space is full: delete old clients below.' : e?.code === 'invalid_argument' ? 'This client\'s work is too large to save online; use a backup file.' : 'Could not reach your account (' + (e?.code || 'error') + '). It will retry on your next change.'; }
     show();
   }
@@ -3034,10 +3034,10 @@ Move              = target − today; every change is shown (under ₹1,000 coun
     } catch (e) { status = 'error'; err = 'Could not reach your account (' + (e?.code || 'error') + ').'; show(); }
   }
   let localSaveOnly = () => { };
-  const s0 = FP.save; FP.save = () => { if (!FP.base?.sample) FP.st._at = Date.now(); s0(); if (db && on && !FP.base?.sample) { clearTimeout(timer); status = 'syncing'; show(); timer = setTimeout(push, 1500); } if (root && !FP.base?.sample) { clearTimeout(wdT); wdT = setTimeout(() => wdSave(false), 3000); } };
+  const s0 = FP.save; FP.save = () => { if (!FP.base?.sample) { FP.st._at = Date.now(); dirty = true; } s0(); if (db && on && !FP.base?.sample) { clearTimeout(timer); status = 'syncing'; show(); timer = setTimeout(push, 1500); } if (root && !FP.base?.sample) { clearTimeout(wdT); wdT = setTimeout(() => wdSave(false), 3000); } };
   localSaveOnly = () => s0();
   const l0 = FP.load; FP.load = () => { l0(); if (root && !FP.base?.sample) setTimeout(() => wdSave(false, true), 1500); status = db && on && !FP.base?.sample ? 'syncing' : 'local'; show(); if (db && on) pull(); };
-  const f0 = FP.onFile; FP.onFile = f => { f0?.(f); pushFile(f); };
+  const f0 = FP.onFile; FP.onFile = f => { f0?.(f); pushFile(f); onNewClient(); };
 
   (async () => {
     if (!window.claude?.use) { show(); return; }
@@ -3113,10 +3113,10 @@ Move              = target − today; every change is shown (under ₹1,000 coun
     if (!root || FP.base?.sample || FP.key === 'sample') return false;
     if (!(await perm(ask))) { wdState = 'ask'; wdShow(); return false; }
     try { const dir = await cdir();
-      if (onlyNew) { try { await dir.getFileHandle(pname()); if (wdState !== 'saved') wdState = 'idle'; wdShow(); return false; } catch (e) { } }   /* opening a client doesn't rewrite an existing file */
+      if (onlyNew) { try { await dir.getFileHandle(pname()); dirty = false; if (wdState !== 'saved') wdState = 'idle'; wdShow(); return false; } catch (e) { } }   /* opening a client doesn't rewrite an existing file */
       wdState = 'saving'; wdShow();
       const fh = await dir.getFileHandle(pname(), { create: true }), { text } = await bdata(), w = await fh.createWritable(); await w.write(text); await w.close();
-      wdState = 'saved'; wdAt = Date.now(); wdErr = ''; wdShow(); return fh.name; }
+      wdState = 'saved'; wdAt = Date.now(); wdErr = ''; dirty = false; wdShow(); return fh.name; }
     catch (e) { wdState = 'error'; wdErr = e.message || 'unknown error'; wdShow(); return false; }
   }
   let wdBusy = Promise.resolve(); wdSave = (ask, onlyNew) => (wdBusy = wdBusy.then(() => wdWrite(ask, onlyNew)));
@@ -3126,6 +3126,20 @@ Move              = target − today; every change is shown (under ₹1,000 coun
     hdb('readwrite', s => s.put(root, '__root')); wdState = 'idle'; wdShow(); if (!FP.base?.sample) wdSave(true);
   }
   if (dirOK) hdb('readonly', s => s.get('__root')).then(async h => { if (!h) return; root = h; wdState = (await perm(false)) ? 'idle' : 'ask'; wdShow(); });
+  /* ---- Never lose work: on a new client, save to WorkDrive (or ask how); warn before closing with unsaved work ---- */
+  document.head.insertAdjacentHTML('beforeend', `<style>#wdAsk{position:fixed;inset:0;background:rgba(57,41,62,.45);display:grid;place-items:center;z-index:9999;padding:16px}#wdAsk>div{background:#fff;border-radius:14px;padding:22px 24px;max-width:440px;box-shadow:0 12px 40px rgba(0,0,0,.25)}
+    #wdAsk h3{margin:0 0 8px;font:700 18px var(--fh);color:var(--green)}#wdAsk p{margin:0 0 18px;font-size:14.5px;line-height:1.5}#wdAsk .row{display:flex;gap:8px;justify-content:flex-end}#wdAsk .bt{font:700 14px var(--fh);text-transform:none;letter-spacing:0;padding:9px 18px}</style>`);
+  const ask = (title, text, label, fn) => { $('#wdAsk')?.remove(); document.body.insertAdjacentHTML('beforeend', `<div id="wdAsk"><div><h3>${title}</h3><p>${text}</p><div class="row"><button class="bt" id="wdLater">Later</button><button class="bt pri" id="wdGo">${label}</button></div></div></div>`);
+    $('#wdLater').onclick = () => $('#wdAsk').remove(); $('#wdGo').onclick = () => { $('#wdAsk').remove(); fn(); }; };
+  async function onNewClient() {
+    if (FP.base?.sample) return; dirty = true; const nm = FP.esc(clean(who()));
+    if (root) { if (await perm(false)) { const n = await wdSave(false, true); if (n) FP.toast?.(`Saved to WorkDrive: ${clean(who())} / ${n}`); return; }
+      return ask('Save to WorkDrive?', `Allow the browser to save <b>${nm}</b> to your WorkDrive folder <b>${FP.esc(root.name)}</b>. After that, every change saves itself.`, 'Allow and save', () => wdSave(true)); }
+    if (dirOK) return ask('Save this client to WorkDrive?', `Link your WorkDrive folder (for example <b>Financial Plans</b>) so <b>${nm}</b>'s work saves itself after every change. Without it, closing this page can lose your work.`, 'Link WorkDrive folder', link);
+    setTimeout(() => { if (status !== 'synced' && dirty) ask('Save a plan file?', `Your work on <b>${nm}</b> is only in this browser. Save a plan file so it isn't lost.`, 'Save plan file', () => backup(false)); }, 4000);   /* in claude.ai: only if account saving didn't work */
+  }
+  addEventListener('beforeunload', e => { if (dirty && !FP.base?.sample) { e.preventDefault(); e.returnValue = ''; } });   /* browser's "Leave site? Changes may not be saved" */
+  document.addEventListener('visibilitychange', () => { if (document.hidden && dirty && root) { clearTimeout(wdT); wdSave(false); } });   /* switching away: save now, don't wait */
   async function backup(asNew) {
     if (FP.base?.sample) return FP.toast?.('Upload a client first');
     if (root) {
@@ -3140,13 +3154,13 @@ Move              = target − today; every change is shown (under ₹1,000 coun
         let h = asNew ? null : (H[FP.key] || await hdb('readonly', s => s.get(String(FP.key))));
         if (h && (await h.queryPermission?.({ mode: 'readwrite' })) !== 'granted' && (await h.requestPermission?.({ mode: 'readwrite' })) !== 'granted') h = null;
         if (!h) h = await window.showSaveFilePicker({ suggestedName: asNew ? dname() : fname(), types: [{ description: 'Plan file', accept: { 'application/json': ['.json'] } }] });
-        const { rec, text } = await bdata(), w = await h.createWritable(); await w.write(text); await w.close();
+        const { rec, text } = await bdata(), w = await h.createWritable(); await w.write(text); await w.close(); dirty = false;
         H[FP.key] = h; hdb('readwrite', s => s.put(h, String(FP.key)));
         FP.toast?.(`Saved to ${h.name}`); msg(`<span class="ok">Saved to ${FP.esc(h.name)}</span>${rec?.blob ? '' : ' (the Excel was not in this browser, so keep it with the plan file)'}. Ctrl+S saves to this file again; Ctrl+Shift+S saves a separate copy.`); renderPane(); return;
       } catch (e) { if (e?.name === 'AbortError') return; if (e?.name === 'SecurityError' || e?.name === 'NotAllowedError' || e instanceof TypeError) pickerOK = false; else { FP.toast?.('Could not save: ' + e.message); return; } }
     }
     const { rec, text } = await bdata();
-    try { await save(pname(), text); FP.toast?.('Plan file downloaded');
+    try { await save(pname(), text); dirty = false; FP.toast?.('Plan file downloaded');
       msg(`<span class="ok">Plan file downloaded${rec?.blob ? ' (Excel + your work)' : ''}.</span> Inside claude.ai the browser can't overwrite a file you picked, so each save is a new download. To choose the folder, turn on "Ask where to save each file" in your browser's download settings.`); }
     catch (e) { if (e?.code !== 'declined') msg('<span class="no">Could not save the plan file.</span>'); }
   }
