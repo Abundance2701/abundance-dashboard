@@ -179,7 +179,8 @@ button:focus-visible{outline:2px solid var(--green); outline-offset:2px}
   };
 
   var GREEN=[0,88,38], BROWN=[147,78,50], GOLD=[249,183,56], INK=[57,41,62],
-      MUTE=[135,132,138], RULE=[216,227,220], ZEBRA=[250,252,250], PANEL=[243,246,244];
+      MUTE=[135,132,138], RULE=[216,227,220], ZEBRA=[250,252,250], PANEL=[243,246,244],
+      HEADRULE=[64,133,96];
 
   var pol = document.getElementById("policies");
   var seq = 0;
@@ -625,7 +626,7 @@ button:focus-visible{outline:2px solid var(--green); outline-offset:2px}
         headStyles: {
           font:"Mont", fontStyle:"bold", fontSize:7.2,
           fillColor:GREEN, textColor:[255,255,255],
-          halign:"center", lineColor:GREEN, lineWidth:0.15,
+          halign:"center", lineColor:HEADRULE, lineWidth:0.3,
           cellPadding:{ top:3.6, bottom:3.6, left:3, right:3 }
         },
         alternateRowStyles:{ fillColor:ZEBRA },
@@ -714,7 +715,7 @@ button:focus-visible{outline:2px solid var(--green); outline-offset:2px}
         headStyles: {
           font:"Mont", fontStyle:"bold", fontSize:7.2,
           fillColor:GREEN, textColor:[255,255,255],
-          halign:"center", valign:"middle", lineColor:GREEN, lineWidth:0.15,
+          halign:"center", valign:"middle", lineColor:HEADRULE, lineWidth:0.3,
           cellPadding:{ top:3.2, bottom:3.2, left:2.4, right:2.4 }
         },
         alternateRowStyles:{ fillColor:ZEBRA },
@@ -847,7 +848,6 @@ button:focus-visible{outline:2px solid var(--green); outline-offset:2px}
     hc.querySelector(".js-hprem").value = "32,000";
     hc.querySelector(".js-hprem2").value = "61,000";
     hc.querySelector(".js-hprem3").value = "86,400";
-    document.getElementById("ped").value = "Hypertension \u2014 self, since 2019";
     document.getElementById("hnotes").value = "Room rent capped at a single private AC room. Pre-existing conditions carry a 3-year waiting period on both plans. Premium revises at the 41 and 46 age bands.";
     showEmpty();
   })();
