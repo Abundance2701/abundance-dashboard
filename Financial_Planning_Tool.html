@@ -866,11 +866,15 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
 /* Section 4 — Lumpsum Allocation: existing investments assigned to goals (in today's money) */
 (() => {
   const PRI = { High: 0, Medium: 1, Low: 2 }; let openPk = null;
+  /* the goal list closes on Esc (before the drawer's own Esc) or on a click outside it */
+  const shut = () => { document.querySelectorAll('details.pick[open]').forEach(d => d.open = false); openPk = null; };
+  addEventListener('keydown', e => { if (e.key === 'Escape' && document.querySelector('details.pick[open]')) { shut(); e.stopImmediatePropagation(); e.preventDefault(); } }, true);
+  document.addEventListener('click', e => { if (!e.target.closest('details.pick')) shut(); });
   document.head.insertAdjacentHTML('beforeend', `<style>details.pick{position:relative}details.pick>summary{list-style:none;cursor:pointer;border:1px solid #cfd8d2;border-radius:6px;padding:6px 26px 6px 10px;background:#fff;position:relative;min-width:150px;max-width:230px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     details.pick>summary::-webkit-details-marker{display:none}details.pick>summary::after{content:'▾';position:absolute;right:9px;top:6px;color:#5c6a63}
     details.pick .pk{position:absolute;z-index:30;top:calc(100% + 4px);left:0;min-width:260px;max-height:340px;overflow:auto;background:#fff;border:1px solid #cfd8d2;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.14);padding:10px 12px}
     details.pick label{display:flex;gap:8px;align-items:baseline;padding:4px 0;white-space:normal;cursor:pointer}details.pick small{color:#8b7f8e}details.pick b{display:block;margin:8px 0 2px;padding-top:8px;border-top:1px solid #e2e8e4;font-size:13px}
-    details.pick .kp2{margin-top:6px;padding-top:8px;border-top:1px solid #e2e8e4}@media print{details.pick .pk{display:none}details.pick>summary{border:0;padding:0}details.pick>summary::after{content:''}}</style>`);
+    button.nx{text-decoration:none;color:#934E32;font-size:12px;padding:0 2px}details.pick .kp2{margin-top:6px;padding-top:8px;border-top:1px solid #e2e8e4}@media print{details.pick .pk{display:none}details.pick>summary{border:0;padding:0}details.pick>summary::after{content:''}}</style>`);
   const SHORT = ['Cash', 'Debt', 'Gold', 'Others', 'Equity', 'Real estate'], LONG = ['Equity', 'Gold', 'Debt', 'Cash', 'Others', 'Real estate'];
   const defTo = (r, goals) => {
     if (r.use !== 'Investable') return 'none';
@@ -897,7 +901,8 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
     const pool = assets.filter(a => a.to === '' || (a.tos.length && !a.keep));   /* leftover of a set-aside investment joins the pool unless kept */
     FP.goalOrder(st, goals).forEach(g => {
       const ord = g.n < 24 ? SHORT : LONG;
-      pool.slice().sort((x, y) => ord.indexOf(x.cls) - ord.indexOf(y.cls)).forEach(a => give(a, g, Math.min(a.free - a.used, g.needPV - g.got)));
+      const no = (st.alNot || {})[g.name] || [];   /* st.alNot[goal]: shared-pool investments not to use for this goal */
+      pool.filter(a => !no.includes(a.label)).sort((x, y) => ord.indexOf(x.cls) - ord.indexOf(y.cls)).forEach(a => give(a, g, Math.min(a.free - a.used, g.needPV - g.got)));
     });
     goals.forEach(g => { g.gap = Math.max(g.needPV - g.got, 0); g.gapFV = g.due ? g.gap : g.gap * Math.pow(1 + FP.mrate(g.r), g.n); g.pctF = g.needPV ? g.got / g.needPV : 1; });
     const switches = goals.filter(g => !g.due && g.n < 24 && g.type !== 'retirement').flatMap(g => g.src.filter(([l]) => (assets.find(a => a.label === l) || {}).cls === 'Equity').map(([l, v]) => ({ g: g.name, l, v, n: g.n })));
@@ -940,7 +945,7 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
         ${FP.legend(['Covered by existing investments', ...(laterT > 1 ? ['Money coming later'] : []), 'Still to build'], null, ['#1E7A46', ...(laterT > 1 ? ['#2F86BC'] : []), '#A3502F'])}</div>
       <div><div class="secbar"><h3>Goal by goal</h3><button class="addgoal noprint" data-addgoal>+ Add goal</button></div><div class="tbl"><table><thead><tr><th class="noprint" data-nosort title="Funding order">#</th><th>Goal</th><th>Priority</th><th>Due</th><th class="n">Needed today</th><th>Funded from</th><th class="n">Covered</th><th class="n">Still to build</th></tr></thead><tbody>
         ${G.map((g, j) => { const st2 = still(g), lt = later[g.name] || []; return `<tr data-p="${g.pri}" data-g="${FP.esc(g.name)}"><td class="noprint drag" draggable="true" title="Drag to fund earlier or later (within ${g.pri} priority). Shift+click to pick several.">⠿ ${j + 1}</td><td>${FP.goalBtn(g)}</td><td data-sort="${PR[g.pri]}">${chip(g.pri)}</td><td>${due(g)}</td><td class="n">${FP.inr(g.needPV)}</td>
-          <td>${g.src.map(([l, v]) => `<span class="note" style="color:var(--ink)">${FP.esc(l)}: ${FP.short(v)}</span>`).join('')}${lt.map(([x, v]) => `<span class="note" style="color:var(--c3)">Later, ${MON[(x.month || 1) - 1]} ${x.year}: ${FP.esc(x.src || 'Money in')} ${FP.short(v)}</span>`).join('') || (g.src.length ? '' : '<span class="hint">—</span>')}</td>
+          <td>${g.src.map(([l, v]) => { const a = assets.find(x => x.label === l), x = g.type !== 'emergency' && a && !a.tos.includes(g.name); return `<span class="note" style="color:var(--ink)">${FP.esc(l)}: ${FP.short(v)}${x ? ` <button class="link noprint nx" data-nx="${FP.esc(l)}" title="Don't use ${FP.esc(l)} for this goal" aria-label="Don't use ${FP.esc(l)} for this goal">✕</button>` : ''}</span>`; }).join('')}${((st.alNot || {})[g.name] || []).map(l => `<span class="note noprint">Not from: ${FP.esc(l)} <button class="link" data-nr="${FP.esc(l)}" title="Allow ${FP.esc(l)} again">↺</button></span>`).join('')}${lt.map(([x, v]) => `<span class="note" style="color:var(--c3)">Later, ${MON[(x.month || 1) - 1]} ${x.year}: ${FP.esc(x.src || 'Money in')} ${FP.short(v)}</span>`).join('') || (g.src.length ? '' : '<span class="hint">—</span>')}</td>
           <td class="n">${FP.inr(g.got)}<span class="note">${FP.pct(g.pctF, 0)}</span></td><td class="n" style="${st2 > 1 ? 'color:var(--brown);font-weight:700' : ''}">${st2 > 1 ? FP.inr(st2) : 'Fully funded'}${st2 > 1 && !g.due ? `<span class="note">${FP.short(SG[g.name]?.gapFV ?? g.gapFV)} by ${g.year}</span>` : ''}</td></tr>`; }).join('')}
         ${FP.calc.goals(d, st).filter(g => !g.on).map(g => `<tr class="off noprint"><td class="noprint"></td><td>${FP.goalBtn(g)}<span class="note">Not in the plan. Click the name to include it.</span></td><td>${chip(g.pri)}</td><td>${due(g)}</td><td class="n">${FP.inr(g.due ? g.fv : g.lump)}</td><td colspan="3" class="hint">Left out of the plan</td></tr>`).join('')}
         <tr class="tot"><td class="noprint"></td><td colspan="3">Total</td><td class="n">${FP.inr(need)}</td><td></td><td class="n">${FP.inr(got)}</td><td class="n">${FP.inr(stillT)}</td></tr></tbody></table></div>
@@ -961,6 +966,8 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
         <button class="addgoal noprint" id="plInAdd" style="margin-top:8px">+ Add money coming in</button></div>`;
       FP.dragRows(el.querySelector('.tbl table'), 'tr[data-p]', r => r.dataset.g, names => FP.set(s => { s.order = names; delete s.g3order; delete s.g5order; }),
         (keys, tr) => keys.every(k => G.find(g => g.name === k)?.pri === tr.dataset.p));
+      const notSet = (b, add) => { const g = b.closest('tr').dataset.g, l = b.dataset.nx || b.dataset.nr; FP.set(s => { const N = { ...(s.alNot || {}) }, L = (N[g] || []).filter(x => x !== l); if (add) L.push(l); if (L.length) N[g] = L; else delete N[g]; s.alNot = N; }); };
+      el.querySelectorAll('[data-nx]').forEach(b => b.onclick = () => notSet(b, true)); el.querySelectorAll('[data-nr]').forEach(b => b.onclick = () => notSet(b, false));
       el.querySelectorAll('[data-pk]').forEach(pk => { const lab = pk.dataset.pk;
         pk.addEventListener('toggle', () => { if (pk.open) { openPk = lab; el.querySelectorAll('[data-pk][open]').forEach(o => o !== pk && (o.open = false)); } else if (openPk === lab) openPk = null; });
         pk.querySelectorAll('input').forEach(x => x.onchange = () => FP.set(s => { s.al = { ...(s.al || {}) }; const m = x.dataset.m;
@@ -1359,7 +1366,7 @@ Corpus = PV(((1+${+rv.r.toFixed(4)}%)/(1+${+rv.infl.toFixed(4)}%))^(1/12)-1, ${r
       } else {
         const name = dr.name.trim(), row = { name, pri: dr.pri, amt: dr.amt, year: dr.year, note: dr.note, type: FP.gtype(name) };
         if (dr.mode === 'goal') Object.assign(s.ed.goals[dr.idx], row); else s.ed.goals.push({ ...row, grp: 'Added' });
-        if (dr.origName && dr.origName !== name) { delete s.goals[dr.origName]; ['order', 'g3order', 'g5order'].forEach(o => { if (s[o]) s[o] = s[o].map(n => n === dr.origName ? name : n); }); if (s.al) Object.keys(s.al).forEach(k => { s.al[k] = Array.isArray(s.al[k]) ? s.al[k].map(x => x === dr.origName ? name : x) : s.al[k] === dr.origName ? name : s.al[k]; }); }
+        if (dr.origName && dr.origName !== name) { delete s.goals[dr.origName]; ['order', 'g3order', 'g5order'].forEach(o => { if (s[o]) s[o] = s[o].map(n => n === dr.origName ? name : n); }); if (s.alNot?.[dr.origName]) { s.alNot = { ...s.alNot, [name]: s.alNot[dr.origName] }; delete s.alNot[dr.origName]; } if (s.al) Object.keys(s.al).forEach(k => { s.al[k] = Array.isArray(s.al[k]) ? s.al[k].map(x => x === dr.origName ? name : x) : s.al[k] === dr.origName ? name : s.al[k]; }); }
         s.goals[name] = { ...(s.goals[name] || {}), month: dr.month, infl: dr.infl, repeat: dr.repeat, include: dr.include, ...(row.type === 'emergency' ? { efAuto: dr.efAuto !== false, efMonths: dr.efMonths ?? 6 } : {}) };
       }
     });
@@ -1916,7 +1923,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
       s.ed = s.ed || {}; s.goals = s.goals || {};
       const prev = s.ed.goals || FP.base.goals.map((r, i) => ({ ...clone(r), _o: i }));
       rows.forEach(r => { if (r.i == null) return; const old = FP.d.goals[r.i].name, nm = r.name.trim(); if (r.del || old !== nm) delete s.goals[old];
-        if (!r.del && old !== nm) { ['order', 'g3order', 'g5order'].forEach(o => { if (s[o]) s[o] = s[o].map(n => n === old ? nm : n); }); if (s.al) Object.keys(s.al).forEach(k => { s.al[k] = Array.isArray(s.al[k]) ? s.al[k].map(x => x === old ? nm : x) : s.al[k] === old ? nm : s.al[k]; }); } });
+        if (!r.del && old !== nm) { ['order', 'g3order', 'g5order'].forEach(o => { if (s[o]) s[o] = s[o].map(n => n === old ? nm : n); }); if (s.alNot?.[old]) { s.alNot = { ...s.alNot, [nm]: s.alNot[old] }; delete s.alNot[old]; } if (s.al) Object.keys(s.al).forEach(k => { s.al[k] = Array.isArray(s.al[k]) ? s.al[k].map(x => x === old ? nm : x) : s.al[k] === old ? nm : s.al[k]; }); } });
       s.ed.goals = live.map(r => { const nm = r.name.trim(); return { ...(r.i != null ? clone(prev[r.i]) : { grp: 'Added' }), name: nm, pri: r.pri, amt: r.amt, year: r.year, note: r.note, type: FP.gtype(nm) }; });
       live.forEach(r => { const nm = r.name.trim(); s.goals[nm] = { ...(s.goals[nm] || {}), month: r.month, infl: r.infl, repeat: r.repeat, include: r.include }; });
       if (ret) { s.ed.retireYear = ret.retireYear; s.ed.other = { ...FP.d.other, retireMonthly: ret.retireMonthly }; s.goals.Retirement = { ...(s.goals.Retirement || {}), pri: ret.pri, month: ret.month, infl: ret.infl, include: ret.include }; }
