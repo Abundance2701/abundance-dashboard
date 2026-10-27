@@ -865,16 +865,27 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
 <script data-src="s4-lumpsum.js">
 /* Section 4 — Lumpsum Allocation: existing investments assigned to goals (in today's money) */
 (() => {
-  const PRI = { High: 0, Medium: 1, Low: 2 }; let openPk = null;
+  const PRI = { High: 0, Medium: 1, Low: 2 }; let openPk = null, openFs = null;
   /* the goal list closes on Esc (before the drawer's own Esc) or on a click outside it */
-  const shut = () => { document.querySelectorAll('details.pick[open]').forEach(d => d.open = false); openPk = null; };
-  addEventListener('keydown', e => { if (e.key === 'Escape' && document.querySelector('details.pick[open]')) { shut(); e.stopImmediatePropagation(); e.preventDefault(); } }, true);
-  document.addEventListener('click', e => { if (!e.target.closest('details.pick')) shut(); });
+  const shut = () => { document.querySelectorAll('details.pick[open],details.fs[open]').forEach(d => d.open = false); openPk = openFs = null; };
+  addEventListener('keydown', e => { if (e.key === 'Escape' && document.querySelector('details.pick[open],details.fs[open]')) { shut(); e.stopImmediatePropagation(); e.preventDefault(); } }, true);
+  document.addEventListener('click', e => { if (!e.target.closest('details.pick,details.fs')) shut(); });
+  /* panels float above the page (position: fixed) so a table's scroll box never cuts them off */
+  const place = () => document.querySelectorAll('details.pick[open],details.fs[open]').forEach(d => { const pk = d.querySelector('.pk'), b = d.querySelector('summary').getBoundingClientRect(); if (!pk) return;
+    const w = pk.offsetWidth, below = innerHeight - b.bottom - 12, above = b.top - 12, up = below < 260 && above > below, h = Math.min(up ? above : below, d.classList.contains('fs') ? 460 : 340);
+    Object.assign(pk.style, { position: 'fixed', left: Math.max(8, Math.min(b.left - (d.classList.contains('fs') ? 8 : 0), innerWidth - w - 8)) + 'px', top: (up ? b.top - 4 - Math.min(pk.scrollHeight, h) : b.bottom + 4) + 'px', maxHeight: h + 'px' }); });
+  addEventListener('scroll', place, true); addEventListener('resize', place); document.addEventListener('toggle', place, true);
+  FP.placePanels = place;
   document.head.insertAdjacentHTML('beforeend', `<style>details.pick{position:relative}details.pick>summary{list-style:none;cursor:pointer;border:1px solid #cfd8d2;border-radius:6px;padding:6px 26px 6px 10px;background:#fff;position:relative;min-width:150px;max-width:230px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     details.pick>summary::-webkit-details-marker{display:none}details.pick>summary::after{content:'▾';position:absolute;right:9px;top:6px;color:#5c6a63}
     details.pick .pk{position:absolute;z-index:30;top:calc(100% + 4px);left:0;min-width:260px;max-height:340px;overflow:auto;background:#fff;border:1px solid #cfd8d2;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.14);padding:10px 12px}
     details.pick label{display:flex;gap:8px;align-items:baseline;padding:4px 0;white-space:normal;cursor:pointer}details.pick small{color:#8b7f8e}details.pick b{display:block;margin:8px 0 2px;padding-top:8px;border-top:1px solid #e2e8e4;font-size:13px}
-    button.nx{text-decoration:none;color:#934E32;font-size:12px;padding:0 2px}details.pick .kp2{margin-top:6px;padding-top:8px;border-top:1px solid #e2e8e4}@media print{details.pick .pk{display:none}details.pick>summary{border:0;padding:0}details.pick>summary::after{content:''}}</style>`);
+    details.fs{position:relative}details.fs>summary{list-style:none;cursor:pointer;border-radius:6px;padding:2px 4px;margin:-2px -4px}details.fs>summary::-webkit-details-marker{display:none}details.fs>summary:hover{background:#eef5f0}
+    details.fs .ed{display:block;font-size:11.5px;color:var(--green);font-weight:700;margin-top:3px}details.fs .pk{position:absolute;z-index:30;top:calc(100% + 4px);left:-8px;width:420px;max-height:460px;overflow:auto;background:#fff;border:1px solid #cfd8d2;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.14);padding:12px 14px;cursor:default}
+    details.fs .ph{font:700 14px var(--fh);color:var(--dark);margin-bottom:4px}details.fs b{display:block;margin:10px 0 0;padding-top:8px;border-top:1px solid #e2e8e4;font-size:13px}details.fs .gh{display:block;color:#8b7f8e;font-size:12px;margin-bottom:4px}
+    details.fs .fr{display:grid;grid-template-columns:16px 18px 1fr auto;gap:6px;align-items:center;padding:5px 4px;border-radius:5px;font-size:13.5px}details.fs .fr[draggable]{cursor:grab}details.fs .fr[draggable]:hover{background:#f4f7f5}details.fs .fr.dg{opacity:.4}details.fs .fr.off .nm{color:#8b7f8e;text-decoration:line-through}
+    details.fs .hd{color:#8b7f8e}details.fs .nm small{display:block;color:#8b7f8e;font-size:11.5px}details.fs .am{text-align:right;white-space:nowrap}details.fs .am small{display:block;color:#8b7f8e;font-size:11.5px}
+    details.fs .pf{display:flex;justify-content:space-between;gap:8px;margin-top:10px;padding-top:8px;border-top:1px solid #e2e8e4;font-size:13px}@media print{details.fs .pk,details.fs .ed{display:none}}details.pick .kp2{margin-top:6px;padding-top:8px;border-top:1px solid #e2e8e4}@media print{details.pick .pk{display:none}details.pick>summary{border:0;padding:0}details.pick>summary::after{content:''}}</style>`);
   const SHORT = ['Cash', 'Debt', 'Gold', 'Others', 'Equity', 'Real estate'], LONG = ['Equity', 'Gold', 'Debt', 'Cash', 'Others', 'Real estate'];
   const defTo = (r, goals) => {
     if (r.use !== 'Investable') return 'none';
@@ -883,30 +894,50 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
     return r.cls === 'Real estate' ? 'none' : '';
   };
 
+  const MONS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  FP.inKey = x => 'later:' + (x.id || [x.src || '', x.month, x.year, +x.amt || 0].join('|'));   /* stable key for a money-coming-later row */
   FP.goalOrder = (st, goals) => { const o = st.order || []; const k = g => { const i = o.indexOf(g.name); return i < 0 ? 1e6 + g.n : i; }; return goals.slice().sort((x, y) => PRI[x.pri] - PRI[y.pri] || k(x) - k(y)); };
   FP.calc.alloc = (d, st) => {
     const nw = FP.calc.nw(d, st), goals = FP.calc.goals(d, st).filter(g => g.on).map(g => { const f = (st.fund || {})[g.name] || {}, full = g.due ? g.fv : g.lump, pct = f.how === 'none' ? 0 : f.pct != null ? f.pct / 100 : 1;
       /* st.fund (scenarios): how = lump | sip | none, pct = share of the goal to fund */
-      return { ...g, fullPV: full, needPV: full * pct, noLump: f.how === 'sip', noSip: f.how === 'lump', got: 0, src: [] }; });
+      return { ...g, fullPV: full, needPV: full * pct, noLump: f.how === 'sip', noSip: f.how === 'lump', got: 0, later: 0, src: [], seq: [] }; });   /* got = from investments, later = money coming later (today's value) */
     const byName = Object.fromEntries(goals.map(g => [g.name, g]));
     /* st.al[label]: '' shared pool | 'none' | goal name | [goal names]; st.alKeep[label]: leftover stays reserved instead of joining the pool */
     const assets = nw.rows.map(r => { const o = (st.al || {})[r.label]; let to = o ?? defTo(r, goals); const tos = (Array.isArray(to) ? to : to && to !== 'none' ? [to] : []).filter(n => byName[n]);
       if (to !== 'none') to = tos.join(', '); return { ...r, to, tos, keep: !!(st.alKeep || {})[r.label], free: r.use === 'Investable' ? Math.min(Math.max(r.m - r.ef, 0), (st.alAmt || {})[r.label] ?? Infinity) : 0, full: r.use === 'Investable' ? Math.max(r.m - r.ef, 0) : 0, used: 0, uses: [] }; });
-    const give = (a, g, amt, part = 'free') => { if (amt <= 0 || g.noLump) return; g.got += amt; g.src.push([a.label, amt]); a.uses.push([g.name, amt]); if (part === 'free') a.used += amt; };
+    const room = g => g.needPV - g.got - g.later;
+    const give = (a, g, amt, part = 'free') => { if (amt <= 0 || g.noLump) return; g.got += amt; g.src.push([a.label, amt]); g.seq.push({ key: 'a:' + a.label, label: a.label, amt }); a.uses.push([g.name, amt]); if (part === 'free') a.used += amt; };
+    /* Money coming in later: arrives at the END of its month; goals are due at the START of theirs, so it funds only goals due in a later month.
+       It grows from arrival to the due date (rate set by the months left), then is valued in today's money at the goal's own return. */
+    const pd = FP.planDate(), p0 = pd.getFullYear() * 12 + pd.getMonth();
+    const inflows = (st.inflows || []).map((x, k) => { const amt = +x.amt || 0, ni = Math.max((+x.year || pd.getFullYear()) * 12 + (+x.month || pd.getMonth() + 1) - 1 - p0, 0);
+      return { ...x, k, key: FP.inKey(x), label: `Later, ${MONS[(+x.month || 1) - 1]} ${x.year}: ${x.src || 'Money in'}`, amt, ni, tg: x.to && x.to !== 'pool' && byName[x.to] ? x.to : '', left: amt, uses: [] }; });
+    const fac = (x, g) => { if (g.due || x.ni >= g.n) return null; const m = g.n - x.ni - 1, rr = g.type === 'retirement' && m < 36 ? FP.rate('rPost') : FP.rate(m < 24 ? 'rDebt' : m < 36 ? 'rHybrid' : 'rEquity'), grow = Math.pow(1 + FP.mrate(rr), m);
+      return { m, rr, grow, f: grow / Math.pow(1 + FP.mrate(g.r), g.n) }; };   /* f = today's value of ₹1 of this money for this goal */
+    const take = (x, g) => { const F = fac(x, g); if (!F || x.left < 0.5 || room(g) < 0.5) return; const pv = Math.min(x.left * F.f, room(g)), raw = pv / F.f;
+      g.later += pv; x.left -= raw; g.seq.push({ key: x.key, label: x.label, amt: pv, raw, later: 1 }); x.uses.push([g.name, raw, F.rr, F.m, raw * F.grow, pv]); };
+    const sortBy = (items, keys) => { if (!keys || !keys.length) return items; const pos = k => { const i = keys.indexOf(k); return i < 0 ? 1e6 : i; }; return items.map((x, i) => [x, i]).sort((p, q) => pos(p[0].key) - pos(q[0].key) || p[1] - q[1]).map(x => x[0]); };
     const efGoal = goals.find(g => g.type === 'emergency');
     if (efGoal) assets.forEach(a => give(a, efGoal, Math.min(a.ef, efGoal.needPV - efGoal.got), 'ef'));
-    /* an investment set aside for several goals funds them in the plan's goal order (priority, then the order in this section) */
-    const ordG = FP.goalOrder(st, goals);
-    assets.filter(a => a.tos.length).forEach(a => ordG.filter(g => a.tos.includes(g.name)).forEach(g => give(a, g, Math.min(a.free - a.used, g.needPV - g.got))));
-    const pool = assets.filter(a => a.to === '' || (a.tos.length && !a.keep));   /* leftover of a set-aside investment joins the pool unless kept */
-    FP.goalOrder(st, goals).forEach(g => {
-      const ord = g.n < 24 ? SHORT : LONG;
-      const no = (st.alNot || {})[g.name] || [];   /* st.alNot[goal]: shared-pool investments not to use for this goal */
-      pool.filter(a => !no.includes(a.label)).sort((x, y) => ord.indexOf(x.cls) - ord.indexOf(y.cls)).forEach(a => give(a, g, Math.min(a.free - a.used, g.needPV - g.got)));
-    });
-    goals.forEach(g => { g.gap = Math.max(g.needPV - g.got, 0); g.gapFV = g.due ? g.gap : g.gap * Math.pow(1 + FP.mrate(g.r), g.n); g.pctF = g.needPV ? g.got / g.needPV : 1; });
+    const ordG = FP.goalOrder(st, goals), SO = st.srcOrd || {}, NOT = st.alNot || {};
+    /* 1. money kept for each goal (set-aside investments, then money coming later linked to it, unless reordered), goal by goal in the plan's order */
+    const keptOf = g => [...assets.filter(a => a.tos.includes(g.name)).map(a => ({ key: 'a:' + a.label, a })), ...inflows.filter(x => x.tg === g.name).map(x => ({ key: x.key, x }))];
+    ordG.forEach(g => sortBy(keptOf(g), (SO[g.name] || {}).keep).forEach(s => s.a ? give(s.a, g, Math.min(s.a.free - s.a.used, room(g))) : take(s.x, g)));
+    /* 2. shared pool investments (incl. leftovers not kept): short goals cash/debt first, long goals equity first, unless reordered; skipped ones left out */
+    const poolA = assets.filter(a => a.to === '' || (a.tos.length && !a.keep));
+    const poolOf = g => { const cls = g.n < 24 ? SHORT : LONG; return sortBy(poolA.map((a, i) => ({ key: 'a:' + a.label, a, i })).sort((p, q) => cls.indexOf(p.a.cls) - cls.indexOf(q.a.cls) || p.i - q.i), (SO[g.name] || {}).pool); };
+    ordG.forEach(g => { const no = NOT[g.name] || []; poolOf(g).filter(s => !no.includes(s.a.label)).forEach(s => give(s.a, g, Math.min(s.a.free - s.a.used, room(g)))); });
+    /* 3. money coming later not linked to a goal, and leftovers of linked money: used last, in list order */
+    ordG.forEach(g => { const no = NOT[g.name] || []; inflows.filter(x => !no.includes(x.key)).forEach(x => take(x, g)); });
+    /* what the funding panel shows for each goal, in the order used */
+    goals.forEach(g => { const no = NOT[g.name] || [], U = k => g.seq.filter(x => x.key === k).reduce((t, x) => [t[0] + x.amt, t[1] + (x.raw || 0)], [0, 0]);
+      const A_ = s => ({ key: s.key, kind: 'a', label: s.a.label, sub: s.a.cls, used: U(s.key)[0], on: !no.includes(s.a.label) });
+      const I_ = x => { const u = U(x.key); return { key: x.key, kind: 'i', k: x.k, label: x.label, used: u[0], raw: u[1], ok: !!fac(x, g), on: !no.includes(x.key) }; };
+      g.fs = { kept: sortBy(keptOf(g), (SO[g.name] || {}).keep).map(s => s.a ? A_(s) : I_(s.x)), pool: poolOf(g).filter(s => s.a.free > 0.5 && !s.a.tos.includes(g.name)).map(A_),   /* its own kept investments are listed once, under kept */ later: inflows.filter(x => x.tg !== g.name).map(I_),
+        fixed: g.seq.filter(x => x.key.startsWith('a:') && !keptOf(g).some(k => k.key === x.key) && !poolA.some(a => 'a:' + a.label === x.key)), custom: !!SO[g.name], reset: !!(SO[g.name] || no.length) }; });
+    goals.forEach(g => { g.gap = Math.max(room(g), 0); if (g.gap < 0.5) g.gap = 0; g.gapFV = g.due ? g.gap : g.gap * Math.pow(1 + FP.mrate(g.r), g.n); g.pctF = g.needPV ? (g.got + g.later) / g.needPV : 1; });
     const switches = goals.filter(g => !g.due && g.n < 24 && g.type !== 'retirement').flatMap(g => g.src.filter(([l]) => (assets.find(a => a.label === l) || {}).cls === 'Equity').map(([l, v]) => ({ g: g.name, l, v, n: g.n })));
-    return { goals, assets, switches };
+    return { goals, assets, switches, inflows };
   };
 
   FP.sec.lumpsum = {
@@ -917,10 +948,9 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
     render(el, d, st) {
       const { goals, assets, switches } = FP.calc.alloc(d, st), sum = (a, k) => a.reduce((s, x) => s + x[k], 0), MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
       /* Money coming in later (plan inflows) is applied in Section 5's calculation; show it here per goal */
-      const S = FP.calc.sip(d, st), SG = Object.fromEntries(S.goals.map(g => [g.name, g])), later = {};
-      S.inflows.forEach(x => x.uses.forEach(([g, v]) => (later[g] = later[g] || []).push([x, v])));
-      const still = g => { const x = SG[g.name]; if (!x) return g.gap; return x.due ? x.gap : x.gapFV / Math.pow(1 + FP.mrate(g.r), g.n); };
-      const G = FP.goalOrder(st, goals), need = sum(G, 'needPV'), got = sum(G, 'got'), stillT = G.reduce((s, g) => s + still(g), 0), laterT = need - got - stillT;
+      const S = FP.calc.sip(d, st);
+      const still = g => g.gap;
+      const G = FP.goalOrder(st, goals), need = sum(G, 'needPV'), got = sum(G, 'got'), stillT = sum(G, 'gap'), laterT = sum(G, 'later');
       const left = assets.reduce((s, a) => s + (a.to === 'none' ? 0 : a.free - a.used), 0), kept = assets.filter(a => a.to === 'none' && a.use === 'Investable').reduce((s, a) => s + a.free, 0);
       const pick = (a, i) => { const on = a.to === 'none' ? 'none' : a.tos.length ? 'goals' : 'pool', nm = G.filter(g => a.tos.includes(g.name)).map(g => g.name);
         const sum = on === 'none' ? 'Not used for goals' : on === 'pool' ? 'Shared pool' : nm.length > 2 ? `${nm[0]} +${nm.length - 1} more` : nm.join(' · ');
@@ -933,20 +963,36 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
       const chip = p => `<span class="chip ${p === 'High' ? '' : p === 'Medium' ? 'warn' : 'muted'}">${p}</span>`, PR = { High: 0, Medium: 1, Low: 2 };
       const inf = st.inflows || [], y0 = FP.planDate().getFullYear(), srcs = FP.calc.nw(d, st).rows.map(r => r.label);
       const bySw = {}; switches.forEach(x => (bySw[x.g] = bySw[x.g] || { n: x.n, items: [] }).items.push(x));
+      /* "Funded from": the sources used (today's money); click to open the goal's funding panel */
+      const fsCell = g => { const F = g.fs, E = FP.esc, M = new Map(); g.seq.forEach(x => { const o = M.get(x.key) || { ...x, amt: 0, raw: 0 }; o.amt += x.amt; o.raw += x.raw || 0; M.set(x.key, o); });
+        const skip = [...F.pool, ...F.later].filter(x => !x.on).length;
+        const lines = [...M.values()].map(x => `<span class="note" style="color:${x.later ? 'var(--c3)' : 'var(--ink)'}">${E(x.label)}: ${FP.short(x.amt)}${x.later && Math.abs(x.raw - x.amt) > 1 ? ` <small>(${FP.short(x.raw)} of it)</small>` : ''}</span>`).join('') || '<span class="hint">—</span>';
+        const amt = it => it.used > 0.5 ? FP.inr(it.used) + (it.kind === 'i' && Math.abs(it.raw - it.used) > 1 ? `<small>${FP.short(it.raw)} of it</small>` : '') : it.kind === 'i' && !it.ok ? '<small>arrives too late</small>' : it.on === false ? '<small>not used</small>' : '—';
+        const row = (it, grp, drag) => `<div class="fr${it.on === false ? ' off' : ''}"${drag ? ' draggable="true"' : ''} data-k="${E(it.key)}"${it.kind === 'i' ? ` data-ik="${it.k}"` : ''}><span class="hd">${drag ? '⠿' : ''}</span>
+          <input type="checkbox" data-grp="${grp}"${grp === 'keep' || it.on !== false ? ' checked' : ''} aria-label="Use ${E(it.label)} for this goal"><span class="nm">${E(it.label)}${it.sub ? `<small>${E(it.sub)}</small>` : ''}</span><span class="am">${amt(it)}</span></div>`;
+        const grp = (t, hint, L, g2, drag) => L.length ? `<b>${t}</b><small class="gh">${hint}</small><div class="fl" data-grp="${g2}">${L.map(it => row(it, g2, drag && L.length > 1)).join('')}</div>` : '';
+        return `<details class="fs" data-fs="${E(g.name)}"${openFs === g.name ? ' open' : ''}><summary title="Click to see or change where this goal's money comes from">${lines}${skip ? `<span class="note noprint" style="color:#8b7f8e">${skip} source${skip > 1 ? 's' : ''} skipped</span>` : ''}<span class="ed noprint">${F.custom ? 'Custom order · ' : ''}Change ▾</span></summary>
+          <div class="pk"><div class="ph">${E(g.name)} · needs ${FP.inr(g.needPV)}</div>
+          ${F.fixed.length ? `<b>Emergency fund amounts</b><small class="gh">Set in Section 1</small>${F.fixed.map(x => `<div class="fr"><span class="hd"></span><span></span><span class="nm">${E(x.label)}</span><span class="am">${FP.inr(x.amt)}</span></div>`).join('')}` : ''}
+          ${grp('Kept for this goal', 'Used first, top to bottom. Untick to unlink.', F.kept, 'keep', 1)}
+          ${grp('From the shared pool', 'Only if still short, top to bottom. Untick to skip for this goal.', F.pool, 'pool', 1)}
+          ${grp('Money coming later, shared pool', 'Used last. Untick to skip for this goal.', F.later, 'later', 0)}
+          ${!F.kept.length && !F.pool.length && !F.later.length && !F.fixed.length ? '<p class="hint">No investments are available for this goal.</p>' : ''}
+          <div class="pf"><span>Covered ${FP.inr(g.got + g.later)} · Still to build ${FP.inr(g.gap)}</span>${F.reset ? '<button class="link" data-fsreset>Reset to automatic</button>' : ''}</div></div></details>`; };
       el.innerHTML = `
       <div class="kpis">${FP.kpi('Covered by existing investments', FP.short(got), `${FP.pct(need ? got / need : 1, 0)} of the ${FP.short(need)} needed today`, 1)}
         ${laterT > 1 ? FP.kpi('Covered by money coming later', FP.short(laterT), 'In today\'s money') : ''}
         ${FP.kpi('Still to build', FP.short(stillT), 'In today\'s money · Section 5 sets the SIP')}
         ${FP.kpi('Goals fully funded', `${G.filter(g => still(g) < 1).length} of ${G.length}`)}
         ${FP.kpi('Investments left over', FP.short(left), kept ? `Plus ${FP.short(kept)} kept aside (property etc.)` : 'Not needed by any goal')}</div>
-      <ul class="hint" style="margin:0;padding-left:18px"><li>Goals are funded by priority (High → Low), then in the order below.<span class="noprint"> Drag ⠿ to change it (Shift+click to pick several).</span></li><li>Goals under 2 years draw from cash and debt first; longer goals from equity first.</li><li>Fixed links (EPF to retirement, emergency fund amounts) are applied before the shared pool.</li></ul>
+      <ul class="hint" style="margin:0;padding-left:18px"><li>Goals are funded by priority (High → Low), then in the order below.<span class="noprint"> Drag ⠿ to change it (Shift+click to pick several).</span></li><li>Goals under 2 years draw from cash and debt first; longer goals from equity first.</li><li>Money kept for a goal (investments set aside for it, money coming later linked to it) is used before the shared pool.</li><li class="noprint">Click a goal's "Funded from" to see its sources, change their order, or skip one for that goal.</li></ul>
       ${switches.length ? `<div class="callout"><b>Move to a debt or liquid fund now</b> (equity is funding goals due within 2 years; a market fall could hurt them):<ul style="margin:6px 0 0;padding-left:18px">${Object.entries(bySw).map(([g, x]) => `<li><b>${FP.esc(g)}</b> (in ${x.n} months): ${x.items.map(i => `${FP.short(i.v)} of ${FP.esc(i.l)}`).join(', ')}</li>`).join('')}</ul></div>` : ''}
       <div><h3>How much of each goal is already covered</h3><div class="chartbox" style="height:${Math.max(160, G.length * 30 + 40)}px"><canvas id="alBar" role="img" aria-label="Covered and remaining amount for each goal"></canvas></div>
         ${FP.legend(['Covered by existing investments', ...(laterT > 1 ? ['Money coming later'] : []), 'Still to build'], null, ['#1E7A46', ...(laterT > 1 ? ['#2F86BC'] : []), '#A3502F'])}</div>
       <div><div class="secbar"><h3>Goal by goal</h3><button class="addgoal noprint" data-addgoal>+ Add goal</button></div><div class="tbl"><table><thead><tr><th class="noprint" data-nosort title="Funding order">#</th><th>Goal</th><th>Priority</th><th>Due</th><th class="n">Needed today</th><th>Funded from</th><th class="n">Covered</th><th class="n">Still to build</th></tr></thead><tbody>
-        ${G.map((g, j) => { const st2 = still(g), lt = later[g.name] || []; return `<tr data-p="${g.pri}" data-g="${FP.esc(g.name)}"><td class="noprint drag" draggable="true" title="Drag to fund earlier or later (within ${g.pri} priority). Shift+click to pick several.">⠿ ${j + 1}</td><td>${FP.goalBtn(g)}</td><td data-sort="${PR[g.pri]}">${chip(g.pri)}</td><td>${due(g)}</td><td class="n">${FP.inr(g.needPV)}</td>
-          <td>${g.src.map(([l, v]) => { const a = assets.find(x => x.label === l), x = g.type !== 'emergency' && a && !a.tos.includes(g.name); return `<span class="note" style="color:var(--ink)">${FP.esc(l)}: ${FP.short(v)}${x ? ` <button class="link noprint nx" data-nx="${FP.esc(l)}" title="Don't use ${FP.esc(l)} for this goal" aria-label="Don't use ${FP.esc(l)} for this goal">✕</button>` : ''}</span>`; }).join('')}${((st.alNot || {})[g.name] || []).map(l => `<span class="note noprint">Not from: ${FP.esc(l)} <button class="link" data-nr="${FP.esc(l)}" title="Allow ${FP.esc(l)} again">↺</button></span>`).join('')}${lt.map(([x, v]) => `<span class="note" style="color:var(--c3)">Later, ${MON[(x.month || 1) - 1]} ${x.year}: ${FP.esc(x.src || 'Money in')} ${FP.short(v)}</span>`).join('') || (g.src.length ? '' : '<span class="hint">—</span>')}</td>
-          <td class="n">${FP.inr(g.got)}<span class="note">${FP.pct(g.pctF, 0)}</span></td><td class="n" style="${st2 > 1 ? 'color:var(--brown);font-weight:700' : ''}">${st2 > 1 ? FP.inr(st2) : 'Fully funded'}${st2 > 1 && !g.due ? `<span class="note">${FP.short(SG[g.name]?.gapFV ?? g.gapFV)} by ${g.year}</span>` : ''}</td></tr>`; }).join('')}
+        ${G.map((g, j) => { const st2 = still(g); return `<tr data-p="${g.pri}" data-g="${FP.esc(g.name)}"><td class="noprint drag" draggable="true" title="Drag to fund earlier or later (within ${g.pri} priority). Shift+click to pick several.">⠿ ${j + 1}</td><td>${FP.goalBtn(g)}</td><td data-sort="${PR[g.pri]}">${chip(g.pri)}</td><td>${due(g)}</td><td class="n">${FP.inr(g.needPV)}</td>
+          <td>${fsCell(g)}</td>
+          <td class="n">${FP.inr(g.got + g.later)}<span class="note">${FP.pct(g.pctF, 0)}</span></td><td class="n" style="${st2 > 1 ? 'color:var(--brown);font-weight:700' : ''}">${st2 > 1 ? FP.inr(st2) : 'Fully funded'}${st2 > 1 && !g.due ? `<span class="note">${FP.short(g.gapFV)} by ${g.year}</span>` : ''}</td></tr>`; }).join('')}
         ${FP.calc.goals(d, st).filter(g => !g.on).map(g => `<tr class="off noprint"><td class="noprint"></td><td>${FP.goalBtn(g)}<span class="note">Not in the plan. Click the name to include it.</span></td><td>${chip(g.pri)}</td><td>${due(g)}</td><td class="n">${FP.inr(g.due ? g.fv : g.lump)}</td><td colspan="3" class="hint">Left out of the plan</td></tr>`).join('')}
         <tr class="tot"><td class="noprint"></td><td colspan="3">Total</td><td class="n">${FP.inr(need)}</td><td></td><td class="n">${FP.inr(got)}</td><td class="n">${FP.inr(stillT)}</td></tr></tbody></table></div>
         <p class="hint">"Needed today" and "Still to build" are in today's money. The small figure under "Still to build" is the amount that must be ready on the due date.</p></div>
@@ -955,19 +1001,38 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
         ${assets.filter(a => a.full > 0 || a.ef > 0).map((a, i) => `<tr><td>${FP.esc(a.label)}<span class="note">${a.cls}${a.ef ? ` · ${FP.short(a.ef)} emergency fund` : ''}</span></td><td class="n">${FP.inr(a.full)}</td>
           <td class="n noprint">${a.full > 0 ? `<input type="text" inputmode="decimal" class="money efin${a.free < a.full ? ' capd' : ''}" id="cap_${i}" data-cap="${FP.esc(a.label)}" data-full="${a.full}" data-raw="${a.free}" value="${FP.inrx(a.free)}" title="Count only this much for goals">` : ''}</td>
           <td>${a.full > 0 ? pick(a, i) : '<span class="hint">Emergency fund only</span>'}</td>
-          <td>${a.uses.map(([g, v]) => `<span class="note" style="color:var(--ink)">${FP.esc(g)}: ${FP.short(v)}</span>`).join('') || '<span class="hint">—</span>'}</td><td class="n">${a.to === 'none' ? '<span class="hint">Kept aside</span>' : FP.inr(a.free - a.used)}</td></tr>`).join('')}</tbody></table></div></div>
-      <div><h3>Money coming in later</h3><ul class="hint" style="margin:0 0 8px;padding-left:18px"><li>For money the client will get on a date: sale of a car or property, a maturity, a bonus, what's left in a fund after an SWP.</li><li>It funds only goals due in or after the month it arrives. From then on it earns the return for the time left: equity if 3+ years, hybrid if 2–3, debt if under 2.</li><li>To avoid counting it twice, set the asset itself to "Not used for goals" above.</li><li>Value today (as shown in Section 4 and the client PDF) = what it grows to by the goal's due date, brought back to today at that goal's own return.</li></ul>
+          <td>${a.uses.map(([g, v]) => `<span class="note" style="color:var(--ink)">${FP.esc(g)}: ${FP.short(v)}</span>`).join('') || '<span class="hint">—</span>'}</td><td class="n">${a.to === 'none' ? '<span class="hint">Kept aside</span>' : FP.inr(a.full - a.used) + (a.full - a.free > 0.5 ? `<span class="note">${FP.short(a.full - a.free)} not counted for goals</span>` : '')}</td></tr>`).join('')}</tbody></table></div></div>
+      <div><h3>Money coming in later</h3><ul class="hint" style="margin:0 0 8px;padding-left:18px"><li>For money the client will get on a date: sale of a car or property, a maturity, a bonus, what's left in a fund after an SWP.</li><li>It arrives at the end of its month, and goals are due at the start of theirs, so it funds only goals due in a later month. Until then it earns the return for the time left: equity if 3+ years, hybrid if 2–3, debt if under 2.</li><li>Linked to a goal, it is used for that goal first (with the goal's other kept money, in the order you set). Anything left, and money not linked to a goal, goes to the shared pool and is used last.</li><li>To avoid counting it twice, set the asset itself to "Not used for goals" above.</li><li>All amounts for goals are in today's money: what it grows to by the goal's due date, brought back to today at that goal's own return.</li></ul>
         <datalist id="inSrc">${srcs.map(l => `<option value="${FP.esc(l)}">`).join('')}</datalist>
         <div class="tbl"><table class="bulk" id="plIn"><thead><tr><th data-nosort>Source</th><th class="n" data-nosort>Expected amount</th><th data-nosort>Month</th><th data-nosort>Year</th><th data-nosort>Use for</th><th class="n" data-nosort>Used</th><th class="noprint" data-nosort></th></tr></thead><tbody>
           ${inf.map((x, k) => { const u = S.inflows[k]; return `<tr data-i="${k}"><td><input data-f="src" type="text" list="inSrc" value="${FP.esc(x.src || '')}" placeholder="e.g. Car sale"></td><td><input data-f="amt" class="money n" type="text" inputmode="decimal" data-raw="${+x.amt || 0}" value="${FP.inrx(+x.amt || 0)}"></td>
             <td><select data-f="month">${MON.map((m, i) => `<option value="${i + 1}"${(x.month || 3) === i + 1 ? ' selected' : ''}>${m}</option>`).join('')}</select></td><td><input data-f="year" class="n" type="number" value="${x.year || y0}"></td>
             <td><select data-f="to"><option value="pool">Shared pool (by priority)</option>${goals.map(g => `<option${x.to === g.name ? ' selected' : ''}>${FP.esc(g.name)}</option>`).join('')}</select></td>
-            <td class="n">${u ? FP.short(u.used) + (u.left > 1 ? `<span class="note">${FP.short(u.left)} not needed</span>` : '') + u.uses.filter(z => z[2] != null && SG[z[0]]).map(([gn, v, rr, m, fv]) => { const g = SG[gn]; return `<span class="note" style="text-align:left">${FP.esc(gn)}: ${FP.short(v)} grows at ${FP.pct(rr, 1)} for ${m} months to ${FP.short(fv)} by the due date; worth ${FP.short(fv / Math.pow(1 + FP.mrate(g.r), g.n))} today at the goal's ${FP.pct(g.r, 1)}</span>`; }).join('') : '—'}</td><td class="noprint"><button class="link" data-xi="${k}" style="text-decoration:none" aria-label="Remove">✕</button></td></tr>`; }).join('') || `<tr><td colspan="7" class="hint">None yet.</td></tr>`}</tbody></table></div>
+            <td class="n">${u ? FP.short(u.used) + (u.left > 1 ? `<span class="note">${FP.short(u.left)} not needed</span>` : '') + u.uses.map(([gn, v, rr, m, fv, pv]) => { const g = goals.find(x => x.name === gn); return `<span class="note" style="text-align:left">${FP.esc(gn)}: ${FP.short(v)}${m ? ` grows at ${FP.pct(rr, 1)} for ${m} month${m > 1 ? 's' : ''} to ${FP.short(fv)} by the due date` : ' arrives just before the due date (no growth)'}; worth ${FP.short(pv)} today at the goal's ${FP.pct(g.r, 1)}</span>`; }).join('') : '—'}</td><td class="noprint"><button class="link" data-xi="${k}" style="text-decoration:none" aria-label="Remove">✕</button></td></tr>`; }).join('') || `<tr><td colspan="7" class="hint">None yet.</td></tr>`}</tbody></table></div>
         <button class="addgoal noprint" id="plInAdd" style="margin-top:8px">+ Add money coming in</button></div>`;
       FP.dragRows(el.querySelector('.tbl table'), 'tr[data-p]', r => r.dataset.g, names => FP.set(s => { s.order = names; delete s.g3order; delete s.g5order; }),
         (keys, tr) => keys.every(k => G.find(g => g.name === k)?.pri === tr.dataset.p));
-      const notSet = (b, add) => { const g = b.closest('tr').dataset.g, l = b.dataset.nx || b.dataset.nr; FP.set(s => { const N = { ...(s.alNot || {}) }, L = (N[g] || []).filter(x => x !== l); if (add) L.push(l); if (L.length) N[g] = L; else delete N[g]; s.alNot = N; }); };
-      el.querySelectorAll('[data-nx]').forEach(b => b.onclick = () => notSet(b, true)); el.querySelectorAll('[data-nr]').forEach(b => b.onclick = () => notSet(b, false));
+      /* funding panel: tick / untick, drag to reorder, reset */
+      const ids = s => { if ((s.inflows || []).some(x => !x.id)) s.inflows = (s.inflows || []).map((x, k) => x.id ? x : { ...x, id: 'm' + Date.now().toString(36) + k }); };
+      const keyOf = (r, s) => r.dataset.ik != null ? FP.inKey(s.inflows[+r.dataset.ik]) : r.dataset.k;
+      requestAnimationFrame(() => FP.placePanels?.());
+      el.querySelectorAll('details.fs').forEach(fs => { const gn = fs.dataset.fs;
+        fs.addEventListener('toggle', () => { if (fs.open) { openFs = gn; el.querySelectorAll('details.fs[open]').forEach(o => o !== fs && (o.open = false)); } else if (openFs === gn) openFs = null; });
+        fs.querySelectorAll('input[data-grp]').forEach(x => x.onchange = () => { const r = x.closest('.fr'), grp = x.dataset.grp; FP.set(s => {
+          if (grp === 'keep') {
+            if (r.dataset.ik != null) { s.inflows = JSON.parse(JSON.stringify(s.inflows)); s.inflows[+r.dataset.ik].to = 'pool'; return; }
+            const l = r.dataset.k.slice(2), cur = (s.al || {})[l], L = (Array.isArray(cur) ? cur : cur && cur !== 'none' ? [cur] : [gn]).filter(n => n !== gn); s.al = { ...(s.al || {}), [l]: L.length ? L : '' }; return; }
+          ids(s); const k = r.dataset.ik != null ? keyOf(r, s) : r.dataset.k.slice(2), N = { ...(s.alNot || {}) }, L = (N[gn] || []).filter(v => v !== k);
+          if (!x.checked) L.push(k); if (L.length) N[gn] = L; else delete N[gn]; s.alNot = N; }); });
+        fs.querySelector('[data-fsreset]')?.addEventListener('click', e => { e.preventDefault(); FP.set(s => { const O = { ...(s.srcOrd || {}) }, N = { ...(s.alNot || {}) }; delete O[gn]; delete N[gn]; s.srcOrd = O; s.alNot = N; }); });
+        let dr = null;
+        fs.querySelectorAll('.fr[draggable]').forEach(r => {
+          r.addEventListener('dragstart', e => { e.stopPropagation(); dr = r; r.classList.add('dg'); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', r.dataset.k); });
+          r.addEventListener('dragover', e => { e.stopPropagation(); if (!dr || dr === r || dr.parentNode !== r.parentNode) return; e.preventDefault(); const b = r.getBoundingClientRect(); r.parentNode.insertBefore(dr, e.clientY < b.top + b.height / 2 ? r : r.nextSibling); });
+          r.addEventListener('drop', e => { e.preventDefault(); e.stopPropagation(); });
+          r.addEventListener('dragend', e => { e.stopPropagation(); if (!dr) return; const list = dr.parentNode, grp = list.dataset.grp; dr.classList.remove('dg'); dr = null;
+            FP.set(s => { ids(s); const keys = [...list.querySelectorAll('.fr')].map(x => keyOf(x, s)), O = { ...(s.srcOrd || {}) }; O[gn] = { ...(O[gn] || {}), [grp]: keys }; s.srcOrd = O; }); }); });
+      });
       el.querySelectorAll('[data-pk]').forEach(pk => { const lab = pk.dataset.pk;
         pk.addEventListener('toggle', () => { if (pk.open) { openPk = lab; el.querySelectorAll('[data-pk][open]').forEach(o => o !== pk && (o.open = false)); } else if (openPk === lab) openPk = null; });
         pk.querySelectorAll('input').forEach(x => x.onchange = () => FP.set(s => { s.al = { ...(s.al || {}) }; const m = x.dataset.m;
@@ -978,10 +1043,10 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
       const updIn = fn => FP.set(s => { s.inflows = JSON.parse(JSON.stringify(s.inflows || [])); fn(s.inflows); });
       el.querySelectorAll('#plIn [data-f]').forEach(x => x.onchange = () => { const k = +x.closest('tr').dataset.i, f = x.dataset.f; updIn(a => { a[k][f] = f === 'amt' ? FP.num(x.value) : f === 'month' || f === 'year' ? +FP.num(x.value) : x.value; }); });
       el.querySelectorAll('#plIn [data-xi]').forEach(b => b.onclick = () => updIn(a => a.splice(+b.dataset.xi, 1)));
-      el.querySelector('#plInAdd').onclick = () => updIn(a => a.push({ src: '', amt: 0, month: 3, year: y0 + 1, to: 'pool' }));
+      el.querySelector('#plInAdd').onclick = () => updIn(a => a.push({ id: 'm' + Date.now().toString(36), src: '', amt: 0, month: 3, year: y0 + 1, to: 'pool' }));
       FP.chart('alBar', { type: 'bar', data: { labels: G.map(g => g.name.length > 28 ? g.name.slice(0, 26) + '…' : g.name), datasets: [
-        { label: 'Covered', data: G.map(g => g.got), backgroundColor: '#1E7A46', borderRadius: 4, barThickness: 16 },
-        ...(laterT > 1 ? [{ label: 'Money coming later', data: G.map(g => Math.max(g.gap - still(g), 0)), backgroundColor: '#2F86BC', borderRadius: 4, barThickness: 16 }] : []),
+        { label: 'Covered by investments', data: G.map(g => g.got), backgroundColor: '#1E7A46', borderRadius: 4, barThickness: 16 },
+        ...(laterT > 1 ? [{ label: 'Money coming later', data: G.map(g => g.later), backgroundColor: '#2F86BC', borderRadius: 4, barThickness: 16 }] : []),
         { label: 'Still to build', data: G.map(g => still(g)), backgroundColor: '#A3502F', borderRadius: 4, barThickness: 16 }] },
         options: { indexAxis: 'y', maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => `${c.dataset.label}: ${FP.short(c.raw)}` } } },
           scales: { x: { stacked: true, grid: { color: '#e8eef1' }, ticks: { callback: v => FP.short(v) } }, y: { stacked: true, grid: { display: false } } } } });
@@ -994,27 +1059,17 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
 /* Section 5 — SIP Allocation: monthly investing capacity shared across goal gaps (after Section 4) */
 (() => {
   FP.calc.sip = (d, st) => {
-    const { goals } = FP.calc.alloc(d, st), cf = FP.calc.cf(d, st).t, step = st.sipMode !== 'flat';
+    const A = FP.calc.alloc(d, st), { goals } = A, cf = FP.calc.cf(d, st).t, step = st.sipMode !== 'flat';
     const availCalc = cf.sav + Math.max(cf.surplus, 0), avail = st.sipAvail ?? availCalc;
-    /* Money arriving later (scenarios: asset sale, bonus): funds goals due after it arrives, growing at each goal's return from then */
-    const pd = FP.planDate(), p0 = pd.getFullYear() * 12 + pd.getMonth(), ord = FP.goalOrder(st, goals);
-    goals.forEach(g => { g.gap0 = g.gap; g.gapFV0 = g.gapFV; g.inflow = 0; });
-    const inflows = (st.inflows || []).map(x => {
-      let left = +x.amt || 0; const ni = Math.max((+x.year || pd.getFullYear()) * 12 + (+x.month || pd.getMonth() + 1) - 1 - p0, 0), uses = [];
-      (x.to && x.to !== 'pool' ? ord.filter(g => g.name === x.to) : ord).forEach(g => {
-        if (left < 1) return;
-        if (g.due) { if (ni > 0) return; const c = Math.min(left, g.gap); g.gap -= c; left -= c; c > 0 && uses.push([g.name, c]); return; }
-        if (g.n < ni || g.noSip && g.gapFV < 1) return;   /* goals due in the month the money arrives, or later */ const left_ = g.n - ni, rr = g.type === 'retirement' && left_ < 36 ? FP.rate('rPost') : FP.rate(left_ < 24 ? 'rDebt' : left_ < 36 ? 'rHybrid' : 'rEquity'), grow = Math.pow(1 + FP.mrate(rr), left_),   /* return set by the time left once the money arrives */ c = Math.min(left * grow, g.gapFV); if (c < 1) return;
-        g.gapFV -= c; g.inflow += c; left -= c / grow; uses.push([g.name, c / grow, rr, left_, c]);   /* goal, amount used, growth rate after arrival, months it grows, value on the goal date */
-      });
-      return { ...x, ni, uses, used: (+x.amt || 0) - left, left };
-    });
+    /* Money coming in later is applied in Section 4 (today's money), so here only the SIP is worked out */
+    goals.forEach(g => { g.gap0 = g.gap; g.gapFV0 = g.gapFV; });
+    const inflows = A.inflows.map(x => ({ ...x, used: x.amt - x.left }));
     const future = FP.goalOrder(st, goals.filter(g => !g.due && g.gapFV > 1 && !g.noSip)).map(g => { const nd = FP.need(g.gapFV, g.n, g.r, undefined, g.k); return { ...g, req: step ? nd.step : nd.sip }; });
     let left = avail; future.forEach(g => { g.alloc = Math.min(g.req, Math.max(left, 0)); left -= g.alloc; g.short = g.req - g.alloc; g.ach = g.req ? g.alloc / g.req : 1; });
     const nowGap = goals.filter(g => g.due && g.gap > 1);
     /* Share of each goal reached: investments (Section 4) + later money + the SIP that fits */
-    goals.forEach(g => { const f = future.find(x => x.name === g.name), share = g.due ? (g.gap0 > 1 ? (g.gap0 - g.gap) / g.gap0 : 0) : g.gapFV0 > 1 ? (g.inflow + (f ? f.ach * g.gapFV : 0)) / g.gapFV0 : 0;
-      g.sipAlloc = f ? f.alloc : 0; g.funded = g.fullPV ? Math.min((g.got + g.gap0 * share) / g.fullPV, 1) : 1; });
+    goals.forEach(g => { const f = future.find(x => x.name === g.name), share = g.due ? 0 : f ? f.ach : 0;   /* the SIP's share of what is still to build */
+      g.sipAlloc = f ? f.alloc : 0; g.funded = g.fullPV ? Math.min((g.got + g.later + g.gap0 * share) / g.fullPV, 1) : 1; });
     const sum = (a, k) => a.reduce((s, x) => s + x[k], 0);
     return { goals, inflows, future, nowGap, avail, availCalc, step, req: sum(future, 'req'), alloc: sum(future, 'alloc'), short: sum(future, 'short'), nowShort: sum(nowGap, 'gap'), left: Math.max(left, 0), cf };
   };
@@ -1366,7 +1421,7 @@ Corpus = PV(((1+${+rv.r.toFixed(4)}%)/(1+${+rv.infl.toFixed(4)}%))^(1/12)-1, ${r
       } else {
         const name = dr.name.trim(), row = { name, pri: dr.pri, amt: dr.amt, year: dr.year, note: dr.note, type: FP.gtype(name) };
         if (dr.mode === 'goal') Object.assign(s.ed.goals[dr.idx], row); else s.ed.goals.push({ ...row, grp: 'Added' });
-        if (dr.origName && dr.origName !== name) { delete s.goals[dr.origName]; ['order', 'g3order', 'g5order'].forEach(o => { if (s[o]) s[o] = s[o].map(n => n === dr.origName ? name : n); }); if (s.alNot?.[dr.origName]) { s.alNot = { ...s.alNot, [name]: s.alNot[dr.origName] }; delete s.alNot[dr.origName]; } if (s.al) Object.keys(s.al).forEach(k => { s.al[k] = Array.isArray(s.al[k]) ? s.al[k].map(x => x === dr.origName ? name : x) : s.al[k] === dr.origName ? name : s.al[k]; }); }
+        if (dr.origName && dr.origName !== name) { delete s.goals[dr.origName]; ['order', 'g3order', 'g5order'].forEach(o => { if (s[o]) s[o] = s[o].map(n => n === dr.origName ? name : n); }); if (s.srcOrd?.[dr.origName]) { s.srcOrd = { ...s.srcOrd, [name]: s.srcOrd[dr.origName] }; delete s.srcOrd[dr.origName]; } if ((s.inflows || []).some(x => x.to === dr.origName)) s.inflows = s.inflows.map(x => x.to === dr.origName ? { ...x, to: name } : x); if (s.alNot?.[dr.origName]) { s.alNot = { ...s.alNot, [name]: s.alNot[dr.origName] }; delete s.alNot[dr.origName]; } if (s.al) Object.keys(s.al).forEach(k => { s.al[k] = Array.isArray(s.al[k]) ? s.al[k].map(x => x === dr.origName ? name : x) : s.al[k] === dr.origName ? name : s.al[k]; }); }
         s.goals[name] = { ...(s.goals[name] || {}), month: dr.month, infl: dr.infl, repeat: dr.repeat, include: dr.include, ...(row.type === 'emergency' ? { efAuto: dr.efAuto !== false, efMonths: dr.efMonths ?? 6 } : {}) };
       }
     });
@@ -1521,10 +1576,10 @@ Corpus = PV(((1+${+rv.r.toFixed(4)}%)/(1+${+rv.infl.toFixed(4)}%))^(1/12)-1, ${r
 Target income       = kept for spending + SIP needed (Section 5)
 Extra needed        = MAX(target income − take-home, 0)
 Monthly gap         = MAX(SIP needed − can invest, 0)            (Section 5 shortfall)
-Money in later      = covers MIN(amount × (1+r)^(months from arrival to due date), goal's remaining gap), r set by the months left after it arrives
+Money in later      = arrives at the end of its month; today's value for a goal = amount × (1+r)^(months from arrival to due date) ÷ (1+goal return)^(months to due date); r set by the months left after it arrives
                       only goals due in or after the month it arrives; shared pool goes in Section 4 order
 Fund %              = only that share of the goal is planned; "Leave unfunded" = 0%
-Funded (goal)       = (covered by investments + still to build × share covered later) ÷ full value needed today
+Funded (goal)       = (covered by investments + money coming later + still to build × share the SIP covers) ÷ full value needed today
 Income in year y    = take-home × (1 + income growth)^y
 Need in year y      = household × (1 + inflation)^y + premiums + EMIs of loans still running + Σ goal SIP × (1 + step-up)^y</div></details>`;
       const pick = id => FP.set(s => s.scSel = id);
@@ -1574,7 +1629,7 @@ Need in year y      = household × (1 + inflation)^y + premiums + EMIs of loans 
               <label style="margin-top:10px">Notes for this scenario<textarea id="se_note" rows="2" placeholder="e.g. Client open to selling the plot in 2029">${FP.esc(dr.note || '')}</textarea></label>
               <h3>Goals</h3><p class="hint" style="margin:0 0 8px">Changes apply only to this scenario. Gold cells differ from the plan; ↺ resets a goal. "Fund with": Lumpsum only = existing investments, no new SIP; SIP only = no existing investments; Leave unfunded = not planned. Fund % plans only part of the goal.</p>
               <div class="tbl"><table class="bulk" id="seG"><thead><tr><th>Goal</th><th>Priority</th><th class="n">Today's cost</th><th>Year</th><th>Fund with</th><th class="n">Fund %</th><th class="n">Funded</th><th class="n">SIP / month</th><th data-nosort></th></tr></thead><tbody>${plan.map(gRow).join('')}</tbody></table></div>
-              <h3>Money coming in later</h3><p class="hint" style="margin:0 0 8px">Sale of land or a house, a bonus, a policy maturity, a gift. It funds only goals due in or after the month it arrives, and from then on earns the return for the time left (equity 3+ yrs, hybrid 2–3, debt under 2). "Shared pool" funds goals by priority, then the order in Section 4. To use an asset now, set this month and year.</p>
+              <h3>Money coming in later</h3><p class="hint" style="margin:0 0 8px">Sale of land or a house, a bonus, a policy maturity, a gift. It arrives at the end of its month and funds only goals due in a later month, and from then on earns the return for the time left (equity 3+ yrs, hybrid 2–3, debt under 2). "Shared pool" funds goals by priority, then the order in Section 4. To use an asset now, set this month and year.</p>
               <datalist id="scSrc">${srcs.map(([l, v, k]) => `<option value="${FP.esc(l)}">${k}, ${FP.short(v)} today</option>`).join('')}</datalist>
               <div class="tbl"><table class="bulk" id="seI"><thead><tr><th>Source</th><th class="n">Expected amount</th><th>Month</th><th>Year</th><th>Use for</th><th class="n">Used</th><th data-nosort></th></tr></thead><tbody>${dr.inflows.map(iRow).join('') || ''}</tbody></table></div>
               <button class="addgoal" id="seAddI" style="margin-top:8px">+ Add money coming in</button></div>
@@ -1923,7 +1978,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
       s.ed = s.ed || {}; s.goals = s.goals || {};
       const prev = s.ed.goals || FP.base.goals.map((r, i) => ({ ...clone(r), _o: i }));
       rows.forEach(r => { if (r.i == null) return; const old = FP.d.goals[r.i].name, nm = r.name.trim(); if (r.del || old !== nm) delete s.goals[old];
-        if (!r.del && old !== nm) { ['order', 'g3order', 'g5order'].forEach(o => { if (s[o]) s[o] = s[o].map(n => n === old ? nm : n); }); if (s.alNot?.[old]) { s.alNot = { ...s.alNot, [nm]: s.alNot[old] }; delete s.alNot[old]; } if (s.al) Object.keys(s.al).forEach(k => { s.al[k] = Array.isArray(s.al[k]) ? s.al[k].map(x => x === old ? nm : x) : s.al[k] === old ? nm : s.al[k]; }); } });
+        if (!r.del && old !== nm) { ['order', 'g3order', 'g5order'].forEach(o => { if (s[o]) s[o] = s[o].map(n => n === old ? nm : n); }); if (s.srcOrd?.[old]) { s.srcOrd = { ...s.srcOrd, [nm]: s.srcOrd[old] }; delete s.srcOrd[old]; } if ((s.inflows || []).some(x => x.to === old)) s.inflows = s.inflows.map(x => x.to === old ? { ...x, to: nm } : x); if (s.alNot?.[old]) { s.alNot = { ...s.alNot, [nm]: s.alNot[old] }; delete s.alNot[old]; } if (s.al) Object.keys(s.al).forEach(k => { s.al[k] = Array.isArray(s.al[k]) ? s.al[k].map(x => x === old ? nm : x) : s.al[k] === old ? nm : s.al[k]; }); } });
       s.ed.goals = live.map(r => { const nm = r.name.trim(); return { ...(r.i != null ? clone(prev[r.i]) : { grp: 'Added' }), name: nm, pri: r.pri, amt: r.amt, year: r.year, note: r.note, type: FP.gtype(nm) }; });
       live.forEach(r => { const nm = r.name.trim(); s.goals[nm] = { ...(s.goals[nm] || {}), month: r.month, infl: r.infl, repeat: r.repeat, include: r.include }; });
       if (ret) { s.ed.retireYear = ret.retireYear; s.ed.other = { ...FP.d.other, retireMonthly: ret.retireMonthly }; s.goals.Retirement = { ...(s.goals.Retirement || {}), pri: ret.pri, month: ret.month, infl: ret.infl, include: ret.include }; }
@@ -2632,8 +2687,8 @@ Move              = target − today; every change is shown (under ₹1,000 coun
   const CLS = { Equity: 'Growth (equity)', Debt: 'Safe (debt)', Gold: 'Gold', Cash: 'Cash', 'Real estate': 'Property', Others: 'Other' };
   const calc = c => {
     const A = FP.calc.alloc(c.d, c.st), Sx = FP.calc.sip(c.d, c.st), by = Object.fromEntries(Sx.goals.map(g => [g.name, g])), later = {};
-    Sx.inflows.forEach(x => x.uses.forEach(([g, v]) => (later[g] = later[g] || []).push([x, v])));
-    const still = g => g.due ? g.gap : g.gapFV / Math.pow(1 + FP.mrate(g.r), g.n);
+    Sx.goals.forEach(g => { if (g.later > 1) later[g.name] = g.later; });   /* money coming later, today's value */
+    const still = g => g.gap;
     return { A, Sx, by, later, still };
   };
   const nm = n => FP.cp.goalName({ name: n });
@@ -2649,7 +2704,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
       ${rows.map(a => { const v = a.full + Math.min(a.ef, a.m);
         return `<tr><td>${E(src(a.label))}</td><td class="n"><b>${S(v)}</b></td>
           <td>${a.to === 'none' && !a.uses.length ? '<small>Kept aside, not used for goals</small>' : a.uses.length ? uses(a.uses) : '<small>Not needed by any goal</small>'}</td>
-          <td class="n">${a.to === 'none' && !a.uses.length ? '—' : a.free - a.used > 1 ? S(a.free - a.used) : '<span class="ok">Fully used</span>'}</td></tr>`; }).join('')}
+          <td class="n">${a.to === 'none' && !a.uses.length ? '—' : a.full - a.used > 1 ? S(a.full - a.used) : '<span class="ok">Fully used</span>'}</td></tr>`; }).join('')}
       <tr class="tot"><td>Total</td><td class="n">${S(tot)}</td><td></td><td></td></tr></tbody></table>
       ${inf.length ? `<h3 class="st" style="margin-top:22px">Money coming in later</h3><table class="ct"><thead><tr><th>Source</th><th>When</th><th class="n">Amount</th><th>Set aside for</th></tr></thead><tbody>
         ${inf.map(x => `<tr><td><b>${E(x.src || 'Money in')}</b></td><td>${MON[(x.month || 1) - 1]} ${x.year}</td><td class="n"><b>${S(+x.amt)}</b></td><td>${x.uses.length ? uses(x.uses) : '<small>Not needed by any goal</small>'}</td></tr>`).join('')}</tbody></table>` : ''}
@@ -2661,14 +2716,14 @@ Move              = target − today; every change is shown (under ₹1,000 coun
     const { by, later, still } = K, PC = FP.cp.PC;
     const L = FP.cp.goalList(c).map(g => ({ g, a: by[g.name] })).filter(x => x.a), isNow = x => x.a.due && x.a.gap > 1;
     const hasLater = Object.keys(later).length > 0, cols = hasLater ? 7 : 6;
-    const row = ({ g, a }) => { const st = still(a), lt = later[g.name] ? Math.max(a.gap0 - st, 0) : 0,   /* coming later, in today's money */ names = [...new Set(a.src.map(([l]) => src(l)))];
+    const row = ({ g, a }) => { const st = still(a), lt = a.later,   /* coming later, in today's money */ names = [...new Set(a.src.map(([l]) => src(l)))];
       return `<tr><td><div class="gn">${il(FP.art.goalKey(g), 26, 0)}${FP.cp.goalName(g)}</div></td><td class="dt">${g.n <= 0 ? 'Now' : `${MON[g.mon - 1]} ${g.year}`}</td><td class="n">${S(a.needPV)}</td>
         <td>${names.length ? `<small style="color:#4d4552">${E(names.join(', '))}</small>` : '<small>—</small>'}</td><td class="n">${a.got > 1 ? `<b>${S(a.got)}</b>` : '—'}</td>
         ${hasLater ? `<td class="n">${lt > 1 ? `<b>${S(lt)}</b>` : '—'}</td>` : ''}<td class="n">${st > 1 ? `<b class="gap">${S(st)}</b>` : '<span class="ok">100% funded</span>'}</td></tr>`; };
     const main = L.filter(x => !isNow(x)), now = L.filter(isNow);
     const body = ['High', 'Medium', 'Low'].map(p => [p, main.filter(x => x.g.pri === p)]).filter(x => x[1].length).map(([p, R]) => `<tr class="grp"><td colspan="${cols}"><i style="background:${PC[p][0]}"></i>${p} priority</td></tr>${R.map(row).join('')}`).join('')
       + (now.length ? `<tr class="nowh grp"><td colspan="${cols}">Needed now, not yet covered: pay from savings or a bonus, or move the goal</td></tr>${now.map(x => row(x).replace('<tr>', '<tr class="now">')).join('')}` : '');
-    const G = K.Sx.goals, need = G.reduce((s, g) => s + g.needPV, 0) || 1, got = G.reduce((s, g) => s + g.got, 0), stl = G.reduce((s, g) => s + still(g), 0), lat = Math.max(need - got - stl, 0);
+    const G = K.Sx.goals, need = G.reduce((s, g) => s + g.needPV, 0) || 1, got = G.reduce((s, g) => s + g.got, 0), stl = G.reduce((s, g) => s + still(g), 0), lat = G.reduce((s, g) => s + g.later, 0);
     const srcs = [...new Set(K.Sx.inflows.filter(x => x.used > 1).map(x => `${x.src || 'Money in'}, ${MON[(x.month || 1) - 1]} ${x.year}`))];
     return FP.cp.page(c, 'route', 'Goal by goal', 'The lumpsum each goal needs today, and how much your investments already cover. All amounts are in today\'s money.',
       `<table class="ct gt"><thead><tr><th>Goal</th><th>Due</th><th class="n">Lumpsum needed</th><th>Allocated from</th><th class="n">Allocated</th>${hasLater ? '<th class="n">Coming later</th>' : ''}<th class="n">Still to build</th></tr></thead><tbody>${body}</tbody></table>
