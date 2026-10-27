@@ -336,7 +336,7 @@ FP.esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt
 FP.inrx = v => { const r = Math.round(+v || 0); return (r < 0 ? '−' : '') + '₹' + Math.abs(r).toLocaleString('en-IN'); };
 FP.up = v => { const a = Math.abs(+v || 0); if (a < 0.5) return 0; const s = a >= 1e4 ? 1e3 : 100; return Math.sign(v) * Math.ceil(a / s - 1e-9) * s; };
 FP.inr = v => FP.inrx(FP.up(v));
-FP.short = v => { const a = Math.abs(v || 0), s = v < 0 ? '−' : ''; if (a >= 1e7) return s + '₹' + (a / 1e7).toFixed(2) + ' Cr'; if (a >= 1e5) return s + '₹' + (a / 1e5).toFixed(2) + ' L'; return s + '₹' + Math.round(a).toLocaleString('en-IN'); };
+FP.short = v => { const a = Math.abs(v || 0), s = v < 0 ? '−' : ''; if (a >= 1e7) return s + '₹' + (a / 1e7).toFixed(2) + '\u00a0Cr'; if (a >= 1e5) return s + '₹' + (a / 1e5).toFixed(2) + '\u00a0L';   /* non-breaking space: the number and L/Cr never split across lines */ return s + '₹' + Math.round(a).toLocaleString('en-IN'); };
 /* Number from a cell: accepts ₹, commas and simple sums like +10000+20000*2 or =50000/2 */
 FP.evalExpr = t => { let i = 0; const pk = () => t[i];
   const atom = () => { if (pk() === '(') { i++; const v = add(); if (t[i++] !== ')') throw 0; return v; } if (pk() === '-') { i++; return -atom(); } if (pk() === '+') { i++; return atom(); } const m = /^\d*\.?\d+/.exec(t.slice(i)); if (!m) throw 0; i += m[0].length; return +m[0]; };
@@ -880,12 +880,13 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
     details.pick>summary::-webkit-details-marker{display:none}details.pick>summary::after{content:'▾';position:absolute;right:9px;top:6px;color:#5c6a63}
     details.pick .pk{position:absolute;z-index:30;top:calc(100% + 4px);left:0;min-width:260px;max-height:340px;overflow:auto;background:#fff;border:1px solid #cfd8d2;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.14);padding:10px 12px}
     details.pick label{display:flex;gap:8px;align-items:baseline;padding:4px 0;white-space:normal;cursor:pointer}details.pick small{color:#8b7f8e}details.pick b{display:block;margin:8px 0 2px;padding-top:8px;border-top:1px solid #e2e8e4;font-size:13px}
-    details.fs{position:relative}details.fs>summary{list-style:none;cursor:pointer;border-radius:6px;padding:2px 4px;margin:-2px -4px}details.fs>summary::-webkit-details-marker{display:none}details.fs>summary:hover{background:#eef5f0}
-    details.fs .ed{display:block;font-size:11.5px;color:var(--green);font-weight:700;margin-top:3px}details.fs .pk{position:absolute;z-index:30;top:calc(100% + 4px);left:-8px;width:420px;max-height:460px;overflow:auto;background:#fff;border:1px solid #cfd8d2;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.14);padding:12px 14px;cursor:default}
+    details.fs{position:relative}details.fs>summary{list-style:none;cursor:pointer;display:inline-block;font-size:11.5px;color:var(--green);font-weight:700;margin:3px 0 0 -4px;border-radius:4px;padding:1px 4px}details.fs>summary::-webkit-details-marker{display:none}details.fs>summary:hover{background:#eef5f0}
+    button.fso{display:block;background:none;border:0;padding:1px 4px;margin:0 -4px;font:inherit;text-align:left;cursor:pointer;border-radius:4px}button.fso:hover{background:#eef5f0}
+    details.fs .pk{position:absolute;z-index:30;top:calc(100% + 4px);left:-8px;width:420px;max-height:460px;overflow:auto;background:#fff;border:1px solid #cfd8d2;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.14);padding:12px 14px;cursor:default}
     details.fs .ph{font:700 14px var(--fh);color:var(--dark);margin-bottom:4px}details.fs b{display:block;margin:10px 0 0;padding-top:8px;border-top:1px solid #e2e8e4;font-size:13px}details.fs .gh{display:block;color:#8b7f8e;font-size:12px;margin-bottom:4px}
     details.fs .fr{display:grid;grid-template-columns:16px 18px 1fr auto;gap:6px;align-items:center;padding:5px 4px;border-radius:5px;font-size:13.5px}details.fs .fr[draggable]{cursor:grab}details.fs .fr[draggable]:hover{background:#f4f7f5}details.fs .fr.dg{opacity:.4}details.fs .fr.off .nm{color:#8b7f8e;text-decoration:line-through}
     details.fs .hd{color:#8b7f8e}details.fs .nm small{display:block;color:#8b7f8e;font-size:11.5px}details.fs .am{text-align:right;white-space:nowrap}details.fs .am small{display:block;color:#8b7f8e;font-size:11.5px}
-    details.fs .pf{display:flex;justify-content:space-between;gap:8px;margin-top:10px;padding-top:8px;border-top:1px solid #e2e8e4;font-size:13px}@media print{details.fs .pk,details.fs .ed{display:none}}details.pick .kp2{margin-top:6px;padding-top:8px;border-top:1px solid #e2e8e4}@media print{details.pick .pk{display:none}details.pick>summary{border:0;padding:0}details.pick>summary::after{content:''}}</style>`);
+    details.fs .pf{display:flex;justify-content:space-between;gap:8px;margin-top:10px;padding-top:8px;border-top:1px solid #e2e8e4;font-size:13px}@media print{details.fs{display:none}}details.pick .kp2{margin-top:6px;padding-top:8px;border-top:1px solid #e2e8e4}@media print{details.pick .pk{display:none}details.pick>summary{border:0;padding:0}details.pick>summary::after{content:''}}</style>`);
   const SHORT = ['Cash', 'Debt', 'Gold', 'Others', 'Equity', 'Real estate'], LONG = ['Equity', 'Gold', 'Debt', 'Cash', 'Others', 'Real estate'];
   const defTo = (r, goals) => {
     if (r.use !== 'Investable') return 'none';
@@ -966,12 +967,12 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
       /* "Funded from": the sources used (today's money); click to open the goal's funding panel */
       const fsCell = g => { const F = g.fs, E = FP.esc, M = new Map(); g.seq.forEach(x => { const o = M.get(x.key) || { ...x, amt: 0, raw: 0 }; o.amt += x.amt; o.raw += x.raw || 0; M.set(x.key, o); });
         const skip = [...F.pool, ...F.later].filter(x => !x.on).length;
-        const lines = [...M.values()].map(x => `<span class="note" style="color:${x.later ? 'var(--c3)' : 'var(--ink)'}">${E(x.label)}: ${FP.short(x.amt)}${x.later && Math.abs(x.raw - x.amt) > 1 ? ` <small>(${FP.short(x.raw)} of it)</small>` : ''}</span>`).join('') || '<span class="hint">—</span>';
+        const lines = [...M.values()].map(x => `<button type="button" class="note fso" data-fso style="color:${x.later ? 'var(--c3)' : 'var(--ink)'}" title="Change where this goal's money comes from">${E(x.label)}: ${FP.short(x.amt)}${x.later && Math.abs(x.raw - x.amt) > 1 ? ` <small>(${FP.short(x.raw)} of it)</small>` : ''}</button>`).join('') || '<span class="hint">—</span>';
         const amt = it => it.used > 0.5 ? FP.inr(it.used) + (it.kind === 'i' && Math.abs(it.raw - it.used) > 1 ? `<small>${FP.short(it.raw)} of it</small>` : '') : it.kind === 'i' && !it.ok ? '<small>arrives too late</small>' : it.on === false ? '<small>not used</small>' : '—';
         const row = (it, grp, drag) => `<div class="fr${it.on === false ? ' off' : ''}"${drag ? ' draggable="true"' : ''} data-k="${E(it.key)}"${it.kind === 'i' ? ` data-ik="${it.k}"` : ''}><span class="hd">${drag ? '⠿' : ''}</span>
           <input type="checkbox" data-grp="${grp}"${grp === 'keep' || it.on !== false ? ' checked' : ''} aria-label="Use ${E(it.label)} for this goal"><span class="nm">${E(it.label)}${it.sub ? `<small>${E(it.sub)}</small>` : ''}</span><span class="am">${amt(it)}</span></div>`;
         const grp = (t, hint, L, g2, drag) => L.length ? `<b>${t}</b><small class="gh">${hint}</small><div class="fl" data-grp="${g2}">${L.map(it => row(it, g2, drag && L.length > 1)).join('')}</div>` : '';
-        return `<details class="fs" data-fs="${E(g.name)}"${openFs === g.name ? ' open' : ''}><summary title="Click to see or change where this goal's money comes from">${lines}${skip ? `<span class="note noprint" style="color:#8b7f8e">${skip} source${skip > 1 ? 's' : ''} skipped</span>` : ''}<span class="ed noprint">${F.custom ? 'Custom order · ' : ''}Change ▾</span></summary>
+        return `${lines}${skip ? `<span class="note noprint" style="color:#8b7f8e">${skip} source${skip > 1 ? 's' : ''} skipped</span>` : ''}<details class="fs" data-fs="${E(g.name)}"${openFs === g.name ? ' open' : ''}><summary class="noprint" title="See or change where this goal's money comes from">${F.custom ? 'Custom order · ' : ''}Change ▾</summary>
           <div class="pk"><div class="ph">${E(g.name)} · needs ${FP.inr(g.needPV)}</div>
           ${F.fixed.length ? `<b>Emergency fund amounts</b><small class="gh">Set in Section 1</small>${F.fixed.map(x => `<div class="fr"><span class="hd"></span><span></span><span class="nm">${E(x.label)}</span><span class="am">${FP.inr(x.amt)}</span></div>`).join('')}` : ''}
           ${grp('Kept for this goal', 'Used first, top to bottom. Untick to unlink.', F.kept, 'keep', 1)}
@@ -1016,7 +1017,9 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
       const ids = s => { if ((s.inflows || []).some(x => !x.id)) s.inflows = (s.inflows || []).map((x, k) => x.id ? x : { ...x, id: 'm' + Date.now().toString(36) + k }); };
       const keyOf = (r, s) => r.dataset.ik != null ? FP.inKey(s.inflows[+r.dataset.ik]) : r.dataset.k;
       requestAnimationFrame(() => FP.placePanels?.());
+      el.querySelectorAll('[data-fso]').forEach(b => b.onclick = e => { e.stopPropagation(); const fs = b.closest('td').querySelector('details.fs'); if (fs) fs.open = true; });   /* a source line opens the panel too */
       el.querySelectorAll('details.fs').forEach(fs => { const gn = fs.dataset.fs;
+        /* only the listed sources and "Change" open the panel; the rest of the cell is for Ctrl+[ (go to source) */
         fs.addEventListener('toggle', () => { if (fs.open) { openFs = gn; el.querySelectorAll('details.fs[open]').forEach(o => o !== fs && (o.open = false)); } else if (openFs === gn) openFs = null; });
         fs.querySelectorAll('input[data-grp]').forEach(x => x.onchange = () => { const r = x.closest('.fr'), grp = x.dataset.grp; FP.set(s => {
           if (grp === 'keep') {
@@ -2188,7 +2191,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
       case 'goals:0:Value needed today': return T.row('goals', 0, r, 'Future cost (FV)');
       case 'lumpsum:0:Needed today': return T.row('goals', 0, r, 'Value needed today');
       case 'lumpsum:0:Funded from': case 'lumpsum:0:Covered': { const row = c === 'Covered' ? [...w.tr.cells].find(x => FP.colOf(x) === FP.colOf(w.td) - 1) : w.td;
-        const ls = [...(row?.querySelectorAll('.note') || [])].map(n => n.textContent).filter(t => !/^Later/.test(t)).map(t => t.slice(0, t.lastIndexOf(':')));
+        const ls = [...(row?.querySelectorAll('.note') || [])].map(n => n.textContent).filter(t => !/^Later/.test(t) && t.includes(':')).map(t => t.slice(0, t.lastIndexOf(':')));
         return T.all(...ls.map(l => T.row('lumpsum', 1, l, 'Available'))); }
       case 'lumpsum:0:Still to build': return T.row('lumpsum', 0, r, 'Needed today');
       case 'lumpsum:1:Available': return T.row('networth', 0, r, 'Value');
@@ -2236,7 +2239,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
     if (e.target.closest('#trBar')) return;
     const el = e.target.closest('td.hasref,.kpi.hasref');
     if (!e.target.closest('#drawer,#modal')) unhit();
-    if (!el || e.target.closest('button,input,select,a,textarea,label')) { if (sel && !e.target.closest('#drawer,#modal')) pick(null); return; }
+    if (!el || e.target.closest('button,input,select,a,textarea,label,summary,details .pk')) { if (sel && !e.target.closest('#drawer,#modal')) pick(null); return; }
     pick(el); if (e.altKey) { e.preventDefault(); go(); }
   });
   addEventListener('keydown', e => {
