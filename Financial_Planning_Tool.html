@@ -865,7 +865,12 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
 <script data-src="s4-lumpsum.js">
 /* Section 4 — Lumpsum Allocation: existing investments assigned to goals (in today's money) */
 (() => {
-  const PRI = { High: 0, Medium: 1, Low: 2 };
+  const PRI = { High: 0, Medium: 1, Low: 2 }; let openPk = null;
+  document.head.insertAdjacentHTML('beforeend', `<style>details.pick{position:relative}details.pick>summary{list-style:none;cursor:pointer;border:1px solid #cfd8d2;border-radius:6px;padding:6px 26px 6px 10px;background:#fff;position:relative;min-width:150px;max-width:230px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    details.pick>summary::-webkit-details-marker{display:none}details.pick>summary::after{content:'▾';position:absolute;right:9px;top:6px;color:#5c6a63}
+    details.pick .pk{position:absolute;z-index:30;top:calc(100% + 4px);left:0;min-width:260px;max-height:340px;overflow:auto;background:#fff;border:1px solid #cfd8d2;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.14);padding:10px 12px}
+    details.pick label{display:flex;gap:8px;align-items:baseline;padding:4px 0;white-space:normal;cursor:pointer}details.pick small{color:#8b7f8e}details.pick b{display:block;margin:8px 0 2px;padding-top:8px;border-top:1px solid #e2e8e4;font-size:13px}
+    details.pick .kp2{margin-top:6px;padding-top:8px;border-top:1px solid #e2e8e4}@media print{details.pick .pk{display:none}details.pick>summary{border:0;padding:0}details.pick>summary::after{content:''}}</style>`);
   const SHORT = ['Cash', 'Debt', 'Gold', 'Others', 'Equity', 'Real estate'], LONG = ['Equity', 'Gold', 'Debt', 'Cash', 'Others', 'Real estate'];
   const defTo = (r, goals) => {
     if (r.use !== 'Investable') return 'none';
@@ -880,12 +885,16 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
       /* st.fund (scenarios): how = lump | sip | none, pct = share of the goal to fund */
       return { ...g, fullPV: full, needPV: full * pct, noLump: f.how === 'sip', noSip: f.how === 'lump', got: 0, src: [] }; });
     const byName = Object.fromEntries(goals.map(g => [g.name, g]));
-    const assets = nw.rows.map(r => { const o = (st.al || {})[r.label]; let to = o ?? defTo(r, goals); if (to && to !== 'none' && !byName[to]) to = ''; return { ...r, to, free: r.use === 'Investable' ? Math.min(Math.max(r.m - r.ef, 0), (st.alAmt || {})[r.label] ?? Infinity) : 0, full: r.use === 'Investable' ? Math.max(r.m - r.ef, 0) : 0, used: 0, uses: [] }; });
+    /* st.al[label]: '' shared pool | 'none' | goal name | [goal names]; st.alKeep[label]: leftover stays reserved instead of joining the pool */
+    const assets = nw.rows.map(r => { const o = (st.al || {})[r.label]; let to = o ?? defTo(r, goals); const tos = (Array.isArray(to) ? to : to && to !== 'none' ? [to] : []).filter(n => byName[n]);
+      if (to !== 'none') to = tos.join(', '); return { ...r, to, tos, keep: !!(st.alKeep || {})[r.label], free: r.use === 'Investable' ? Math.min(Math.max(r.m - r.ef, 0), (st.alAmt || {})[r.label] ?? Infinity) : 0, full: r.use === 'Investable' ? Math.max(r.m - r.ef, 0) : 0, used: 0, uses: [] }; });
     const give = (a, g, amt, part = 'free') => { if (amt <= 0 || g.noLump) return; g.got += amt; g.src.push([a.label, amt]); a.uses.push([g.name, amt]); if (part === 'free') a.used += amt; };
     const efGoal = goals.find(g => g.type === 'emergency');
     if (efGoal) assets.forEach(a => give(a, efGoal, Math.min(a.ef, efGoal.needPV - efGoal.got), 'ef'));
-    assets.filter(a => a.to && a.to !== 'none').forEach(a => { const g = byName[a.to]; give(a, g, Math.min(a.free, g.needPV - g.got)); });
-    const pool = assets.filter(a => a.to === '');
+    /* an investment set aside for several goals funds them in the plan's goal order (priority, then the order in this section) */
+    const ordG = FP.goalOrder(st, goals);
+    assets.filter(a => a.tos.length).forEach(a => ordG.filter(g => a.tos.includes(g.name)).forEach(g => give(a, g, Math.min(a.free - a.used, g.needPV - g.got))));
+    const pool = assets.filter(a => a.to === '' || (a.tos.length && !a.keep));   /* leftover of a set-aside investment joins the pool unless kept */
     FP.goalOrder(st, goals).forEach(g => {
       const ord = g.n < 24 ? SHORT : LONG;
       pool.slice().sort((x, y) => ord.indexOf(x.cls) - ord.indexOf(y.cls)).forEach(a => give(a, g, Math.min(a.free - a.used, g.needPV - g.got)));
@@ -898,7 +907,7 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
   FP.sec.lumpsum = {
     checks(d, st) {
       const { assets } = FP.calc.alloc(d, st);
-      return assets.filter(a => a.to && a.to !== 'none' && a.free - a.used > 1).map(a => ({ msg: `${FP.esc(a.label)} is set aside for ${FP.esc(a.to)}, which needs less. ${FP.short(a.free - a.used)} of it stays unused.` }));
+      return assets.filter(a => a.tos.length && a.keep && a.free - a.used > 1).map(a => ({ msg: `${FP.esc(a.label)} is kept for ${FP.esc(a.to)} only, which need${a.tos.length > 1 ? '' : 's'} less. ${FP.short(a.free - a.used)} of it stays unused.` }));
     },
     render(el, d, st) {
       const { goals, assets, switches } = FP.calc.alloc(d, st), sum = (a, k) => a.reduce((s, x) => s + x[k], 0), MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -908,7 +917,13 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
       const still = g => { const x = SG[g.name]; if (!x) return g.gap; return x.due ? x.gap : x.gapFV / Math.pow(1 + FP.mrate(g.r), g.n); };
       const G = FP.goalOrder(st, goals), need = sum(G, 'needPV'), got = sum(G, 'got'), stillT = G.reduce((s, g) => s + still(g), 0), laterT = need - got - stillT;
       const left = assets.reduce((s, a) => s + (a.to === 'none' ? 0 : a.free - a.used), 0), kept = assets.filter(a => a.to === 'none' && a.use === 'Investable').reduce((s, a) => s + a.free, 0);
-      const opts = a => [['', 'Shared pool'], ...goals.map(g => [g.name, g.name]), ['none', 'Not used for goals']].map(([v, l]) => `<option value="${FP.esc(v)}"${v === a.to ? ' selected' : ''}>${FP.esc(l)}</option>`).join('');
+      const pick = (a, i) => { const on = a.to === 'none' ? 'none' : a.tos.length ? 'goals' : 'pool', nm = G.filter(g => a.tos.includes(g.name)).map(g => g.name);
+        const sum = on === 'none' ? 'Not used for goals' : on === 'pool' ? 'Shared pool' : nm.length > 2 ? `${nm[0]} +${nm.length - 1} more` : nm.join(' · ');
+        return `<details class="pick" data-pk="${FP.esc(a.label)}"${openPk === a.label ? ' open' : ''}><summary id="as_${i}" title="${FP.esc(on === 'goals' ? nm.join(', ') : sum)}">${FP.esc(sum)}</summary><div class="pk">
+          <label><input type="radio" name="pk_${i}" data-m="pool"${on === 'pool' ? ' checked' : ''}> Shared pool <small>(goals by priority)</small></label>
+          <label><input type="radio" name="pk_${i}" data-m="none"${on === 'none' ? ' checked' : ''}> Not used for goals</label>
+          <b>Set aside for</b>${G.map(g => `<label><input type="checkbox" data-g="${FP.esc(g.name)}"${a.tos.includes(g.name) ? ' checked' : ''}> ${FP.esc(g.name)} <small>${g.pri}</small></label>`).join('')}
+          ${on === 'goals' ? `<label class="kp2"><input type="checkbox" data-m="keep"${a.keep ? ' checked' : ''}> Keep any leftover for these goals only <small>(otherwise it goes to the shared pool)</small></label>` : ''}</div></details>`; };
       const due = x => x.type === 'emergency' ? 'Now' : x.due ? 'Due now' : `${MON[x.mon - 1]} ${x.year}`;
       const chip = p => `<span class="chip ${p === 'High' ? '' : p === 'Medium' ? 'warn' : 'muted'}">${p}</span>`, PR = { High: 0, Medium: 1, Low: 2 };
       const inf = st.inflows || [], y0 = FP.planDate().getFullYear(), srcs = FP.calc.nw(d, st).rows.map(r => r.label);
@@ -930,11 +945,11 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
         ${FP.calc.goals(d, st).filter(g => !g.on).map(g => `<tr class="off noprint"><td class="noprint"></td><td>${FP.goalBtn(g)}<span class="note">Not in the plan. Click the name to include it.</span></td><td>${chip(g.pri)}</td><td>${due(g)}</td><td class="n">${FP.inr(g.due ? g.fv : g.lump)}</td><td colspan="3" class="hint">Left out of the plan</td></tr>`).join('')}
         <tr class="tot"><td class="noprint"></td><td colspan="3">Total</td><td class="n">${FP.inr(need)}</td><td></td><td class="n">${FP.inr(got)}</td><td class="n">${FP.inr(stillT)}</td></tr></tbody></table></div>
         <p class="hint">"Needed today" and "Still to build" are in today's money. The small figure under "Still to build" is the amount that must be ready on the due date.</p></div>
-      <div><h3>Where each investment goes</h3><ul class="hint noprint" style="margin:0 0 8px;padding-left:18px"><li>Assign an investment to one goal, keep it in the shared pool, or leave it out (e.g. a property the client won't sell).</li><li>"Use for goals" lets you count only part of it, e.g. a debt fund being drawn down by an SWP.</li><li>Emergency fund amounts are set in Section 1.</li></ul>
+      <div><h3>Where each investment goes</h3><ul class="hint noprint" style="margin:0 0 8px;padding-left:18px"><li>Set an investment aside for one or more goals, keep it in the shared pool, or leave it out (e.g. a property the client won't sell).</li><li>Set aside for several goals: they are funded in the goal order above. Any leftover goes to the shared pool, unless you tick "Keep any leftover".</li><li>"Use for goals" lets you count only part of it, e.g. a debt fund being drawn down by an SWP.</li><li>Emergency fund amounts are set in Section 1.</li></ul>
       <div class="tbl"><table><thead><tr><th>Investment</th><th class="n">Available</th><th class="n noprint">Use for goals ₹</th><th>Assigned to</th><th>Used for</th><th class="n">Left</th></tr></thead><tbody>
         ${assets.filter(a => a.full > 0 || a.ef > 0).map((a, i) => `<tr><td>${FP.esc(a.label)}<span class="note">${a.cls}${a.ef ? ` · ${FP.short(a.ef)} emergency fund` : ''}</span></td><td class="n">${FP.inr(a.full)}</td>
           <td class="n noprint">${a.full > 0 ? `<input type="text" inputmode="decimal" class="money efin${a.free < a.full ? ' capd' : ''}" id="cap_${i}" data-cap="${FP.esc(a.label)}" data-full="${a.full}" data-raw="${a.free}" value="${FP.inrx(a.free)}" title="Count only this much for goals">` : ''}</td>
-          <td>${a.full > 0 ? `<select id="as_${i}" data-a="${FP.esc(a.label)}" aria-label="Assign ${FP.esc(a.label)}">${opts(a)}</select>` : '<span class="hint">Emergency fund only</span>'}</td>
+          <td>${a.full > 0 ? pick(a, i) : '<span class="hint">Emergency fund only</span>'}</td>
           <td>${a.uses.map(([g, v]) => `<span class="note" style="color:var(--ink)">${FP.esc(g)}: ${FP.short(v)}</span>`).join('') || '<span class="hint">—</span>'}</td><td class="n">${a.to === 'none' ? '<span class="hint">Kept aside</span>' : FP.inr(a.free - a.used)}</td></tr>`).join('')}</tbody></table></div></div>
       <div><h3>Money coming in later</h3><ul class="hint" style="margin:0 0 8px;padding-left:18px"><li>For money the client will get on a date: sale of a car or property, a maturity, a bonus, what's left in a fund after an SWP.</li><li>It funds only goals due in or after the month it arrives. From then on it earns the return for the time left: equity if 3+ years, hybrid if 2–3, debt if under 2.</li><li>To avoid counting it twice, set the asset itself to "Not used for goals" above.</li><li>Value today (as shown in Section 4 and the client PDF) = what it grows to by the goal's due date, brought back to today at that goal's own return.</li></ul>
         <datalist id="inSrc">${srcs.map(l => `<option value="${FP.esc(l)}">`).join('')}</datalist>
@@ -946,7 +961,12 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
         <button class="addgoal noprint" id="plInAdd" style="margin-top:8px">+ Add money coming in</button></div>`;
       FP.dragRows(el.querySelector('.tbl table'), 'tr[data-p]', r => r.dataset.g, names => FP.set(s => { s.order = names; delete s.g3order; delete s.g5order; }),
         (keys, tr) => keys.every(k => G.find(g => g.name === k)?.pri === tr.dataset.p));
-      el.querySelectorAll('[data-a]').forEach(x => x.onchange = () => FP.set(s => { s.al = s.al || {}; s.al[x.dataset.a] = x.value; }));
+      el.querySelectorAll('[data-pk]').forEach(pk => { const lab = pk.dataset.pk;
+        pk.addEventListener('toggle', () => { if (pk.open) { openPk = lab; el.querySelectorAll('[data-pk][open]').forEach(o => o !== pk && (o.open = false)); } else if (openPk === lab) openPk = null; });
+        pk.querySelectorAll('input').forEach(x => x.onchange = () => FP.set(s => { s.al = { ...(s.al || {}) }; const m = x.dataset.m;
+          if (m === 'keep') { s.alKeep = { ...(s.alKeep || {}) }; if (x.checked) s.alKeep[lab] = true; else delete s.alKeep[lab]; return; }
+          if (m === 'pool' || m === 'none') { s.al[lab] = m === 'none' ? 'none' : ''; return; }
+          const L = [...pk.querySelectorAll('input[data-g]:checked')].map(y => y.dataset.g); s.al[lab] = L.length ? L : ''; })); });
       el.querySelectorAll('[data-cap]').forEach(x => x.onchange = () => FP.set(s => { const v = Math.max(0, FP.num(x.value)); s.alAmt = { ...(s.alAmt || {}) }; if (v >= +x.dataset.full - 1) delete s.alAmt[x.dataset.cap]; else s.alAmt[x.dataset.cap] = v; }));
       const updIn = fn => FP.set(s => { s.inflows = JSON.parse(JSON.stringify(s.inflows || [])); fn(s.inflows); });
       el.querySelectorAll('#plIn [data-f]').forEach(x => x.onchange = () => { const k = +x.closest('tr').dataset.i, f = x.dataset.f; updIn(a => { a[k][f] = f === 'amt' ? FP.num(x.value) : f === 'month' || f === 'year' ? +FP.num(x.value) : x.value; }); });
@@ -1339,7 +1359,7 @@ Corpus = PV(((1+${+rv.r.toFixed(4)}%)/(1+${+rv.infl.toFixed(4)}%))^(1/12)-1, ${r
       } else {
         const name = dr.name.trim(), row = { name, pri: dr.pri, amt: dr.amt, year: dr.year, note: dr.note, type: FP.gtype(name) };
         if (dr.mode === 'goal') Object.assign(s.ed.goals[dr.idx], row); else s.ed.goals.push({ ...row, grp: 'Added' });
-        if (dr.origName && dr.origName !== name) { delete s.goals[dr.origName]; ['order', 'g3order', 'g5order'].forEach(o => { if (s[o]) s[o] = s[o].map(n => n === dr.origName ? name : n); }); if (s.al) Object.keys(s.al).forEach(k => { if (s.al[k] === dr.origName) s.al[k] = name; }); }
+        if (dr.origName && dr.origName !== name) { delete s.goals[dr.origName]; ['order', 'g3order', 'g5order'].forEach(o => { if (s[o]) s[o] = s[o].map(n => n === dr.origName ? name : n); }); if (s.al) Object.keys(s.al).forEach(k => { s.al[k] = Array.isArray(s.al[k]) ? s.al[k].map(x => x === dr.origName ? name : x) : s.al[k] === dr.origName ? name : s.al[k]; }); }
         s.goals[name] = { ...(s.goals[name] || {}), month: dr.month, infl: dr.infl, repeat: dr.repeat, include: dr.include, ...(row.type === 'emergency' ? { efAuto: dr.efAuto !== false, efMonths: dr.efMonths ?? 6 } : {}) };
       }
     });
@@ -1896,7 +1916,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
       s.ed = s.ed || {}; s.goals = s.goals || {};
       const prev = s.ed.goals || FP.base.goals.map((r, i) => ({ ...clone(r), _o: i }));
       rows.forEach(r => { if (r.i == null) return; const old = FP.d.goals[r.i].name, nm = r.name.trim(); if (r.del || old !== nm) delete s.goals[old];
-        if (!r.del && old !== nm) { ['order', 'g3order', 'g5order'].forEach(o => { if (s[o]) s[o] = s[o].map(n => n === old ? nm : n); }); if (s.al) Object.keys(s.al).forEach(k => { if (s.al[k] === old) s.al[k] = nm; }); } });
+        if (!r.del && old !== nm) { ['order', 'g3order', 'g5order'].forEach(o => { if (s[o]) s[o] = s[o].map(n => n === old ? nm : n); }); if (s.al) Object.keys(s.al).forEach(k => { s.al[k] = Array.isArray(s.al[k]) ? s.al[k].map(x => x === old ? nm : x) : s.al[k] === old ? nm : s.al[k]; }); } });
       s.ed.goals = live.map(r => { const nm = r.name.trim(); return { ...(r.i != null ? clone(prev[r.i]) : { grp: 'Added' }), name: nm, pri: r.pri, amt: r.amt, year: r.year, note: r.note, type: FP.gtype(nm) }; });
       live.forEach(r => { const nm = r.name.trim(); s.goals[nm] = { ...(s.goals[nm] || {}), month: r.month, infl: r.infl, repeat: r.repeat, include: r.include }; });
       if (ret) { s.ed.retireYear = ret.retireYear; s.ed.other = { ...FP.d.other, retireMonthly: ret.retireMonthly }; s.goals.Retirement = { ...(s.goals.Retirement || {}), pri: ret.pri, month: ret.month, infl: ret.infl, include: ret.include }; }
