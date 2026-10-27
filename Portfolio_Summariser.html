@@ -48,6 +48,15 @@ body.dragging .drop{border-color:var(--primary);background:var(--soft)}
 .btn{font:700 14px var(--f-head);border-radius:999px;padding:10px 18px;cursor:pointer;border:1px solid var(--primary);background:var(--primary);color:#fff}
 .btn.ghost{background:transparent;color:var(--primary)}
 .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.client{display:flex;align-items:flex-end;gap:12px 24px;flex-wrap:wrap;padding:14px 18px;background:var(--surface);border:1px solid var(--line);border-radius:14px}
+.client .k{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;font-weight:700}
+.cfield{display:flex;flex-direction:column;gap:2px;flex:1;min-width:220px}
+.cname{font:800 clamp(20px,3vw,26px) var(--f-head);color:var(--primary);border:0;border-bottom:2px dashed transparent;background:transparent;padding:2px 0;width:100%}
+.cname:hover{border-bottom-color:var(--line)}
+.cname:focus{outline:none;border-bottom-color:var(--primary)}
+.cname::placeholder{color:var(--muted);font-weight:600;font-size:18px}
+.client select{max-width:260px;font-weight:700}
+.client .src{font-size:12px;color:var(--muted)}
 .status{font-size:14px;padding:8px 12px;border-radius:8px;background:var(--soft2)}
 .status.sample{background:#F9B73833}
 .status.err{background:#C0392B22;color:var(--ink)}
@@ -155,6 +164,18 @@ select.guess{border-color:var(--accent)}
   </div>
   <div class="status sample" id="status"></div>
 
+  <section class="client" aria-label="Client">
+    <div class="cfield">
+      <label class="k" for="client">Client</label>
+      <input id="client" class="cname" type="text" autocomplete="off" placeholder="Type the client's name">
+      <span class="src" id="clientSrc"></span>
+    </div>
+    <div class="cfield" id="clientPick" hidden style="flex:0 1 auto;min-width:200px">
+      <label class="k" for="clientSel">Show transactions for</label>
+      <select id="clientSel"></select>
+    </div>
+  </section>
+
   <section class="kpis" aria-label="Totals">
     <div class="kpi big"><div class="k">Total amount</div><div class="v" id="kTot">–</div></div>
     <div class="kpi"><div class="k">Transactions</div><div class="v" id="kTx">–</div></div>
@@ -238,6 +259,12 @@ const $=id=>document.getElementById(id);
 const inr=n=>'₹'+n.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
 const inr0=n=>'₹'+Math.round(n).toLocaleString('en-IN');
 const short=n=>n>=1e7?'₹'+(n/1e7).toFixed(2)+' Cr':n>=1e5?'₹'+(n/1e5).toFixed(2)+' L':inr0(n);
+const KEEP_UP=new Set(['HUF','LLP','NRI','NRE','NRO','PVT','OPC']);
+function properName(v){
+  return String(v||'').trim().replace(/\s+/g,' ').toLowerCase()
+    .replace(/(^|[\s\-'.(])([a-z])/g,(m,p,c)=>p+c.toUpperCase())
+    .replace(/\b[A-Za-z]+\b/g,w=>KEEP_UP.has(w.toUpperCase())?w.toUpperCase():w);
+}
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 // ---- Category rules (checked in order; first match wins) ----
@@ -277,7 +304,7 @@ let overrides={};try{overrides=JSON.parse(localStorage.getItem('abundance-cat-ov
 const saveOv=()=>{try{localStorage.setItem('abundance-cat-overrides',JSON.stringify(overrides))}catch(e){}};
 const catOf=f=>overrides[f]||guessCat(f);
 
-let DATA=[],TYPES={},PERIOD='',open=new Set(),sortK='amt',sortDir=-1,catFilter=new Set(),fq='';
+let DATA=[],TYPES={},PERIOD='',open=new Set(),sortK='amt',sortDir=-1,catFilter=new Set(),fq='',CLIENTS=[],clientSel='';
 try{const v=(localStorage.getItem('abundance-fund-sort')||'').split(':');if(['amt','pct','fund','cat','n'].includes(v[0])){sortK=v[0];sortDir=+v[1]===1?1:-1;}}catch(e){}
 function sortFunds(list){return [...list].sort((a,b)=>{const x=a[sortK],y=b[sortK];
   const c=typeof x==='string'?x.localeCompare(y,'en',{sensitivity:'base'}):x-y;return c*sortDir||a.fund.localeCompare(b.fund)||0;});}
@@ -305,7 +332,16 @@ function parseAOA(aoa){
   const hd=aoa[h].map(c=>String(c??'').toLowerCase().trim());
   const col=(re,not)=>hd.findIndex(c=>re.test(c)&&!(not&&not.test(c)));
   const ci={scheme:col(/scheme|fund name/),amt:col(/amount/),type:col(/transaction type|txn type|^type$|trxn type/),
-            units:col(/^units?$|^unit/),date:col(/date/,/nav date/)};
+            units:col(/^units?$|^unit/),date:col(/date/,/nav date/),
+            client:col(/investor\s*name|client\s*name|applicant\s*name|holder\s*name|first\s*holder|^investor$|^client$|^applicant$|^name$/)};
+  // a "Client / Investor name: X" line above the table
+  let hint='';
+  for(let i=0;i<h&&!hint;i++){const r=aoa[i]||[];
+    for(let j=0;j<r.length&&!hint;j++){const c=String(r[j]??'').trim();
+      const mm=c.match(/^(?:investor|client|applicant|holder|account\s*holder)(?:\s*name)?\s*[:\-]\s*(.+)$/i);
+      if(mm)hint=mm[1];
+      else if(/^(?:investor|client|applicant|holder)(?:\s*name)?\s*:?$/i.test(c)){const nx=r.slice(j+1).find(x=>x!=null&&String(x).trim());if(nx)hint=String(nx);}
+    }}
   let title='';for(let i=0;i<h;i++){const t=(aoa[i]||[]).filter(Boolean).join(' ');if(t)title+=t+' ';}
   const m=title.match(/from\s+([\d\/\-.]+)\s+to\s+([\d\/\-.]+)/i);
   const rows=[];
@@ -314,15 +350,24 @@ function parseAOA(aoa){
     if(!s||/^\s*(grand\s*)?total/i.test(String(r[0]??''))||/^\s*total/i.test(String(s)))continue;
     const a=num(r[ci.amt]);if(isNaN(a))continue;
     rows.push({fund:String(s).trim(),type:ci.type>=0?String(r[ci.type]??'').trim()||'Unspecified':'All',
-      amt:a,units:ci.units>=0?(num(r[ci.units])||0):0,date:ci.date>=0?toDate(r[ci.date]):null});
+      amt:a,units:ci.units>=0?(num(r[ci.units])||0):0,date:ci.date>=0?toDate(r[ci.date]):null,
+      client:ci.client>=0&&r[ci.client]!=null&&String(r[ci.client]).trim()?properName(r[ci.client]):''});
   }
-  return {rows,period:m?m[1]+' – '+m[2]:''};
+  return {rows,period:m?m[1]+' – '+m[2]:'',client:hint?properName(hint):''};
 }
 
-function load(rows,period,label,isSample){
+function load(rows,period,label,isSample,clientHint){
   DATA=rows;TYPES={};rows.forEach(r=>{if(!(r.type in TYPES))TYPES[r.type]=true;});
   if(!period){const ds=rows.map(r=>r.date).filter(Boolean).sort((a,b)=>a-b);if(ds.length)period=fmtD(ds[0])+' – '+fmtD(ds[ds.length-1]);}
   PERIOD=period;open.clear();catFilter.clear();fq='';$('fq').value='';
+  CLIENTS=[...new Set(rows.map(r=>r.client).filter(Boolean))];clientSel='';
+  const nm=CLIENTS.length===1?CLIENTS[0]:CLIENTS.length>1?CLIENTS.join(', '):(clientHint||'');
+  $('client').value=nm;
+  $('clientSrc').textContent=isSample?'Sample data. Upload a report to see the client.':
+    nm?(CLIENTS.length>1?`${CLIENTS.length} clients found in the report. Edit the name if you like.`:'Read from the report. Click to edit.'):
+    'This report has no client name column. Type the name here.';
+  $('clientPick').hidden=CLIENTS.length<2;
+  $('clientSel').innerHTML=`<option value="">All clients (${CLIENTS.length})</option>`+CLIENTS.map(c=>`<option>${esc(c)}</option>`).join('');
   const st=$('status');st.className='status'+(isSample?' sample':'');st.textContent=label;
   render();
 }
@@ -344,14 +389,14 @@ async function handleFile(f){
   catch(e){err(`Couldn't open ${f.name}. If it is password-protected or an old format, open it in Excel, save as .xlsx, and try again.`);return;}
   for(const n of wb.SheetNames){
     const p=parseAOA(XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:true,defval:null}));
-    if(p&&p.rows.length){load(p.rows,p.period,`Showing ${f.name} · sheet “${n}” · ${p.rows.length} transactions read`,false);return;}
+    if(p&&p.rows.length){load(p.rows,p.period,`Showing ${f.name} · sheet “${n}” · ${p.rows.length} transactions read`,false,p.client);return;}
   }
   err(`Couldn't find a Scheme Name and Amount column in ${f.name}. Check that the header row has both, then upload again.`);
 }
 function handleText(t,label){
   const aoa=t.replace(/\r/g,'').split('\n').filter(l=>l.trim()).map(l=>l.split('\t').map(c=>{c=c.trim().replace(/^"(.*)"$/,'$1');return c===''?null:c;}));
   const p=parseAOA(aoa);
-  if(p&&p.rows.length){load(p.rows,p.period,`Showing ${label} · ${p.rows.length} transactions read`,false);$('pasteWrap').open=false;$('paste').value='';return true;}
+  if(p&&p.rows.length){load(p.rows,p.period,`Showing ${label} · ${p.rows.length} transactions read`,false,p.client);$('pasteWrap').open=false;$('paste').value='';return true;}
   err('The pasted rows need a header row with Scheme Name and Amount. Copy again starting from the header row.');return false;
 }
 function err(t){const st=$('status');st.className='status err';st.textContent=t;}
@@ -376,7 +421,7 @@ document.addEventListener('paste',e=>{
 
 // ---- Aggregation + render ----
 function aggregate(){
-  const rows=DATA.filter(r=>TYPES[r.type]);
+  const rows=DATA.filter(r=>TYPES[r.type]&&(!clientSel||r.client===clientSel));
   const funds={};
   rows.forEach(r=>{const f=funds[r.fund]||(funds[r.fund]={fund:r.fund,n:0,amt:0,units:0});f.n++;f.amt+=r.amt;f.units+=r.units;});
   const total=rows.reduce((a,r)=>a+r.amt,0);
@@ -410,7 +455,7 @@ function render(){
   $('stack').innerHTML=order.map(k=>`<i style="width:${ac[k]/total*100}%;background:${CLASS_COL[k]}" title="${k}"></i>`).join('');
   $('acLeg').innerHTML=order.map(k=>`<div><span><span class="dot" style="background:${CLASS_COL[k]}"></span>${k}</span><span>${inr0(ac[k])} · ${(ac[k]/total*100).toFixed(1)}%</span></div>`).join('');
 
-  const tAll={};DATA.forEach(r=>{tAll[r.type]=(tAll[r.type]||{n:0,amt:0});tAll[r.type].n++;tAll[r.type].amt+=r.amt;});
+  const tAll={};DATA.filter(r=>!clientSel||r.client===clientSel).forEach(r=>{tAll[r.type]=(tAll[r.type]||{n:0,amt:0});tAll[r.type].n++;tAll[r.type].amt+=r.amt;});
   $('types').innerHTML=Object.entries(tAll).map(([t,v])=>`<button class="chip" data-t="${esc(t)}" aria-pressed="${TYPES[t]}">${esc(t)} <small>${v.n} · ${short(v.amt)}</small></button>`).join('');
   $('types').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{TYPES[b.dataset.t]=!TYPES[b.dataset.t];render();});
 
@@ -442,6 +487,7 @@ function render(){
   const topF=[...fl].sort((a,b)=>b.amt-a.amt)[0],topC=cl[0];
   const eq=ac.Equity||0;
   $('sum').innerHTML=total?[
+    (clientName()?`Client: <strong>${esc(clientName())}</strong>.`:''),
     `<strong>${rows.length}</strong> transactions totalling <strong>${inr(total)}</strong> across <strong>${fl.length}</strong> funds${PERIOD?` (${PERIOD})`:''}.`,
     `Largest category: <strong>${esc(topC.cat)}</strong> at ${inr(topC.amt)} (${(topC.amt/total*100).toFixed(1)}%).`,
     `Largest fund: <strong>${esc(topF.fund)}</strong> at ${inr(topF.amt)} over ${topF.n} transaction${topF.n>1?'s':''}.`,
@@ -452,6 +498,11 @@ function render(){
 
 document.querySelectorAll('th[data-k] button').forEach(bt=>bt.onclick=()=>{const k=bt.parentElement.dataset.k;
   if(sortK===k)setSort(k,-sortDir);else setSort(k,(k==='fund'||k==='cat')?1:-1);});
+$('client').addEventListener('change',e=>{e.target.value=properName(e.target.value);render();});
+$('client').addEventListener('blur',e=>{e.target.value=properName(e.target.value);});
+$('clientSel').addEventListener('change',e=>{clientSel=e.target.value;catFilter.clear();
+  if(clientSel)$('client').value=clientSel;else $('client').value=CLIENTS.join(', ');render();});
+function clientName(){return properName($('client').value);}
 function clearFilters(){catFilter.clear();fq='';$('fq').value='';render();}
 $('fq').addEventListener('input',e=>{fq=e.target.value;render();});
 $('fClear').onclick=clearFilters;
@@ -459,7 +510,7 @@ $('sortSel').onchange=e=>{const [k,d]=e.target.value.split(':');setSort(k,+d);};
 
 $('copyBtn').onclick=async()=>{
   const {total,fl,cl}=aggregate();
-  let t='Category\tFunds\tTransactions\tAmount\tShare %\n'+cl.map(c=>[c.cat,c.funds.length,c.n,c.amt.toFixed(2),(c.amt/total*100).toFixed(2)].join('\t')).join('\n')+`\nTotal\t${fl.length}\t\t${total.toFixed(2)}\t100\n\n`;
+  let t=(clientName()?`Client\t${clientName()}\n`:'')+(PERIOD?`Period\t${PERIOD}\n`:'')+((clientName()||PERIOD)?'\n':'')+'Category\tFunds\tTransactions\tAmount\tShare %\n'+cl.map(c=>[c.cat,c.funds.length,c.n,c.amt.toFixed(2),(c.amt/total*100).toFixed(2)].join('\t')).join('\n')+`\nTotal\t${fl.length}\t\t${total.toFixed(2)}\t100\n\n`;
   const shown=applyFilter(fl),sAmt=shown.reduce((a,f)=>a+f.amt,0),flt=shown.length!==fl.length;
   if(flt)t+=`Filter: ${catFilter.size?[...catFilter].join(', '):'all categories'}${fq.trim()?` · search "${fq.trim()}"`:''}\n`;
   t+='Fund\tCategory\tTransactions\tUnits\tAmount\tShare %\n'+sortFunds(shown).map(f=>[f.fund,f.cat,f.n,f.units.toFixed(3),f.amt.toFixed(2),f.pct.toFixed(2)].join('\t')).join('\n')+(flt?`\nFiltered total\t\t\t\t${sAmt.toFixed(2)}\t${(sAmt/total*100).toFixed(2)}`:'')+`\nTotal\t\t\t\t${total.toFixed(2)}\t100`;

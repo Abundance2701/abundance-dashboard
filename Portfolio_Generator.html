@@ -1617,8 +1617,16 @@ function pieSVG(slices, size){
   return `<svg viewBox="0 0 ${size} ${size}">${out}</svg>`;
 }
 
+/* Client names: "VENKATESH kumar s" → "Venkatesh Kumar S". Initials stay capital; HUF/LLP etc. stay upper case. */
+const KEEP_UP = new Set(['HUF','LLP','NRI','NRE','NRO','PVT','OPC']);
+function properName(v){
+  return String(v||'').trim().replace(/\s+/g,' ').toLowerCase()
+    .replace(/(^|[\s\-'.(])([a-z])/g,(m,p,c)=>p+c.toUpperCase())
+    .replace(/\b[A-Za-z]+\b/g,w=>KEEP_UP.has(w.toUpperCase())?w.toUpperCase():w);
+}
+
 function renderDoc(){
-  const name = S.name.trim() || 'Client Name';
+  const name = properName(S.name) || 'Client Name';
   const secs = activeSecs().filter(s => secTotal(s) > 0);
   const list = secs.length ? secs : [activeSecs()[0]];
   let out = '';
@@ -2300,7 +2308,7 @@ function pagePlan(paper, totalH){
 }
 
 function fileStem(){
-  return (S.name.trim()||'Portfolio').replace(/[^A-Za-z0-9]+/g,'_').replace(/^_|_$/g,'') + '_Portfolio';
+  return (properName(S.name)||'Portfolio').replace(/[^A-Za-z0-9]+/g,'_').replace(/^_|_$/g,'') + '_Portfolio';
 }
 function openPdfSheet(){
   renderDoc();
@@ -2412,6 +2420,12 @@ $('#optFile').addEventListener('click', async ()=>{
   }
 });
 
+$('#cname').addEventListener('blur', e=>{
+  const v = properName(e.target.value);
+  if(v !== e.target.value){ e.target.value = v; }
+  if(S.name !== v){ S.name = v; refresh(); }
+});
+
 $('#resetBtn').addEventListener('click', ()=>{
   if(!confirm('Clear this portfolio? Your saved scheme names stay.')) return;
   S = { name:'', date:todayISO(), type:'Lumpsum', lump:[blank()], sip:[blank()],
@@ -2434,6 +2448,7 @@ function refresh(){
   if(document.body.classList.contains('show-viewer') || window.innerWidth>=960) renderDoc();
 }
 function hydrate(){
+  S.name = properName(S.name);
   $('#cname').value = S.name; $('#cdate').value = S.date;
   [...$('#segType').children].forEach(b=>b.classList.toggle('on', b.dataset.v===S.type));
   [['swCover','cover'],['swCats','cats']].forEach(([id,k])=>{
