@@ -2988,7 +2988,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
    2. Plan file (.json, "Prateek N - 2026"): the Excel + your work in one file. With a WorkDrive folder linked (downloaded copy, Chrome/Edge),
       it saves itself to <folder>/<client>/<client> - <year>.json a few seconds after every change. */
 (() => {
-  let db = null, uid = null, on = true, status = 'local', err = '', timer = 0, root = null, wdState = 'off', wdAt = 0, wdErr = '', wdT = 0, wdSave = () => { }, dirty = false;
+  let db = null, uid = null, on = true, status = 'local', err = '', timer = 0, root = null, wdState = 'off', wdAt = 0, wdErr = '', wdT = 0, wdSave = () => { }, dirty = false, wdList = null, wdBusyScan = false, wdQ = '', opening = false;
   try { on = localStorage.getItem('fp:cloud') !== 'off'; } catch (e) { }
   const safe = k => String(k || 'client').replace(/[^A-Za-z0-9_\-.~:@+]/g, '_').slice(0, 150);
   const stRef = k => db.collection('data/users/' + uid).doc('c_' + safe(k));
@@ -3057,12 +3057,12 @@ Move              = target − today; every change is shown (under ₹1,000 coun
   function renderPane() {
     const box = $('#clients'); if (!box || FP.pane !== 'clientsPanel') return;
     const cur = !FP.base?.sample;
-    box.innerHTML = `
+    box.innerHTML = `${root ? wdListHTML() : ''}
       <h3>This client</h3>
-      ${cur ? `<p>${FP.esc(who())} · <b>${status === 'synced' ? 'saved to your claude.ai account' : status === 'syncing' ? 'saving…' : status === 'error' ? 'not synced' : 'saved in this browser only'}</b></p>${err ? `<p class="no">${FP.esc(err)}</p>` : ''}` : '<p class="hint">Upload a client\'s Excel, or open a saved client below.</p>'}
+      ${cur ? `<p>${FP.esc(who())} · <b>${status === 'synced' ? 'saved to your claude.ai account' : status === 'syncing' ? 'saving…' : status === 'error' ? 'not synced' : 'saved in this browser only'}</b></p>${err ? `<p class="no">${FP.esc(err)}</p>` : ''}` : `<p class="hint">Upload a client's Excel, or open a saved client ${root ? 'above' : 'below'}.</p>`}
       ${db ? `<label class="switch"><input type="checkbox" id="cloudOn" ${on ? 'checked' : ''}> Save clients to my claude.ai account automatically</label>
         <p class="hint">Saved privately for you: the client's Excel and all your work in this tool (corrections, goal settings, scenarios, notes). People you share this page with cannot see it. Open any client from another laptop below.</p>`
-        : '<p class="hint">Account saving works when this page is open in claude.ai. Here, work is kept in this browser only, so save the plan file after each session.</p>'}
+        : root ? '' : '<p class="hint">Account saving works when this page is open in claude.ai. Here, work is kept in this browser only, so save the plan file after each session.</p>'}
       <div style="display:flex;flex-wrap:wrap;gap:8px;margin:10px 0"><button class="bt" id="bkSave" ${cur ? '' : 'disabled'}>Save plan file <kbd>Ctrl+S</kbd></button><button class="bt" id="bkLoad">Open plan file</button><input type="file" id="bkFile" accept=".json" hidden></div>
       ${!root && FP.backupFile?.() ? `<p>Plan file: <b>${FP.esc(FP.backupFile())}</b> · Ctrl+S saves to it again, Ctrl+Shift+S saves a separate copy.</p>` : ''}<p class="hint">A plan file holds the Excel and all your work. Opening it brings everything back on any computer, and the pre-filled Excel can be downloaded again from it anytime.</p>
       <h3 style="margin-top:20px">WorkDrive folder</h3>
@@ -3075,6 +3075,10 @@ Move              = target − today; every change is shown (under ₹1,000 coun
       ${db && on ? `<h3 style="margin-top:20px">Saved clients</h3>${list == null ? '<p class="hint">Loading…</p>' : list.length ? `<div class="tbl"><table><thead><tr><th>Client</th><th>Last saved</th><th data-nosort></th></tr></thead><tbody>${list.map(c => `<tr><td>${FP.esc(c.name || c.key)}</td><td>${FP.dmy(new Date(c.at))}</td><td><button class="link" data-open="${FP.esc(c.key)}">Open</button> <button class="link" data-del="${FP.esc(c.key)}">Delete</button></td></tr>`).join('')}</tbody></table></div>` : '<p class="hint">No clients saved yet.</p>'}` : ''}
       <p class="hint" id="clMsg"></p>`;
     $('#cloudOn')?.addEventListener('change', e => { on = e.target.checked; try { localStorage.setItem('fp:cloud', on ? 'on' : 'off'); } catch (x) { } status = on ? 'syncing' : 'local'; show(); if (on) { pull(); loadList(); } });
+    $('#wdRef')?.addEventListener('click', () => wdScan(true));
+    const q = $('#wdQ'), filt = () => { wdQ = q.value.trim().toLowerCase(); let n = 0; box.querySelectorAll('tr[data-wq]').forEach(r => { r.hidden = !!wdQ && !r.dataset.wq.includes(wdQ); if (!r.hidden) n++; }); const e = $('#wdNone'); if (e) e.hidden = n > 0; };
+    if (q) { q.value = wdQ; q.oninput = filt; filt(); }
+    box.querySelectorAll('[data-wo]').forEach(b => b.onclick = () => wdOpen(+b.dataset.wo, +(box.querySelector(`[data-ws="${b.dataset.wo}"]`)?.value || 0)));
     $('#wdLink')?.addEventListener('click', link); $('#wdAllow')?.addEventListener('click', () => wdSave(true));
     $('#wdOff')?.addEventListener('click', () => { root = null; wdState = 'off'; hdb('readwrite', s => s.delete('__root')); wdShow(); });
     $('#bkSave').onclick = () => backup(false); $('#bkLoad').onclick = () => $('#bkFile').click();
@@ -3132,7 +3136,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
   const ask = (title, text, label, fn) => { $('#wdAsk')?.remove(); document.body.insertAdjacentHTML('beforeend', `<div id="wdAsk"><div><h3>${title}</h3><p>${text}</p><div class="row"><button class="bt" id="wdLater">Later</button><button class="bt pri" id="wdGo">${label}</button></div></div></div>`);
     $('#wdLater').onclick = () => $('#wdAsk').remove(); $('#wdGo').onclick = () => { $('#wdAsk').remove(); fn(); }; };
   async function onNewClient() {
-    if (FP.base?.sample) return; dirty = true; const nm = FP.esc(clean(who()));
+    if (FP.base?.sample || opening) return; dirty = true; const nm = FP.esc(clean(who()));
     if (root) { if (await perm(false)) { const n = await wdSave(false, true); if (n) FP.toast?.(`Saved to WorkDrive: ${clean(who())} / ${n}`); return; }
       return ask('Save to WorkDrive?', `Allow the browser to save <b>${nm}</b> to your WorkDrive folder <b>${FP.esc(root.name)}</b>. After that, every change saves itself.`, 'Allow and save', () => wdSave(true)); }
     if (dirOK) return ask('Save this client to WorkDrive?', `Link your WorkDrive folder (for example <b>Financial Plans</b>) so <b>${nm}</b>'s work saves itself after every change. Without it, closing this page can lose your work.`, 'Link WorkDrive folder', link);
@@ -3140,6 +3144,43 @@ Move              = target − today; every change is shown (under ₹1,000 coun
   }
   addEventListener('beforeunload', e => { if (dirty && !FP.base?.sample) { e.preventDefault(); e.returnValue = ''; } });   /* browser's "Leave site? Changes may not be saved" */
   document.addEventListener('visibilitychange', () => { if (document.hidden && dirty && root) { clearTimeout(wdT); wdSave(false); } });   /* switching away: save now, don't wait */
+  /* ---- Open a client straight from the linked WorkDrive folder: one row per client subfolder, newest first ---- */
+  const dt = t => `${FP.dmy(new Date(t))} ${tm(t)}`;
+  function wdListHTML() {
+    const L = Array.isArray(wdList) ? wdList : null;
+    return `<h3>Open a client from WorkDrive</h3>
+      ${wdList === 'ask' ? '<p>The browser needs your OK to read your WorkDrive folder.</p><button class="bt pri" id="wdRef">Allow and show clients</button>'
+        : wdList === 'error' ? '<p class="no">Could not read the folder.</p><button class="bt" id="wdRef">Try again</button>'
+        : !L ? '<p class="hint">Loading your clients…</p>'
+        : !L.length ? '<p class="hint">No clients saved in this folder yet. Upload a client\'s Excel and it will appear here.</p>'
+        : `<div style="display:flex;gap:8px;align-items:center;margin:6px 0 10px"><input id="wdQ" type="search" placeholder="Search ${L.length} client${L.length > 1 ? 's' : ''}" style="flex:1;padding:8px 10px;border:1px solid #cfd8d2;border-radius:6px;font:inherit"><button class="bt" id="wdRef" title="Read the folder again">${wdBusyScan ? 'Refreshing…' : 'Refresh'}</button></div>
+          <div class="tbl" style="max-height:340px;overflow:auto"><table><thead><tr><th>Client</th><th>Last saved</th><th data-nosort></th></tr></thead><tbody>
+          ${L.map((r, i) => `<tr data-wq="${FP.esc(r.name.toLowerCase())}"><td>${FP.esc(r.name)}${r.files.length > 1 ? `<br><select data-ws="${i}" style="margin-top:4px;max-width:100%;font-size:12.5px">${r.files.map((f, k) => `<option value="${k}" ${f === r.main ? 'selected' : ''}>${FP.esc(f.m.replace(/\.json$/i, ''))}</option>`).join('')}</select>` : ''}</td>
+            <td class="n">${dt(r.at)}</td><td><button class="link" data-wo="${i}">Open</button></td></tr>`).join('')}</tbody></table>
+          <p class="hint" id="wdNone" hidden style="margin:8px">No client matches.</p></div>`}
+      <div style="height:18px"></div>`;
+  }
+  async function wdScan(ask) {
+    if (!root || wdBusyScan) return;
+    if (!(await perm(ask))) { wdList = 'ask'; return renderPane(); }
+    wdBusyScan = true; if (!Array.isArray(wdList)) wdList = null; renderPane();
+    try { const L = [];
+      for await (const [n, h] of root.entries()) { if (h.kind !== 'directory') continue; const F = [];
+        for await (const [m, f] of h.entries()) if (f.kind === 'file' && /\.json$/i.test(m)) { try { F.push({ m, f, at: (await f.getFile()).lastModified }); } catch (e) { } }
+        if (!F.length) continue; F.sort((a, b) => b.at - a.at);
+        L.push({ name: n, files: F, main: F.find(x => / - \d{4}\.json$/i.test(x.m)) || F[0], at: F[0].at }); }
+      wdList = L.sort((a, b) => b.at - a.at); }
+    catch (e) { wdList = 'error'; }
+    wdBusyScan = false; renderPane();
+  }
+  async function wdOpen(i, k) {
+    const r = Array.isArray(wdList) && wdList[i], f = r?.files[k]; if (!f) return;
+    if (!(await perm(true))) return msg('<span class="no">The browser did not allow reading the folder.</span>');
+    if (dirty && !FP.base?.sample) { clearTimeout(wdT); await wdSave(false); }   /* the client on screen is saved before switching */
+    msg('Opening…'); opening = true; const ok = await restore(await f.f.getFile()).finally(() => { opening = false; }); if (!ok) return;
+    clearTimeout(wdT); dirty = false; wdState = 'idle'; wdShow();   /* just opening doesn't rewrite the file */
+    if (FP.pane === 'clientsPanel') FP.closeDrawer(); FP.toast?.(`Opened ${r.name}`);
+  }
   async function backup(asNew) {
     if (FP.base?.sample) return FP.toast?.('Upload a client first');
     if (root) {
@@ -3170,13 +3211,13 @@ Move              = target − today; every change is shown (under ₹1,000 coun
       if (b.file) await FP.loadFile(new File([unb64(b.file.data)], b.file.name || 'client.xlsx'));
       else if (String(FP.key) !== b.key) throw new Error(`This plan file is for ${b.name}. Upload their Excel first, then open it.`);
       FP.st = Object.assign(FP.defaults(), b.st); FP.st._at = Date.now(); FP.hist = { u: [], r: [] }; FP.save(); FP.render();
-      msg(`<span class="ok">Opened ${FP.esc(b.name)}, saved on ${FP.dmy(new Date(b.at))}.</span>`);
-    } catch (e) { msg('<span class="no">' + FP.esc(e.message) + '</span>'); }
+      msg(`<span class="ok">Opened ${FP.esc(b.name)}, saved on ${FP.dmy(new Date(b.at))}.</span>`); return true;
+    } catch (e) { msg('<span class="no">' + FP.esc(e.message) + '</span>'); return false; }
   }
   /* Ctrl+S = save the backup (same file again after the first time); Ctrl+Shift+S = save as a new file */
   addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && !e.altKey && e.key.toLowerCase() === 's') { e.preventDefault(); backup(e.shiftKey); } });
   FP.restoreFile = f => restore(f).then(() => { if (FP.pane !== 'clientsPanel') FP.toast?.('Plan file opened'); });
-  const od = FP.openDrawer; FP.openDrawer = p => { od(p); if (p === 'clientsPanel' && FP.pane === 'clientsPanel') { renderPane(); loadList(); } };
+  const od = FP.openDrawer; FP.openDrawer = p => { od(p); if (p === 'clientsPanel' && FP.pane === 'clientsPanel') { renderPane(); loadList(); if (root) wdScan(false); setTimeout(() => $('#wdQ')?.focus(), 50); } };
   show();
 })();
 </script>
