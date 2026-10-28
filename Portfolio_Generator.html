@@ -103,6 +103,12 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xm
 .opt .d{display:block;font-size:12px;color:var(--ink-3);margin-top:2px;line-height:1.35;}
 .opt:active{background:#eef5f0;}
 .opt.wd{border-color:var(--green);background:#f3f9f5;}
+#pgToast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:300;max-width:min(560px,calc(100vw - 32px));
+  background:#39293E;color:#fff;border-radius:12px;padding:12px 16px;font-size:13.5px;line-height:1.45;box-shadow:0 8px 28px rgba(0,0,0,.25);display:none;}
+#pgToast.on{display:block;}
+#pgToast.err{background:#934E32;}
+body.pdfdrag::after{content:"Drop the saved portfolio PDF to open it";position:fixed;inset:12px;z-index:400;border:3px dashed #005826;border-radius:18px;
+  background:rgba(240,248,255,.92);display:grid;place-items:center;font:700 18px var(--head);color:#005826;}
 .opt .p{display:block;font-size:12px;color:var(--green);font-weight:700;margin-top:5px;line-height:1.35;word-break:break-word;}
 .opt .d.warn{color:#934E32;}
 .opt[disabled]{opacity:.55;}
@@ -380,8 +386,11 @@ body.exporting #viewer{display:block !important;position:fixed;left:-10000px;top
       <div class="sub">Designing Portfolios. Delivering Peace.</div>
     </div>
     <div class="spacer"></div>
+    <button class="chip-btn" id="openBtn" title="Open a PDF saved from this tool to edit it">Open saved PDF</button>
     <button class="chip-btn" id="resetBtn">Clear</button>
+    <input type="file" id="openFile" accept="application/pdf,.pdf" hidden>
   </div>
+  <div id="pgToast" role="status" aria-live="polite"></div>
 
   <div id="panes">
     <div id="build">
@@ -2411,6 +2420,10 @@ async function buildPdfBlob(say){
         pdf.addImage(cut.toDataURL('image/jpeg', 0.94), 'JPEG', 0, 0, PW, PH);
       });
     }
+    pdf.setProperties({
+      title: fileStem(), subject: 'Abundance Investment Portfolio',
+      creator: 'Abundance Portfolio Generator', keywords: PG_TAG + packState()
+    });
     return pdf.output('blob');
   }finally{
     document.body.classList.remove('exporting');
@@ -2544,6 +2557,60 @@ $('#cname').addEventListener('blur', e=>{
   if(S.name !== v){ S.name = v; refresh(); }
 });
 
+/* ══════════════ OPEN A SAVED PDF ══════════════
+   Every PDF saved through Save to WorkDrive or Download the file carries the full
+   portfolio (all fields, notes, tables, STP, own categories) in its hidden document
+   properties. Opening that PDF here puts everything back on screen to edit. */
+const PG_TAG = 'ABPF1:';
+const b64enc = t => btoa(unescape(encodeURIComponent(t)));
+const b64dec = t => decodeURIComponent(escape(atob(t)));
+function packState(){
+  const mine = customCats(), used = {};
+  ['lump','sip'].forEach(k => S[k].forEach(f => { if(f.cat && mine[f.cat]) used[f.cat] = mine[f.cat]; }));
+  return b64enc(JSON.stringify({ app:'Abundance Portfolio Generator', v:1, at:Date.now(), S, cats:used }));
+}
+function toast(html, err, ms){
+  const t = $('#pgToast'); t.innerHTML = html; t.classList.toggle('err', !!err); t.classList.add('on');
+  clearTimeout(toast.t); toast.t = setTimeout(()=>t.classList.remove('on'), ms || 6000);
+}
+function freshState(){
+  return { name:'', date:todayISO(), type:'Lumpsum', lump:[blank()], sip:[blank()],
+           notes:{lump:'',sip:''}, showTbl:{lump:false,sip:false},
+           tbls:{lump:blankTbl(),sip:blankTbl()}, stp:false, stpEdit:{}, order:{lump:'auto',sip:'auto'}, cover:true, cats:true };
+}
+async function openSavedPdf(file){
+  if(!file) return;
+  if(!/\.pdf$/i.test(file.name) && file.type !== 'application/pdf'){ toast('Choose a PDF saved from this tool.', true); return; }
+  let data;
+  try{
+    const txt = new TextDecoder('latin1').decode(await file.arrayBuffer());
+    const m = txt.match(/ABPF1:([A-Za-z0-9+\/=]+)/);
+    if(!m) throw new Error('none');
+    data = JSON.parse(b64dec(m[1]));
+    if(!data || !data.S || data.app !== 'Abundance Portfolio Generator') throw new Error('bad');
+  }catch(e){
+    toast(`<b>${esc(file.name)}</b> doesn't have editable details. Only PDFs saved with <b>Save to WorkDrive</b> or <b>Download the file</b> (from 28/10/2026) can be opened. Print to PDF copies can't.`, true, 9000);
+    return;
+  }
+  const hasWork = ['lump','sip'].some(k => validFunds(k).length) || S.name.trim();
+  if(hasWork && !confirm('Open this saved portfolio? It replaces what is on screen now.')) return;
+  if(data.cats){ const mine = customCats(); Object.entries(data.cats).forEach(([n,a]) => { if(!mine[n]) saveCustomCat(n, a); }); }
+  S = Object.assign(freshState(), data.S);
+  fixState();
+  hydrate(); renderSections(); refresh();
+  const d = /^\d{4}-\d{2}-\d{2}$/.test(S.date||'') ? S.date.split('-').reverse().join('/') : '';
+  toast(`Opened <b>${esc(properName(S.name) || file.name)}</b>. Make your changes and save again.${d ? ` The portfolio date is still <b>${d}</b>; change it if this is a new version.` : ''}`);
+}
+$('#openBtn').addEventListener('click', ()=> $('#openFile').click());
+$('#openFile').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; openSavedPdf(f); });
+/* drop a saved PDF anywhere on the page */
+let pdfDrag = 0;
+const isFileDrag = e => e.dataTransfer && [...(e.dataTransfer.types||[])].includes('Files');
+window.addEventListener('dragenter', e => { if(!isFileDrag(e)) return; e.preventDefault(); pdfDrag++; document.body.classList.add('pdfdrag'); });
+window.addEventListener('dragover', e => { if(isFileDrag(e)) e.preventDefault(); });
+window.addEventListener('dragleave', e => { if(!isFileDrag(e)) return; pdfDrag = Math.max(0, pdfDrag-1); if(!pdfDrag) document.body.classList.remove('pdfdrag'); });
+window.addEventListener('drop', e => { if(!isFileDrag(e)) return; e.preventDefault(); pdfDrag = 0; document.body.classList.remove('pdfdrag'); openSavedPdf(e.dataTransfer.files[0]); });
+
 $('#resetBtn').addEventListener('click', ()=>{
   if(!confirm('Clear this portfolio? Your saved scheme names stay.')) return;
   S = { name:'', date:todayISO(), type:'Lumpsum', lump:[blank()], sip:[blank()],
@@ -2574,22 +2641,8 @@ function hydrate(){
   });
 }
 
-(function boot(){
-  try{
-    const raw = store.get('ab_state');
-    if(raw){
-      const p = JSON.parse(raw);
-      if(p){
-        if(Array.isArray(p.funds) && !p.lump && !p.sip){   /* older saves */
-          p[p.type==='SIP' ? 'sip' : 'lump'] = p.funds;
-        }
-        delete p.funds; delete p.ov; delete p.useOv; delete p.dis; delete p.arn;
-        S = Object.assign(S, p);
-        /* one-time switch: cover page is now on by default */
-        if(!store.get('ab_cover_on_v2')){ S.cover = true; store.set('ab_cover_on_v2','1'); }
-      }
-    }
-  }catch(e){}
+/* Repairs / upgrades a loaded state so older or partial saves still open. */
+function fixState(){
   ['lump','sip'].forEach(k=>{ if(!Array.isArray(S[k]) || !S[k].length) S[k] = [blank()]; });
   ['lump','sip'].forEach(k=> S[k].forEach(f=>{ if(typeof f.folio !== 'string') f.folio = ''; }));
   S.stp = !!S.stp;
@@ -2606,6 +2659,25 @@ function hydrate(){
   if(typeof S.tbls !== 'object' || S.tbls === null) S.tbls = { lump:blankTbl(), sip:blankTbl() };
   if(S.tbl && Array.isArray(S.tbl.cols)){ S.tbls.lump = S.tbl; delete S.tbl; }
   ['lump','sip'].forEach(k=>{ if(!S.tbls[k] || !Array.isArray(S.tbls[k].cols)) S.tbls[k] = blankTbl(); });
+}
+
+(function boot(){
+  try{
+    const raw = store.get('ab_state');
+    if(raw){
+      const p = JSON.parse(raw);
+      if(p){
+        if(Array.isArray(p.funds) && !p.lump && !p.sip){   /* older saves */
+          p[p.type==='SIP' ? 'sip' : 'lump'] = p.funds;
+        }
+        delete p.funds; delete p.ov; delete p.useOv; delete p.dis; delete p.arn;
+        S = Object.assign(S, p);
+        /* one-time switch: cover page is now on by default */
+        if(!store.get('ab_cover_on_v2')){ S.cover = true; store.set('ab_cover_on_v2','1'); }
+      }
+    }
+  }catch(e){}
+  fixState();
 
   $('#howto').innerHTML = IOS
     ? 'Tap <b>Save PDF</b> → the print sheet opens → tap <b>Share</b> at the bottom → <b>Save to Files</b>. From Files you can send it on WhatsApp or email.<br><br>To keep this tool one tap away: <b>Share → Add to Home Screen</b>.'
