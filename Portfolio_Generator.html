@@ -102,6 +102,13 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xm
 .opt .t{display:block;font-family:var(--head);font-size:14.5px;font-weight:700;color:var(--green);}
 .opt .d{display:block;font-size:12px;color:var(--ink-3);margin-top:2px;line-height:1.35;}
 .opt:active{background:#eef5f0;}
+.opt.wd{border-color:var(--green);background:#f3f9f5;}
+.opt .p{display:block;font-size:12px;color:var(--green);font-weight:700;margin-top:5px;line-height:1.35;word-break:break-word;}
+.opt .d.warn{color:#934E32;}
+.opt[disabled]{opacity:.55;}
+#wdMore{display:flex;justify-content:flex-end;margin:-4px 2px 10px;}
+#wdMore[hidden]{display:none;}
+#wdChange{border:none;background:none;color:var(--green);font-family:var(--head);font-size:12px;font-weight:700;padding:2px 0;cursor:pointer;text-decoration:underline;}
 #pdfCancel{width:100%;border:none;background:none;color:var(--ink-2);font-family:var(--head);
   font-size:13.5px;font-weight:700;padding:11px;}
 #busy{display:none;text-align:center;padding:18px 6px 8px;}
@@ -448,7 +455,13 @@ body.exporting #viewer{display:block !important;position:fixed;left:-10000px;top
 <div id="pdfsheet" role="dialog" aria-modal="true" aria-label="Save as PDF">
   <div id="pdfOpts">
     <h3>Save as PDF</h3>
-    <p class="sub">Both make the same A4 document.</p>
+    <p class="sub">Each option makes the same A4 document.</p>
+    <button class="opt wd" id="optWD">
+      <span class="t">Save to WorkDrive</span>
+      <span class="d" id="wdHint"></span>
+      <span class="p" id="wdPath"></span>
+    </button>
+    <div id="wdMore" hidden><button id="wdChange" type="button">Change WorkDrive folder</button></div>
     <button class="opt" id="optPrint">
       <span class="t">Print to PDF</span>
       <span class="d" id="printHint"></span>
@@ -2307,9 +2320,27 @@ function pagePlan(paper, totalH){
   return pages;
 }
 
-function fileStem(){
-  return (properName(S.name)||'Portfolio').replace(/[^A-Za-z0-9]+/g,'_').replace(/^_|_$/g,'') + '_Portfolio';
+/* File name rule: "2L Lumpsum 28-10-26 Investment Portfolio - Haritha"
+   SIP: "10K SIP …", both: "2L Lumpsum + 10K SIP …". Amounts: K / L / Cr, up to 2 decimals. */
+function shortAmt(n){
+  n = Math.round(+n || 0);
+  const f = (v,u) => (+(v).toFixed(2)) + u;
+  if(n >= 1e7) return f(n/1e7,'Cr');
+  if(n >= 1e5) return f(n/1e5,'L');
+  if(n >= 1e3) return f(n/1e3,'K');
+  return String(n);
 }
+function portfolioName(){
+  const parts = [];
+  activeSecs().forEach(sec=>{ const t = secTotal(sec); if(t > 0) parts.push(shortAmt(t) + (sec==='lump' ? ' Lumpsum' : ' SIP')); });
+  if(!parts.length) parts.push(S.type==='SIP' ? 'SIP' : S.type==='Both' ? 'Lumpsum + SIP' : 'Lumpsum');
+  const iso = /^\d{4}-\d{2}-\d{2}$/.test(S.date||'') ? S.date : todayISO();
+  const [y,m,d] = iso.split('-');
+  const nm = properName(S.name);
+  return `${parts.join(' + ')} ${d}-${m}-${y.slice(2)} Investment Portfolio${nm ? ' - ' + nm : ''}`;
+}
+const safeFile = v => String(v).replace(/[\\/:*?"<>|]+/g,'-').replace(/\s+/g,' ').trim();
+function fileStem(){ return safeFile(portfolioName()); }
 function openPdfSheet(){
   renderDoc();
   document.getElementById('printHint').textContent = IOS
@@ -2317,6 +2348,7 @@ function openPdfSheet(){
     : 'Opens the print dialog. Choose Save as PDF. Keeps text sharp and selectable.';
   document.getElementById('pdfOpts').style.display = '';
   document.getElementById('busy').classList.remove('on');
+  wdPaint();
   document.getElementById('scrim').classList.add('on');
   document.getElementById('pdfsheet').classList.add('on');
 }
@@ -2334,26 +2366,8 @@ $('#optPrint').addEventListener('click', ()=>{
   setTimeout(()=>window.print(), 120);
 });
 
-$('#optFile').addEventListener('click', async ()=>{
-  /* Ask for the folder first, while the click still counts as a user gesture.
-     Chrome / Edge on desktop support this; other browsers fall back to Downloads. */
-  let fileHandle = null;
-  if(window.showSaveFilePicker){
-    try{
-      fileHandle = await window.showSaveFilePicker({
-        suggestedName: fileStem() + '.pdf',
-        types:[{ description:'PDF document', accept:{ 'application/pdf':['.pdf'] } }]
-      });
-    }catch(err){
-      if(err && err.name === 'AbortError') return;   /* cancelled — keep the sheet open */
-      fileHandle = null;
-    }
-  }
-  document.getElementById('pdfOpts').style.display = 'none';
-  const busy = document.getElementById('busy');
-  busy.classList.add('on');
-  const say = t => { document.getElementById('busyTxt').textContent = t; };
-
+/* Builds the A4 PDF from the preview and returns it as a Blob. */
+async function buildPdfBlob(say){
   const sc = $('#scaler');
   const keep = { t:sc.style.transform, h:sc.style.height, m:sc.style.marginLeft, w:sc.style.width };
   document.body.classList.add('exporting');
@@ -2363,14 +2377,12 @@ $('#optFile').addEventListener('click', async ()=>{
   await new Promise(r => requestAnimationFrame(()=>requestAnimationFrame(r)));
   renderDoc();
   await new Promise(r => requestAnimationFrame(()=>requestAnimationFrame(r)));
-
   try{
     const papers = [...document.querySelectorAll('#docs .paper')];
     if(!papers.length) throw new Error('Nothing to save yet.');
     const pdf = new window.jspdf.jsPDF({ unit:'mm', format:'a4', orientation:'portrait' });
     const PW = 210, PH = 297, PX_PER_PAGE = 1123;   /* 794px wide === 210mm */
     let first = true;
-
     for(let p = 0; p < papers.length; p++){
       say(`Rendering page ${p+1} of ${papers.length}…`);
       await new Promise(r => setTimeout(r, 20));
@@ -2381,7 +2393,6 @@ $('#optFile').addEventListener('click', async ()=>{
       const k = canvas.width / 794;                 /* device pixels per CSS px */
       const bg = getComputedStyle(papers[p]).backgroundColor || '#ffffff';
       const plan = pagePlan(papers[p], canvas.height / k);
-
       plan.forEach(pg=>{
         const cut = document.createElement('canvas');
         cut.width = canvas.width; cut.height = Math.round(PX_PER_PAGE * k);
@@ -2400,23 +2411,130 @@ $('#optFile').addEventListener('click', async ()=>{
         pdf.addImage(cut.toDataURL('image/jpeg', 0.94), 'JPEG', 0, 0, PW, PH);
       });
     }
-    say('Saving…');
-    if(fileHandle){
-      const w = await fileHandle.createWritable();
-      await w.write(pdf.output('blob'));
-      await w.close();
-    } else {
-      pdf.save(fileStem() + '.pdf');
-    }
-    closePdfSheet();
-  }catch(err){
-    say('Could not build the file. Try Print to PDF instead.');
-    setTimeout(closePdfSheet, 2600);
+    return pdf.output('blob');
   }finally{
     document.body.classList.remove('exporting');
     sc.style.transform = keep.t; sc.style.height = keep.h;
     sc.style.marginLeft = keep.m; sc.style.width = keep.w;
     fitScale();
+  }
+}
+function showBusy(){
+  document.getElementById('pdfOpts').style.display = 'none';
+  document.getElementById('busy').classList.add('on');
+  return t => { document.getElementById('busyTxt').textContent = t; };
+}
+
+$('#optFile').addEventListener('click', async ()=>{
+  /* Ask for the folder first, while the click still counts as a user gesture.
+     Chrome / Edge on desktop support this; other browsers fall back to Downloads. */
+  let fileHandle = null;
+  if(window.showSaveFilePicker){
+    try{
+      fileHandle = await window.showSaveFilePicker({
+        suggestedName: fileStem() + '.pdf',
+        types:[{ description:'PDF document', accept:{ 'application/pdf':['.pdf'] } }]
+      });
+    }catch(err){
+      if(err && err.name === 'AbortError') return;   /* cancelled — keep the sheet open */
+      fileHandle = null;
+    }
+  }
+  const say = showBusy();
+  try{
+    const blob = await buildPdfBlob(say);
+    say('Saving…');
+    if(fileHandle){
+      const w = await fileHandle.createWritable();
+      await w.write(blob);
+      await w.close();
+    } else {
+      const url = URL.createObjectURL(blob), a = document.createElement('a');
+      a.href = url; a.download = fileStem() + '.pdf'; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url), 4000);
+    }
+    closePdfSheet();
+  }catch(err){
+    say('Could not build the file. Try Print to PDF instead.');
+    setTimeout(closePdfSheet, 2600);
+  }
+});
+
+/* ══════════════ WORKDRIVE ══════════════
+   Link your WorkDrive "Portfolios" folder once (Chrome / Edge, on the dashboard).
+   Each client gets a subfolder; the PDF saves straight into it:
+   Portfolios / Haritha / 2L Lumpsum 28-10-26 Investment Portfolio - Haritha.pdf */
+const WD = { root:null, ok:'showDirectoryPicker' in window && window.self === window.top };
+const wdDb = (mode, fn) => new Promise(ok=>{
+  try{
+    const r = indexedDB.open('pg-handles', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('h');
+    r.onsuccess = () => { try{ const t = r.result.transaction('h', mode), q = fn(t.objectStore('h')); t.oncomplete = () => ok(q && q.result); t.onerror = () => ok(null); }catch(e){ ok(null); } };
+    r.onerror = () => ok(null);
+  }catch(e){ ok(null); }
+});
+if(WD.ok) wdDb('readonly', st => st.get('root')).then(h => { if(h){ WD.root = h; wdPaint(); } });
+
+function wdPaint(){
+  const hint = $('#wdHint'), path = $('#wdPath'), btn = $('#optWD'), more = $('#wdMore');
+  if(!hint) return;
+  const nm = properName(S.name);
+  hint.classList.remove('warn');
+  if(!WD.ok){
+    btn.disabled = true; more.hidden = true; path.textContent = '';
+    hint.textContent = 'Works on the dashboard in Chrome or Edge on a computer. Use Download the file here instead.';
+    return;
+  }
+  btn.disabled = false; more.hidden = !WD.root;
+  if(!nm){ hint.textContent = 'Add the client name first. It names the client folder and the file.'; hint.classList.add('warn'); path.textContent = ''; return; }
+  hint.textContent = WD.root ? 'Saves straight into the client’s folder. No save dialog.'
+                             : 'One time: pick your WorkDrive Portfolios folder. After that, every portfolio saves straight into its client’s folder.';
+  path.textContent = `${WD.root ? WD.root.name : 'Portfolios'} / ${safeFile(nm)} / ${fileStem()}.pdf`;
+}
+async function wdPick(){
+  try{ WD.root = await window.showDirectoryPicker({ id:'pg-workdrive', mode:'readwrite' }); }
+  catch(e){ return false; }
+  await wdDb('readwrite', st => st.put(WD.root, 'root'));
+  wdPaint(); return true;
+}
+async function wdPerm(){
+  let p = await WD.root.queryPermission({ mode:'readwrite' });
+  if(p !== 'granted') p = await WD.root.requestPermission({ mode:'readwrite' }).catch(()=> 'denied');
+  return p === 'granted';
+}
+$('#wdChange').addEventListener('click', wdPick);
+$('#optWD').addEventListener('click', async ()=>{
+  const nm = properName(S.name);
+  if(!nm){ wdPaint(); $('#cname').focus(); return; }
+  if(!WD.root && !(await wdPick())) return;          /* cancelled the folder picker */
+  if(!(await wdPerm())){
+    $('#wdHint').textContent = 'The browser needs your OK to save into this folder. Click Save to WorkDrive again and choose Allow.';
+    $('#wdHint').classList.add('warn'); return;
+  }
+  const folder = safeFile(nm);
+  let file = fileStem() + '.pdf';
+  try{
+    const dir = await WD.root.getDirectoryHandle(folder, { create:true });
+    let exists = false; try{ await dir.getFileHandle(file); exists = true; }catch(e){}
+    if(exists && !confirm(`"${file}" is already in ${folder}'s folder.\n\nOK replaces it. Cancel keeps both and saves this one as a new copy.`)){
+      let n = 2; while(true){ const alt = `${fileStem()} (${n}).pdf`; try{ await dir.getFileHandle(alt); n++; }catch(e){ file = alt; break; } }
+    }
+    const say = showBusy();
+    try{
+      const blob = await buildPdfBlob(say);
+      say('Saving to WorkDrive…');
+      const fh = await dir.getFileHandle(file, { create:true }), w = await fh.createWritable();
+      await w.write(blob); await w.close();
+      say(`Saved to WorkDrive: ${WD.root.name} / ${folder} / ${file}`);
+      document.querySelector('#busy .sp').style.visibility = 'hidden';
+      setTimeout(()=>{ document.querySelector('#busy .sp').style.visibility = ''; closePdfSheet(); }, 2600);
+    }catch(err){
+      say('Could not save to WorkDrive. Check that the WorkDrive app is running, or use Download the file.');
+      setTimeout(closePdfSheet, 3200);
+    }
+  }catch(err){
+    $('#wdHint').textContent = 'Could not open the WorkDrive folder. It may have moved; use Change WorkDrive folder.';
+    $('#wdHint').classList.add('warn'); $('#wdMore').hidden = false;
   }
 });
 
