@@ -546,7 +546,7 @@ const GROUPS = [
   { label: 'Equity', items: [['large_cap','Large Cap'],['large_mid_cap','Large & Mid Cap'],['mid_cap','Mid Cap'],['small_cap','Small Cap'],['multi_cap','Multi Cap'],['flexi_cap','Flexi Cap'],['focused','Focused'],['value_contra','Value / Contra'],['dividend_yield','Dividend Yield'],['elss','ELSS'],['sectoral_thematic','Sectoral / Thematic']] },
   { label: 'Debt', items: [['overnight','Overnight'],['liquid','Liquid'],['ultra_short','Ultra Short'],['low_duration','Low Duration'],['money_market','Money Market'],['short_duration','Short Duration'],['medium_duration','Medium Duration'],['medium_long_duration','Medium to Long'],['long_duration','Long Duration'],['dynamic_bond','Dynamic Bond'],['corporate_bond','Corporate Bond'],['credit_risk','Credit Risk'],['banking_psu','Banking & PSU'],['gilt','Gilt'],['gilt_10y','Gilt 10Y'],['floater','Floater']] },
   { label: 'Hybrid', items: [['conservative_hybrid','Conservative'],['balanced_hybrid','Balanced'],['aggressive_hybrid','Aggressive'],['dynamic_asset','BAF / Dynamic'],['multi_asset','Multi Asset'],['arbitrage','Arbitrage'],['equity_savings','Equity Savings']] },
-  { label: 'Other', items: [['index_fund','Index Funds'],['etf','ETF'],['fof_domestic','FoF Domestic'],['fof_overseas','FoF Overseas'],['gold_silver','Gold / Silver'],['solution_oriented','Retirement / Children']] },
+  { label: 'Other', items: [['index_fund','Index Funds'],['fof_domestic','FoF Domestic'],['fof_overseas','FoF Overseas'],['gold_silver','Gold / Silver'],['solution_oriented','Retirement / Children']] },
 ];
 const CAT_LABEL = {};
 GROUPS.forEach(g => g.items.forEach(([v, l]) => CAT_LABEL[v] = l));
@@ -725,6 +725,12 @@ const planGroup = r => r.scheme_plan === 'Direct' ? 'Direct' : 'Regular';
 const peerKey = r => normCat(r).toLowerCase() + '|' + planGroup(r);
 
 // AMFI files Gold/Silver FoFs as "FoF Domestic" and ETFs as "Gold ETF"/"Silver ETF": match passive gold/silver schemes by name too
+// Exchange-traded funds (ETFs, BeES) are excluded from the screener everywhere; it covers mutual funds only
+function isETF(row) {
+  const hay = ((row.category_sub || '') + ' ' + (row.category || '')).toLowerCase(), n = (row.scheme_name || '').toLowerCase();
+  if (/fof|fund of fund/.test(hay) || /fund of fund|\bfof\b/.test(n)) return false;   // ETF fund-of-funds are mutual funds
+  return /\betfs?\b|exchange traded/.test(hay) || /\betf\b|exchange traded|\bbees\b/.test(n);
+}
 function isGoldSilver(row) {
   const hay = ((row.category_sub || '') + ' ' + (row.category || '')).toLowerCase();
   if (/gold|silver/.test(hay)) return true;
@@ -748,8 +754,8 @@ function matchesCategory(row, catVal) {
   return true;
 }
 function matchesPlanType(row) {
-  const etfLike = row.scheme_plan === 'Other' && row.scheme_option === 'Other';   // ETFs: no Growth/IDCW split
-  if (row.scheme_option !== 'Growth' && !etfLike) return false;
+  if (isETF(row)) return false;                       // mutual funds only: ETFs are never shown
+  if (row.scheme_option !== 'Growth') return false;
   const v = planType.value;
   if (v === 'all') return true;
   if (v === 'direct_growth') return row.scheme_plan === 'Direct';
@@ -985,7 +991,7 @@ async function runLoad(displayIn, { isAll }) {
     let peers = [];
     if (!isAll) {
       const keys = new Set(display.map(peerKey));
-      peers = data.filter(r => isActive(r) && (r.scheme_option === 'Growth' || (r.scheme_plan === 'Other' && r.scheme_option === 'Other')) && keys.has(peerKey(r)));
+      peers = data.filter(r => isActive(r) && r.scheme_option === 'Growth' && !isETF(r) && keys.has(peerKey(r)));
     }
 
     // Benchmarks needed
