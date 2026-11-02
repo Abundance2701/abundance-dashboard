@@ -164,6 +164,8 @@ body.pdfdrag::after{content:"Drop the saved portfolio PDF to open it";position:f
 .ms-busy .sp2{width:26px;height:26px;margin:0 auto 10px;border:3px solid var(--line);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite;}
 .ms-busy .msg{font-size:13.5px;color:var(--ink-2);line-height:1.45;}
 #mailsheet.busy .ms-body,#mailsheet.busy .ms-foot{display:none;}
+.ms-wd{border-top:none;padding-top:0;margin-bottom:6px;}
+.ms-wd small{word-break:break-word;}
 
 #sheet{position:fixed;inset:0;z-index:200;background:var(--ivory);display:none;flex-direction:column;}
 #sheet.on{display:flex;}
@@ -513,8 +515,8 @@ body.exporting #viewer{display:block !important;position:fixed;left:-10000px;top
     </button>
     <div id="wdMore" hidden><button id="wdChange" type="button">Change WorkDrive folder</button></div>
     <button class="opt ml" id="optMail">
-      <span class="t">Email to client</span>
-      <span class="d" id="mailHint">Finds the client's email in Zoho CRM, attaches this PDF and sends it from your Zoho Mail. You check everything before it goes.</span>
+      <span class="t">Email &amp; save to WorkDrive</span>
+      <span class="d" id="mailHint">Finds the client's email in Zoho CRM, sends this PDF from your Zoho Mail and saves a copy in the client's WorkDrive folder. You check everything before it goes.</span>
     </button>
     <button class="opt" id="optPrint">
       <span class="t">Print to PDF</span>
@@ -561,6 +563,7 @@ body.exporting #viewer{display:block !important;position:fixed;left:-10000px;top
         <div class="note">The greeting goes above this message. Edits here apply to this email only.</div>
       </div>
       <div class="ms-att">📎 <span id="msFile"></span></div>
+      <div class="tog ms-wd"><span>Also save to WorkDrive<small id="msWdNote"></small></span><button class="sw on" id="msWD" type="button" aria-pressed="true"></button></div>
     </div>
     <div class="ms-foot">
       <button class="ms-link" id="msForget" type="button">Forget passcode</button>
@@ -2602,38 +2605,49 @@ async function wdPerm(){
   return p === 'granted';
 }
 $('#wdChange').addEventListener('click', wdPick);
-$('#optWD').addEventListener('click', async ()=>{
+/* Everything that needs the user's click (folder picker, permission, replace-or-copy),
+   done before the PDF is built. Returns { dir, folder, file } or null, plus a reason. */
+async function wdPrepare(){
   const nm = properName(S.name);
-  if(!nm){ wdPaint(); $('#cname').focus(); return; }
-  if(!WD.root && !(await wdPick())) return;          /* cancelled the folder picker */
-  if(!(await wdPerm())){
-    $('#wdHint').textContent = 'The browser needs your OK to save into this folder. Click Save to WorkDrive again and choose Allow.';
-    $('#wdHint').classList.add('warn'); return;
-  }
+  if(!nm) return { why:'name' };
+  if(!WD.root && !(await wdPick())) return { why:'cancel' };
+  if(!(await wdPerm())) return { why:'perm' };
   const folder = safeFile(nm);
-  let file = fileStem() + '.pdf';
+  let file = fileStem() + '.pdf', dir;
+  try{ dir = await WD.root.getDirectoryHandle(folder, { create:true }); }
+  catch(e){ return { why:'folder' }; }
+  let exists = false; try{ await dir.getFileHandle(file); exists = true; }catch(e){}
+  if(exists && !confirm(`"${file}" is already in ${folder}'s folder.\n\nOK replaces it. Cancel keeps both and saves this one as a new copy.`)){
+    let n = 2; while(true){ const alt = `${fileStem()} (${n}).pdf`; try{ await dir.getFileHandle(alt); n++; }catch(e){ file = alt; break; } }
+  }
+  return { dir, folder, file };
+}
+async function wdWrite(prep, blob){
+  const fh = await prep.dir.getFileHandle(prep.file, { create:true }), w = await fh.createWritable();
+  await w.write(blob); await w.close();
+  return `${WD.root.name} / ${prep.folder} / ${prep.file}`;
+}
+const WD_WHY = {
+  perm: 'The browser needs your OK to save into this folder. Try again and choose Allow.',
+  folder: 'Could not open the WorkDrive folder. It may have moved; use Change WorkDrive folder.'
+};
+$('#optWD').addEventListener('click', async ()=>{
+  const prep = await wdPrepare();
+  if(prep.why){
+    if(prep.why === 'name'){ wdPaint(); $('#cname').focus(); }
+    else if(WD_WHY[prep.why]){ $('#wdHint').textContent = WD_WHY[prep.why]; $('#wdHint').classList.add('warn'); if(prep.why==='folder') $('#wdMore').hidden = false; }
+    return;
+  }
+  const say = showBusy();
   try{
-    const dir = await WD.root.getDirectoryHandle(folder, { create:true });
-    let exists = false; try{ await dir.getFileHandle(file); exists = true; }catch(e){}
-    if(exists && !confirm(`"${file}" is already in ${folder}'s folder.\n\nOK replaces it. Cancel keeps both and saves this one as a new copy.`)){
-      let n = 2; while(true){ const alt = `${fileStem()} (${n}).pdf`; try{ await dir.getFileHandle(alt); n++; }catch(e){ file = alt; break; } }
-    }
-    const say = showBusy();
-    try{
-      const blob = await buildPdfBlob(say);
-      say('Saving to WorkDrive…');
-      const fh = await dir.getFileHandle(file, { create:true }), w = await fh.createWritable();
-      await w.write(blob); await w.close();
-      say(`Saved to WorkDrive: ${WD.root.name} / ${folder} / ${file}`);
-      document.querySelector('#busy .sp').style.visibility = 'hidden';
-      setTimeout(()=>{ document.querySelector('#busy .sp').style.visibility = ''; closePdfSheet(); }, 2600);
-    }catch(err){
-      say('Could not save to WorkDrive. Check that the WorkDrive app is running, or use Download the file.');
-      setTimeout(closePdfSheet, 3200);
-    }
+    const blob = await buildPdfBlob(say);
+    say('Saving to WorkDrive…');
+    say(`Saved to WorkDrive: ${await wdWrite(prep, blob)}`);
+    document.querySelector('#busy .sp').style.visibility = 'hidden';
+    setTimeout(()=>{ document.querySelector('#busy .sp').style.visibility = ''; closePdfSheet(); }, 2600);
   }catch(err){
-    $('#wdHint').textContent = 'Could not open the WorkDrive folder. It may have moved; use Change WorkDrive folder.';
-    $('#wdHint').classList.add('warn'); $('#wdMore').hidden = false;
+    say('Could not save to WorkDrive. Check that the WorkDrive app is running, or use Download the file.');
+    setTimeout(closePdfSheet, 3200);
   }
 });
 
@@ -2666,6 +2680,8 @@ Ph: +91 93424 08812 / 79752 99027`;
 const MAIL = { contact:null, key: store.get('pg_mailkey') || '', busy:false };
 const MAIL_MAX = 3.1 * 1024 * 1024;               /* larger PDFs get a lighter copy */
 const MAIL_RE = /^[^\s@,;<>"]+@[^\s@,;<>"]+\.[^\s@,;<>"]+$/;
+/* Attachment name: "Investment Portfolio - Haritha R S.pdf" (a colon is not allowed in Windows file names) */
+const mailFileName = () => safeFile(`Investment Portfolio - ${properName(S.name)}`) + '.pdf';
 const mailSplit = v => String(v||'').split(/[,;\s]+/).map(x=>x.trim()).filter(Boolean);
 
 if(!/^https?:$/.test(location.protocol)){
@@ -2787,7 +2803,11 @@ function openMail(){
   closePdfSheet();
   if(!nm){ toast('Add the client name first. It is used to find the email in CRM.', true); $('#cname').focus(); return; }
   $('#msSub').textContent = nm;
-  $('#msFile').textContent = fileStem() + '.pdf';
+  $('#msFile').textContent = mailFileName();
+  const wdOn = WD.ok;
+  $('#msWD').classList.toggle('on', wdOn); $('#msWD').setAttribute('aria-pressed', wdOn); $('#msWD').disabled = !WD.ok;
+  $('#msWdNote').textContent = !WD.ok ? 'Works in Chrome or Edge on a computer.'
+    : `${WD.root ? WD.root.name : 'Portfolios'} / ${safeFile(nm)} / ${fileStem()}.pdf`;
   $('#msSubj').value = MAIL_SUBJECT;
   $('#msBody').value = MAIL_TEMPLATE;
   ['#msTo','#msCc','#msBcc'].forEach(id => $(id).value = '');
@@ -2832,32 +2852,48 @@ async function sendMail(){
   if(!text){ toast('The message is empty.', true); return; }
   const greet = $('#msGreet').value;
 
+  /* WorkDrive needs this click for its folder permission, so prepare it before anything else */
+  const saveWD = WD.ok && $('#msWD').classList.contains('on');
+  let prep = null;
+  if(saveWD){
+    prep = await wdPrepare();
+    if(prep.why){
+      if(prep.why === 'cancel') return;
+      toast(esc(WD_WHY[prep.why] || 'Could not open the WorkDrive folder.'), true, 8000); return;
+    }
+  }
   const who = [`To: ${to.join(', ')}`];
   if(cc.length) who.push(`Cc: ${cc.join(', ')}`);
   if(bcc.length) who.push(`Bcc: ${bcc.join(', ')}`);
-  if(!confirm(`Send "${subject}" with the portfolio PDF attached?\n\n${who.join('\n')}\n\nOpens with: ${greet}`)) return;
+  if(!confirm(`Send "${subject}" with the portfolio PDF attached?\n\n${who.join('\n')}\n\nOpens with: ${greet}${saveWD ? '\nAlso saves to WorkDrive: ' + prep.folder + ' / ' + prep.file : ''}`)) return;
 
-  MAIL.busy = true;
+  MAIL.busy = true; MAIL.saved = '';
   $('#mailsheet').classList.add('busy'); $('#msBusy').classList.add('on');
   const say = t => { $('#msBusyTxt').textContent = t; };
   try{
-    let blob = await buildPdfBlob(say);
+    let blob = await buildPdfBlob(say), saved = '', wdErr = false;
+    if(saveWD){
+      say('Saving to WorkDrive…');
+      try{ saved = MAIL.saved = await wdWrite(prep, blob); }catch(e){ wdErr = true; }
+    }
     if(blob.size > MAIL_MAX){ say('Making a lighter copy for email…'); blob = await buildPdfBlob(say, { scale:1.5, quality:0.8 }); }
     if(blob.size > MAIL_MAX) throw new Error(`The PDF is ${(blob.size/1048576).toFixed(1)} MB, too large to email. Save it to WorkDrive and share the link instead.`);
     say('Sending from Zoho Mail…');
     await mailApi('/api/send-mail', {
       method:'POST', headers:{ 'Content-Type':'application/json' },
       body: JSON.stringify({ to: to.join(','), cc: cc.join(','), bcc: bcc.join(','), subject,
-        html: mailHtml(greet, text), fileName: fileStem() + '.pdf', pdfBase64: await blobB64(blob) })
+        html: mailHtml(greet, text), fileName: mailFileName(), pdfBase64: await blobB64(blob) })
     });
     const mem = greetMem(); to.forEach(e => mem[e.toLowerCase()] = greet); store.set('pg_greet', JSON.stringify(mem));
     MAIL.busy = false; closeMail();
-    toast(`Sent to <b>${esc(to.join(', '))}</b>. It is in your Zoho Mail Sent folder.`, false, 7000);
+    toast(`Sent to <b>${esc(to.join(', '))}</b>. It is in your Zoho Mail Sent folder.`
+      + (saved ? `<br>Saved to WorkDrive: <b>${esc(saved)}</b>` : '')
+      + (wdErr ? '<br><b>WorkDrive copy was not saved.</b> Check the WorkDrive app is running, then use Save to WorkDrive.' : ''), wdErr, 9000);
   }catch(e){
     MAIL.busy = false;
     $('#mailsheet').classList.remove('busy'); $('#msBusy').classList.remove('on');
     if(e.code === 401){ forgetKey(); showKey('That passcode did not match. Enter it again, then press Send email.'); }
-    else toast(esc(e.message || 'Could not send the email.'), true, 9000);
+    else toast(esc(e.message || 'Could not send the email.') + (MAIL.saved ? `<br>The WorkDrive copy was saved: <b>${esc(MAIL.saved)}</b>` : ''), true, 9000);
   }
 }
 
@@ -2865,6 +2901,7 @@ $('#optMail').addEventListener('click', openMail);
 $('#msClose').addEventListener('click', closeMail);
 $('#msCancel').addEventListener('click', closeMail);
 $('#msSend').addEventListener('click', sendMail);
+$('#msWD').addEventListener('click', () => { const b = $('#msWD'); if(b.disabled) return; b.classList.toggle('on'); b.setAttribute('aria-pressed', b.classList.contains('on')); });
 $('#msRefind').addEventListener('click', findClient);
 $('#msReset').addEventListener('click', () => { $('#msBody').value = MAIL_TEMPLATE; });
 $('#msAddCc').addEventListener('click', () => { $('#msCcF').hidden = false; $('#msCc').focus(); });
