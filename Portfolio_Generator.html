@@ -2643,16 +2643,25 @@ $('#optWD').addEventListener('click', async ()=>{
    Edit the subject and default message below to change them for everyone. */
 const MAIL_SUBJECT = 'Investment Portfolio';
 const MAIL_TEMPLATE =
-`Please find attached your investment portfolio, as discussed.
+`As discussed, please find attached the proposed Investment Portfolio.
 
-It shows the fund-wise allocation and the amount going into each scheme. Do go through it at your convenience.
+Kindly go through the same and let us know if we may initiate it.
 
-If you have any questions, or would like us to change anything before we proceed, please let us know. We would be happy to walk you through it.
+If you have any questions, feel free to reach out!
 
-Warm regards,
-Team Abundance
-Designing Portfolio. Delivering Peace.
-service@abundanceindia.com | www.abundance.co.in`;
+Thank you.
+Happy Investing!
+
+Warm Regards
+Abundance India
+AMFI Registered Mutual Fund Distributor
+Venkatesh Kumar S
+ARN-144038
+No: 2034, 2nd Floor, 26th Main Road,
+South End F Cross Road, 9th Block,
+Jayanagar, Bengaluru, Karnataka 560069
+https://goo.gl/maps/Y881A4i6Fev
+Ph: +91 93424 08812 / 79752 99027`;
 
 const MAIL = { contact:null, key: store.get('pg_mailkey') || '', busy:false };
 const MAIL_MAX = 3.1 * 1024 * 1024;               /* larger PDFs get a lighter copy */
@@ -2671,20 +2680,20 @@ function firstName(n){
 }
 function greetOptions(name){
   const f = firstName(name);
-  return f ? [`Dear ${f}`, `Hi ${f}`, `Dear ${f} Sir`, `Dear ${f} Ma'am`, 'Dear Sir', "Dear Ma'am"]
-           : ['Dear Sir', "Dear Ma'am"];
+  return f ? [`Hello, ${f}.`, 'Hello, sir.', "Hello, ma'am.", `Hello, ${f} sir.`, `Hello, ${f} ma'am.`]
+           : ['Hello, sir.', "Hello, ma'am."];
 }
 const greetMem = () => { try{ return JSON.parse(store.get('pg_greet') || '{}') || {}; }catch(e){ return {}; } };
-/* a CRM "Greeting" field, if one is ever added: Sir / Ma'am / Name / a full phrase */
+/* CRM "Greeting" field: Sir / Ma'am / Name / Name Sir / Name Ma'am (or a full phrase) */
 function crmGreet(v, name){
   v = String(v||'').trim(); const f = firstName(name);
   if(!v) return '';
   if(/^(dear|hi|hello)\b/i.test(v)) return v;
-  if(/^sir$/i.test(v)) return 'Dear Sir';
-  if(/^ma.?am$/i.test(v)) return "Dear Ma'am";
-  if(/^name\s*sir$/i.test(v)) return `Dear ${f} Sir`;
-  if(/^name\s*ma.?am$/i.test(v)) return `Dear ${f} Ma'am`;
-  if(/^name$/i.test(v)) return `Dear ${f}`;
+  if(/^sir$/i.test(v)) return 'Hello, sir.';
+  if(/^ma.?am$/i.test(v)) return "Hello, ma'am.";
+  if(/^name\s*sir$/i.test(v)) return `Hello, ${f} sir.`;
+  if(/^name\s*ma.?am$/i.test(v)) return `Hello, ${f} ma'am.`;
+  if(/^name$/i.test(v)) return `Hello, ${f}.`;
   return '';
 }
 function paintGreet(pick){
@@ -2798,10 +2807,11 @@ function closeMail(){
 }
 
 function mailHtml(greet, text){
+  const link = t => t.replace(/https?:\/\/[^\s<]+/g, u => `<a href="${u}" style="color:#005826;">${u}</a>`);
   const paras = String(text).replace(/\r/g,'').trim().split(/\n{2,}/)
-    .map(p => `<p style="margin:0 0 14px;">${esc(p.trim()).replace(/\n/g,'<br>')}</p>`).join('');
+    .map(p => `<p style="margin:0 0 12px;">${link(esc(p.trim())).replace(/\n/g,'<br>')}</p>`).join('');
   return `<div style="font-family:Calibri,'Segoe UI',Arial,sans-serif;font-size:15px;line-height:1.5;color:#1d2521;">`
-    + `<p style="margin:0 0 14px;">${esc(greet)},</p>${paras}</div>`;
+    + `<p style="margin:0 0 12px;">${esc(greet)}</p>${paras}</div>`;
 }
 const blobB64 = blob => new Promise((ok, no) => {
   const r = new FileReader();
@@ -2825,7 +2835,7 @@ async function sendMail(){
   const who = [`To: ${to.join(', ')}`];
   if(cc.length) who.push(`Cc: ${cc.join(', ')}`);
   if(bcc.length) who.push(`Bcc: ${bcc.join(', ')}`);
-  if(!confirm(`Send "${subject}" with the portfolio PDF attached?\n\n${who.join('\n')}\n\nOpens with: ${greet},`)) return;
+  if(!confirm(`Send "${subject}" with the portfolio PDF attached?\n\n${who.join('\n')}\n\nOpens with: ${greet}`)) return;
 
   MAIL.busy = true;
   $('#mailsheet').classList.add('busy'); $('#msBusy').classList.add('on');
