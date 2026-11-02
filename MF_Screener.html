@@ -713,6 +713,7 @@ const CANON_LABEL = {
 };
 const _canonCache = new Map();
 const normCat = r => {
+  if (r.scheme_name && isGoldSilver(r)) return CANON_LABEL.gold_silver;
   const raw = rawCat(r), ck = raw + '|' + (r.category || '');
   if (_canonCache.has(ck)) return _canonCache.get(ck);
   let out = raw;
@@ -723,6 +724,13 @@ const normCat = r => {
 const planGroup = r => r.scheme_plan === 'Direct' ? 'Direct' : 'Regular';
 const peerKey = r => normCat(r).toLowerCase() + '|' + planGroup(r);
 
+// AMFI files Gold/Silver FoFs as "FoF Domestic" and ETFs as "Gold ETF"/"Silver ETF": match passive gold/silver schemes by name too
+function isGoldSilver(row) {
+  const hay = ((row.category_sub || '') + ' ' + (row.category || '')).toLowerCase();
+  if (/gold|silver/.test(hay)) return true;
+  const n = (row.scheme_name || '').toLowerCase();
+  return /\b(gold|silver)\b/.test(n) && /fof|fund of fund|etf|exchange traded/.test(hay) && !/multi|overseas|international|global|world|mining/.test(n);
+}
 function matchesCategory(row, catVal) {
   if (catVal === 'all_categories') return true;
   if (catVal === 'custom') {
@@ -731,6 +739,8 @@ function matchesCategory(row, catVal) {
     return ((row.category_sub || '') + ' ' + (row.category || '') + ' ' + (row.scheme_name || '')).toLowerCase().includes(kw);
   }
   const def = CATEGORY_DEFS[catVal]; if (!def) return false;
+  if (catVal === 'gold_silver' && isGoldSilver(row)) return true;
+  if (catVal === 'fof_domestic' && isGoldSilver(row)) return false;   // gold/silver FoFs live under Gold / Silver
   const hay = ((row.category_sub || '') + ' ' + (row.category || '')).toLowerCase();
   if (!def.includes.some(s => hay.includes(s))) return false;
   if (def.excludes && def.excludes.some(s => hay.includes(s))) return false;
@@ -738,7 +748,8 @@ function matchesCategory(row, catVal) {
   return true;
 }
 function matchesPlanType(row) {
-  if (row.scheme_option !== 'Growth') return false;
+  const etfLike = row.scheme_plan === 'Other' && row.scheme_option === 'Other';   // ETFs: no Growth/IDCW split
+  if (row.scheme_option !== 'Growth' && !etfLike) return false;
   const v = planType.value;
   if (v === 'all') return true;
   if (v === 'direct_growth') return row.scheme_plan === 'Direct';
@@ -974,7 +985,7 @@ async function runLoad(displayIn, { isAll }) {
     let peers = [];
     if (!isAll) {
       const keys = new Set(display.map(peerKey));
-      peers = data.filter(r => isActive(r) && r.scheme_option === 'Growth' && keys.has(peerKey(r)));
+      peers = data.filter(r => isActive(r) && (r.scheme_option === 'Growth' || (r.scheme_plan === 'Other' && r.scheme_option === 'Other')) && keys.has(peerKey(r)));
     }
 
     // Benchmarks needed
