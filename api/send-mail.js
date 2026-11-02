@@ -68,11 +68,17 @@ module.exports = async (req, res) => {
     };
     if (cc.length) mail.ccAddress = cc.join(',');
     if (bcc.length) mail.bccAddress = bcc.join(',');
-    await zoho(`${urls().mail}/api/accounts/${ACC}/messages`, {
+    /* Send the display name explicitly ("Abundance India <service@…>"), because API
+       sends don't always pick up the name set in Zoho Mail. If Zoho won't accept
+       that form, send again with the plain address so the email still goes. */
+    const NAME = (env('FROM_NAME') || 'Abundance India').replace(/[<>"\r\n]/g, '');
+    const post = from => zoho(`${urls().mail}/api/accounts/${ACC}/messages`, {
       method: 'POST',
       headers: { ...auth, 'Content-Type': 'application/json' },
-      body: JSON.stringify(mail),
+      body: JSON.stringify({ ...mail, fromAddress: from }),
     });
+    try { await post(`"${NAME}" <${FROM}>`); }
+    catch (e) { await post(FROM); }
 
     return reply(res, 200, { ok: true, to, cc, bcc });
   } catch (e) {
