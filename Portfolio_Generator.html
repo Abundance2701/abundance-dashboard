@@ -2718,7 +2718,7 @@ function paintGreet(pick){
 /* remembered choice for this email (this computer) → CRM Greeting → CRM Gender (sir / ma'am) → first name */
 function greetFor(email){
   const mem = email ? greetMem()[email.toLowerCase()] : '';
-  if(mem) return mem;
+  if(mem && greetOptions(properName(S.name)).includes(mem)) return mem;
   const c = MAIL.contact;
   if(!c) return '';
   return crmGreet(c.greeting, S.name)
@@ -2834,8 +2834,10 @@ function mailHtml(greet, text){
   const body = [greet, '', ...String(text).replace(/\r/g,'').replace(/\s+$/,'').split('\n')]
     .map(l => link(esc(l))).join('<br>');
   const sig = MAIL_SIGNATURE.map(l => l.startsWith('**') ? `<b>${esc(l.slice(2))}</b>` : link(esc(l))).join('<br>');
-  return `<div style="font-family:Calibri,Carlito,'Segoe UI',Arial,sans-serif;font-size:11pt;color:#000000;line-height:1.3;">`
-    + `${body}<br><br>${sig}</div>`;
+  /* message at 12pt, signature at 11pt like the Zoho Mail signature */
+  return `<div style="font-family:Calibri,Carlito,'Segoe UI',Arial,sans-serif;color:#000000;line-height:1.3;">`
+    + `<div style="font-size:12pt;">${body}</div><br>`
+    + `<div style="font-size:11pt;">${sig}</div></div>`;
 }
 const blobB64 = blob => new Promise((ok, no) => {
   const r = new FileReader();
