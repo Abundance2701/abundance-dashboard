@@ -3,7 +3,7 @@
    Uploads the PDF to Zoho Mail as an attachment, then sends the email from
    FROM_ADDRESS. The sender address is fixed in Vercel, never taken from the page. */
 
-const { URLS, accessToken, passcodeOk, reply, jsonBody, emailList } = require('./_zoho');
+const { env, URLS, accessToken, passcodeOk, reply, jsonBody, emailList } = require('./_zoho');
 
 const MAX_PDF = 3.2 * 1024 * 1024;     // Vercel accepts ~4.5 MB per request; base64 adds a third
 
@@ -22,7 +22,7 @@ module.exports = async (req, res) => {
   if (req.method !== 'POST') return reply(res, 405, { error: 'Use POST.' });
   if (!passcodeOk(req)) return reply(res, 401, { error: 'Passcode did not match.' });
 
-  const ACC = process.env.ZOHO_MAIL_ACCOUNT_ID, FROM = process.env.FROM_ADDRESS;
+  const ACC = env('ZOHO_MAIL_ACCOUNT_ID'), FROM = env('FROM_ADDRESS');
   if (!ACC || !FROM) return reply(res, 500, { error: 'Setup incomplete: add ZOHO_MAIL_ACCOUNT_ID and FROM_ADDRESS in Vercel and redeploy.' });
 
   let b, to, cc, bcc, pdf, fileName, subject;

@@ -4,10 +4,10 @@
           { action:'test' }           checks every piece is connected
    Both POST actions need the passcode (TOOL_PASSCODE). */
 
-const { URLS, accessToken, passcodeOk, reply, jsonBody } = require('./_zoho');
+const { env, DC, urlsFor, URLS, accessToken, passcodeOk, reply, jsonBody } = require('./_zoho');
 
-async function mailAccounts(token) {
-  const r = await fetch(`${URLS.mail}/api/accounts`, { headers: { Authorization: `Zoho-oauthtoken ${token}` } });
+async function mailAccounts(token, urls) {
+  const r = await fetch(`${(urls || URLS).mail}/api/accounts`, { headers: { Authorization: `Zoho-oauthtoken ${token}` } });
   const j = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error(`Mail account lookup failed (${(j.data && j.data.errorCode) || r.status}). Check the ZohoMail.accounts.READ scope.`);
   return (j.data || []).map(a => ({
@@ -24,26 +24,42 @@ module.exports = async (req, res) => {
     return res.end(PAGE);
   }
   if (req.method !== 'POST') return reply(res, 405, { error: 'Use GET or POST.' });
-  if (!process.env.TOOL_PASSCODE) return reply(res, 500, { error: 'Add TOOL_PASSCODE in Vercel and redeploy first.' });
+  if (!env('TOOL_PASSCODE')) return reply(res, 500, { error: 'Add TOOL_PASSCODE in Vercel and redeploy first.' });
   if (!passcodeOk(req)) return reply(res, 401, { error: 'Passcode did not match.' });
 
   try {
     const b = await jsonBody(req);
 
     if (b.action === 'exchange') {
-      if (!process.env.ZOHO_CLIENT_ID || !process.env.ZOHO_CLIENT_SECRET)
-        return reply(res, 500, { error: 'Add ZOHO_CLIENT_ID and ZOHO_CLIENT_SECRET in Vercel and redeploy first.' });
+      if (!env('ZOHO_CLIENT_ID') || !env('ZOHO_CLIENT_SECRET'))
+        return reply(res, 500, { error: 'ZOHO_CLIENT_ID or ZOHO_CLIENT_SECRET is missing in Vercel. Add both, redeploy, then try again.' });
       const code = String(b.code || '').trim();
       if (!code) return reply(res, 400, { error: 'Paste the grant code.' });
-      const body = new URLSearchParams({
-        grant_type: 'authorization_code', code,
-        client_id: process.env.ZOHO_CLIENT_ID, client_secret: process.env.ZOHO_CLIENT_SECRET,
-      });
-      const r = await fetch(`${URLS.accounts}/oauth/v2/token`, { method: 'POST', body });
-      const j = await r.json().catch(() => ({}));
-      if (!j.refresh_token) return reply(res, 400, { error: `Zoho refused the code (${j.error || r.status}). Codes expire in minutes; generate a new one and paste it straight away.` });
-      const accounts = await mailAccounts(j.access_token).catch(e => ({ error: e.message }));
-      return reply(res, 200, { refreshToken: j.refresh_token, scope: j.scope || '', accounts });
+      /* Try the configured Zoho region first, then the others: a key made on
+         zoho.com is refused by zoho.in as "invalid_client". */
+      const regions = [DC, ...['in', 'com', 'eu', 'com.au', 'jp', 'ca', 'sa'].filter(d => d !== DC)];
+      let j = {}, used = null;
+      for (const dc of regions) {
+        const body = new URLSearchParams({
+          grant_type: 'authorization_code', code,
+          client_id: env('ZOHO_CLIENT_ID'), client_secret: env('ZOHO_CLIENT_SECRET'),
+        });
+        const r = await fetch(`${urlsFor(dc).accounts}/oauth/v2/token`, { method: 'POST', body });
+        j = await r.json().catch(() => ({}));
+        if (j.refresh_token) { used = dc; break; }
+        if (j.error && j.error !== 'invalid_client') break;      // right region, other problem
+      }
+      if (!used) {
+        const why = j.error === 'invalid_client'
+          ? 'Zoho does not recognise the Client ID and Client Secret saved in Vercel. Re-copy both from the same Self Client (Client Secret tab), save them again in Vercel, redeploy, then generate a fresh code.'
+          : j.error === 'invalid_code'
+            ? 'The grant code has expired or was already used. Generate a new one and paste it straight away.'
+            : `Zoho refused the code (${j.error || 'no reply'}).`;
+        return reply(res, 400, { error: why });
+      }
+      const accounts = await mailAccounts(j.access_token, urlsFor(used)).catch(e => ({ error: e.message }));
+      return reply(res, 200, { refreshToken: j.refresh_token, scope: j.scope || '', accounts,
+        region: used, regionNote: used === DC ? '' : `Your Zoho account is on zoho.${used}. Also add ZOHO_DC = ${used} in Vercel.` });
     }
 
     if (b.action === 'test') {
@@ -53,9 +69,9 @@ module.exports = async (req, res) => {
       const accs = await mailAccounts(token).catch(e => e);
       if (accs instanceof Error) checks.push(['Zoho Mail', false, accs.message]);
       else {
-        const acc = accs.find(a => a.accountId === String(process.env.ZOHO_MAIL_ACCOUNT_ID || ''));
+        const acc = accs.find(a => a.accountId === env('ZOHO_MAIL_ACCOUNT_ID'));
         checks.push(['Mail account ID', !!acc, acc ? `Matches ${acc.primary}` : 'ZOHO_MAIL_ACCOUNT_ID is missing or does not match. IDs found: ' + accs.map(a => `${a.accountId} (${a.primary})`).join(', ')]);
-        const from = String(process.env.FROM_ADDRESS || '').toLowerCase();
+        const from = env('FROM_ADDRESS').toLowerCase();
         const allowed = acc ? [acc.primary, ...acc.sendFrom].map(s => s.toLowerCase()) : [];
         checks.push(['From address', !!acc && allowed.includes(from), from ? (allowed.includes(from) ? `${from} can send` : `${from} is not an address of this account. Allowed: ${allowed.join(', ')}`) : 'FROM_ADDRESS is missing']);
       }
@@ -108,6 +124,7 @@ async function call(body){const r=await fetch(location.pathname,{method:'POST',h
 $('#go').onclick=async()=>{const o=$('#o1');o.textContent='Working…';$('#go').disabled=true;
  try{const j=await call({action:'exchange',code:$('#c').value});
   let h='<p class="ok"><b>Done.</b> Copy these into Vercel → Settings → Environment Variables. This token is shown only once; do not paste it anywhere else.</p>';
+  if(j.regionNote)h+='<p class="bad"><b>'+esc(j.regionNote)+'</b></p>';
   h+='<b>ZOHO_REFRESH_TOKEN</b><code>'+esc(j.refreshToken)+'</code>';
   if(Array.isArray(j.accounts))j.accounts.forEach(a=>{h+='<b>ZOHO_MAIL_ACCOUNT_ID</b> (for '+esc(a.primary)+')<code>'+esc(a.accountId)+'</code><small>FROM_ADDRESS can be: '+esc([a.primary].concat(a.sendFrom).filter((v,i,s)=>v&&s.indexOf(v)===i).join(', '))+'</small><br>';});
   else if(j.accounts&&j.accounts.error)h+='<p class="bad">'+esc(j.accounts.error)+'</p>';

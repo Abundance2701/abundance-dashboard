@@ -7,24 +7,28 @@
 
 const crypto = require('crypto');
 
-const DC = (process.env.ZOHO_DC || 'in').trim();          // India data centre by default
-const URLS = {
-  accounts: `https://accounts.zoho.${DC}`,
-  mail:     `https://mail.zoho.${DC}`,
-  crm:      `https://www.zohoapis.${DC}`,
-};
+/* Values pasted into Vercel sometimes carry stray spaces or line breaks. */
+const env = k => String(process.env[k] || '').trim();
+
+const urlsFor = dc => ({
+  accounts: `https://accounts.zoho.${dc}`,
+  mail:     `https://mail.zoho.${dc}`,
+  crm:      `https://www.zohoapis.${dc}`,
+});
+const DC = env('ZOHO_DC').replace(/^\./, '') || 'in';      // India data centre by default
+const URLS = urlsFor(DC);
 
 /* Access tokens last about an hour; keep one while this function instance is warm. */
 let cached = { token: null, exp: 0 };
 
 async function accessToken() {
   if (cached.token && Date.now() < cached.exp - 60_000) return cached.token;
-  const need = ['ZOHO_CLIENT_ID', 'ZOHO_CLIENT_SECRET', 'ZOHO_REFRESH_TOKEN'].filter(k => !process.env[k]);
+  const need = ['ZOHO_CLIENT_ID', 'ZOHO_CLIENT_SECRET', 'ZOHO_REFRESH_TOKEN'].filter(k => !env(k));
   if (need.length) throw new Error(`Setup incomplete: add ${need.join(', ')} in Vercel and redeploy.`);
   const body = new URLSearchParams({
-    refresh_token: process.env.ZOHO_REFRESH_TOKEN,
-    client_id: process.env.ZOHO_CLIENT_ID,
-    client_secret: process.env.ZOHO_CLIENT_SECRET,
+    refresh_token: env('ZOHO_REFRESH_TOKEN'),
+    client_id: env('ZOHO_CLIENT_ID'),
+    client_secret: env('ZOHO_CLIENT_SECRET'),
     grant_type: 'refresh_token',
   });
   const r = await fetch(`${URLS.accounts}/oauth/v2/token`, { method: 'POST', body });
@@ -36,8 +40,8 @@ async function accessToken() {
 
 /* The tool sends the passcode in the "x-abundance-key" header. */
 function passcodeOk(req) {
-  const want = process.env.TOOL_PASSCODE || '';
-  const got = String(req.headers['x-abundance-key'] || '');
+  const want = env('TOOL_PASSCODE');
+  const got = String(req.headers['x-abundance-key'] || '').trim();
   if (!want || !got) return false;
   const a = crypto.createHash('sha256').update(want).digest();
   const b = crypto.createHash('sha256').update(got).digest();
@@ -70,4 +74,4 @@ function emailList(v, label) {
   return list;
 }
 
-module.exports = { URLS, accessToken, passcodeOk, reply, jsonBody, emailList };
+module.exports = { env, DC, urlsFor, URLS, accessToken, passcodeOk, reply, jsonBody, emailList };
