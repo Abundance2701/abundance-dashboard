@@ -5,7 +5,7 @@
 
 const { urls, accessToken, passcodeOk, reply } = require('./_zoho');
 
-const FIELDS = 'Full_Name,Last_Name,Email,PAN_No,Minor,Greeting';
+const FIELDS = 'Full_Name,Last_Name,Email,PAN_No,Minor,Greeting,Gender';
 
 async function search(token, word) {
   const base = `${urls().crm}/crm/v8/Contacts/search?word=${encodeURIComponent(word)}&per_page=20`;
@@ -48,6 +48,7 @@ module.exports = async (req, res) => {
         pan: maskPan(c.PAN_No),
         minor: !!c.Minor,
         greeting: typeof c.Greeting === 'string' ? c.Greeting : '',
+        gender: c.Gender === 'Male' || c.Gender === 'Female' ? c.Gender : '',
         exact: norm(nm) === want,
       };
     })

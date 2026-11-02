@@ -560,7 +560,7 @@ body.exporting #viewer{display:block !important;position:fixed;left:-10000px;top
       <div class="field">
         <label for="msBody">Message <button class="ms-link" id="msReset" type="button">Reset to template</button></label>
         <textarea class="inp" id="msBody" spellcheck="true"></textarea>
-        <div class="note">The greeting goes above this message. Edits here apply to this email only.</div>
+        <div class="note">The greeting goes above this message and your signature below it. Edits here apply to this email only.</div>
       </div>
       <div class="ms-att">📎 <span id="msFile"></span></div>
       <div class="tog ms-wd"><span>Also save to WorkDrive<small id="msWdNote"></small></span><button class="sw on" id="msWD" type="button" aria-pressed="true"></button></div>
@@ -2658,24 +2658,21 @@ $('#optWD').addEventListener('click', async ()=>{
 const MAIL_SUBJECT = 'Investment Portfolio';
 const MAIL_TEMPLATE =
 `As discussed, please find attached the proposed Investment Portfolio.
-
 Kindly go through the same and let us know if we may initiate it.
 
 If you have any questions, feel free to reach out!
 
 Thank you.
-Happy Investing!
-
-Warm Regards
-Abundance India
-AMFI Registered Mutual Fund Distributor
-Venkatesh Kumar S
-ARN-144038
-No: 2034, 2nd Floor, 26th Main Road,
-South End F Cross Road, 9th Block,
-Jayanagar, Bengaluru, Karnataka 560069
-https://goo.gl/maps/Y881A4i6Fev
-Ph: +91 93424 08812 / 79752 99027`;
+Happy Investing!`;
+/* Signature, added below every message exactly like the Zoho Mail one.
+   Lines starting with ** are bold. */
+const MAIL_SIGNATURE = [
+  '**Warm Regards', '**Abundance India',
+  'AMFI Registered Mutual Fund Distributor', 'Venkatesh Kumar S', 'ARN-144038',
+  'No: 2034, 2nd Floor, 26th Main Road,', 'South End F Cross Road, 9th Block,',
+  'Jayanagar, Bengaluru, Karnataka 560069', 'https://goo.gl/maps/Y881A4i6Fev',
+  'Ph: +91 93424 08812 / 79752 99027'
+];
 
 const MAIL = { contact:null, key: store.get('pg_mailkey') || '', busy:false };
 const MAIL_MAX = 3.1 * 1024 * 1024;               /* larger PDFs get a lighter copy */
@@ -2718,10 +2715,14 @@ function paintGreet(pick){
   sel.innerHTML = opts.map(o => `<option>${esc(o)}</option>`).join('');
   sel.value = pick || opts[0];
 }
-/* remembered choice for this email (this computer) → CRM field → "Dear <first name>" */
+/* remembered choice for this email (this computer) → CRM Greeting → CRM Gender (sir / ma'am) → first name */
 function greetFor(email){
   const mem = email ? greetMem()[email.toLowerCase()] : '';
-  return mem || (MAIL.contact ? crmGreet(MAIL.contact.greeting, S.name) : '');
+  if(mem) return mem;
+  const c = MAIL.contact;
+  if(!c) return '';
+  return crmGreet(c.greeting, S.name)
+    || (c.gender === 'Male' ? 'Hello, sir.' : c.gender === 'Female' ? "Hello, ma'am." : '');
 }
 
 async function mailApi(path, init){
@@ -2826,12 +2827,15 @@ function closeMail(){
   $('#scrim').classList.remove('on');
 }
 
+/* Plain Calibri 11pt like a normal Zoho email: every line break kept as typed,
+   a blank line stays one blank line, no extra paragraph spacing. */
 function mailHtml(greet, text){
-  const link = t => t.replace(/https?:\/\/[^\s<]+/g, u => `<a href="${u}" style="color:#005826;">${u}</a>`);
-  const paras = String(text).replace(/\r/g,'').trim().split(/\n{2,}/)
-    .map(p => `<p style="margin:0 0 12px;">${link(esc(p.trim())).replace(/\n/g,'<br>')}</p>`).join('');
-  return `<div style="font-family:Calibri,'Segoe UI',Arial,sans-serif;font-size:15px;line-height:1.5;color:#1d2521;">`
-    + `<p style="margin:0 0 12px;">${esc(greet)}</p>${paras}</div>`;
+  const link = t => t.replace(/https?:\/\/[^\s<]+/g, u => `<a href="${u}" style="color:#0563C1;">${u}</a>`);
+  const body = [greet, '', ...String(text).replace(/\r/g,'').replace(/\s+$/,'').split('\n')]
+    .map(l => link(esc(l))).join('<br>');
+  const sig = MAIL_SIGNATURE.map(l => l.startsWith('**') ? `<b>${esc(l.slice(2))}</b>` : link(esc(l))).join('<br>');
+  return `<div style="font-family:Calibri,Carlito,'Segoe UI',Arial,sans-serif;font-size:11pt;color:#000000;line-height:1.3;">`
+    + `${body}<br><br>${sig}</div>`;
 }
 const blobB64 = blob => new Promise((ok, no) => {
   const r = new FileReader();
