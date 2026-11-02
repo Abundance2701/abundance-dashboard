@@ -3,12 +3,12 @@
    email panel needs: name, email, masked PAN (to tell two clients apart) and the
    greeting, if a "Greeting" field is ever added in CRM. Nothing else leaves Zoho. */
 
-const { URLS, accessToken, passcodeOk, reply } = require('./_zoho');
+const { urls, accessToken, passcodeOk, reply } = require('./_zoho');
 
 const FIELDS = 'Full_Name,Last_Name,Email,PAN_No,Minor,Greeting';
 
 async function search(token, word) {
-  const base = `${URLS.crm}/crm/v8/Contacts/search?word=${encodeURIComponent(word)}&per_page=20`;
+  const base = `${urls().crm}/crm/v8/Contacts/search?word=${encodeURIComponent(word)}&per_page=20`;
   const headers = { Authorization: `Zoho-oauthtoken ${token}` };
   let r = await fetch(`${base}&fields=${FIELDS}`, { headers });
   if (r.status === 400) r = await fetch(base, { headers });   // older API versions reject "fields"

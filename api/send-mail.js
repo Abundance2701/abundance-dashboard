@@ -3,7 +3,7 @@
    Uploads the PDF to Zoho Mail as an attachment, then sends the email from
    FROM_ADDRESS. The sender address is fixed in Vercel, never taken from the page. */
 
-const { env, URLS, accessToken, passcodeOk, reply, jsonBody, emailList } = require('./_zoho');
+const { env, urls, accessToken, passcodeOk, reply, jsonBody, emailList } = require('./_zoho');
 
 const MAX_PDF = 3.2 * 1024 * 1024;     // Vercel accepts ~4.5 MB per request; base64 adds a third
 
@@ -50,7 +50,7 @@ module.exports = async (req, res) => {
 
     // 1. upload the PDF
     const up = await zoho(
-      `${URLS.mail}/api/accounts/${ACC}/messages/attachments?fileName=${encodeURIComponent(fileName)}`,
+      `${urls().mail}/api/accounts/${ACC}/messages/attachments?fileName=${encodeURIComponent(fileName)}`,
       { method: 'POST', headers: { ...auth, 'Content-Type': 'application/octet-stream' }, body: pdf }
     );
     const att = Array.isArray(up.data) ? up.data[0] : up.data;
@@ -68,7 +68,7 @@ module.exports = async (req, res) => {
     };
     if (cc.length) mail.ccAddress = cc.join(',');
     if (bcc.length) mail.bccAddress = bcc.join(',');
-    await zoho(`${URLS.mail}/api/accounts/${ACC}/messages`, {
+    await zoho(`${urls().mail}/api/accounts/${ACC}/messages`, {
       method: 'POST',
       headers: { ...auth, 'Content-Type': 'application/json' },
       body: JSON.stringify(mail),

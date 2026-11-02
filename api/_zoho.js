@@ -16,7 +16,10 @@ const urlsFor = dc => ({
   crm:      `https://www.zohoapis.${dc}`,
 });
 const DC = env('ZOHO_DC').replace(/^\./, '') || 'in';      // India data centre by default
-const URLS = urlsFor(DC);
+const REGIONS = [DC, ...['in', 'com', 'eu', 'com.au', 'jp', 'ca', 'sa'].filter(d => d !== DC)];
+/* The region that actually accepted our keys (found on first sign-in). */
+let active = DC;
+const urls = () => urlsFor(active);
 
 /* Access tokens last about an hour; keep one while this function instance is warm. */
 let cached = { token: null, exp: 0 };
@@ -25,18 +28,30 @@ async function accessToken() {
   if (cached.token && Date.now() < cached.exp - 60_000) return cached.token;
   const need = ['ZOHO_CLIENT_ID', 'ZOHO_CLIENT_SECRET', 'ZOHO_REFRESH_TOKEN'].filter(k => !env(k));
   if (need.length) throw new Error(`Setup incomplete: add ${need.join(', ')} in Vercel and redeploy.`);
-  const body = new URLSearchParams({
-    refresh_token: env('ZOHO_REFRESH_TOKEN'),
-    client_id: env('ZOHO_CLIENT_ID'),
-    client_secret: env('ZOHO_CLIENT_SECRET'),
-    grant_type: 'refresh_token',
-  });
-  const r = await fetch(`${URLS.accounts}/oauth/v2/token`, { method: 'POST', body });
-  const j = await r.json().catch(() => ({}));
-  if (!j.access_token) throw new Error(`Zoho sign-in failed (${j.error || r.status}). The refresh token may have been revoked.`);
-  cached = { token: j.access_token, exp: Date.now() + (Number(j.expires_in) || 3600) * 1000 };
-  return cached.token;
+  /* Keys made on zoho.com are refused by zoho.in as "invalid_client", so try each region. */
+  let last = '';
+  for (const dc of [active, ...REGIONS.filter(d => d !== active)]) {
+    const body = new URLSearchParams({
+      refresh_token: env('ZOHO_REFRESH_TOKEN'),
+      client_id: env('ZOHO_CLIENT_ID'),
+      client_secret: env('ZOHO_CLIENT_SECRET'),
+      grant_type: 'refresh_token',
+    });
+    const r = await fetch(`${urlsFor(dc).accounts}/oauth/v2/token`, { method: 'POST', body });
+    const j = await r.json().catch(() => ({}));
+    if (j.access_token) {
+      active = dc;
+      cached = { token: j.access_token, exp: Date.now() + (Number(j.expires_in) || 3600) * 1000 };
+      return cached.token;
+    }
+    last = j.error || String(r.status);
+    if (last !== 'invalid_client') break;                    // right region, different problem
+  }
+  throw new Error(last === 'invalid_client'
+    ? 'Zoho sign-in failed: the Client ID / Client Secret in Vercel do not match your Self Client.'
+    : `Zoho sign-in failed (${last}). Check ZOHO_REFRESH_TOKEN in Vercel; it must be copied exactly from the setup page.`);
 }
+const region = () => active;
 
 /* The tool sends the passcode in the "x-abundance-key" header. */
 function passcodeOk(req) {
@@ -74,4 +89,4 @@ function emailList(v, label) {
   return list;
 }
 
-module.exports = { env, DC, urlsFor, URLS, accessToken, passcodeOk, reply, jsonBody, emailList };
+module.exports = { env, DC, urlsFor, urls, region, accessToken, passcodeOk, reply, jsonBody, emailList };
