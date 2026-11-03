@@ -89,10 +89,23 @@ FEEDS = [
     ('RBI', 'https://rbi.org.in/pressreleases_rss.xml'),
     ('RBI', 'https://rbi.org.in/notifications_rss.xml'),
     ('NSE', 'https://nsearchives.nseindia.com/content/RSS/Circulars.xml'),
-    ('NSE', 'https://nsearchives.nseindia.com/content/RSS/Online_announcements.xml'),
 ]
-KEEP = re.compile(r'mutual fund|\bamc\b|amfi|distribut|nifty|sensex|index|indices|repo|monetary|liquidity|rate|kyc|nominat|sif|specialised investment|portfolio manag|debt|bond|g-sec|government securit|inflation|investor|f&o|derivative|exclu|inclu|rebalanc|holiday|settlement|expense|tax', re.I)
+# Drop routine / individual-case notices; keep rules, circulars, policy and market-structure items
+DROP = re.compile(r'appeal no|notice of demand|recovery certificate|adjudication order|settlement order|final order|order in the matter|attachment of bank|completion (order|of recovery)|release order|money market operations|auction|vrrr|vrr |citizen.s charter|reserve money|weighted average|treasury bill|state government securities|buyback offer|penalty|imposes monetary|cancels the certificate|enforcement action|summary of|tender offer', re.I)
+IMPORTANT = re.compile(r'mutual fund|\bamc\b|amfi|distribut|nifty|sensex|\bindex\b|indices|repo rate|monetary policy|liquidity|kyc|nominat|specialised investment|sif\b|portfolio manag|investment adviser|research analyst|debt|bond|inflation|investor|f&o|derivative|exclu|inclu|rebalanc|holiday|settlement cycle|expense ratio|tax|reit|invit|circular|master direction|regulations|framework|consultation', re.I)
+def parse_date(d):
+    d = (d or '').strip()
+    for f in ('%a, %d %b %Y %H:%M:%S %z', '%a, %d %b %Y %H:%M:%S %Z', '%a, %d %b %Y %H:%M:%S', '%d %b %Y %H:%M:%S', '%Y-%m-%dT%H:%M:%S%z', '%Y-%m-%d %H:%M:%S', '%Y-%m-%d', '%d-%m-%Y', '%d/%m/%Y'):
+        try: return dt.datetime.strptime(d, f).date().isoformat()
+        except Exception: pass
+    m = re.search(r'(\d{1,2})[ -](\w{3})[a-z]*[ -,]+(\d{4})', d)
+    if m:
+        try: return dt.datetime.strptime(f'{m.group(1)} {m.group(2)[:3]} {m.group(3)}', '%d %b %Y').date().isoformat()
+        except Exception: pass
+    return ''
 items, ferr = [], []
+try: _prev = {(x['src'], x['title']): x.get('date', '') for x in json.load(open('data/official.json'))['items']}
+except Exception: _prev = {}
 for src, url in FEEDS:
     try:
         root = ET.fromstring(get(url))
@@ -100,10 +113,11 @@ for src, url in FEEDS:
             t = (it.findtext('title') or '').strip(); l = (it.findtext('link') or '').strip()
             d = (it.findtext('pubDate') or '').strip(); desc = re.sub('<[^>]+>', ' ', it.findtext('description') or '').strip()
             if not t: continue
-            try: iso = dt.datetime.strptime(d[:25].strip(), '%a, %d %b %Y %H:%M:%S').date().isoformat()
-            except Exception:
-                m = re.search(r'(\d{1,2}) (\w{3}) (\d{4})', d); iso = dt.datetime.strptime(m.group(0), '%d %b %Y').date().isoformat() if m else ''
-            items.append({'src': src, 'title': t, 'url': l, 'date': iso, 'relevant': bool(KEEP.search(t + ' ' + desc[:300]))})
+            if DROP.search(t): continue
+            t = re.sub(r'\s+', ' ', t).replace('\u200b', '').strip()
+            iso = parse_date(d) or parse_date(desc[:120]) or _prev.get((src, t)) or dt.datetime.now(IST).date().isoformat()  # undated: first day we saw it
+            items.append({'src': src, 'title': t, 'url': l, 'date': iso,
+                          'important': bool(IMPORTANT.search(t + ' ' + desc[:300]))})
     except Exception as e:
         ferr.append(f'{src} {url}: {str(e)[:80]}')
 seen, uniq = set(), []
@@ -111,5 +125,5 @@ for i in sorted(items, key=lambda x: x['date'], reverse=True):
     k = (i['src'], i['title'])
     if k in seen: continue
     seen.add(k); uniq.append(i)
-json.dump({'updated': out['updated'], 'items': uniq[:150], 'errors': ferr}, open('data/official.json', 'w'), ensure_ascii=False, indent=1)
+json.dump({'updated': out['updated'], 'items': uniq[:120], 'errors': ferr}, open('data/official.json', 'w'), ensure_ascii=False, indent=1)
 print('official items:', len(uniq), 'errors:', ferr)
