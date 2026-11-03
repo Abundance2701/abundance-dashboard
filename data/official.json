@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-03T10:15:33Z",
+ "updated": "2026-11-03T10:18:28Z",
  "items": [
   {
    "src": "RBI",
@@ -107,5 +107,23 @@
    "important": true
   }
  ],
+ "counts": {
+  "https://www.sebi.gov.in/sebirss.xml": [
+   30,
+   5
+  ],
+  "https://rbi.org.in/pressreleases_rss.xml": [
+   10,
+   1
+  ],
+  "https://rbi.org.in/notifications_rss.xml": [
+   10,
+   10
+  ],
+  "https://nsearchives.nseindia.com/content/RSS/Circulars.xml": [
+   1,
+   0
+  ]
+ },
  "errors": []
 }
