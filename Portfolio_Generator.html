@@ -220,6 +220,26 @@ body.pdfdrag::after{content:"Drop the saved portfolio PDF to open it";position:f
 .fund.dragging{opacity:.45;}
 .fund.dropbefore{box-shadow:0 -3px 0 var(--green);}
 .fund.dropafter{box-shadow:0 3px 0 var(--green);}
+/* drag handle + multi-select */
+.grip{flex:0 0 auto;width:26px;height:38px;margin-left:-4px;border:none;background:none;border-radius:8px;
+  color:var(--ink-3);font-size:19px;line-height:1;cursor:grab;touch-action:none;padding:0;}
+.grip:hover,.grip:focus-visible{background:#eef5f0;color:var(--green);}
+.pick{flex:0 0 auto;width:22px;height:22px;border-radius:6px;border:1.5px solid #c5d1ca;background:#fff;
+  color:transparent;font-size:13px;font-weight:800;line-height:1;padding:0;}
+.pick:hover{border-color:var(--green);}
+.fund.sel{border-color:var(--green);background:#f1f8f3;box-shadow:0 0 0 2px rgba(0,88,38,.12);}
+.fund.sel .pick{background:var(--green);border-color:var(--green);color:#fff;}
+.fund.moving{opacity:.4;}
+.fund.justmoved{animation:jm .9s ease-out;}
+@keyframes jm{from{background:#fff3cf;}to{background:inherit;}}
+body.dragging-funds,body.dragging-funds *{cursor:grabbing !important;user-select:none;-webkit-user-select:none;}
+#dragGhost{position:fixed;z-index:500;pointer-events:none;display:none;background:var(--green);color:#fff;
+  font:700 12.5px var(--head);padding:7px 12px;border-radius:999px;box-shadow:0 6px 18px rgba(0,0,0,.22);
+  max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ordbar{flex-wrap:wrap;row-gap:6px;}
+.ordbar .acts{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.ordbar select{font-family:var(--head);font-size:12px;font-weight:700;color:var(--green);background:#fff;
+  border:1.5px solid var(--line);border-radius:8px;padding:5px 8px;cursor:pointer;}
 .kill{flex:0 0 auto;width:34px;height:34px;border-radius:9px;border:none;background:#fbeeeb;color:var(--danger);font-size:17px;line-height:1;font-weight:600;}
 .assetpill{position:absolute;top:-9px;right:10px;font-family:var(--head);font-size:9.5px;font-weight:700;
   letter-spacing:.7px;padding:2px 8px;border-radius:999px;color:#fff;}
@@ -1439,8 +1459,9 @@ function repaintCat(sec,i){
   const el = document.querySelectorAll(`#list-${sec} .fund`)[i];
   if(!el) return;
   const row = el.querySelectorAll('.frow')[0];
-  const kill = row.querySelector('.kill');
-  row.innerHTML = catSelect(sec,i,S[sec][i]) + kill.outerHTML;
+  const old = row.querySelector('select[data-k="cat"]');
+  const tmp = document.createElement('div'); tmp.innerHTML = catSelect(sec,i,S[sec][i]);
+  old.replaceWith(tmp.firstElementChild);
 }
 
 /* ── full-screen scheme picker ── */
@@ -1588,12 +1609,13 @@ function fundRows(sec){
   return list.map((f,i)=>{
     const a = catAsset(f.cat);
     const pill = a ? `<span class="assetpill" style="background:${ASSETS[a].c}">${ASSETS[a].ab}</span>` : '';
-    return `<div class="fund ${a?ASSETS[a].cls:''}" draggable="true" data-drag="${sec}:${i}">
+    const on = SEL[sec].has(f);
+    return `<div class="fund ${a?ASSETS[a].cls:''}${on?' sel':''}" data-drag="${sec}:${i}">
       ${pill}
       <div class="frow">
+        <button type="button" class="grip" data-grip="${sec}:${i}" aria-label="Drag to move (arrow keys also move)" title="Drag to move">⠿</button>
+        <button type="button" class="pick" data-pick="${sec}:${i}" aria-pressed="${on}" aria-label="Select to move together" title="Select (Shift-click for a range)">✓</button>
         ${catSelect(sec,i,f)}
-        <button class="mv" data-mv="${sec}:${i}:-1" aria-label="Move up" ${i===0?'disabled':''}>↑</button>
-        <button class="mv" data-mv="${sec}:${i}:1" aria-label="Move down" ${i===list.length-1?'disabled':''}>↓</button>
         <button class="kill" data-del="${sec}:${i}" aria-label="Remove scheme">✕</button>
       </div>
       <div class="frow">
@@ -2241,57 +2263,174 @@ $('#build').addEventListener('click', e=>{
   }
 });
 
-function paintOrd(sec){
-  const el = $('#ord-'+sec); if(!el) return;
-  const live = S[sec].length > 1;
-  el.style.display = live ? 'flex' : 'none';
-  el.innerHTML = S.order[sec] === 'manual'
-    ? `<span>Custom order — the PDF follows this list</span><button data-ordauto="${sec}">Group by asset class</button>`
-    : `<span>PDF groups by asset class · use ↑ ↓ or drag to set your own order</span>`;
+/* ══════════════ ORDER: drag, multi-select, sort ══════════════
+   Drag ⠿ (mouse or finger) to move a scheme. Tick ✓ on several to move them together.
+   Arrow keys on a focused ⠿ move it (or the selection) one step. */
+const SEL = { lump:new Set(), sip:new Set() };
+const LASTPICK = { lump:null, sip:null };
+function pruneSel(sec){ [...SEL[sec]].forEach(f => { if(!S[sec].includes(f)) SEL[sec].delete(f); }); }
+function catRank(f){
+  const a = catAsset(f.cat), ai = ASSET_ORDER.indexOf(a);
+  if(ai < 0) return 1e6;
+  const ci = catsForAsset(a).indexOf(f.cat);
+  return ai * 1000 + (ci < 0 ? 999 : ci);
 }
-function moveFund(sec, from, to){
-  const L = S[sec];
-  if(to < 0 || to >= L.length || from === to) return;
-  const [f] = L.splice(from, 1); L.splice(to, 0, f);
-  S.order[sec] = 'manual';
+function sortFunds(sec, how){
+  const blankRow = f => !String(f.name||'').trim() && !num(f.amt);
+  const key = how === 'asset' ? f => { const k = ASSET_ORDER.indexOf(catAsset(f.cat)); return k < 0 ? 99 : k; } : catRank;
+  S[sec] = S[sec].map((f,i)=>[f,i])
+    .sort((x,y)=> (blankRow(x[0]) - blankRow(y[0])) || key(x[0]) - key(y[0]) || x[1] - y[1]).map(x=>x[0]);
+  S.order[sec] = how === 'asset' ? 'auto' : 'manual';
   redrawList(sec);
 }
-let DRAG = null;
-document.addEventListener('dragstart', e=>{
-  const card = e.target.closest && e.target.closest('.fund[data-drag]');
-  if(!card) return;
-  if(/INPUT|SELECT|TEXTAREA/.test(document.activeElement && document.activeElement.tagName) && card.contains(document.activeElement)){ e.preventDefault(); return; }
-  const [sec,i] = card.dataset.drag.split(':'); DRAG = { sec, i:+i };
-  card.classList.add('dragging');
-  e.dataTransfer.effectAllowed = 'move';
-  try{ e.dataTransfer.setData('text/plain', card.dataset.drag); }catch(x){}
+function paintOrd(sec){
+  const el = $('#ord-'+sec); if(!el) return;
+  pruneSel(sec);
+  el.style.display = S[sec].length > 1 ? 'flex' : 'none';
+  const n = SEL[sec].size;
+  if(n){
+    el.innerHTML = `<span><b style="color:var(--green)">${n} selected</b> · drag ⠿ on any of them to move together</span>
+      <span class="acts"><button data-seltop="${sec}">Move to top</button><button data-selbot="${sec}">Move to bottom</button><button data-selclr="${sec}">Clear</button></span>`;
+    return;
+  }
+  el.innerHTML = `<span>${S.order[sec] === 'manual' ? 'Custom order · the PDF follows this list' : 'PDF groups by asset class · drag ⠿ to set your own order'}</span>
+    <span class="acts"><select data-sort="${sec}" aria-label="Sort schemes">
+      <option value="">Sort by…</option><option value="cat">Category</option><option value="asset">Asset class</option>
+    </select></span>`;
+}
+/* move a group of funds so they sit, in their current order, before list item `to` (0…length) */
+function moveSet(sec, moving, to){
+  const L = S[sec], set = new Set(moving);
+  let anchor = null;
+  for(let k = to; k < L.length; k++){ if(!set.has(L[k])){ anchor = L[k]; break; } }
+  const rest = L.filter(x => !set.has(x));
+  const pos = anchor ? rest.indexOf(anchor) : rest.length;
+  const next = rest.slice(0,pos).concat(L.filter(x => set.has(x)), rest.slice(pos));
+  if(next.every((x,k) => x === L[k])) return false;
+  S[sec] = next; S.order[sec] = 'manual';
+  redrawList(sec);
+  document.querySelectorAll(`#list-${sec} .fund`).forEach((c,k)=>{ if(set.has(S[sec][k])) c.classList.add('justmoved'); });
+  return true;
+}
+function moveFund(sec, from, to){                     /* kept for older callers */
+  const L = S[sec]; if(to < 0 || to >= L.length || from === to) return;
+  moveSet(sec, [L[from]], to > from ? to + 1 : to);
+}
+function movingFor(sec, i){
+  const f = S[sec][i];
+  return SEL[sec].has(f) ? S[sec].filter(x => SEL[sec].has(x)) : [f];
+}
+
+document.addEventListener('click', e=>{
+  const b = e.target.closest && e.target.closest('button,select'); if(!b) return;
+  const d = b.dataset;
+  if(d.pick){
+    const [sec,i] = d.pick.split(':'), f = S[sec][+i];
+    if(e.shiftKey && LASTPICK[sec] && S[sec].includes(LASTPICK[sec])){
+      const a = S[sec].indexOf(LASTPICK[sec]), z = +i;
+      S[sec].slice(Math.min(a,z), Math.max(a,z)+1).forEach(x => SEL[sec].add(x));
+    } else if(SEL[sec].has(f)) SEL[sec].delete(f); else SEL[sec].add(f);
+    LASTPICK[sec] = f;
+    document.querySelectorAll(`#list-${sec} .fund`).forEach((c,k)=>{
+      const on = SEL[sec].has(S[sec][k]); c.classList.toggle('sel', on);
+      const pk = c.querySelector('.pick'); if(pk) pk.setAttribute('aria-pressed', on);
+    });
+    paintOrd(sec); return;
+  }
+  if(d.selclr){ SEL[d.selclr].clear(); redrawList(d.selclr); return; }
+  if(d.seltop){ moveSet(d.seltop, S[d.seltop].filter(x=>SEL[d.seltop].has(x)), 0); return; }
+  if(d.selbot){ moveSet(d.selbot, S[d.selbot].filter(x=>SEL[d.selbot].has(x)), S[d.selbot].length); return; }
 });
-function clearDrop(){ document.querySelectorAll('.fund.dropbefore,.fund.dropafter').forEach(x=>x.classList.remove('dropbefore','dropafter')); }
-document.addEventListener('dragover', e=>{
-  if(!DRAG) return;
-  const card = e.target.closest && e.target.closest('.fund[data-drag]');
-  if(!card || card.dataset.drag.split(':')[0] !== DRAG.sec) return;
+document.addEventListener('change', e=>{
+  const t = e.target; if(!t.dataset || !t.dataset.sort) return;
+  if(t.value) sortFunds(t.dataset.sort, t.value);
+});
+/* keyboard: ↑ ↓ on a focused ⠿ */
+document.addEventListener('keydown', e=>{
+  const g = e.target.closest && e.target.closest('.grip'); if(!g) return;
+  if(e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
   e.preventDefault();
-  clearDrop();
-  const r = card.getBoundingClientRect();
-  card.classList.add(e.clientY < r.top + r.height/2 ? 'dropbefore' : 'dropafter');
-});
-document.addEventListener('drop', e=>{
-  if(!DRAG) return;
-  const card = e.target.closest && e.target.closest('.fund[data-drag]');
-  if(card && card.dataset.drag.split(':')[0] === DRAG.sec){
-    e.preventDefault();
-    let to = +card.dataset.drag.split(':')[1];
-    if(card.classList.contains('dropafter')) to++;
-    if(to > DRAG.i) to--;
-    const d = DRAG; DRAG = null; clearDrop();
-    moveFund(d.sec, d.i, to);
+  const [sec,i] = g.dataset.grip.split(':'), mv = movingFor(sec, +i);
+  const idx = mv.map(f => S[sec].indexOf(f)), first = Math.min(...idx), last = Math.max(...idx);
+  const to = e.key === 'ArrowUp' ? first - 1 : last + 2;
+  if(to < 0 || to > S[sec].length) return;
+  const lead = S[sec][+i];
+  if(moveSet(sec, mv, to)){
+    const k = S[sec].indexOf(lead), ng = document.querySelectorAll(`#list-${sec} .grip`)[k];
+    if(ng) ng.focus();
   }
 });
-document.addEventListener('dragend', ()=>{
-  DRAG = null; clearDrop();
-  document.querySelectorAll('.fund.dragging').forEach(x=>x.classList.remove('dragging'));
+
+/* pointer drag — works with mouse, pen and touch */
+let PD = null;
+function dragGhost(){
+  let g = document.getElementById('dragGhost');
+  if(!g){ g = document.createElement('div'); g.id = 'dragGhost'; document.body.appendChild(g); }
+  return g;
+}
+function dropIndex(sec, y){
+  const cards = [...document.querySelectorAll(`#list-${sec} .fund`)];
+  for(let k = 0; k < cards.length; k++){
+    const r = cards[k].getBoundingClientRect();
+    if(y < r.top + r.height/2) return k;
+  }
+  return cards.length;
+}
+function paintDrop(sec, to){
+  clearDrop();
+  const cards = document.querySelectorAll(`#list-${sec} .fund`);
+  if(!cards.length) return;
+  if(to < cards.length) cards[to].classList.add('dropbefore'); else cards[cards.length-1].classList.add('dropafter');
+}
+function clearDrop(){ document.querySelectorAll('.fund.dropbefore,.fund.dropafter').forEach(x=>x.classList.remove('dropbefore','dropafter')); }
+document.addEventListener('pointerdown', e=>{
+  const g = e.target.closest && e.target.closest('.grip');
+  if(!g || (e.pointerType === 'mouse' && e.button !== 0)) return;
+  e.preventDefault();
+  const [sec,i] = g.dataset.grip.split(':');
+  PD = { sec, moving: movingFor(sec, +i), x:e.clientX, y:e.clientY, x0:e.clientX, y0:e.clientY, started:false, to:null, id:e.pointerId, timer:null };
+  try{ g.setPointerCapture(e.pointerId); }catch(x){}
 });
+document.addEventListener('pointermove', e=>{
+  if(!PD || e.pointerId !== PD.id) return;
+  PD.y = e.clientY; PD.x = e.clientX;
+  if(!PD.started){
+    if(Math.hypot(e.clientX - PD.x0, e.clientY - PD.y0) < 4) return;
+    PD.started = true;
+    document.body.classList.add('dragging-funds');
+    const set = new Set(PD.moving);
+    document.querySelectorAll(`#list-${PD.sec} .fund`).forEach((c,k)=>{ if(set.has(S[PD.sec][k])) c.classList.add('moving'); });
+    const g = dragGhost(), n = PD.moving.length;
+    g.textContent = n > 1 ? `Moving ${n} schemes` : (PD.moving[0].name || PD.moving[0].cat || 'Moving scheme');
+    g.style.display = 'block';
+    const sc = $('#build');
+    PD.timer = setInterval(()=>{                         /* scroll near the edges */
+      if(!PD || !sc) return;
+      const r = sc.getBoundingClientRect(), edge = 70;
+      let dy = 0;
+      const bot = r.bottom - 150;                          /* clear of the action bar */
+      if(PD.y < r.top + edge) dy = -Math.min(12, Math.ceil((r.top + edge - PD.y) / 7));
+      else if(PD.y > bot) dy = Math.min(12, Math.ceil((PD.y - bot) / 7));
+      if(dy){ sc.scrollTop += dy; PD.to = dropIndex(PD.sec, PD.y); paintDrop(PD.sec, PD.to); }
+    }, 16);
+  }
+  const g = dragGhost();
+  g.style.left = (e.clientX + 14) + 'px'; g.style.top = (e.clientY - 14) + 'px';
+  PD.to = dropIndex(PD.sec, e.clientY);
+  paintDrop(PD.sec, PD.to);
+});
+function endDrag(e, cancel){
+  if(!PD || (e && e.pointerId !== PD.id)) return;
+  const d = PD; PD = null;
+  clearInterval(d.timer); clearDrop();
+  document.body.classList.remove('dragging-funds');
+  dragGhost().style.display = 'none';
+  document.querySelectorAll('.fund.moving').forEach(x=>x.classList.remove('moving'));
+  if(d.started && !cancel && d.to !== null) moveSet(d.sec, d.moving, d.to);
+}
+document.addEventListener('pointerup', e => endDrag(e, false));
+document.addEventListener('pointercancel', e => endDrag(e, true));
+document.addEventListener('keydown', e=>{ if(e.key === 'Escape' && PD) endDrag(null, true); });
 
 function redrawList(sec){
   paintOrd(sec);
