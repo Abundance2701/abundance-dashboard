@@ -1,1055 +1,110 @@
 {
- "updated": "2026-11-03T10:14:26Z",
+ "updated": "2026-11-03T10:15:33Z",
  "items": [
-  {
-   "src": "RBI",
-   "title": "Result of Yield/Price Based Auction of State Government Securities",
-   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63906",
-   "date": "2026-11-03",
-   "relevant": true
-  },
-  {
-   "src": "RBI",
-   "title": "Result of the Overnight Variable Rate Reverse Repo (VRRR) auction held on November 03, 2026",
-   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63905",
-   "date": "2026-11-03",
-   "relevant": true
-  },
-  {
-   "src": "RBI",
-   "title": "RBI to conduct Overnight Variable Rate Reverse Repo (VRRR) auction under LAF on November 03, 2026",
-   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63904",
-   "date": "2026-11-03",
-   "relevant": true
-  },
-  {
-   "src": "RBI",
-   "title": "Money Market Operations as on November 02, 2026",
-   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63903",
-   "date": "2026-11-03",
-   "relevant": true
-  },
   {
    "src": "RBI",
    "title": "Foreign Exchange Management (Export and Import of Goods and Services) (Second Amendment) Regulations, 2026",
    "url": "https://www.rbi.org.in/scripts/NotificationUser.aspx?Id=13750&Mode=0",
    "date": "2026-11-03",
-   "relevant": false
+   "important": true
   },
   {
-   "src": "NSE",
-   "title": "Buyback Offer under Tender Offer scheme by Genus Power Infrastructures Limited",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77227.pdf",
-   "date": "2026-11-03",
-   "relevant": false
-  },
-  {
-   "src": "RBI",
-   "title": "Auction of Government of India Dated Securities",
-   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63902",
+   "src": "SEBI",
+   "title": "Framework for Issuance of Depository Receipts on Units of REITs",
+   "url": "https://www.sebi.gov.in/legal/circulars/nov-2026/framework-for-issuance-of-depository-receipts-on-units-of-reits-_105558.html",
    "date": "2026-11-02",
-   "relevant": false
+   "important": true
   },
   {
-   "src": "RBI",
-   "title": "Processing of Applications Received Under the Citizen’s Charter Status as on October 31, 2026",
-   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63901",
+   "src": "SEBI",
+   "title": "Framework for Issuance of Depository Receipts on Units of InvITs",
+   "url": "https://www.sebi.gov.in/legal/circulars/nov-2026/framework-for-issuance-of-depository-receipts-on-units-of-invits-_105557.html",
    "date": "2026-11-02",
-   "relevant": false
+   "important": true
   },
   {
-   "src": "RBI",
-   "title": "Money Market Operations as on November 01, 2026",
-   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63900",
+   "src": "SEBI",
+   "title": "Cooling off period for offer for sale by Private listed InvITs",
+   "url": "https://www.sebi.gov.in/legal/circulars/nov-2026/cooling-off-period-for-offer-for-sale-by-private-listed-invits_105539.html",
    "date": "2026-11-02",
-   "relevant": true
+   "important": true
   },
   {
-   "src": "RBI",
-   "title": "Money Market Operations as on October 31, 2026",
-   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63899",
-   "date": "2026-11-02",
-   "relevant": true
+   "src": "SEBI",
+   "title": "Extension of timeline with respect to compliance of Digital Accessibility Circulars",
+   "url": "https://www.sebi.gov.in/legal/circulars/oct-2026/extension-of-timeline-with-respect-to-compliance-of-digital-accessibility-circulars_105523.html",
+   "date": "2026-10-30",
+   "important": true
   },
   {
-   "src": "RBI",
-   "title": "Money Market Operations as on October 30, 2026",
-   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63898",
-   "date": "2026-11-02",
-   "relevant": true
+   "src": "SEBI",
+   "title": "Ease of Compliance for FPIs – Rationalisation of KYC Review Periodicity",
+   "url": "https://www.sebi.gov.in/media-and-notifications/press-releases/oct-2026/ease-of-compliance-for-fpis-rationalisation-of-kyc-review-periodicity_105522.html",
+   "date": "2026-10-30",
+   "important": true
   },
   {
    "src": "RBI",
    "title": "Premature redemption under Sovereign Gold Bond (SGB) Scheme - Redemption Price for premature redemption of SGB 2021-22 Series VII due on November 02, 2026",
    "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63897",
    "date": "2026-10-30",
-   "relevant": true
+   "important": true
   },
   {
    "src": "RBI",
    "title": "Implementation of Section 51A of UAPA, 1967: Updates to UNSC’s 1988 (2011) Taliban Sanctions List: Amendment of 05 Entries",
    "url": "https://www.rbi.org.in/scripts/NotificationUser.aspx?Id=13749&Mode=0",
    "date": "2026-10-30",
-   "relevant": false
+   "important": false
   },
   {
    "src": "RBI",
    "title": "Implementation of Section 51A of UAPA, 1967: Updates to UNSC’s 1267/ 1989 ISIL (Da'esh) & Al-Qaida Sanctions List: Amendment of 03 Entries",
    "url": "https://www.rbi.org.in/scripts/NotificationUser.aspx?Id=13748&Mode=0",
    "date": "2026-10-27",
-   "relevant": false
+   "important": false
   },
   {
    "src": "RBI",
    "title": "Implementation of Section 51A of UAPA, 1967: Updates to UNSC’s 1267/ 1989 ISIL (Da'esh) & Al-Qaida Sanctions List: Removal of 03 Entries",
    "url": "https://www.rbi.org.in/scripts/NotificationUser.aspx?Id=13747&Mode=0",
    "date": "2026-10-27",
-   "relevant": false
+   "important": false
   },
   {
    "src": "RBI",
    "title": "Re-organisation of districts in the NCT of Delhi – Assignment and Review of Lead Bank Responsibility",
    "url": "https://www.rbi.org.in/scripts/NotificationUser.aspx?Id=13746&Mode=0",
    "date": "2026-10-27",
-   "relevant": false
+   "important": false
   },
   {
    "src": "RBI",
    "title": "Delegation of Compounding of certain Contraventions under FEMA, 1999 to Regional Offices of the Reserve Bank",
    "url": "https://www.rbi.org.in/scripts/NotificationUser.aspx?Id=13745&Mode=0",
    "date": "2026-10-23",
-   "relevant": false
+   "important": true
   },
   {
    "src": "RBI",
    "title": "Reserve Bank of India (Commercial Banks – Forthcoming Instructions) Second Amendment Directions, 2026",
    "url": "https://www.rbi.org.in/scripts/NotificationUser.aspx?Id=13744&Mode=0",
    "date": "2026-10-23",
-   "relevant": false
+   "important": false
   },
   {
    "src": "RBI",
    "title": "Reserve Bank of India (Commercial Banks – Prudential Norms on Capital Adequacy) Eleventh Amendment Directions, 2026",
    "url": "https://www.rbi.org.in/scripts/NotificationUser.aspx?Id=13743&Mode=0",
    "date": "2026-10-23",
-   "relevant": false
+   "important": true
   },
   {
    "src": "RBI",
    "title": "Reserve Bank of India (Small Finance Banks - Miscellaneous) Amendment Directions, 2026",
    "url": "https://www.rbi.org.in/scripts/NotificationUser.aspx?Id=13741&Mode=0",
    "date": "2026-10-19",
-   "relevant": true
-  },
-  {
-   "src": "SEBI",
-   "title": "Completion of Recovery Certificate No. RC9307 of 2026 in respect of Sri Salasar Suppliers Pvt. Ltd  (PAN: AADCS8457R) in the matter of Decillon Finance Limited",
-   "url": "https://www.sebi.gov.in/enforcement/recovery-proceedings/nov-2026/completion-of-recovery-certificate-no-rc9307-of-2026-in-respect-of-sri-salasar-suppliers-pvt-ltd-pan-aadcs8457r-in-the-matter-of-decillon-finance-limited_105568.html",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "SEBI",
-   "title": "SEBI Order for Compliance - Release Order for Recovery Certificate No. 9226 of 2026 against Jigar Bhailalbhai Khalash (PAN: ESZPK4415E) in the matter of Trading activity in the scrip of ANI Integrated Services Limited.",
-   "url": "https://www.sebi.gov.in/enforcement/recovery-proceedings/nov-2026/sebi-order-for-compliance-release-order-for-recovery-certificate-no-9226-of-2026-against-jigar-bhailalbhai-khalash-pan-eszpk4415e-in-the-matter-of-trading-activity-in-the-scrip-of-ani-integrated-_105560.html",
-   "date": "",
-   "relevant": true
-  },
-  {
-   "src": "SEBI",
-   "title": "Framework for Issuance of Depository Receipts on Units of REITs​",
-   "url": "https://www.sebi.gov.in/legal/circulars/nov-2026/framework-for-issuance-of-depository-receipts-on-units-of-reits-_105558.html",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "SEBI",
-   "title": "Framework for Issuance of Depository Receipts on Units of InvITs​",
-   "url": "https://www.sebi.gov.in/legal/circulars/nov-2026/framework-for-issuance-of-depository-receipts-on-units-of-invits-_105557.html",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "SEBI",
-   "title": "Appeal No. 7131 of 2026 filed by Ramapati Kuar",
-   "url": "https://www.sebi.gov.in/enforcement/orders/nov-2026/appeal-no-7131-of-2026-filed-by-ramapati-kuar_105556.html",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "SEBI",
-   "title": "Appeal No. 7130 of 2026 filed by Mohammad Akbar",
-   "url": "https://www.sebi.gov.in/enforcement/orders/nov-2026/appeal-no-7130-of-2026-filed-by-mohammad-akbar_105554.html",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "SEBI",
-   "title": "Appeal No. 7129 of 2026 filed by Nikul Prajapati",
-   "url": "https://www.sebi.gov.in/enforcement/orders/nov-2026/appeal-no-7129-of-2026-filed-by-nikul-prajapati_105552.html",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "SEBI",
-   "title": "Appeal No. 7128 of 2026 filed by P. Sachithanantham",
-   "url": "https://www.sebi.gov.in/enforcement/orders/nov-2026/appeal-no-7128-of-2026-filed-by-p-sachithanantham_105550.html",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "SEBI",
-   "title": "Appeal No. 7127 of 2026 filed by Himanshu Soni",
-   "url": "https://www.sebi.gov.in/enforcement/orders/nov-2026/appeal-no-7127-of-2026-filed-by-himanshu-soni_105549.html",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "SEBI",
-   "title": "Notice of Demand dated November 02, 2026 issued under RC No. 9315 of 2026 drawn against Jalaj Agarwal (PAN: AUDPA0226H)  in the matter of stock recommendation tips in the scrip of Unison Metals Limited",
-   "url": "https://www.sebi.gov.in/enforcement/recovery-proceedings/nov-2026/notice-of-demand-dated-november-02-2026-issued-under-rc-no-9315-of-2026-drawn-against-jalaj-agarwal-pan-audpa0226h-in-the-matter-of-stock-recommendation-tips-in-the-scrip-of-unison-metals-limite-_105548.html",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "SEBI",
-   "title": "Appeal No. 7126 of 2026 filed by Suriyanarayanan Ramachandran",
-   "url": "https://www.sebi.gov.in/enforcement/orders/nov-2026/appeal-no-7126-of-2026-filed-by-suriyanarayanan-ramachandran_105546.html",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "SEBI",
-   "title": "Appeal No. 7125 of 2026 filed by Kamal Naini Sharma",
-   "url": "https://www.sebi.gov.in/enforcement/orders/nov-2026/appeal-no-7125-of-2026-filed-by-kamal-naini-sharma_105545.html",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "SEBI",
-   "title": "Appeal No. 7124 of 2026 filed by Bhupinder Singh",
-   "url": "https://www.sebi.gov.in/enforcement/orders/nov-2026/appeal-no-7124-of-2026-filed-by-bhupinder-singh_105544.html",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "SEBI",
-   "title": "Appeal No. 7123 of 2026 filed by Bhupinder Singh",
-   "url": "https://www.sebi.gov.in/enforcement/orders/nov-2026/appeal-no-7123-of-2026-filed-by-bhupinder-singh_105543.html",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "SEBI",
-   "title": "Appeal No. 7122 of 2026 filed by Amit Vilas Jadhav",
-   "url": "https://www.sebi.gov.in/enforcement/orders/nov-2026/appeal-no-7122-of-2026-filed-by-amit-vilas-jadhav_105542.html",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "SEBI",
-   "title": "Appeal No. 7121 of 2026 filed by Kshipra Sawant",
-   "url": "https://www.sebi.gov.in/enforcement/orders/nov-2026/appeal-no-7121-of-2026-filed-by-kshipra-sawant_105541.html",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "SEBI",
-   "title": "Cooling off period for offer for sale by Private listed InvITs",
-   "url": "https://www.sebi.gov.in/legal/circulars/nov-2026/cooling-off-period-for-offer-for-sale-by-private-listed-invits_105539.html",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "SEBI",
-   "title": "Adjudication Order in the matter of Praveg Limited -formerly known as Praveg Communications India Limited",
-   "url": "https://www.sebi.gov.in/enforcement/orders/nov-2026/adjudication-order-in-the-matter-of-praveg-limited-formerly-known-as-praveg-communications-india-limited_105536.html",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "SEBI",
-   "title": "Completion Order dated November 02, 2026, against Subair P (PAN: BDBPP7195N) in the matter of M/s Inditrade Capital Limited (formerly known as M/s JRG Securities Ltd.) under RC No. 9306 of 2026",
-   "url": "https://www.sebi.gov.in/enforcement/recovery-proceedings/nov-2026/completion-order-dated-november-02-2026-against-subair-p-pan-bdbpp7195n-in-the-matter-of-m-s-inditrade-capital-limited-formerly-known-as-m-s-jrg-securities-ltd-under-rc-no-9306-of-2026_105534.html",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "SEBI",
-   "title": "Notices of Attachment of Bank and Post Office accounts and Demat Accounts and mutual Fund Folios with AP Nos. 15863 and 15864 of 2026 dated October 30, 2026 against Jalaj Agrawal (PAN: AUDPA0226H) in the matter of market manipulation using social media in the scrip of Moksh Ornaments Limited under RC No. 9304 of 2026",
-   "url": "https://www.sebi.gov.in/enforcement/recovery-proceedings/oct-2026/notices-of-attachment-of-bank-and-post-office-accounts-and-demat-accounts-and-mutual-fund-folios-with-ap-nos-15863-and-15864-of-2026-dated-october-30-2026-against-jalaj-agrawal-pan-audpa0226h-in-_105538.html",
-   "date": "",
-   "relevant": true
-  },
-  {
-   "src": "SEBI",
-   "title": "Final Order in the matter of EKI Energy Services Ltd.",
-   "url": "https://www.sebi.gov.in/enforcement/orders/oct-2026/final-order-in-the-matter-of-eki-energy-services-ltd-_105524.html",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "SEBI",
-   "title": "Extension of timeline with respect to compliance of Digital Accessibility Circulars",
-   "url": "https://www.sebi.gov.in/legal/circulars/oct-2026/extension-of-timeline-with-respect-to-compliance-of-digital-accessibility-circulars_105523.html",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "SEBI",
-   "title": "Ease of Compliance for FPIs – Rationalisation of KYC Review Periodicity",
-   "url": "https://www.sebi.gov.in/media-and-notifications/press-releases/oct-2026/ease-of-compliance-for-fpis-rationalisation-of-kyc-review-periodicity_105522.html",
-   "date": "",
-   "relevant": true
-  },
-  {
-   "src": "SEBI",
-   "title": "Order in the matter of Inspection of Veena Sharma, Proprietor Research Guru Investment Adviser",
-   "url": "https://www.sebi.gov.in/enforcement/orders/oct-2026/order-in-the-matter-of-inspection-of-veena-sharma-proprietor-research-guru-investment-adviser_105519.html",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "SEBI",
-   "title": "Adjudication Order in the matter of Integra Switchgear Limited",
-   "url": "https://www.sebi.gov.in/enforcement/orders/oct-2026/adjudication-order-in-the-matter-of-integra-switchgear-limited_105517.html",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "SEBI",
-   "title": "Notice of Demand dated October 30, 2026 against Sunitadevi Niranjan Agarwal (PAN: ADRPS3295H) in the matter of Kalahridhaan Trendz Limited under RC No. 9311 of 2026",
-   "url": "https://www.sebi.gov.in/enforcement/recovery-proceedings/oct-2026/notice-of-demand-dated-october-30-2026-against-sunitadevi-niranjan-agarwal-pan-adrps3295h-in-the-matter-of-kalahridhaan-trendz-limited-under-rc-no-9311-of-2026_105515.html",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "SEBI",
-   "title": "Notice of Demand dated October 30, 2026 against Aditya N Agarwal (PAN: AKTPA4024B) in the matter of Kalahridhaan Trendz Limited under RC No. 9310 of 2026",
-   "url": "https://www.sebi.gov.in/enforcement/recovery-proceedings/oct-2026/notice-of-demand-dated-october-30-2026-against-aditya-n-agarwal-pan-aktpa4024b-in-the-matter-of-kalahridhaan-trendz-limited-under-rc-no-9310-of-2026_105513.html",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "SEBI",
-   "title": "Appeal No. 7120 of 2026 filed by Rahul Bagrecha",
-   "url": "https://www.sebi.gov.in/enforcement/orders/oct-2026/appeal-no-7120-of-2026-filed-by-rahul-bagrecha_105509.html",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "SEBI",
-   "title": "Appeal No. 7119 of 2026 filed by Furkan Salmani",
-   "url": "https://www.sebi.gov.in/enforcement/orders/oct-2026/appeal-no-7119-of-2026-filed-by-furkan-salmani_105508.html",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "SEBI",
-   "title": "Appeal No. 7118 of 2026 filed by Priya",
-   "url": "https://www.sebi.gov.in/enforcement/orders/oct-2026/appeal-no-7118-of-2026-filed-by-priya_105506.html",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Semac Construction Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/xbrl/PRIOR_INTIMATION_2313_WebXMLFile_20261103_154333474.xml",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Vaidya Sane Ayurved Laboratories Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/xbrl/PRIOR_INTIMATION_20254_WebXMLFile_20261103_154154111.xml",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Siyaram Silk Mills Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/SIYSIL_03112026154113_SE_IEPFADVERTISEMENT_03112026_F.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Euro Pratik Sales Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/EUROPRATIK2025_03112026153351_Intimation-Earning_call.pdf",
-   "date": "",
-   "relevant": true
-  },
-  {
-   "src": "NSE",
-   "title": "Nippon Life India Asset Management Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/RNLAM_03112026154031_SE_intimation.pdf",
-   "date": "",
-   "relevant": true
-  },
-  {
-   "src": "NSE",
-   "title": "D. P. Abhushan Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/xbrl/PRIOR_INTIMATION_15539_WebXMLFile_20261103_154038193.xml",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Shadowfax Technologies Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/9900590024_03112026154012_Transcript_of_the_Earnings_call.pdf",
-   "date": "",
-   "relevant": true
-  },
-  {
-   "src": "NSE",
-   "title": "Menon Bearings Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/MENONBE_03112026153958_TRANCESCRIPT.pdf",
-   "date": "",
-   "relevant": true
-  },
-  {
-   "src": "NSE",
-   "title": "KRBL Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/xbrl/SAIIM_1927_WebXMLFile_20261103_154015052.xml",
-   "date": "",
-   "relevant": true
-  },
-  {
-   "src": "NSE",
-   "title": "SIGMA ADVANCED SYSTEMS LIMITED",
-   "url": "https://nsearchives.nseindia.com/corporate/MEGASOFT_03112026153806_ANALYSTMEETINTIMATION06112026.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Akums Drugs and Pharmaceuticals Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/xbrl/SAIIM_23261_WebXMLFile_20261103_153928866.xml",
-   "date": "",
-   "relevant": true
-  },
-  {
-   "src": "NSE",
-   "title": "PNC Media and Entertainment Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/PNC_03112026153904_Notice_of_Postal_Ballot_ocr.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Mishra Dhatu Nigam Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/xbrl/PRIOR_INTIMATION_16043_WebXMLFile_20261103_153901406.xml",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Blue Star Limited",
-   "url": "https://nsearchives.nseindia.com/content/debt/WDM/BLUESTARCO_03112026153814_2RecorddateNov-26.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "VA Tech Wabag Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/xbrl/SAIIM_3630_WebXMLFile_20261103_153745311.xml",
-   "date": "",
-   "relevant": true
-  },
-  {
-   "src": "NSE",
-   "title": "Career Point Edutech Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/EDUTECH_03112026153629_InvestorupdateQ2.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Naga Dhunseri Group Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/xbrl/PRIOR_INTIMATION_14134_WebXMLFile_20261103_153707884.xml",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Timescan Logistics (India) Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/team_sandeshc_03112026115803_Dis2.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Concord Biotech Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/CONCORD_03112026153540_Q2FY27_Earnings_Call_Transcript.pdf",
-   "date": "",
-   "relevant": true
-  },
-  {
-   "src": "NSE",
-   "title": "Symphony Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/xbrl/SAIIM_4908_WebXMLFile_20261103_153533104.xml",
-   "date": "",
-   "relevant": true
-  },
-  {
-   "src": "NSE",
-   "title": "Matrimony.Com Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/MATRIMONY_03112026153357_NSEConcallInvite03Nov26revised.pdf",
-   "date": "",
-   "relevant": true
-  },
-  {
-   "src": "NSE",
-   "title": "Cords Cable Industries Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/CORDSCABLE_03112026153351_ShareholderCommunication.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Central Depository Services (India) Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/xbrl/SAIIM_15277_WebXMLFile_20261103_153423619.xml",
-   "date": "",
-   "relevant": true
-  },
-  {
-   "src": "NSE",
-   "title": "Transport Corporation of India Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/ak_bansal_tcil_com_03112026153411_TCIL.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "PAKKA LIMITED",
-   "url": "https://nsearchives.nseindia.com/corporate/yashpakka_03112026153403_2611_Investor_Presentation.pdf",
-   "date": "",
-   "relevant": true
-  },
-  {
-   "src": "NSE",
-   "title": "Crisil Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/xbrl/CIM_134_WebXMLFile_20261103_153400139.xml",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Khazanchi Jewellers Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/xbrl/PRIOR_INTIMATION_29328_WebXMLFile_20261103_153322320.xml",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "AJR INFRA AND TOLLING LIMITED",
-   "url": "https://nsearchives.nseindia.com/corporate/xbrl/PRIOR_INTIMATION_2739_WebXMLFile_20261103_153315294.xml",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Vascon Engineers Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/VASCONEQ_03112026153222_Presentation_Sd.pdf",
-   "date": "",
-   "relevant": true
-  },
-  {
-   "src": "NSE",
-   "title": "Steamhouse India Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/xbrl/SAIIM_26443_WebXMLFile_20261103_153224238.xml",
-   "date": "",
-   "relevant": true
-  },
-  {
-   "src": "NSE",
-   "title": "RIR Power Electronics Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/RIRPOWER_03112026153038_Covering_letter_Transcript_of_Concall.pdf",
-   "date": "",
-   "relevant": true
-  },
-  {
-   "src": "NSE",
-   "title": "Barflex Polyfilms Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/xbrl/PRIOR_INTIMATION_24119_WebXMLFile_20261103_153038767.xml",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Acetech E-Commerce Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/xbrl/REG30_Restructuring_26948_WebXMLFile_20261103_153028819.xml",
-   "date": "",
-   "relevant": true
-  },
-  {
-   "src": "NSE",
-   "title": "Patel Integrated Logistics Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/PATELINT_03112026152935_Newspaper_Advertisement_FR_Sept_Sd.pdf",
-   "date": "",
-   "relevant": true
-  },
-  {
-   "src": "NSE",
-   "title": "Wonder Electricals Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/xbrl/PRIOR_INTIMATION_17563_WebXMLFile_20261103_152932895.xml",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Power Finance Corporation Limited",
-   "url": "https://nsearchives.nseindia.com/content/debt/WDM/PFC1_03112026152726_Comp_254.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Nabkisan Finance Limited",
-   "url": "https://nsearchives.nseindia.com/content/debt/WDM/NABKISAN_03112026152628_INTIMATION_OF_TRADING_WINDOW_CLOSURE_signed.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Hindustan Petroleum Corporation Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/HINDPETRO2_03112026152653_SEIntimation03112026.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "A B Infrabuild Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/ABINFRA_03112026152423_Outcome.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "State Bank Of India",
-   "url": "https://nsearchives.nseindia.com/content/debt/WDM/SBIN_03112026152605_DeviationUtilisation.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Purple Style Labs Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/PURPLESTYLE_03112026152539_PSL_Q2_Earnings_Call_Audio_Recordings_Link.pdf",
-   "date": "",
-   "relevant": true
-  },
-  {
-   "src": "NSE",
-   "title": "Mangalam Cement Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/MANGLMCEM_03112026152332_NSE_BSE_OUTCOME_03_11_2026_S.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Thinking Hats Entertainment Solutions Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/xbrl/PRIOR_INTIMATION_23885_WebXMLFile_20261103_152526449.xml",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Kfin Technologies Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/KFINTECHNSE_03112026152454_Intimation.pdf",
-   "date": "",
-   "relevant": true
-  },
-  {
-   "src": "NSE",
-   "title": "Enviro Infra Engineers Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/ENVIRO_03112026152352_Intimation.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Khfm Hospitality And Facility Management Services Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/KHFM_03112026152306_Response_to_NSE_signed.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Kewal Kiran Clothing Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/KKCL_03112026152132_extractad.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Minda Corporation Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/MINDACORP_03112026152241_InvestorPresenetationQ2FY27.pdf",
-   "date": "",
-   "relevant": true
-  },
-  {
-   "src": "NSE",
-   "title": "Rane (Madras) Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/RMLCS_03112026152213_RMLERQ2202627_SD.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "National Aluminium Company Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/bharatsahu_03112026152213_Letter_Audio_EarningCall03112026.pdf",
-   "date": "",
-   "relevant": true
-  },
-  {
-   "src": "NSE",
-   "title": "Monte Carlo Fashions Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/xbrl/REG30_PARA_B_11207_WebXMLFile_20261103_152137667.xml",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Triveni Power Transmission Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/TRIVENIPT_03112026152115_Newspaper_ad_Postal_Ballot_03112026.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "AIA Engineering Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/xbrl/SAIIM_2339_WebXMLFile_20261103_152120158.xml",
-   "date": "",
-   "relevant": true
-  },
-  {
-   "src": "NSE",
-   "title": "Ginni Filaments Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/GINNIFILA1_03112026152100_Relodgement_Report__Ginni.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Hindustan Zinc Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/xbrl/NOTICE_OF_SHAREHOLDERS_MEETINGS_1231_WebXMLFile_20261103_152042668.xml",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Capri Global Capital Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/CGCL_03112026151941_NewspaperAdvlodgementoftransferrequestofphysical_shares.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Shemaroo Entertainment Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/SHEMAROO_03112026151804_UPEarningconcallrecordingLink03112026.pdf",
-   "date": "",
-   "relevant": true
-  },
-  {
-   "src": "NSE",
-   "title": "UTI Asset Management Company Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/CSUTIAMC_03112026151433_Intimation_Change_In_RTA_Address.pdf",
-   "date": "",
-   "relevant": true
-  },
-  {
-   "src": "NSE",
-   "title": "Balaji Amines Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/BALAMINES_03112026151432_Intimation_Signed.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Rupa & Company Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/RUPA_03112026151307_SE_Newspaper_Adv_03112026.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Generic Engineering Construction and Projects Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/GENCON_03112026151211_Outcome.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "RSWM Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/RSWM_03112026151243_Newspaper_Publication.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Arihant Superstructures Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/ARIHANTSUP_03112026151258_ASL_Outcome_BM_03112026.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "State Bank of India",
-   "url": "https://nsearchives.nseindia.com/corporate/SBIN_03112026151233_DeviationUtilisation.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "PTC India Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/PTC_03112026151009_Intimationofnewspaperadvertisement.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Lux Industries Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/LUXIND_03112026150740_Changeinlogo.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Sudeep Pharma Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/SUDEEPPHARMALIMITED_03112026150919_Submission_of_Transcript.pdf",
-   "date": "",
-   "relevant": true
-  },
-  {
-   "src": "NSE",
-   "title": "Kamat Hotels (I) Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/KAMATHOTEL_03112026150451_OutcomeofBM.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Safari Industries (India) Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/SAFARIIND_03112026150711_Record_Date_initimation_Revised.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Raj Rayon Industries Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/RAJRAYON1_03112026145809_OUTCOMEBMUP12.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "PTC India Financial Services Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/PFS_03112026150819_ChangeofRTACorporateOfficeSIGNED.pdf",
-   "date": "",
-   "relevant": true
-  },
-  {
-   "src": "NSE",
-   "title": "DCM Shriram Industries Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/DCMSRIND_03112026150743_Intimation_of_Change_of_RTA_Address.pdf",
-   "date": "",
-   "relevant": true
-  },
-  {
-   "src": "NSE",
-   "title": "Tera Software Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/TERASOFT_03112026150413_IntimationRTAchangeOfaddress.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Gujarat Fluorochemicals Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/FLUOROCHEM_03112026150748_GFCL_Investor_Presentation_3November2026.pdf",
-   "date": "",
-   "relevant": true
-  },
-  {
-   "src": "NSE",
-   "title": "Kothari Products Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/xbrl/PRIOR_INTIMATION_1677_WebXMLFile_20261103_150749815.xml",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Aaron Industries Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/AARON_03112026150619_HighestMonthlySalesUpdates.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Dhoot Transmission Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/DTL_03112026150059_Dhoot_BM_Outcome_03112026_signed.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Fascinate Textiles Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/FASCINATESMEIPO_03112026150344_outcome.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Tata Capital Housing Finance Limited",
-   "url": "https://nsearchives.nseindia.com/content/debt/WDM/TCHFL_03112026150504_Interest_Intimation_TCHFL_NCD_G_Series_FY_2022-23-Option-II.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Inventure Growth & Securities Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/INVENTURE_03112026150257_Outcome_KL.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Krystal Integrated Services Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/KISL123_03112026150357_Outcome_Investor_Meet_031126.pdf",
-   "date": "",
-   "relevant": true
-  },
-  {
-   "src": "NSE",
-   "title": "Ceigall India Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/xbrl/REG30_Restructuring_23401_WebXMLFile_20261103_150352761.xml",
-   "date": "",
-   "relevant": true
-  },
-  {
-   "src": "NSE",
-   "title": "Kopran Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/KOPRAN_03112026150112_Investor_presentation__Q2_FY2026-27.pdf",
-   "date": "",
-   "relevant": true
-  },
-  {
-   "src": "NSE",
-   "title": "Puravankara Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/PURVA_03112026150051_SE-intimation-Audio_call.pdf",
-   "date": "",
-   "relevant": true
-  },
-  {
-   "src": "NSE",
-   "title": "Export Import Bank of India",
-   "url": "https://nsearchives.nseindia.com/content/debt/WDM/export_03112026150152_INE514E08EE3.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Divgi Torqtransfer Systems Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/DIVGITTS_03112026150151_DTTS_NewspaperAd_Q2FY27_FinalSubmission_signed.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Axis Bank Limited",
-   "url": "https://nsearchives.nseindia.com/content/debt/WDM/AXISBANK1_03112026145956_SEIntimationRCSr9InfraS.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Kronox Lab Sciences Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/KRONOX_03112026145914_NSE_BSE.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Latent View Analytics Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/LATENTVIEW_03112026145811_SE_IntimationAnalyst_MeetNov_03_Signed.pdf",
-   "date": "",
-   "relevant": true
-  },
-  {
-   "src": "NSE",
-   "title": "Mahanagar Gas Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/MGL25_03112026145154_Fair_Disclosure_Code.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Bhagiradha Chemicals & Industries Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/BHAGCHEM_03112026145802_seintimation.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Bodal Chemicals Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/BODALCHEM_03112026145812_Bodal_Chem_03_11_2026_Presentation.pdf",
-   "date": "",
-   "relevant": true
-  },
-  {
-   "src": "NSE",
-   "title": "Ind-Swift Laboratories Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/INDSWFTLAB_03112026145509_Intimation_70L.pdf",
-   "date": "",
-   "relevant": true
-  },
-  {
-   "src": "NSE",
-   "title": "RattanIndia Enterprises Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/RTNINDIA_03112026145359_RELResultsQ2.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Knowledge Realty Trust",
-   "url": "https://nsearchives.nseindia.com/corporate/KRT_03112026145446_PressReleaseEarningPresentation.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Black Box Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/BBOX_03112026145440_SE_Intimation_SpecialWindow.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "HMA Agro Industries Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/HMA_03112026145428_Regulation305Disclosure.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Brookfield India Real Estate Trust",
-   "url": "https://nsearchives.nseindia.com/corporate/BIRET_03112026145401_Intimation_of_Upload_of_transcript_and_recording_of_Earnings_Call.pdf",
-   "date": "",
-   "relevant": false
-  },
-  {
-   "src": "NSE",
-   "title": "Power Grid Corporation of India Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/POWERGRID1_03112026145122_Binder1.pdf",
-   "date": "",
-   "relevant": true
-  },
-  {
-   "src": "NSE",
-   "title": "Muthoot Capital Services Limited",
-   "url": "https://nsearchives.nseindia.com/corporate/xbrl/SAIIM_13008_WebXMLFile_20261103_145309728.xml",
-   "date": "",
-   "relevant": true
+   "important": true
   }
  ],
  "errors": []
