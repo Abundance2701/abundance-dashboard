@@ -247,6 +247,10 @@ body.dragging-funds,body.dragging-funds *{cursor:grabbing !important;user-select
 .chips button{flex:1;padding:7px 2px;border-radius:8px;border:1px solid #d5e0d9;background:#fff;
   font-family:var(--head);font-size:12px;font-weight:700;color:var(--green);}
 .chips button:active{background:#e8f0ea;}
+.chips .sgn{flex:0 0 38px;font-size:15px;color:var(--ink-2);}
+.chips.minus button{color:var(--brown);border-color:#e3c9bd;}
+.chips.minus .sgn{background:var(--brown);border-color:var(--brown);color:#fff;}
+.chips.minus button:not(.sgn):active{background:#f6ebe6;}
 .add{width:100%;margin-top:10px;padding:13px;border-radius:11px;border:1.5px dashed var(--green);
   background:#eef5f0;color:var(--green);font-family:var(--head);font-weight:700;font-size:13.5px;}
 .empty{text-align:center;padding:22px 12px;color:var(--ink-3);font-size:13.5px;border:1.5px dashed var(--line);border-radius:12px;}
@@ -1630,6 +1634,7 @@ function fundRows(sec){
                value="${esc(f.folio||'')}" data-s="${sec}" data-i="${i}" data-k="folio">
       </div>
       <div class="chips">
+        <button class="sgn" data-sgn="1" aria-pressed="false" title="Switch between adding and reducing">±</button>
         ${chips.map(c=>`<button data-bump="${sec}:${i}:${c[0]}">${c[1]}</button>`).join('')}
       </div>
     </div>`;
@@ -2186,12 +2191,20 @@ $('#build').addEventListener('click', e=>{
     refresh(); markActive(); return;
   }
   if(d.open){ const [sec,i] = d.open.split(':'); openSheet(sec,+i); return; }
+  if(d.sgn){                                   /* ± : chips switch between adding and reducing */
+    const row = b.closest('.chips'), minus = row.classList.toggle('minus');
+    b.setAttribute('aria-pressed', minus);
+    row.querySelectorAll('[data-bump]').forEach(x => x.textContent = x.textContent.replace(/^[+−]/, minus ? '−' : '+'));
+    return;
+  }
   if(d.bump){
     const [sec,i,step] = d.bump.split(':');
     const f = S[sec][+i];
-    f.amt = String(num(f.amt) + Number(step));
+    const minus = b.closest('.chips').classList.contains('minus');
+    const v = Math.max(0, num(f.amt) + (minus ? -1 : 1) * Number(step));
+    f.amt = v ? String(v) : '';
     const inp = document.querySelector(`[data-s="${sec}"][data-i="${i}"][data-k="amt"]`);
-    if(inp) inp.value = Number(f.amt).toLocaleString('en-IN');
+    if(inp) inp.value = v ? v.toLocaleString('en-IN') : '';
     paintAlloc(sec); refresh(); return;
   }
   if(d.ncasset){
