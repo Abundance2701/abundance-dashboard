@@ -1,0 +1,278 @@
+{
+ "day": {
+  "date": "2026-10-19",
+  "headline": "Sensex falls 876 points as private banks and IT stocks sell off after results; PSU banks buck the trend",
+  "session": "Monday close",
+  "stats": [
+   {
+    "c": "−1.17%",
+    "k": "Sensex",
+    "v": "73,853"
+   },
+   {
+    "c": "−1.11%",
+    "k": "Nifty 50",
+    "v": "22,889"
+   },
+   {
+    "c": "−0.64%",
+    "k": "Bank Nifty",
+    "v": "55,488"
+   },
+   {
+    "c": "",
+    "k": "Midcap 100 / Smallcap 100",
+    "v": "−1.09% / −1.01%"
+   },
+   {
+    "c": "−0.3%",
+    "k": "Brent crude (settle)",
+    "v": "$109.55"
+   },
+   {
+    "c": "+0.02",
+    "k": "USD/INR",
+    "v": "94.91"
+   },
+   {
+    "c": "",
+    "k": "FII / DII net (₹ cr)",
+    "v": "FII sold 1,149 · DII bought 3,201"
+   }
+  ],
+  "summary": "The market gave back Friday's gain and more: the Nifty slipped below 23,000 as investors sold private banks after the weekend results and booked profits in IT ahead of Infosys on Thursday. Mid and small caps fell about as much as large caps, and only PSU banks rose. Domestic institutions bought ₹3,201 cr while foreign investors sold ₹1,149 cr; Bajaj Finance reported strong Q2 numbers after the close. Tuesday 20/10 is a market holiday (Dussehra), so the next session is Wednesday 21/10."
+ },
+ "items": [
+  {
+   "cat": "markets",
+   "date": "2026-10-19",
+   "impact": "down",
+   "rank": 1,
+   "src": "Business Standard",
+   "tags": [
+    "Sensex",
+    "Nifty",
+    "Broad sell-off"
+   ],
+   "title": "Sensex −876 pts (−1.17%) to 73,853; Nifty −1.11% to 22,889 as private banks and IT drag",
+   "url": "https://www.business-standard.com/markets/news/stock-market-live-october-19-nse-bse-sensex-today-nifty50-gift-nifty-crude-oil-prices-bond-yields-q2-results-hind-zinc-share-price-today-ipo-today-126101900052_1.html",
+   "why": "Most equity fund NAVs will be down about 1% for the day, wiping out Friday's gain; the fall was broad, with mid and small caps down about 1% too. Reasons cited: selling in private banks after results, profit-taking in IT, cautious global cues and crude oil still near $107 despite a ~2% dip. LKP Securities sees 22,800 as the next support level for the Nifty."
+  },
+  {
+   "cat": "stocks",
+   "date": "2026-10-19",
+   "impact": "watch",
+   "rank": 2,
+   "src": "Business Standard",
+   "tags": [
+    "Banks",
+    "Q2 results",
+    "PSU banks"
+   ],
+   "title": "Private banks −1.85% after results, PSU banks +2.4%: the only sector in the green",
+   "url": "https://www.business-standard.com/markets/news/stock-market-live-october-19-nse-bse-sensex-today-nifty50-gift-nifty-crude-oil-prices-bond-yields-q2-results-hind-zinc-share-price-today-ipo-today-126101900052_1.html",
+   "why": "Large-cap, flexi-cap and banking funds are heavy in private banks, so they felt this most; Axis Bank was among the top losers, while SBI rose over 1%. PSU and value-style funds, which hold more public sector banks, held up better."
+  },
+  {
+   "cat": "markets",
+   "date": "2026-10-19",
+   "impact": "watch",
+   "rank": 3,
+   "src": "Business Standard",
+   "tags": [
+    "IT",
+    "Infosys"
+   ],
+   "title": "IT index slips 1.28% after last week's 11% rally; Infosys among the top Sensex losers",
+   "url": "https://www.business-standard.com/markets/news/stock-market-live-october-19-nse-bse-sensex-today-nifty50-gift-nifty-crude-oil-prices-bond-yields-q2-results-hind-zinc-share-price-today-ipo-today-126101900052_1.html",
+   "why": "Some profit-taking was expected after IT's best week since 2008. Infosys reports on 23/10, which will decide whether the rebound in IT-heavy funds holds."
+  },
+  {
+   "cat": "triggers",
+   "date": "2026-10-19",
+   "impact": "watch",
+   "rank": 4,
+   "src": "Business Standard (Reuters)",
+   "tags": [
+    "IPO",
+    "Jio",
+    "Liquidity"
+   ],
+   "title": "Jio Platforms anchor book nearly 30 times oversubscribed; Fidelity, GIC, ADIA and BlackRock among bidders",
+   "url": "https://www.business-standard.com/companies/news/jio-platforms-ipo-anchor-investor-quota-nearly-30-times-oversubscribed-126101900538_1.html",
+   "why": "Strong demand from large global investors ahead of the public issue opening Wednesday 21/10. Clients will ask about applying; for funds, a ₹30,213 cr issue can briefly pull money away from listed stocks while investors raise cash to bid."
+  },
+  {
+   "cat": "stocks",
+   "date": "2026-10-19",
+   "impact": "watch",
+   "rank": 5,
+   "src": "Business Standard",
+   "tags": [
+    "Cement",
+    "Q2 results"
+   ],
+   "title": "UltraTech Cement Q2: profit up 21.3% to ₹1,493.77 cr, yet the stock fell 2.9%",
+   "url": "https://www.business-standard.com/markets/news/stock-market-live-october-19-nse-bse-sensex-today-nifty50-gift-nifty-crude-oil-prices-bond-yields-q2-results-hind-zinc-share-price-today-ipo-today-126101900052_1.html",
+   "why": "UltraTech is a common holding in large-cap and infrastructure funds. Decent growth did not stop selling on a weak day; it was among the top Sensex losers along with Bajaj Finance and Trent."
+  },
+  {
+   "cat": "markets",
+   "date": "2026-10-19",
+   "impact": "watch",
+   "rank": 6,
+   "src": "Whalesbook; ThePrint (PTI)",
+   "tags": [
+    "FII/DII flows"
+   ],
+   "title": "Foreign investors sold ₹1,148.64 cr, domestic institutions bought ₹3,201.19 cr",
+   "url": "https://www.whalesbook.com/news/English/sebiexchange/Nifty-Falls-11percent-as-Private-Bank-Sell-Off-Outweighs-DII-Buying/6ad61f8b79a16deaeaf7047e",
+   "why": "Mutual funds and other domestic institutions (DIIs) kept buying on a down day, but it was not enough to offset selling in private banks, IT and FMCG. Foreign selling was the smallest single-day outflow this month, which is a mildly better sign."
+  },
+  {
+   "cat": "stocks",
+   "date": "2026-10-19",
+   "impact": "up",
+   "rank": 7,
+   "src": "Upstox",
+   "tags": [
+    "NBFC",
+    "Q2 results"
+   ],
+   "title": "Bajaj Finance Q2 (after the close): profit up 28.7% to ₹6,366.57 cr, AUM up 26% to ₹5.85 lakh cr",
+   "url": "https://upstox.com/news/market-news/earnings/bajaj-finance-q2-results-profit-soars-29-yo-y-to-6-367-crore-nii-grows-to-13-335-crore-check-numbers/article-202104/",
+   "why": "Bajaj Finance is a large holding in many large-cap and flexi-cap funds, and the stock fell 2.52% to ₹957.35 on Monday before the results. Bad loans also fell (gross NPA, or loans not being repaid, at 1.06% vs 1.24% a year ago). The market reacts on Wednesday 21/10."
+  },
+  {
+   "cat": "global",
+   "date": "2026-10-19",
+   "impact": "down",
+   "rank": 8,
+   "src": "Nation Thailand (Reuters)",
+   "tags": [
+    "Oil",
+    "Rupee",
+    "West Asia"
+   ],
+   "title": "Oil stays near a five-month high: Brent settles at $109.55, US crude jumps 2.2% to $103.66 after Houthi attacks on Saudi sites",
+   "url": "https://www.nationthailand.com/news/world/40072496",
+   "why": "Oil around $110 is still the main risk for Indian equity and debt funds: it pushes up inflation and weakens the rupee (94.91 to the dollar). Tanker data from Kpler show Gulf crude flows down to about 8.5 million barrels a day from over 20 million the week before; Saudi Arabia has not confirmed the attack claims."
+  },
+  {
+   "cat": "global",
+   "date": "2026-10-19",
+   "impact": "up",
+   "rank": 9,
+   "src": "TheStreet",
+   "tags": [
+    "US markets",
+    "Tech"
+   ],
+   "title": "US stocks rebound overnight: Nasdaq +1.1%, S&P 500 +0.41%, Dow −0.07% as tech recovers",
+   "url": "https://www.thestreet.com/stock-market-today/stock-market-today-oct-19-2026-nasdaq-futures-climb-as-tech-rebound-from-sell-off",
+   "why": "A calmer US market and easing Treasury yields help international and US-focused fund NAVs and support global risk appetite before India reopens on Wednesday. Tech results from Netflix, Tesla and Meta this week will test the recovery."
+  },
+  {
+   "cat": "stocks",
+   "date": "2026-10-19",
+   "impact": "up",
+   "rank": 10,
+   "src": "Business Standard",
+   "tags": [
+    "Metals",
+    "Silver",
+    "Q2 results"
+   ],
+   "title": "Hindustan Zinc Q2: profit more than doubles to ₹6,412 cr on higher metal prices; silver revenue up 141%",
+   "url": "https://www.business-standard.com/companies/quarterly-results/hindustan-zinc-profit-more-than-doubles-to-rs-6-412-cr-on-higher-prices-126101900701_1.html",
+   "why": "Relevant to metals, PSU-style and dividend funds that hold it. Business Standard puts profit growth at 142% (from ₹2,649 cr); some outlets report 149%. Revenue rose about 77% to ₹15,093 cr."
+  },
+  {
+   "cat": "manager",
+   "date": "2026-10-19",
+   "impact": "watch",
+   "rank": 11,
+   "src": "Value Research",
+   "tags": [
+    "Groww",
+    "Passive"
+   ],
+   "title": "Groww MF: assistant fund manager Ameya Sakpal exits six gold, silver, liquid and overnight schemes (from 16/10/2026)",
+   "url": "https://www.valueresearchonline.com/stories/229963/fund-manager-changes-under-some-schemes-of-groww-mutual-fund/",
+   "why": "Low impact: these are passive or cash-like funds and the existing managers stay. Kaustubh Sule and Wilfred Peter Gonsalves cover Groww Gold ETF and FoF, Silver ETF and FoF, Nifty 1D Rate Liquid ETF and Overnight Fund."
+  },
+  {
+   "cat": "manager",
+   "date": "2026-10-19",
+   "impact": "watch",
+   "rank": 12,
+   "src": "Value Research",
+   "tags": [
+    "Axis",
+    "Arbitrage"
+   ],
+   "title": "Axis Arbitrage Fund adds Pawan Jhangiani as a manager (from 21/10/2026)",
+   "url": "https://www.valueresearchonline.com/stories/229962/fund-manager-changes-in-the-axis-arbitrage-fund/",
+   "why": "Low impact: an addition only. Sachin Jain and Devang Shah (debt) continue, and arbitrage fund returns depend little on the manager."
+  },
+  {
+   "cat": "mf",
+   "date": "2026-10-19",
+   "impact": "watch",
+   "rank": 13,
+   "src": "Value Research",
+   "tags": [
+    "Union MF",
+    "SIP"
+   ],
+   "title": "Union Multicap Fund cuts its minimum SIP from ₹500 to ₹250 (from 22/10/2026)",
+   "url": "https://www.valueresearchonline.com/stories/229964/change-in-minimum-sip-amount-of-union-multi-cap-fund/",
+   "why": "Applies to monthly, weekly and fortnightly SIPs. Useful for clients starting small, such as young investors or children's goal SIPs."
+  },
+  {
+   "cat": "mf",
+   "date": "2026-10-19",
+   "impact": "watch",
+   "rank": 14,
+   "src": "Cafemutual",
+   "tags": [
+    "NFO",
+    "Small cap",
+    "New AMC"
+   ],
+   "title": "New AMC Carnelian MF launches a small cap NFO (16/10–30/10) with a ₹5,000 cr size cap",
+   "url": "https://cafemutual.com/news/nfo/39063-carnelian-mf-debuts-with-a-smallcap-fund",
+   "why": "A first fund from a new fund house, so there is no track record for the AMC yet. The size cap means lumpsums stop once it reaches ₹5,000 cr, which helps a small cap fund stay nimble. It will hold 30–50 stocks against the Nifty Smallcap 250 TRI; managers are Deepak Malik and Viraj Parekh."
+  },
+  {
+   "cat": "rules",
+   "date": "2026-10-19",
+   "impact": "watch",
+   "rank": 15,
+   "src": "Cafemutual",
+   "tags": [
+    "AMFI",
+    "MFD compliance",
+    "Social media"
+   ],
+   "title": "AMFI: every distributor must file social media details on the ARN portal, even those with no accounts ('Not Applicable')",
+   "url": "https://cafemutual.com/news/industry/39080-even-mfds-without-social-media-accounts-must-submit-declaration-amfi",
+   "why": "This applies to Abundance as a distributor (MFD). Final requirement, issued under SEBI's directive on securities-market content online: update it via AMFI website → Distributor Corner → ARN login → Social Media Details. AMFI asks for it immediately; the report gives no exact deadline."
+  },
+  {
+   "cat": "mf",
+   "date": "2026-10-19",
+   "impact": "watch",
+   "rank": 16,
+   "src": "Cafemutual",
+   "tags": [
+    "GIFT City",
+    "Overseas investing",
+    "NRI"
+   ],
+   "title": "Aditya Birla Sun Life AMC launches two retail fund-of-funds from GIFT City in US dollars (announced 18/10)",
+   "url": "https://cafemutual.com/news/cafe-alt/39083-absl-amc-launches-two-retail-fofs-from-gift-city",
+   "why": "A dollar-denominated route for Indian residents to invest abroad under LRS (the Liberalised Remittance Scheme, the yearly overseas remittance limit) and for NRIs or foreign investors to buy Indian equities. ABSL Emerging Market Equity Fund invests mainly in the ARGA Emerging Market Equity Fund; ABSL India Growth Fund invests in ABSL's own equity schemes. Minimum US$500."
+  }
+ ]
+}

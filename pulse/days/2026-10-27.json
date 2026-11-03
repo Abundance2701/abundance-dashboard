@@ -1,0 +1,142 @@
+{
+ "day": {
+  "date": "2026-10-27",
+  "headline": "Benchmarks ended flat on monthly F&O expiry as crude near $116 and caution before the US Fed decision offset a sharp rally in smallcaps and midcaps.",
+  "session": "Tuesday close",
+  "stats": [
+   {
+    "c": "−0.01%",
+    "k": "Sensex",
+    "v": "73,598.67"
+   },
+   {
+    "c": "−0.02%",
+    "k": "Nifty 50",
+    "v": "22,749.75"
+   },
+   {
+    "c": "+1.00%",
+    "k": "Nifty Midcap 100",
+    "v": "57,029.90"
+   },
+   {
+    "c": "+2.69%",
+    "k": "Nifty Smallcap 100",
+    "v": "18,468.70"
+   },
+   {
+    "c": "−0.72%",
+    "k": "Bank Nifty",
+    "v": "53,974.90"
+   },
+   {
+    "k": "FII net (₹ cr)",
+    "v": "+4,240 (bought)"
+   },
+   {
+    "k": "DII net (₹ cr)",
+    "v": "−1,250 (sold)"
+   }
+  ],
+  "summary": "The Sensex slipped 8.08 points to 73,598.67 and the Nifty 50 fell 3.45 points to 22,749.75, while the Nifty Smallcap 100 jumped 2.69% and the Midcap 100 rose 1%, with 2,807 stocks advancing against 1,334 declining. IT and private banks dragged; media, realty, pharma and auto gained. FIIs turned net buyers of ₹4,240 cr while DIIs sold ₹1,250 cr."
+ },
+ "items": [
+  {
+   "cat": "markets",
+   "date": "2026-10-27",
+   "impact": "watch",
+   "rank": 1,
+   "src": "HDFC Sky",
+   "tags": [
+    "Sensex",
+    "Nifty",
+    "F&O expiry",
+    "smallcap",
+    "crude"
+   ],
+   "title": "Flat close on monthly F&O expiry; smallcaps +2.7% as breadth turns strongly positive",
+   "url": "https://hdfcsky.com/news/stock-market-close-report-today-october-27-2026-sensex-nifty-flatline-as-fed-looms-oil-boils",
+   "why": "Smallcap and midcap funds likely had a much better day than large-cap or index funds, which were flat. Volatility came from the monthly futures & options expiry (the day derivative contracts settle) plus caution over crude near $116, Houthi attacks on Saudi Arabia, and the US Fed decision on 28/10/2026; IT, oil & gas and private banks fell about 0.5% each while media rose 3.6%. FIIs turned net buyers of ₹4,240 cr while DIIs sold ₹1,250 cr (provisional), a one-day reversal after Monday's foreign selling."
+  },
+  {
+   "cat": "stocks",
+   "date": "2026-10-27",
+   "impact": "up",
+   "rank": 2,
+   "src": "Business Today",
+   "tags": [
+    "L&T",
+    "Q2 FY27",
+    "infrastructure",
+    "capital goods"
+   ],
+   "title": "L&T Q2: profit +33% to ₹5,202 cr, record order inflow of ₹1.48 lakh cr (after market hours)",
+   "url": "https://www.businesstoday.in/markets/stocks/story/lt-q2-pat-climbs-33-to-rs-5202-crore-yoy-revenue-rises-16-564055-2026-10-27",
+   "why": "L&T is a core holding in large-cap, infrastructure and many flexi-cap funds, so a strong quarter supports those portfolios from the next session. Revenue rose 16% to ₹78,750 cr and the order book reached ₹8,53,514 cr; results came after hours, so the stock closed 0.19% lower at ₹3,670 on the day."
+  },
+  {
+   "cat": "stocks",
+   "date": "2026-10-27",
+   "impact": "up",
+   "rank": 3,
+   "src": "Business Today / Maruti Suzuki press release",
+   "tags": [
+    "Bajaj Auto",
+    "Maruti Suzuki",
+    "auto",
+    "Q2 FY27"
+   ],
+   "title": "Autos: Bajaj Auto profit +35% to ₹3,354 cr; Maruti volumes record but profit −27%",
+   "url": "https://www.businesstoday.in/markets/stocks/story/bajaj-auto-q2-earnings-revenue-hits-rs-20000-crore-mark-for-first-time-net-profit-rises-35-563968-2026-10-27",
+   "why": "Auto stocks helped NAVs of consumption and auto-heavy funds, with Nifty Auto up about 1.4%. Bajaj Auto's revenue crossed ₹20,000 cr for the first time (+34.1%) with record EV sales of 2 lakh units, and the stock rose about 3%. Maruti sold a record 6,96,654 units (+26.5%) but net profit fell to ₹2,415 cr from ₹3,303 cr on West Asia-linked commodity costs and mark-to-market losses on investments; its shares still gained about 2%."
+  },
+  {
+   "cat": "stocks",
+   "date": "2026-10-27",
+   "impact": "down",
+   "rank": 4,
+   "src": "Kotak Neo",
+   "tags": [
+    "Cipla",
+    "Tata Consumer",
+    "pharma",
+    "Q2 FY27"
+   ],
+   "title": "Cipla Q2: profit down about 35% on weak North America; Tata Consumer +6.8% on results",
+   "url": "https://www.kotakneo.com/news/stocks/cipla-q2-fy27-results-show-lower-profit-amid-weak-north-america-sales/",
+   "why": "Pharma fund holders should note Cipla's US slump (North America revenue −19% to ₹1,643 cr) even as India sales hit a record ₹3,516 cr; the stock ended slightly lower. Sources differ on net profit — ₹878 cr per Kotak Neo vs ₹851.51 cr per Free Press Journal (likely different profit lines). Separately, Tata Consumer was the top Nifty gainer (+6.78%) on in-line Q2 results, while Mazagon Dock fell over 6% on weak numbers."
+  },
+  {
+   "cat": "rules",
+   "date": "2026-10-27",
+   "impact": "watch",
+   "rank": 5,
+   "src": "Cafemutual",
+   "tags": [
+    "KYC",
+    "NRI",
+    "FSDC",
+    "SEBI"
+   ],
+   "title": "FSDC calls for simpler KYC and onboarding for NRIs and FPIs (proposal stage)",
+   "url": "https://cafemutual.com/news/industry/39143-good-news-govt-to-simplify-kyc-and-onboarding-for-nri-investors",
+   "why": "If it is implemented, NRI clients could face fewer 'KYC On Hold' blocks on MF transactions, often caused by Indian mobile/email validation and Aadhaar-PAN linking issues. This is a call by the Finance Minister-chaired Council, not a notified rule, and no timeline has been given; SEBI Chairman Tuhin Kanta Pandey called NRI onboarding an immediate priority."
+  },
+  {
+   "cat": "manager",
+   "date": "2026-10-27",
+   "impact": "watch",
+   "rank": 6,
+   "src": "ICICI Direct (Capital Market feed)",
+   "tags": [
+    "LIC MF",
+    "fund manager change",
+    "balanced advantage",
+    "small cap"
+   ],
+   "title": "LIC MF reshuffles managers in 6 schemes; equity manager on Balanced Advantage replaced (effective 27/10/2026)",
+   "url": "https://www.icicidirect.com/mutual-funds/news/mf/lic-mutual-fund-announces-change-in-fund-manager-under-its-schemes/5036684",
+   "why": "Higher impact for LIC MF Balanced Advantage Fund: Mahesh Bendre (equity) is replaced by Siddharth Panjwani, and Rahul Singh stays on debt. Lower impact elsewhere, where managers were only removed: Dikshit Mittal leaves Multi Cap (Mahesh Bendre and Nikhil Kapoor stay), Small Cap (Sudhanshu Asthana stays, now listed alone) and Dividend Yield (Sumit Bhatnagar stays). Sumit Bhatnagar leaves Technology (Siddharth Panjwani stays) and Consumption (Nikhil Kapoor stays)."
+  }
+ ]
+}

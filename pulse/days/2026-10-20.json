@@ -1,0 +1,212 @@
+{
+ "day": {
+  "date": "2026-10-20",
+  "headline": "No trading in India; oil slipped back from a five-month high near $112 and Wall Street rose, so GIFT Nifty points to a higher open on Wednesday",
+  "session": "Tuesday · markets closed (Dussehra)",
+  "stats": [
+   {
+    "c": "+131 pts",
+    "k": "GIFT Nifty (Wed 8:07 am)",
+    "v": "23,020"
+   },
+   {
+    "c": "−0.69%",
+    "k": "Brent crude (Dec, settle)",
+    "v": "$108.79"
+   },
+   {
+    "c": "+1.02%",
+    "k": "Dow Jones",
+    "v": "52,495.88"
+   },
+   {
+    "c": "−0.02%",
+    "k": "Nasdaq",
+    "v": "26,424.82"
+   },
+   {
+    "c": "−3 bp",
+    "k": "US 10-year yield",
+    "v": "5.12%"
+   },
+   {
+    "c": "−3.73%",
+    "k": "Kospi",
+    "v": "5,552.74"
+   },
+   {
+    "c": "−1.30%",
+    "k": "Nikkei 225",
+    "v": "64,075.42"
+   }
+  ],
+  "summary": "NSE and BSE were shut for Dussehra, so fund NAVs did not change. Brent touched $111.99 on Houthi attacks on Saudi sites but settled 0.7% lower at $108.79 on hopes of Iran talks, the Dow rose 1% and the US 10-year yield eased to 5.12%, while Korean and Japanese stocks fell on chip-stock weakness. Jio Platforms raised ₹8,110 cr from anchor investors, including 25 Indian fund houses, and its IPO opens on Wednesday 21/10, when GIFT Nifty was trading about 23,020."
+ },
+ "items": [
+  {
+   "cat": "markets",
+   "date": "2026-10-20",
+   "impact": "watch",
+   "rank": 1,
+   "src": "TradingView (Moody's/Mint)",
+   "tags": [
+    "Holiday",
+    "GIFT Nifty",
+    "Asia"
+   ],
+   "title": "Indian markets shut for Dussehra; GIFT Nifty flat at 22,889 while Kospi falls 3.5% and Nikkei 1.2%",
+   "url": "https://www.tradingview.com/news/moodys:942f65a04f67c:0-global-markets-today-gift-nifty-nikkei-225-kospi-slide-on-tuesday-20-october-nasdaq-s-p-djia-rise-up-to-1/",
+   "why": "No NAV change for Indian funds today. Weak Asian tech stocks and costlier oil point to a cautious start on Wednesday 21/10, though Wall Street rose overnight. GIFT Nifty is a Nifty futures contract traded in GIFT City that hints at how India may open."
+  },
+  {
+   "cat": "global",
+   "date": "2026-10-20",
+   "impact": "down",
+   "rank": 2,
+   "src": "The National",
+   "tags": [
+    "Oil",
+    "West Asia",
+    "Inflation"
+   ],
+   "title": "Brent rises about 1.5% to ~$111, a five-month high, as Houthi attacks on Saudi sites continue",
+   "url": "https://www.thenationalnews.com/business/energy/2026/10/20/oil-prices-hit-five-month-high-as-more-houthi-attacks-prompt-supply-and-inflation-fears/",
+   "why": "This is the biggest risk for Wednesday's open: costlier oil raises inflation, pressures the rupee and makes further RBI rate hikes more likely, which hurts both equity and debt fund returns. US crude rose about 2.3% to $100.80."
+  },
+  {
+   "cat": "triggers",
+   "date": "2026-10-20",
+   "impact": "watch",
+   "rank": 3,
+   "src": "Business Today",
+   "tags": [
+    "IPO",
+    "Jio",
+    "MF participation"
+   ],
+   "title": "Jio Platforms raises ₹8,109.85 cr from 212 anchor investors at ₹1,119; 25 Indian fund houses bid through 95 schemes",
+   "url": "https://www.businesstoday.in/markets/ipo-corner/story/jio-platforms-raises-rs-8110-crore-from-over-200-anchor-investors-draws-rs-2-5-lakh-cr-demand-562601-2026-10-20",
+   "why": "Many large funds (SBI, HDFC, ICICI Prudential, Kotak, Nippon, Axis and others) will hold Jio from listing day (28/10), so its debut will move their NAVs. Anchor investors are large institutions given shares before the public issue. The IPO opens 21/10 and closes 23/10; the minimum bid is 12 shares."
+  },
+  {
+   "cat": "mf",
+   "date": "2026-10-20",
+   "impact": "down",
+   "rank": 4,
+   "src": "Business Today (Market Today)",
+   "tags": [
+    "RBI",
+    "Debt funds",
+    "Interest rates"
+   ],
+   "title": "PPFAS debt CIO Tejas Soman expects the RBI to raise rates further this financial year",
+   "url": "https://www.businesstoday.in/amp/bt-tv/market-today/video/more-rbi-rate-hikes-ahead-ppfas-mutual-fund-cio-shares-his-outlook-562454-2026-10-20",
+   "why": "If rates keep rising, longer-duration debt funds (those holding long-dated bonds) can see NAV dips, while short-term and floating-rate funds are less affected. He cites crude, fertilizer and commodity inflation, and sees growth near 7% holding up."
+  },
+  {
+   "cat": "global",
+   "date": "2026-10-20",
+   "impact": "watch",
+   "rank": 5,
+   "src": "Forbes",
+   "tags": [
+    "Fed",
+    "US rates",
+    "FII flows"
+   ],
+   "title": "US Fed: markets now price a hold on 28/10 (about 80–85%) but expect a hike on 09/12",
+   "url": "https://www.forbes.com/sites/simonmoore/2026/10/19/what-to-look-for-from-the-feds-october-meeting/",
+   "why": "A pause would ease pressure on US bond yields and on foreign selling of Indian stocks for now. Sources differ slightly: Forbes cites about 80% odds of a hold, another 20/10 report about 85%. The Fed's rate is 3.75–4%."
+  },
+  {
+   "cat": "triggers",
+   "date": "2026-10-20",
+   "impact": "watch",
+   "rank": 6,
+   "src": "Goodreturns",
+   "tags": [
+    "Q2 results",
+    "Eternal",
+    "Dividend"
+   ],
+   "title": "Wednesday 21/10: about 40 Q2 results, including Eternal, Adani Green, Indian Hotels and M&M Financial; Bajaj Finance reacts to its results",
+   "url": "https://www.goodreturns.in/news/stock-market-holiday-today-20-10-2026-trading-bse-nse-closed-for-dussehra-dividends-q2-results-ahead-1542621.html",
+   "why": "Eternal (formerly Zomato) and Bajaj Finance are widely held in large-cap, flexi-cap and consumption funds. Also on 21/10: record date for ICICI Prudential AMC's ₹30 a share interim dividend."
+  },
+  {
+   "cat": "markets",
+   "date": "2026-10-20",
+   "impact": "up",
+   "rank": 7,
+   "src": "Business Standard; Kotak Neo",
+   "tags": [
+    "GIFT Nifty",
+    "Open",
+    "Nifty levels"
+   ],
+   "title": "GIFT Nifty points to a higher open on Wednesday: about 23,020, up 131 points, at 8:07 am",
+   "url": "https://www.business-standard.com/markets/news/stock-market-live-october-21-bse-sensex-today-nifty50-gift-nifty-crude-oil-prices-jio-platforms-ipo-today-hd-fire-protect-share-price-126102100078_1.html",
+   "why": "Equity fund NAVs may win back part of Monday's 1% fall if the gap holds, with Bajaj Finance reacting to strong results and Eternal reporting today. Sources differ on the size: Business Standard quotes +131 points at 8:07 am, Kotak Neo +78 points (23,012.5) at 7:35 am. Analysts see 22,800 as support and 23,000–23,200 as resistance for the Nifty."
+  },
+  {
+   "cat": "global",
+   "date": "2026-10-20",
+   "impact": "up",
+   "rank": 8,
+   "src": "Capp Notes",
+   "tags": [
+    "US markets",
+    "Bond yields",
+    "FII flows"
+   ],
+   "title": "Wall Street rises: Dow +1.02% to 52,495.88, S&P 500 +0.28%, Nasdaq flat (−0.02%); US 10-year yield falls to 5.12%",
+   "url": "https://cappnotes.substack.com/p/closing-look-tuesday-october-20-2026",
+   "why": "Lower US bond yields ease the pull of money away from emerging markets like India and help US-focused and international fund NAVs. Yields fell after weak US housing data; small caps led (Russell 2000 +1.65%) while big tech lagged ahead of Meta's results on Wednesday."
+  },
+  {
+   "cat": "global",
+   "date": "2026-10-20",
+   "impact": "watch",
+   "rank": 9,
+   "src": "Capp Notes; Business Standard",
+   "tags": [
+    "Oil",
+    "West Asia",
+    "Inflation"
+   ],
+   "title": "Oil reverses: Brent hits $111.99, then settles 0.69% lower at $108.79 on hopes of Iran talks; it is back near $110 early Wednesday",
+   "url": "https://cappnotes.substack.com/p/closing-look-tuesday-october-20-2026",
+   "why": "Oil swinging around $110 remains the main risk for both equity and debt fund returns, since it feeds inflation and weakens the rupee. Reports differ on Wednesday morning: Business Standard has Brent up 1.34% at $110.02 on Red Sea shipping worries, while Kotak Neo notes it slipped 1.1% from the five-month high. US crude (December) settled at $98.28."
+  },
+  {
+   "cat": "triggers",
+   "date": "2026-10-20",
+   "impact": "watch",
+   "rank": 10,
+   "src": "Business Standard; IIFL",
+   "tags": [
+    "IPO",
+    "Jio",
+    "GMP"
+   ],
+   "title": "Wednesday 21/10: Jio Platforms and Paras Healthcare IPOs open; HD Fire Protect lists",
+   "url": "https://www.indiainfoline.com/news/ipo/jio-platforms-ipo-gmp-today-grey-market-premium-rises-to-225-ahead-of-october-21-opening",
+   "why": "Clients will ask about Jio. The grey market premium (an unofficial, unregulated price for shares before listing) was ₹225 on 16/10, about 20% over the ₹1,119 upper price, but it can change quickly and is no guarantee of listing gains. Many large equity funds already hold Jio through the anchor book, so its listing on 28/10 will move their NAVs."
+  },
+  {
+   "cat": "mf",
+   "date": "2026-10-20",
+   "impact": "watch",
+   "rank": 11,
+   "src": "Cafemutual",
+   "tags": [
+    "AMFI",
+    "AUM",
+    "States"
+   ],
+   "title": "AMFI state data: MF assets fell in 20 states in the June 2026 quarter; Delhi −8.6% (−₹73,256 cr), Maharashtra −1.21% (−₹40,455 cr)",
+   "url": "https://cafemutual.com/news/industry/39092-20-states-witness-decline-in-mf-aum-delhi-and-maharashtra-see-sharpest-fall",
+   "why": "Industry assets slipped 1.34% to ₹83.06 lakh cr between March and June 2026, but this mixes market falls with redemptions, so it does not by itself show investors pulling money out. Advisors can expect the question from clients who see the headline; the drop was concentrated in a few large centers, not broad-based."
+  }
+ ]
+}

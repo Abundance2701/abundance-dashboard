@@ -14,10 +14,10 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: '3.12' }
-      - run: python scripts/market_data.py
+      - run: python scripts/market_data.py && python scripts/build_pulse.py
       - name: Commit if changed
         run: |
           git config user.name "market-data-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add data/indices.json data/official.json
+          git add data/indices.json data/official.json market-pulse.json archive
           git diff --cached --quiet && echo "no change" || (git commit -m "Market data $(date -u +%F)" && git push)

@@ -1,0 +1,144 @@
+{
+ "day": {
+  "date": "2026-10-30",
+  "headline": "Nifty rose 0.51% to 23,053.10 and Sensex 0.42% as IT and pharma rallied after Cognizant's results and Trent's Q2, but midcaps and smallcaps fell; Nifty gained about 2% for the week and about 1.91% for October.",
+  "session": "Friday close",
+  "stats": [
+   {
+    "c": "+0.42%",
+    "k": "Sensex",
+    "v": "74,459.53"
+   },
+   {
+    "c": "+0.51%",
+    "k": "Nifty 50",
+    "v": "23,053.10"
+   },
+   {
+    "c": "−0.93%",
+    "k": "Nifty Midcap 100",
+    "v": "Down for the day"
+   },
+   {
+    "c": "−1.85%",
+    "k": "Nifty Smallcap 100",
+    "v": "Down for the day"
+   },
+   {
+    "k": "Brent",
+    "v": "$116.1/bbl, up 1% (HDFC Sky); sources vary from $113 to $118"
+   },
+   {
+    "k": "FII net (₹ cr)",
+    "v": "+3,598.54 (provisional, bought)"
+   },
+   {
+    "k": "DII net (₹ cr)",
+    "v": "−817.51 (provisional, sold)"
+   }
+  ],
+  "summary": "Benchmarks rose for a second straight day on 30/10/2026, led by Nifty IT (+2.3%) and Nifty Pharma (+1.8%). Broader markets sold off: Midcap 100 fell 0.93% and Smallcap 100 1.85%, with only 1,311 stocks advancing against 2,862 declining. FIIs bought a net ₹3,598.54 cr (provisional), but they were still net sellers of about ₹45,162 cr for October on the same basis."
+ },
+ "items": [
+  {
+   "cat": "markets",
+   "date": "2026-10-30",
+   "impact": "watch",
+   "rank": 1,
+   "src": "HDFC Sky; 5paisa; Tapetide (FII/DII)",
+   "tags": [
+    "Sensex",
+    "Nifty",
+    "IT",
+    "pharma",
+    "midcap",
+    "smallcap",
+    "FII"
+   ],
+   "title": "Nifty +0.51% to 23,053.10, Sensex +0.42% to 74,459.53 on IT and pharma, while midcaps and smallcaps fall",
+   "url": "https://hdfcsky.com/news/market-close-report-today-october-30-2026-nifty-sensex-rise-for-second-straight-session",
+   "why": "Large-cap, IT and pharma funds gained, while midcap and smallcap funds likely lost ground as those indices fell 0.93% and 1.85%. Nifty IT rose about 2.3% after Cognizant's quarterly earnings, and Nifty Pharma rose 1.8%. Consumer durables, PSU banks, energy and media each fell more than 1%, and Bank Nifty ended about 0.5% lower. Crude stayed high after Houthi attacks on Saudi energy infrastructure. FIIs bought a net ₹3,598.54 cr and DIIs sold ₹817.51 cr (provisional). Source note: HDFC Sky put the midcap and smallcap declines at 0.8% and 1.8%; this item uses 5paisa's 0.93% and 1.85%."
+  },
+  {
+   "cat": "markets",
+   "date": "2026-10-30",
+   "impact": "up",
+   "rank": 2,
+   "src": "Business News This Week",
+   "tags": [
+    "weekly",
+    "Sensex",
+    "Nifty",
+    "pharma",
+    "healthcare"
+   ],
+   "title": "Week to 30/10/2026: Sensex +1.83%, Nifty about +2%; Nifty Pharma +7.09% for the week",
+   "url": "https://businessnewsthisweek.com/business/indian-stock-market-weekly-update-sensex-nifty-witness-volatility-as-it-selling-and-rising-crude-oil-prices-weigh-on-sentiment/",
+   "why": "Large-cap SIP (systematic investment plan) investors recovered the previous week's losses: Sensex rose 1,335.70 points (1.83%) and Nifty 453.10 points over the five sessions. Pharma and healthcare funds stood out, with Nifty Pharma up 7.09% and the healthcare index up 6.91%, while Nifty IT rose 1.91% despite selling early in the week. Rising crude and worries about global tech spending kept investors cautious through the week."
+  },
+  {
+   "cat": "markets",
+   "date": "2026-10-30",
+   "impact": "watch",
+   "rank": 3,
+   "src": "Nation Path India; Tapetide; HDFC Sky",
+   "tags": [
+    "monthly",
+    "October 2026",
+    "FPI",
+    "FII",
+    "DII"
+   ],
+   "title": "October 2026: Nifty up about 1.91% for the month, ending a two-month losing streak; FIIs sold heavily, DIIs bought",
+   "url": "https://www.nationpathindia.com/economy/nifty-50-october-2026-close-fpi-outflows-crude-oil",
+   "why": "This was the first monthly gain in three months for large-cap fund NAVs, and it came mainly from domestic buying. Provisional exchange data show FIIs net sold ₹45,161.71 cr in October's 20 sessions while DIIs net bought ₹62,220.11 cr. Depository (NSDL) data show FPI (foreign portfolio investor) equity outflows of ₹34,843 cr for October; it is a different basis from the exchange data, so the two figures should not be compared directly. FPIs were net buyers of about ₹6,300 cr in the week of 26–30/10/2026. Sensex's monthly change was not reported in the sources read."
+  },
+  {
+   "cat": "stocks",
+   "date": "2026-10-30",
+   "impact": "up",
+   "rank": 4,
+   "src": "Kotak Neo",
+   "tags": [
+    "Trent",
+    "Q2 FY27",
+    "retail",
+    "consumption"
+   ],
+   "title": "Trent rises as much as 7% after Q2 FY27 profit rises 25% to ₹468.09 cr and revenue 22% to ₹5,873 cr",
+   "url": "https://www.kotakneo.com/news/stocks/trent-q2-fy27-results-share-price-in-focus/",
+   "why": "Trent was the top Nifty 50 gainer on 30/10/2026, which helped consumption and large-cap funds that hold it. Consolidated net profit rose to ₹468.09 cr from ₹373.42 cr, and EBITDA (operating profit) rose 37% to ₹785 cr. The stock touched ₹3,059 on BSE intraday. Sources disagree on the profit growth: HDFC Sky said 23%, while Kotak Neo reported 25%."
+  },
+  {
+   "cat": "rules",
+   "date": "2026-10-30",
+   "impact": "watch",
+   "rank": 5,
+   "src": "Corp Law Updates",
+   "tags": [
+    "SEBI",
+    "FPI",
+    "KYC",
+    "circular"
+   ],
+   "title": "SEBI issues circulars changing how often FPI KYC is reviewed and extending the digital accessibility deadline to 31/01/2027",
+   "url": "https://www.corplawupdates.in/category/sebi",
+   "why": "These have little direct effect on mutual fund investors. The FPI KYC change is meant to make it easier for foreign investors to operate in India, which may support FPI flows over time. Both are final circulars dated 30/10/2026; the digital accessibility compliance deadline is now 31/01/2027. Note: the direct-plan default on AMC platforms took effect from 01/11/2026 (announced 28/10/2026)."
+  },
+  {
+   "cat": "manager",
+   "date": "2026-10-30",
+   "impact": "watch",
+   "rank": 6,
+   "src": "ICICI Direct (Capital Market feed)",
+   "tags": [
+    "DSP MF",
+    "passive funds",
+    "fund manager change"
+   ],
+   "title": "DSP MF adds managers to 41 passive funds, Gold/Silver ETFs and the commodity sleeve of Multi Asset (effective 03/11/2026)",
+   "url": "https://www.icicidirect.com/mutual-funds/news/mf/dsp-mutual-fund-announces-change-in-fund-manager-under-its-scheme/5038249",
+   "why": "Low impact for index-fund and ETF investors because nobody is removed. Ravi Gehani joins Anil Ghelani, Diipesh Shah and Neha Rathi on 41 index funds, ETFs and FoFs, including DSP Nifty 50 Index Fund. Ghelani and Shah join Gehani on DSP Gold ETF, DSP Silver ETF and the commodity portion of DSP Multi Asset Allocation Fund."
+  }
+ ]
+}

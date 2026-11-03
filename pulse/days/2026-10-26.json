@@ -1,0 +1,144 @@
+{
+ "day": {
+  "date": "2026-10-26",
+  "headline": "Sensex and Nifty snapped a four-session losing streak, closing at the day's high on buying in metals, pharma and Kotak Bank after its Q2 results, even as Brent stayed near $114.",
+  "session": "Monday close",
+  "stats": [
+   {
+    "c": "+0.66%",
+    "k": "Sensex",
+    "v": "73,606.75"
+   },
+   {
+    "c": "+0.68%",
+    "k": "Nifty 50",
+    "v": "22,753.20"
+   },
+   {
+    "c": "+1.19%",
+    "k": "Nifty Midcap 100",
+    "v": "56,465.40"
+   },
+   {
+    "c": "+1.38%",
+    "k": "Nifty Smallcap 100",
+    "v": "17,985.00"
+   },
+   {
+    "c": "+0.15%",
+    "k": "Bank Nifty",
+    "v": "54,366.70"
+   },
+   {
+    "k": "USD/INR",
+    "v": "95.19 (rupee 25 paise weaker)"
+   },
+   {
+    "k": "FII net (₹ cr)",
+    "v": "−1,462 (sold)"
+   },
+   {
+    "k": "DII net (₹ cr)",
+    "v": "+2,610 (bought)"
+   }
+  ],
+  "summary": "The Sensex rose 482.92 points to 73,606.75 and the Nifty 50 rose 153.20 points to 22,753.20, recovering from a weak open of more than 500 points down. Midcaps and smallcaps outperformed, but analysts called it selective buying rather than a durable bottom, with high crude, a weaker rupee (95.19/$) and the US Fed decision due later in the week as the main worries. FIIs sold a net ₹1,462 cr while DIIs bought ₹2,610 cr."
+ },
+ "items": [
+  {
+   "cat": "markets",
+   "date": "2026-10-26",
+   "impact": "up",
+   "rank": 1,
+   "src": "HDFC Sky",
+   "tags": [
+    "Sensex",
+    "Nifty",
+    "crude",
+    "rupee",
+    "Fed"
+   ],
+   "title": "Sensex +483, Nifty 22,753: four-day losing streak ends on metal, pharma buying",
+   "url": "https://hdfcsky.com/news/market-close-report-today-october-26-2026-sensex-nifty-rise-as-markets-snap-four-day-losing-streak",
+   "why": "Equity fund NAVs got some relief after a week in which the Nifty fell 2.36%, but the bounce was narrow, so clients should not read it as a turnaround. Metals (+2.2%), pharma (+1.8%) and oil & gas (+1.3%) led, while FMCG, media and consumer durables fell; Brent eased to about $114.50 from a near six-month high of $117."
+  },
+  {
+   "cat": "stocks",
+   "date": "2026-10-26",
+   "impact": "up",
+   "rank": 2,
+   "src": "TradingView (Moody's) / Equentis",
+   "tags": [
+    "Kotak Mahindra Bank",
+    "Q2 FY27",
+    "banking"
+   ],
+   "title": "Kotak Mahindra Bank rises after Q2: profit +29.5% to ₹4,212 cr, brokerages raise targets",
+   "url": "https://www.tradingview.com/news/moodys:dc8bc793a64b3:0-kotak-mahindra-bank-shares-lead-nifty-50-gainers-after-q2-results-brokerages-lift-targets/",
+   "why": "Kotak is widely held in large-cap, flexi-cap and banking funds, so the positive reaction to its Saturday results helped those NAVs. Standalone net profit rose 29.5% YoY (helped by higher other income), NII (net interest income, the gap between interest earned and paid) rose 15.7% to ₹8,459 cr, and gross NPA improved to 1.04%, but margin (NIM) slipped to 4.31%. The stock rose as much as 3.6% early (₹446.30 high vs ₹430.50 previous close) and was among the Sensex gainers at close; Jefferies (₹520) and JPMorgan (₹492) raised targets."
+  },
+  {
+   "cat": "stocks",
+   "date": "2026-10-26",
+   "impact": "down",
+   "rank": 3,
+   "src": "CNBC TV18 via TradingView",
+   "tags": [
+    "Shriram Finance",
+    "AU Small Finance Bank",
+    "NBFC"
+   ],
+   "title": "Lenders hit: Shriram Finance −4.6% on AUM guidance cut, AU SFB −6.9% after Q2",
+   "url": "https://www.tradingview.com/news/cnbctv:8dbc43aa5094b:0/",
+   "why": "Funds with NBFC or small finance bank exposure took a knock, a reminder that financials can drag even on an up day. Nifty Small Finance Banks & MFIs fell 3.11% and Nifty NBFC fell 1.58%; Shriram Finance was the top Nifty loser after cutting its assets-under-management growth guidance, and City Union Bank (−6.32%) and Five-Star Business Finance (−7.48%) also fell."
+  },
+  {
+   "cat": "stocks",
+   "date": "2026-10-26",
+   "impact": "up",
+   "rank": 4,
+   "src": "CNBC TV18 via TradingView",
+   "tags": [
+    "Dr Reddy's",
+    "pharma",
+    "JSW Steel",
+    "metals"
+   ],
+   "title": "Dr Reddy's jumps nearly 7% on Q2; JSW Steel +6.3% leads metals",
+   "url": "https://www.tradingview.com/news/cnbctv:8dbc43aa5094b:0/",
+   "why": "Pharma and healthcare funds outperformed, with Nifty Pharma up 1.76%. Dr Reddy's rose on strong Q2 results and a positive brokerage note; Infosys ended over 1% higher despite missing Q2 estimates. Note: sources differ on Sun Pharma — one listed it among gainers, the ANI close report among laggards."
+  },
+  {
+   "cat": "mf",
+   "date": "2026-10-26",
+   "impact": "watch",
+   "rank": 5,
+   "src": "Cafemutual",
+   "tags": [
+    "AMFI",
+    "AUM",
+    "Karnataka",
+    "state-wise"
+   ],
+   "title": "AMFI data: Kerala, Chhattisgarh, Telangana outpace industry AUM growth; Karnataka +7.4%",
+   "url": "https://cafemutual.com/news/industry/39136-kerala-chhattisgarh-and-telangana-outpace-industry-in-mutual-fund-aum-growth",
+   "why": "Useful context for a Bangalore distributor: Karnataka's average AUM rose 7.4% (₹5.68 lakh cr to ₹6.10 lakh cr) between April and September 2026, slightly ahead of the industry's 6.3% (₹81.94 lakh cr to ₹87.09 lakh cr). Kerala led at +13%; these are April-to-September changes, not year-on-year."
+  },
+  {
+   "cat": "mf",
+   "date": "2026-10-26",
+   "impact": "watch",
+   "rank": 6,
+   "src": "Angel One",
+   "tags": [
+    "NFO",
+    "silver",
+    "index fund",
+    "thematic"
+   ],
+   "title": "NFO week: Kotak Nifty Realty Index, Invesco Silver ETF + FoF, UTI Financial Services Debt, ICICI Pru BSE Power ETF",
+   "url": "https://www.angelone.in/news/mutual-funds/upcoming-nfos-5-mutual-funds-to-open-for-subscription-this-week-october-26-october-30-2026",
+   "why": "Silver FoF NFOs are opening even while gold FoFs are restricted. These are new thematic and passive options; present them by category, not as picks. Kotak Nifty Realty Index Fund runs 26/10–09/11 (min ₹1,000). Invesco India Silver ETF (min ₹5,000) and Silver ETF FoF (min ₹1,000) run 27/10–09/11. UTI Financial Services Debt Fund ran 27/10–02/11, and ICICI Prudential BSE Power ETF ran 26/10–30/10."
+  }
+ ]
+}

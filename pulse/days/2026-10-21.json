@@ -1,0 +1,255 @@
+{
+ "day": {
+  "date": "2026-10-21",
+  "headline": "Early IT-led gains faded on high oil and profit-taking: the Nifty ended 0.34% lower while small caps fell 2.37% to a four-month low",
+  "session": "Wednesday close",
+  "stats": [
+   {
+    "c": "−0.19%",
+    "k": "Sensex",
+    "v": "73,709.69"
+   },
+   {
+    "c": "−0.34%",
+    "k": "Nifty 50",
+    "v": "22,811.35"
+   },
+   {
+    "c": "−1.58%",
+    "k": "Nifty Midcap 100",
+    "v": "close"
+   },
+   {
+    "c": "−2.37%",
+    "k": "Nifty Smallcap 100",
+    "v": "close"
+   },
+   {
+    "c": "+2.88%",
+    "k": "Nifty IT",
+    "v": "top sector"
+   },
+   {
+    "k": "Brent (Dec, 3:41 pm)",
+    "v": "$110.77"
+   },
+   {
+    "k": "FII / DII net (provisional)",
+    "v": "+₹1,022 cr / +₹1,614 cr"
+   }
+  ],
+  "summary": "The Sensex was up about 570 points in the morning on an IT rally, then swung more than 1,150 points from its high to close 143 points lower as Brent stayed near $110. Mid and small caps took the real hit (−1.58% and −2.37%), with chemicals, consumer durables and metals the weakest sectors, while the IT index rose 2.88%. Thursday looks soft too: GIFT Nifty was about 42 points lower at 8 am after the US ordered diplomats out of Saudi Arabia."
+ },
+ "items": [
+  {
+   "cat": "markets",
+   "date": "2026-10-21",
+   "impact": "down",
+   "rank": 1,
+   "src": "Business Standard",
+   "tags": [
+    "Close",
+    "Oil",
+    "Volatility"
+   ],
+   "title": "Sensex −143 pts (−0.19%) to 73,709.69, Nifty −0.34% to 22,811.35 after early IT-led gains were wiped out; India VIX up about 6%",
+   "url": "https://www.business-standard.com/markets/news/stock-market-live-october-21-bse-sensex-today-nifty50-gift-nifty-crude-oil-prices-jio-platforms-ipo-today-hd-fire-protect-share-price-126102100078_1.html",
+   "why": "Large cap fund NAVs barely moved, but the day's swing (the Sensex fell over 1,150 points from its high) shows how jumpy the market is with Brent near $110. Analysts quoted by Business Standard said high oil, inflation and margin worries drove profit-taking in autos, financials, metals and realty; they see support near 22,600–22,650 and want a move above 23,000. VIX is the market's fear gauge."
+  },
+  {
+   "cat": "triggers",
+   "date": "2026-10-21",
+   "impact": "watch",
+   "rank": 2,
+   "src": "Chittorgarh",
+   "tags": [
+    "IPO",
+    "Jio",
+    "Subscription"
+   ],
+   "title": "Jio Platforms IPO subscribed 3.04 times on day 1: institutions 9.04x, HNIs 1.61x, retail 0.73x, shareholder quota 1.41x",
+   "url": "https://www.chittorgarh.com/news-detail/ipo/ipo-subscription/jio-platforms-ipo/13403/",
+   "why": "Big institutions, including Indian fund houses, are carrying the demand while retail investors are holding back so far. The issue closes 23/10 and lists 28/10; because Jio is large, large cap, flexi cap and later index funds are likely to own it, so its listing price will feed into their NAVs."
+  },
+  {
+   "cat": "markets",
+   "date": "2026-10-21",
+   "impact": "down",
+   "rank": 3,
+   "src": "DSIJ",
+   "tags": [
+    "Small cap",
+    "Mid cap",
+    "Breadth"
+   ],
+   "title": "Small caps fall 2.37% and mid caps 1.58%; the Nifty Smallcap 100 hits a four-month low and slips below its 20-, 50- and 100-day averages",
+   "url": "https://insights.dsij.in/dsijarticledetail/nifty-smallcap-index-breaks-below-head-and-shoulders-neckline-hits-four-month-low-60098",
+   "why": "Small and mid cap fund NAVs took a much bigger hit than large cap funds on the same day. Technical analysts at DSIJ flag a bearish chart pattern and see the 200-day average (about 18,184) as the next support. SIP investors in these funds are buying more units at lower prices; lumpsum money is better staggered."
+  },
+  {
+   "cat": "stocks",
+   "date": "2026-10-21",
+   "impact": "up",
+   "rank": 4,
+   "src": "Kotak Neo",
+   "tags": [
+    "IT",
+    "Results",
+    "Sector"
+   ],
+   "title": "IT is the only sector up: Nifty IT +2.88%; L&T Technology Services jumps up to 15% on a 66.8% profit rise, Wipro +4%, Infosys and TCS +2–3.5%",
+   "url": "https://www.kotakneo.com/news/sectors/it-stocks-rally-on-positive-results-and-outlook/",
+   "why": "Technology funds and diversified funds with heavy IT holdings held up better than the rest. Better-than-expected results from TCS and HCL Tech, and hopes of improving IT spending, drove the buying. Infosys reports on 23/10, which will test whether the rally holds."
+  },
+  {
+   "cat": "markets",
+   "date": "2026-10-21",
+   "impact": "watch",
+   "rank": 5,
+   "src": "ScanX",
+   "tags": [
+    "FII",
+    "DII",
+    "Flows"
+   ],
+   "title": "Provisional flows: foreign investors net bought ₹1,022.32 cr and domestic institutions ₹1,614.32 cr (sources disagree)",
+   "url": "https://scanx.trade/stock-market-news/markets/market-today-morning-bell-update-nifty50-share-price-sensex-share-price-crude-fii-gift-nifty-rupee-latest-22-10-2026/54181903",
+   "why": "If confirmed, a second day of foreign buying would ease some pressure on large caps. But Business Standard's closing report spoke of 'continued FII selling', and ScanX's figures are auto-generated, so treat this as unconfirmed until NSE's final data. Domestic institutions include mutual funds investing SIP money."
+  },
+  {
+   "cat": "stocks",
+   "date": "2026-10-21",
+   "impact": "down",
+   "rank": 6,
+   "src": "Business Today",
+   "tags": [
+    "Bajaj Finance",
+    "NBFC",
+    "Results"
+   ],
+   "title": "Bajaj Finance −3.33% to ₹925.10, the top Nifty loser, despite a 29% profit rise: stress in short-term gold loans",
+   "url": "https://www.businesstoday.in/markets/stocks/story/bajaj-finance-shares-fall-4-as-lender-flags-rise-in-overdue-gold-loans-562851-2026-10-21",
+   "why": "Bajaj Finance is a large holding in many large cap and flexi cap funds, so its fall dragged on their NAVs. Early-stage overdue loans rose 0.15 percentage point, mostly from short-term gold loans it has since stopped; bad loans overall fell (gross NPA 1.33% vs 1.59%)."
+  },
+  {
+   "cat": "stocks",
+   "date": "2026-10-21",
+   "impact": "up",
+   "rank": 7,
+   "src": "Business Standard",
+   "tags": [
+    "Eternal",
+    "Results",
+    "Quick commerce"
+   ],
+   "title": "Eternal Q2 (after the close): profit up 92% to ₹125 cr, revenue up 77.6% to ₹24,138 cr; Blinkit order value up 79.3%",
+   "url": "https://www.business-standard.com/amp/companies/quarterly-results/eternal-q2fy27-net-profit-jumps-92-to-125-crore-revenue-rises-78-126102101130_1.html",
+   "why": "Eternal (Zomato's parent) is widely held by large cap, flexi cap and consumption funds and was among the day's top Nifty losers before the numbers. The results land on Thursday's open; Blinkit, its quick-commerce arm, now earns most of the revenue and turned an adjusted EBITDA of ₹184 cr."
+  },
+  {
+   "cat": "global",
+   "date": "2026-10-21",
+   "impact": "down",
+   "rank": 8,
+   "src": "Business Standard",
+   "tags": [
+    "Oil",
+    "Middle East",
+    "Inflation"
+   ],
+   "title": "Brent up 1.2% to about $110 on Thursday morning after the US ordered its diplomats to leave Saudi Arabia",
+   "url": "https://www.business-standard.com/amp/markets/news/stock-market-live-october-22-nse-bse-sensex-today-nifty50-gift-nifty-jio-ipo-today-126102200085_1.html",
+   "why": "Oil above $110 is the biggest worry for Indian stocks and bonds: India imports most of its crude, so it pushes up inflation, pressures the rupee and keeps the RBI leaning toward higher rates, which hurts debt fund NAVs too."
+  },
+  {
+   "cat": "global",
+   "date": "2026-10-21",
+   "impact": "watch",
+   "rank": 9,
+   "src": "Business Standard",
+   "tags": [
+    "GIFT Nifty",
+    "Asia",
+    "US"
+   ],
+   "title": "GIFT Nifty at 22,690 (−42 pts) at 8 am Thursday; Asia falls on AI-trade worries (Kospi −1.94%, Nikkei −0.78%) even though Wall Street rose (Nasdaq +1.05%)",
+   "url": "https://www.business-standard.com/amp/markets/news/stock-market-live-october-22-nse-bse-sensex-today-nifty50-gift-nifty-jio-ipo-today-126102200085_1.html",
+   "why": "Points to a slightly weaker open on 22/10. US tech gains helped Indian IT on Wednesday, but Asian chip stocks are sliding, so the global mood is mixed. International and US-focused funds rose overnight."
+  },
+  {
+   "cat": "triggers",
+   "date": "2026-10-21",
+   "impact": "watch",
+   "rank": 10,
+   "src": "Business Standard",
+   "tags": [
+    "Results",
+    "AMC",
+    "Consumption"
+   ],
+   "title": "Q2 results lined up for Thursday 22/10: Swiggy, Havells, Colgate-Palmolive, HPCL, Nippon Life India AMC, Cyient, CreditAccess Grameen",
+   "url": "https://www.business-standard.com/amp/markets/news/stock-market-live-october-22-nse-bse-sensex-today-nifty50-gift-nifty-jio-ipo-today-126102200085_1.html",
+   "why": "Nippon Life India AMC's numbers show how fund-house profits are holding up after the recent fall in assets; Swiggy and Havells matter for consumption funds. (Business Standard's list header says 'Monday' in one place and 'today' in another; we read it as today.)"
+  },
+  {
+   "cat": "mf",
+   "date": "2026-10-21",
+   "impact": "watch",
+   "rank": 11,
+   "src": "5paisa",
+   "tags": [
+    "NFO",
+    "Multi asset",
+    "FoF"
+   ],
+   "title": "NFO: Motilal Oswal Multi Asset Omni Fund of Funds, open 21/10–04/11; equity, debt, gold and silver each 10–80%",
+   "url": "https://www.5paisa.com/blog/motilal-oswal-multi-asset-omni-fund-of-funds-nfo-opens-on-october-21",
+   "why": "A fund of funds (a fund that invests in other funds and ETFs) that spreads money across four asset classes; the benchmark is 60% Nifty 500, 30% short-term debt, 5% gold and 5% silver. Minimum ₹500; 1% exit load if redeemed within 90 days. Compare costs with existing multi-asset funds, since a FoF adds a second layer of expenses."
+  },
+  {
+   "cat": "mf",
+   "date": "2026-10-21",
+   "impact": "watch",
+   "rank": 12,
+   "src": "Cafemutual",
+   "tags": [
+    "NFO",
+    "ETF",
+    "Banks"
+   ],
+   "title": "NFO: Zerodha BSE Top 10 Banks ETF closes 26/10; it holds the 10 largest private and public sector banks",
+   "url": "https://cafemutual.com/news/passives/39073-zerodha-mf-launches-sector-etf-focused-on-banking",
+   "why": "A low-cost way to hold a basket of big banks, but it is a single-sector bet; many diversified funds already hold 25–30% in financials, so check overlap before adding it."
+  },
+  {
+   "cat": "mf",
+   "date": "2026-10-21",
+   "impact": "up",
+   "rank": 20,
+   "src": "Cafemutual",
+   "tags": [
+    "Valuations",
+    "Earnings",
+    "Fund house view"
+   ],
+   "title": "Bajaj AMC equity head Sorbh Gupta: Nifty 50 forward P/E down to 17.2x from 24.8x two years ago; sees BSE 500 earnings growing 17% in FY27",
+   "url": "https://cafemutual.com/news/industry/39101-bajaj-amc-sees-earnings-growth-supporting-indian-equities-as-valuations-cool",
+   "why": "Cheaper valuations backed by earnings growth are the fund house's case for staying invested in equity funds, though it flags oil, US rates, the rupee and foreign flows as reasons volatility may continue. P/E (price-to-earnings) is how many years of current profit the market is paying for."
+  },
+  {
+   "cat": "mf",
+   "date": "2026-10-21",
+   "impact": "watch",
+   "rank": 21,
+   "src": "Cafemutual",
+   "tags": [
+    "AMFI",
+    "League tables",
+    "Passive"
+   ],
+   "title": "Since 2020, the biggest schemes have changed: SBI Nifty 50 ETF is now No. 1 (₹2.07 lakh cr), Parag Parikh Flexi Cap No. 2 (₹1.41 lakh cr), and no liquid fund is in the top five",
+   "url": "https://cafemutual.com/news/industry/39098-mutual-funds-since-2020-major-reshuffling-in-league-tables",
+   "why": "Money has shifted from parking in liquid funds to index ETFs and a few large active equity funds; the top 10 schemes now hold 11.22% of industry assets, up from 8.09%. Only 4 of today's top 10 were in the top 10 in June 2020, a reminder that past size leaders do not stay on top. (Cafemutual's table has some inconsistencies, so treat the older figures with care.)"
+  }
+ ]
+}

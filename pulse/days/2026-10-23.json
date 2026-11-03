@@ -1,0 +1,154 @@
+{
+ "day": {
+  "date": "2026-10-23",
+  "headline": "Sensex slipped 126 points for a fourth straight fall as a midcap and smallcap rout (−2.2% and −2.9%) and Swiggy's 16% crash overshadowed IT gains ahead of Infosys results.",
+  "session": "Friday close",
+  "stats": [
+   {
+    "c": "−0.17%",
+    "k": "Sensex",
+    "v": "73,123.83"
+   },
+   {
+    "c": "−0.39%",
+    "k": "Nifty 50",
+    "v": "22,600.00"
+   },
+   {
+    "c": "−2.21%",
+    "k": "Nifty Midcap 100",
+    "v": "55,800.65"
+   },
+   {
+    "c": "−2.94%",
+    "k": "Nifty Smallcap 100",
+    "v": "17,739.45"
+   },
+   {
+    "c": "−1.16%",
+    "k": "Bank Nifty",
+    "v": "54,287.35"
+   },
+   {
+    "k": "FII net (₹ cr)",
+    "v": "+887.65 (DII +3,235.36)"
+   }
+  ],
+  "summary": "Benchmarks opened firmer but turned lower as West Asia tensions, high crude and an AI-led global equity sell-off hit risk appetite; India VIX rose about 7%. The broader market was hit far harder than the Nifty: only 312 NSE stocks rose against 2,262 that fell, and 102 Nifty 500 stocks hit 52-week closing lows. FIIs turned small net buyers (₹888 cr) and DIIs bought ₹3,235 cr; after hours Infosys cut its FY27 revenue guidance, and on Saturday Kotak Mahindra Bank reported a 29% profit jump."
+ },
+ "items": [
+  {
+   "cat": "markets",
+   "date": "2026-10-23",
+   "impact": "down",
+   "rank": 1,
+   "src": "Business Standard",
+   "tags": [
+    "Sensex",
+    "Nifty",
+    "midcap",
+    "smallcap",
+    "VIX"
+   ],
+   "title": "Sensex falls for fourth day; midcaps −2.21%, smallcaps −2.94% in broad sell-off",
+   "url": "https://www.business-standard.com/markets/news/stock-market-live-october-23-nse-bse-sensex-today-nifty50-gift-nifty-crude-oil-prices-jio-ipo-q2-results-today-126102300078_1.html",
+   "why": "Mid- and smallcap fund NAVs took a much bigger hit than large-cap and index funds today; Smallcap 100 is down about 8% in seven sessions. Geojit's Vinod Nair cited valuation concerns, unwinding of leveraged positions, surging crude and an AI-led global equity sell-off; India VIX (the fear gauge) rose about 7% to 16.86."
+  },
+  {
+   "cat": "stocks",
+   "date": "2026-10-23",
+   "impact": "watch",
+   "rank": 2,
+   "src": "Multibagg",
+   "tags": [
+    "Infosys",
+    "Q2 results",
+    "IT",
+    "guidance"
+   ],
+   "title": "Infosys Q2: profit +6% to ₹7,823 cr, but FY27 revenue guidance cut to 1–2%",
+   "url": "https://www.multibagg.ai/market-pulse/articles/infosys-q2fy27-profit-dividend-guidance-cmvkyssit002q2ls0kqimvwtk",
+   "why": "Infosys is among the largest holdings across large-cap, flexi-cap, IT and Nifty index funds, so the guidance cut could weigh on IT stocks when markets reopen on 26/10. Revenue rose about 11% YoY to ₹49,244 cr; constant-currency growth guidance was cut from 1.5–3% to 1–2% on a 'challenging demand environment', margin guidance of 20–22% kept, and an interim dividend of ₹26 declared (record date 03/11/2026, payout 11/11/2026)."
+  },
+  {
+   "cat": "stocks",
+   "date": "2026-10-23",
+   "impact": "up",
+   "rank": 3,
+   "src": "PSU Connect",
+   "tags": [
+    "Kotak Mahindra Bank",
+    "Q2 results",
+    "banks",
+    "Saturday"
+   ],
+   "title": "Kotak Mahindra Bank Q2 (reported Saturday 24/10): standalone profit +29% to ₹4,212 cr",
+   "url": "https://www.psuconnect.in/financial/kotak-mahindra-bank-q2fy27-results-standalone-pat-rises-29-to-4212-crore",
+   "why": "Kotak is widely held by large-cap, banking and index funds, and a beat on profit with better asset quality supports bank-heavy portfolios. Reported on Saturday 24/10: NII (net interest income) up 16% to ₹8,459 cr, but NIM (lending margin) fell to 4.31% from 4.54%; gross NPA improved to 1.04% from 1.39%, and consolidated profit rose 26% to ₹5,645 cr."
+  },
+  {
+   "cat": "stocks",
+   "date": "2026-10-23",
+   "impact": "down",
+   "rank": 4,
+   "src": "Free Press Journal",
+   "tags": [
+    "Swiggy",
+    "Q2 results",
+    "midcap",
+    "quick commerce"
+   ],
+   "title": "Swiggy hits lower circuit, down about 16% after Q2 as quick-commerce worries mount",
+   "url": "https://www.freepressjournal.in/business/swiggy-share-price-crashes-15-to-179-after-weak-q2-performance",
+   "why": "This was the biggest drag on midcap indices, so midcap and new-age/consumption funds holding Swiggy felt it directly. The net loss narrowed YoY to ₹922 cr but widened from ₹792 cr in Q1, the adjusted EBITDA loss widened to ₹760 cr, and brokerages cut targets on Instamart profitability; the stock closed at ₹176 (−16.75% on NSE)."
+  },
+  {
+   "cat": "triggers",
+   "date": "2026-10-23",
+   "impact": "watch",
+   "rank": 5,
+   "src": "Chittorgarh",
+   "tags": [
+    "Jio Platforms",
+    "IPO",
+    "Reliance"
+   ],
+   "title": "Jio Platforms IPO (₹1,065–1,119 band) closes; QIB-led oversubscription",
+   "url": "https://www.chittorgarh.com/news-detail/ipo/closed-ipo/jio-platforms-ipo/14443/",
+   "why": "Many AMCs could take anchor or QIB allocations in India's largest IPO, and its listing may pull flows into Reliance-related stocks. Chittorgarh reports a final 21.36x overall (QIB 67.15x, NII 13.99x, retail 2.76x); Analytics Insight reported 12.25x at its update, so treat the final figure as unconfirmed until the exchange data is checked. Issue size is given as ₹30,187.65 cr to ₹30,213 cr; allotment was due 26/10 and listing 28/10."
+  },
+  {
+   "cat": "mf",
+   "date": "2026-10-23",
+   "impact": "up",
+   "rank": 6,
+   "src": "Cafemutual",
+   "tags": [
+    "AMFI",
+    "SIP",
+    "investors",
+    "folios"
+   ],
+   "title": "AMFI September data: about 4.54 lakh new MF investors; SIP inflow ₹32,490 cr",
+   "url": "https://cafemutual.com/news/industry/39121-mf-bulletin-industry-adds-over-450-lakh-new-investors-in-september",
+   "why": "SIP money held steady through the correction, which supports the case for continuing SIPs. Industry folios reached 28.62 crore (up 14% YoY), outstanding SIP accounts 10.89 crore, SIP AUM ₹17.86 lakh cr (about 21% of industry AUM), and SIF distributor registrations a record 1,475."
+  },
+  {
+   "cat": "mf",
+   "date": "2026-10-23",
+   "impact": "watch",
+   "rank": 7,
+   "src": "Cafemutual",
+   "tags": [
+    "NFO",
+    "Motilal Oswal",
+    "ABSL AMC",
+    "360 ONE",
+    "UBS"
+   ],
+   "title": "Motilal Oswal launches Multi Asset-Omni FoF; ABSL AMC H1 profit +2%; UBS takes 4.8% of 360 ONE WAM",
+   "url": "https://cafemutual.com/news/nfo/39129-motilal-oswal-mutual-fund-launches-multi-asset-omni-fund-of-funds",
+   "why": "New multi-asset NFO option for clients: it invests in equity and debt funds plus gold and silver ETFs, is benchmarked 60/30/5/5 (Nifty 500 TRI / short-duration debt / gold / silver), and closes 04/11/2026 (min ₹500, 1% exit load within 90 days). Separately, ABSL AMC's H1 FY27 profit rose 2% to ₹530.5 cr with equity QAAUM up 9% to ₹2.09 lakh cr, and UBS converted warrants into a 4.8% stake in 360 ONE WAM."
+  }
+ ]
+}

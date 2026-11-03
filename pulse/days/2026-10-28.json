@@ -1,0 +1,143 @@
+{
+ "day": {
+  "date": "2026-10-28",
+  "headline": "Sensex fell 0.48% and Nifty 0.22% as IT stocks slid and crude rose after an attack on a Saudi refinery, while midcaps, smallcaps and Bank Nifty ended higher and Jio Platforms listed at a 21.36% premium.",
+  "session": "Wednesday close",
+  "stats": [
+   {
+    "c": "−0.48%",
+    "k": "Sensex",
+    "v": "73,246.03"
+   },
+   {
+    "c": "−0.22%",
+    "k": "Nifty 50",
+    "v": "22,698.85"
+   },
+   {
+    "c": "+0.54%",
+    "k": "Bank Nifty",
+    "v": "54,267.40"
+   },
+   {
+    "c": "+0.43%",
+    "k": "Nifty Midcap 100",
+    "v": "57,274.70"
+   },
+   {
+    "c": "+0.90%",
+    "k": "Nifty Smallcap 100",
+    "v": "18,634.90"
+   },
+   {
+    "k": "FII net (₹ cr)",
+    "v": "+871.83 (provisional, bought)"
+   },
+   {
+    "k": "DII net (₹ cr)",
+    "v": "+643.35 (provisional, bought)"
+   }
+  ],
+  "summary": "Large caps closed lower on 28/10/2026, dragged by IT (Nifty IT −1.98%) and oil & gas (−2.27%) names such as Infosys, Reliance and ONGC. Broader markets did better, with Nifty Midcap 100 up 0.43% and Smallcap 100 up 0.90%. Both FIIs and DIIs were net buyers in the cash market, and SEBI's chairman said direct plans will be the default on AMC digital platforms from 01/11/2026."
+ },
+ "items": [
+  {
+   "cat": "markets",
+   "date": "2026-10-28",
+   "impact": "down",
+   "rank": 1,
+   "src": "Kotak Neo (closing bell); Oquilia (index closes); Tapetide (FII/DII)",
+   "tags": [
+    "Sensex",
+    "Nifty",
+    "IT",
+    "crude oil",
+    "FII",
+    "DII"
+   ],
+   "title": "Sensex −0.48% to 73,246.03, Nifty −0.22% to 22,698.85 on IT selling and rising crude",
+   "url": "https://www.kotakneo.com/news/market-news/stock-market-closes-lower-amid-it-weakness-as-oil-price-rise/",
+   "why": "Large-cap and IT-heavy funds had a weak day, while midcap and smallcap funds likely gained as those indices rose 0.43% and 0.90%. Crude rose after an attack on a Saudi refinery revived worries about Middle East supply; Brent January futures were at $110.71 a barrel around 15:35 IST. Nifty IT fell 1.98% and Nifty Oil & Gas 2.27%, while Nifty Auto rose 1.45%. Infosys, Reliance, ONGC, Tech Mahindra and Bharti Airtel were the main Nifty drags. Provisional exchange data show FIIs (foreign institutional investors) bought a net ₹871.83 cr and DIIs (domestic institutions, including mutual funds) bought ₹643.35 cr."
+  },
+  {
+   "cat": "rules",
+   "date": "2026-10-28",
+   "impact": "watch",
+   "rank": 2,
+   "src": "Business Today (BT Explainer, 29/10/2026); Cafemutual; Kotak Neo",
+   "tags": [
+    "SEBI",
+    "direct plans",
+    "regular plans",
+    "distributors",
+    "expense ratio"
+   ],
+   "title": "SEBI chairman: direct plans to be the default on AMC digital platforms from 01/11/2026",
+   "url": "https://www.businesstoday.in/mutual-funds/story/bt-explainer-mutual-fund-direct-plans-to-become-default-on-amc-apps-from-november-1-what-investors-need-to-know-564461-2026-10-29",
+   "why": "This matters most for distributors: an investor coming through an AMC's own website or app will start on the direct plan (no distributor commission, lower expense ratio), and anyone choosing a regular plan must be told it costs more. SEBI chairman Tuhin Kanta Pandey announced it at NDTV Profit IGNITE in Mumbai on 28/10/2026. Status: it was announced with an effective date, but the reports did not cite a circular number, so check the final SEBI circular for details. Regular plans are not being discontinued, and the rule covers AMC digital platforms only. At the same event Pandey said SEBI would review main-board IPO rules and extend AI-based surveillance; both are still under review, not final."
+  },
+  {
+   "cat": "stocks",
+   "date": "2026-10-28",
+   "impact": "up",
+   "rank": 3,
+   "src": "Telangana Today (PTI)",
+   "tags": [
+    "Jio Platforms",
+    "IPO",
+    "listing",
+    "Reliance"
+   ],
+   "title": "Jio Platforms lists at ₹1,358, a 21.36% premium to its ₹1,119 issue price, after India's biggest IPO",
+   "url": "https://telanganatoday.com/jio-platforms-shares-list-at-21-36-pc-premium-after-rs-30213-crore-ipo",
+   "why": "Funds that got allotment in the ₹30,213 cr IPO made a gain on listing day. At a market cap above ₹12.5 lakh crore, Jio became India's second-largest listed company, so index and large-cap funds will need to watch for its entry into benchmark indices (no inclusion date has been announced). The issue was subscribed 22.19 times overall and 70.55 times in the QIB (qualified institutional buyer) portion. Shares listed at ₹1,358 on both NSE and BSE; the closing price was not reported in the source read. Kotak Neo reported that the stock became eligible for margin trading from the same day."
+  },
+  {
+   "cat": "stocks",
+   "date": "2026-10-28",
+   "impact": "down",
+   "rank": 4,
+   "src": "Kotak Neo",
+   "tags": [
+    "HUL",
+    "Q2 FY27",
+    "FMCG",
+    "dividend"
+   ],
+   "title": "HUL Q2 FY27: profit up 4% to ₹2,790 cr, revenue up 15%; ₹19 interim dividend; stock falls about 2%",
+   "url": "https://www.kotakneo.com/news/stocks/hul-q2-fy-27-results-share-price-in-focus/",
+   "why": "HUL is a large weight in FMCG and consumption funds, and its tepid profit growth pulled the stock down. Net profit rose 4% to ₹2,790 cr (from ₹2,685 cr) and revenue from operations rose 15% to ₹18,226 cr (from ₹15,919 cr). The company guided for an EBITDA margin (operating profit margin) of 22–24%. The interim dividend is ₹19 per share, with a record date of 12/11/2026 and payment on 25/11/2026. The stock was at ₹1,774.70, down 2.38%, on NSE at 10:47 AM on 28/10/2026. The source did not say exactly when the results were announced."
+  },
+  {
+   "cat": "manager",
+   "date": "2026-10-28",
+   "impact": "watch",
+   "rank": 5,
+   "src": "Cafemutual",
+   "tags": [
+    "ICICI Prudential AMC",
+    "fund manager exit",
+    "PMS",
+    "AIF"
+   ],
+   "title": "Anand Shah, CIO of PMS and AIF at ICICI Prudential AMC, resigns; last day 12/11/2026",
+   "url": "https://cafemutual.com/news/cafe-alt/39167-anand-shah-quits-icici-prudential-amc",
+   "why": "Low impact for mutual fund investors: Shah ran ICICI Prudential's PMS (portfolio management services) and AIF (alternative investment fund) strategies, including its Value and Contra strategies, and the report names no mutual fund schemes. Management accepted his resignation on 27/10/2026, and he stops being senior management personnel at close of business on 12/11/2026. No successor was named."
+  },
+  {
+   "cat": "mf",
+   "date": "2026-10-28",
+   "impact": "up",
+   "rank": 6,
+   "src": "ICICI Direct (Capital Market feed)",
+   "tags": [
+    "HSBC MF",
+    "exit load",
+    "arbitrage"
+   ],
+   "title": "HSBC Arbitrage Fund cuts its exit-load window from 1 month to 15 days (effective 27/10/2026)",
+   "url": "https://www.icicidirect.com/mutual-funds/news/mf/hsbc-mutual-fund-announces-change-in-exit-load-structure/5037259",
+   "why": "Short-term parking money in this fund becomes more flexible. The 0.25% exit load (a charge for redeeming early) now applies only to redemptions or switch-outs within 15 days of allotment, down from 1 month. The notice was carried on 28/10 with an effective date of 27/10."
+  }
+ ]
+}

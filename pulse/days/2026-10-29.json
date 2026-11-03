@@ -1,0 +1,157 @@
+{
+ "day": {
+  "date": "2026-10-29",
+  "headline": "Sensex jumped 905 points (+1.24%) and Nifty 1.05% to 22,936.75 after the US Fed held rates overnight, led by FMCG, PSU bank and realty stocks, ending a two-day losing streak.",
+  "session": "Thursday close",
+  "stats": [
+   {
+    "c": "+1.24%",
+    "k": "Sensex",
+    "v": "74,151.04"
+   },
+   {
+    "c": "+1.05%",
+    "k": "Nifty 50",
+    "v": "22,936.75"
+   },
+   {
+    "c": "+1.18%",
+    "k": "Bank Nifty",
+    "v": "54,909.65"
+   },
+   {
+    "c": "+0.99%",
+    "k": "Nifty Midcap 100",
+    "v": "57,841.65"
+   },
+   {
+    "c": "+0.95%",
+    "k": "Nifty Smallcap 100",
+    "v": "18,811.35"
+   },
+   {
+    "k": "FII net (₹ cr)",
+    "v": "−943.60 (provisional, sold)"
+   },
+   {
+    "k": "DII net (₹ cr)",
+    "v": "+1,924.41 (provisional, bought)"
+   }
+  ],
+  "summary": "Indian equities rallied on 29/10/2026 after the US Fed held its policy rate at 3.75%–4.00%, though two members voted for a hike and markets still price a December increase. Gains were broad: Bank Nifty rose 1.18%, and Nifty Midcap 100 and Smallcap 100 each gained about 1%. FIIs turned net sellers of ₹943.60 cr while DIIs bought ₹1,924.41 cr."
+ },
+ "items": [
+  {
+   "cat": "markets",
+   "date": "2026-10-29",
+   "impact": "up",
+   "rank": 1,
+   "src": "DD India; Oquilia (index closes); Tapetide and HDFC Sky (FII/DII)",
+   "tags": [
+    "Sensex",
+    "Nifty",
+    "FMCG",
+    "PSU banks",
+    "FII",
+    "DII"
+   ],
+   "title": "Sensex +905 points to 74,151.04, Nifty +1.05% to 22,936.75 as FMCG, PSU banks and realty lead a broad rally",
+   "url": "https://ddindia.co.in/2026/10/sensex-climbs-over-900-points-nifty-tops-22900-on-fmcg-psu-bank-rally/",
+   "why": "Most equity fund categories had a good day, because large, mid and small caps all rose about 1%. Nifty Realty gained 2.75%, Nifty FMCG 2.34% and Nifty PSU Bank 2.20%, while Nifty Auto slipped 0.24%. Analysts said the Nifty had moved back above its 20-day moving average (its average close over the last 20 sessions), with 23,000 as the next hurdle. DIIs, which include mutual funds, bought a net ₹1,924.41 cr and absorbed net FII selling of ₹943.60 cr (provisional)."
+  },
+  {
+   "cat": "global",
+   "date": "2026-10-29",
+   "impact": "watch",
+   "rank": 2,
+   "src": "Admiral Markets; GoodReturns; Nation Thailand",
+   "tags": [
+    "US Fed",
+    "FOMC",
+    "interest rates",
+    "FII flows"
+   ],
+   "title": "US Fed holds rates at 3.75%–4.00% in a 10–2 vote, with two members voting for a hike; a December increase is priced in",
+   "url": "https://admiralmarkets.com/analytics/traders-blog/fomc-october-2026-fed-holds-rates",
+   "why": "The pause gave Indian markets some relief, but a likely US hike keeps the pressure on foreign flows and the rupee, which affects equity and international fund returns. The decision came at 14:00 ET on 28/10/2026, early on 29/10 in India. Governor Lisa Cook and Cleveland Fed President Beth Hammack dissented in favor of a 25 bp (0.25 percentage point) hike. Futures priced about an 85% chance of a hike at the 09/12/2026 meeting. GoodReturns cited a US 10-year Treasury yield of about 5.02% and noted that foreign outflows from India total about $31 billion so far in 2026. Separately, the Fed said it will hold fewer policy meetings from 2027."
+  },
+  {
+   "cat": "stocks",
+   "date": "2026-10-29",
+   "impact": "watch",
+   "rank": 3,
+   "src": "Kotak Neo",
+   "tags": [
+    "Coal India",
+    "Q2 FY27",
+    "PSU",
+    "dividend"
+   ],
+   "title": "Coal India Q2 FY27: profit up 57% to ₹6,547 cr, revenue up 21%; second interim dividend of ₹10.25",
+   "url": "https://www.kotakneo.com/news/stocks/coal-india-q2-fy-27-results-put-share-price-in-focus/",
+   "why": "This is relevant to dividend-yield, PSU and energy funds that hold Coal India. Consolidated PAT (profit after tax) rose 57% to ₹6,547 cr from ₹4,167 cr, and revenue rose 21% to ₹44,179 cr. The record date for the dividend is 04/11/2026. Even so, the stock fell 2.31% to about ₹384 on NSE early on 30/10/2026, and HDFC Sky said the profit missed expectations. Sources disagree on the growth figure: Upstox reported 53%, to ₹6,516 cr, which may be a different basis of reporting."
+  },
+  {
+   "cat": "manager",
+   "date": "2026-10-29",
+   "impact": "watch",
+   "rank": 4,
+   "src": "Upstox",
+   "tags": [
+    "HDFC Mutual Fund",
+    "fund manager change",
+    "key personnel"
+   ],
+   "title": "HDFC MF redesignates Paul S Parampreet as Fund Manager – Equities, with immediate effect",
+   "url": "https://upstox.com/news/personal-finance/mutual-funds/top-3-mutual-fund-updates-on-october-29-icici-sif-filing-hdfc-fund-manager-change-and-idcw-payout/article-202649/",
+   "why": "Low impact for now: this is a title change in HDFC MF's SAI (Statement of Additional Information, the document listing key personnel), from Member of the Investment Team (Equity) to Fund Manager – Equities. No schemes were named, so no lead-manager change was reported. Watch for later addenda that assign him schemes."
+  },
+  {
+   "cat": "mf",
+   "date": "2026-10-29",
+   "impact": "watch",
+   "rank": 5,
+   "src": "Upstox",
+   "tags": [
+    "ICICI Prudential MF",
+    "SIF",
+    "NFO filing",
+    "long-short"
+   ],
+   "title": "ICICI MF files offer document with SEBI for an iSIF Sector Rotation Long-Short Fund",
+   "url": "https://upstox.com/news/personal-finance/mutual-funds/top-3-mutual-fund-updates-on-october-29-icici-sif-filing-hdfc-fund-manager-change-and-idcw-payout/article-202649/",
+   "why": "This is for HNI (high-net-worth) clients only. A SIF (Specialised Investment Fund) has a ₹10 lakh minimum application and can take limited short positions, here through unhedged derivatives. The proposed fund would rotate across a maximum of four sectors and be benchmarked to the NIFTY 500 TRI. It would charge a 1% exit load within 12 months and offer a growth option only. It is still only a filing, with no NFO dates announced."
+  },
+  {
+   "cat": "mf",
+   "date": "2026-10-29",
+   "impact": "watch",
+   "rank": 6,
+   "src": "5paisa",
+   "tags": [
+    "gold FoF",
+    "subscription pause",
+    "SIP",
+    "STP"
+   ],
+   "title": "Gold ETF FoF restrictions continue at about 17 fund houses; no date to reopen",
+   "url": "https://www.5paisa.com/blog/gold-fund-of-funds-restrictions-17-mutual-fund-houses",
+   "why": "Clients still can't make fresh lump sums, switch-ins, new SIP/STP registrations or (at most AMCs) SIP top-ups into gold ETF fund-of-funds. Existing SIP/STP instalments and redemptions mostly carry on. The curbs began 15–16/10/2026 at HDFC, ICICI Prudential, Kotak, Tata, DSP, Groww and others, \"until further notice\". No SEBI circular has been published, and the official reason is unconfirmed. On 02/11 Invesco said SIP top-ups on its Gold ETF FoF that were registered by 15/10/2026 will still be processed, but fresh subscriptions stay closed."
+  },
+  {
+   "cat": "manager",
+   "date": "2026-10-29",
+   "impact": "watch",
+   "rank": 7,
+   "src": "ICICI Direct (Capital Market feed)",
+   "tags": [
+    "Axis MF",
+    "small cap",
+    "fund manager change"
+   ],
+   "title": "Axis Small Cap Fund adds Shreyash Devalkar as fund manager (effective 02/11/2026)",
+   "url": "https://www.icicidirect.com/mutual-funds/news/mf/axis-mutual-fund-fund-announces-change-in-fund-manager-under-its-scheme/5037792",
+   "why": "Low-to-moderate impact: one manager is added and nobody is removed. Tejas Sheth, Mayank Hyanki and Krishnaa N (foreign securities) all continue. The addendum doesn't say whether the lead manager changes, so watch the next factsheet."
+  }
+ ]
+}

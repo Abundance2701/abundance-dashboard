@@ -1,0 +1,181 @@
+{
+ "day": {
+  "date": "2026-11-02",
+  "headline": "Sensex jumped 1,233 points and Nifty 1.68% to 23,441 as Reliance soared about 12% on a Q2 beat, with oil easing on hopes of US-Iran talks",
+  "session": "Monday close",
+  "stats": [
+   {
+    "c": "+1.66%",
+    "k": "Sensex",
+    "v": "75,692.78"
+   },
+   {
+    "c": "+1.68%",
+    "k": "Nifty 50",
+    "v": "23,440.80"
+   },
+   {
+    "c": "+1.19%",
+    "k": "Nifty Midcap 100",
+    "v": "close"
+   },
+   {
+    "c": "+0.71%",
+    "k": "Nifty Smallcap 100",
+    "v": "close"
+   },
+   {
+    "c": "+5.95%",
+    "k": "Nifty Oil & Gas",
+    "v": "top sector"
+   },
+   {
+    "k": "Brent (Jan, 3:37 pm)",
+    "v": "$108.71"
+   },
+   {
+    "k": "FII / DII net (provisional)",
+    "v": "+₹3,115 cr / −₹392 cr"
+   }
+  ],
+  "summary": "Reliance Industries rose nearly 12% after its Q2 profit beat estimates, its best day since April 2020, and Reuters estimated it accounted for roughly half of the Nifty's gain. Oil and gas was the standout sector (+5.95%), Brent eased to about $108.7 from above $111, and mid and small caps rose less than the large caps (+1.19% and +0.71%). Foreign investors bought ₹3,115 cr (provisional) for a second straight day, while domestic institutions sold a small ₹392 cr."
+ },
+ "items": [
+  {
+   "cat": "markets",
+   "date": "2026-11-02",
+   "impact": "up",
+   "rank": 1,
+   "src": "Kotak Neo",
+   "tags": [
+    "Sensex",
+    "Nifty",
+    "close"
+   ],
+   "title": "Sensex +1,233 pts to 75,692.78, Nifty +1.68% to 23,440.80; rally extends to a third day",
+   "url": "https://www.kotakneo.com/news/market-news/markets-extend-rally-and-end-higher/",
+   "why": "Large-cap and index funds gained most today because one heavyweight, Reliance, did much of the lifting; mid and small cap funds rose less (+1.19% and +0.71% for the indices). Oil eased after the US signaled diplomacy with Iran, and gainers included Tata Steel, JSW Steel, Coal India and Shriram Finance, while Infosys, ICICI Bank, Kotak Bank and Axis Bank fell."
+  },
+  {
+   "cat": "stocks",
+   "date": "2026-11-02",
+   "impact": "up",
+   "rank": 2,
+   "src": "Open Magazine",
+   "tags": [
+    "Reliance",
+    "Q2 FY27",
+    "index heavyweight"
+   ],
+   "title": "Reliance jumps ~12% after Q2: shareholder profit +40.6% to ₹25,548 cr, oil-to-chemicals EBITDA +67.9%",
+   "url": "https://openthemagazine.com/business/quick-take-seven-things-to-know-about-reliance-industries-nearly-12-share-rally",
+   "why": "Reliance is among the largest holdings in most large-cap, flexi-cap and Nifty/Sensex index funds, so its best day since April 2020 directly lifted NAVs; Reuters estimated it made up about half the Nifty's gain. The beat came from refining margins (oil-to-chemicals EBITDA ₹25,203 cr) and Jio (profit +13.7% to ₹8,387 cr), while Reliance Retail profit fell 24.3%, and the stock is still down more than 17% for 2026."
+  },
+  {
+   "cat": "markets",
+   "date": "2026-11-02",
+   "impact": "up",
+   "rank": 3,
+   "src": "Tapetide (provisional NSE data)",
+   "tags": [
+    "FII",
+    "DII",
+    "flows"
+   ],
+   "title": "FIIs buy ₹3,115 cr (provisional) for a second straight day; DIIs sell ₹392 cr",
+   "url": "https://tapetide.com/fii-dii-data",
+   "why": "Foreign buying of ₹3,599 cr on 30/10 and ₹3,115 cr on 02/11 is a change after October, when FIIs sold about ₹45,162 cr on exchange data; two days do not make a trend, but sustained buying usually helps large caps first. Domestic funds were small net sellers, which is unusual given steady SIP money."
+  },
+  {
+   "cat": "global",
+   "date": "2026-11-02",
+   "impact": "up",
+   "rank": 4,
+   "src": "Business Standard",
+   "tags": [
+    "oil",
+    "Brent",
+    "US-Iran",
+    "Nasdaq"
+   ],
+   "title": "Brent eases to about $108.7 after Trump favors diplomacy with Iran; US stocks had fallen sharply on Friday",
+   "url": "https://www.business-standard.com/markets/news/stock-market-live-november-2-nse-bse-sensex-today-nifty50-gift-nifty-crude-oil-prices-q2-results-jio-share-price-ipo-today-126110200053_1.html",
+   "why": "Cheaper oil helps India's inflation and the rupee, which supports both equity and bond funds; Brent had been above $110 for most of the past two weeks. The risk is global tech: the Nasdaq fell 2.86% on Friday, which weighed on Infosys and other IT names today."
+  },
+  {
+   "cat": "manager",
+   "date": "2026-11-02",
+   "impact": "watch",
+   "rank": 5,
+   "src": "ICICI Direct (Capital Market feed)",
+   "tags": [
+    "Kotak MF",
+    "fund manager change",
+    "co-manager"
+   ],
+   "title": "Kotak MF adds co-managers across 10 equity schemes (effective 02/11/2026)",
+   "url": "https://www.icicidirect.com/mutual-funds/news/mf/kotak-mahindra-mutual-fund-announces-change-in-fund-manager-under-its-schemes/5040121",
+   "why": "Low impact: managers are only added and no existing manager is removed. Additions include Rohit Tandon (Equity Savings), Arjun Khanna and Mandar Pawar (Consumption), Saumil Mehta (Special Opportunities), Umang Shah (Banking & Financial Services; Services), Venkata Sudheer Guntupalli (Technology; Services), Mandar Pawar (Dividend Yield), Shibani Kurian (Pioneer), Atul Bhole (Business Cycle) and Devender Singhal (Smallcap, alongside Harish Bihani)."
+  },
+  {
+   "cat": "manager",
+   "date": "2026-11-02",
+   "impact": "watch",
+   "rank": 6,
+   "src": "ICICI Direct (Capital Market feed)",
+   "tags": [
+    "Invesco MF",
+    "arbitrage",
+    "fund manager change"
+   ],
+   "title": "Invesco India Arbitrage Fund: Pranav Gupta replaces Pradeep Sukte (effective 02/11/2026)",
+   "url": "https://www.icicidirect.com/mutual-funds/news/mf/invesco-mutual-fund-announces-change-in-fund-manager-under-its-scheme/5040101",
+   "why": "Low impact: this is an arbitrage fund (it earns the gap between cash and futures prices), so manager style matters less. Deepak Gupta continues."
+  },
+  {
+   "cat": "mf",
+   "date": "2026-11-02",
+   "impact": "up",
+   "rank": 7,
+   "src": "Upstox",
+   "tags": [
+    "HDFC MF",
+    "SIP",
+    "minimum investment"
+   ],
+   "title": "HDFC cuts minimum daily SIP to ₹20 in Balanced Advantage and Value funds",
+   "url": "https://upstox.com/news/personal-finance/mutual-funds/3-mutual-fund-updates-on-november-2-investors-should-know-hdfc-reduces-minimum-daily-sip-in-two-funds-invesco-issues-gold-fund-clarification-kotak-nfo/article-202789/",
+   "why": "Small-ticket clients can start daily SIPs for less: the minimum drops from ₹100 to ₹20, while minimum instalments rise from 6 to 30. It applies from 02/11/2026 to online daily SIPs only, not physical forms."
+  },
+  {
+   "cat": "mf",
+   "date": "2026-11-02",
+   "impact": "up",
+   "rank": 8,
+   "src": "Cafemutual",
+   "tags": [
+    "AMFI data",
+    "flows",
+    "investor behaviour"
+   ],
+   "title": "MF investors put in ₹13.82 lakh cr net from Sept-2024 to Sept-2026 even as the Nifty fell",
+   "url": "https://cafemutual.com/news/industry/39190-indian-mf-investors-pour-rs-1382-lakh-crore-since-sept-24-despite-flat-markets",
+   "why": "Useful for client conversations: investors kept investing through a flat-to-falling market. Industry AUM rose 22.72%, from ₹66.82 lakh cr to about ₹82 lakh cr, almost all from fresh money. Equity took in ₹7.42 lakh cr net but lost ₹98,453 cr in market value, while the Nifty 50 fell from 25,939 to 23,063 (about 11%; the article prints \"1-1.09%\", which looks like a typo). Based on AMFI data."
+  },
+  {
+   "cat": "mf",
+   "date": "2026-11-02",
+   "impact": "down",
+   "rank": 9,
+   "src": "Cafemutual",
+   "tags": [
+    "distributors",
+    "ARN",
+    "AMFI"
+   ],
+   "title": "New individual MFD registrations down about 16% in Apr–Sep 2026",
+   "url": "https://cafemutual.com/news/industry/39201-over-12500-individuals-join-mf-distribution-business-in-april-september-2026",
+   "why": "Fewer new individual distributors are joining just as direct plans become the default on AMC platforms. AMFI data shows 12,593 new individual ARNs (in the table; the text says 12,563) against 14,942 a year earlier, and 32,176 total new ARNs against 34,339. The base is about 2.07 lakh individual MFDs."
+  }
+ ]
+}

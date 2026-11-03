@@ -1,0 +1,139 @@
+{
+ "day": {
+  "date": "2026-10-22",
+  "headline": "Sensex fell 460 points and Nifty 0.54% for a third straight loss as Brent jumped above $110 on fresh West Asia attacks and FIIs sold ₹3,459 cr.",
+  "session": "Thursday close",
+  "stats": [
+   {
+    "c": "−0.62%",
+    "k": "Sensex",
+    "v": "73,249.39"
+   },
+   {
+    "c": "−0.54%",
+    "k": "Nifty 50",
+    "v": "22,687.65"
+   },
+   {
+    "c": "−0.87%",
+    "k": "Nifty Midcap 100",
+    "v": "57,063.95"
+   },
+   {
+    "c": "−1.14%",
+    "k": "Nifty Smallcap 100",
+    "v": "18,275.90"
+   },
+   {
+    "c": "−0.09%",
+    "k": "Bank Nifty",
+    "v": "54,925.70"
+   },
+   {
+    "c": "+1.85%",
+    "k": "Brent",
+    "v": "$110.83"
+   },
+   {
+    "k": "FII net (₹ cr)",
+    "v": "−3,458.70 (DII +2,891.32)"
+   }
+  ],
+  "summary": "Houthi drone strikes on Saudi Arabia's Shaybah oilfield and Dammam airport pushed Brent crude above $110, reviving inflation worries for oil-importing India. Mid- and smallcaps fell harder than the benchmarks (Midcap 100 at a six-month low), while domestic institutions bought ₹2,891 cr to absorb heavy foreign selling. Pharma and PSU banks were the rare gainers; IT, FMCG and media led the declines ahead of Infosys results."
+ },
+ "items": [
+  {
+   "cat": "markets",
+   "date": "2026-10-22",
+   "impact": "down",
+   "rank": 1,
+   "src": "StockGro",
+   "tags": [
+    "Sensex",
+    "Nifty",
+    "crude oil",
+    "West Asia",
+    "inflation"
+   ],
+   "title": "Sensex −460 pts, Nifty −124 pts as Brent tops $110 on Saudi oilfield attack",
+   "url": "https://www.stockgro.club/blogs/trending/todays-stock-market-news-22-oct-2026/",
+   "why": "Equity fund NAVs slipped for a third day, with mid/smallcap funds hit harder than large-cap ones. Benchmarks fell after Houthi drone strikes on Saudi Arabia's Shaybah oilfield and Dammam airport lifted December Brent 1.85% to $110.83; higher oil raises India's import bill, pressures the rupee and stokes inflation."
+  },
+  {
+   "cat": "markets",
+   "date": "2026-10-22",
+   "impact": "watch",
+   "rank": 2,
+   "src": "Tapetide (provisional NSE data)",
+   "tags": [
+    "FII",
+    "DII",
+    "flows"
+   ],
+   "title": "FIIs sell ₹3,458.70 cr; DIIs buy ₹2,891.32 cr in cash market",
+   "url": "https://tapetide.com/insight/reports/fii-dii-flows/2026-10",
+   "why": "Domestic buying (largely mutual fund SIP money) cushioned the fall, a useful talking point for clients worried about foreign outflows. FIIs (foreign institutional investors) swung from net buyers of ₹1,022.32 cr on 21/10 to heavy sellers; figures are provisional exchange data."
+  },
+  {
+   "cat": "markets",
+   "date": "2026-10-22",
+   "impact": "down",
+   "rank": 3,
+   "src": "Oquilia Market Pulse (NSE data)",
+   "tags": [
+    "midcap",
+    "smallcap",
+    "breadth"
+   ],
+   "title": "Midcap 100 hits six-month low; smallcaps fall 1.14%, breadth weak",
+   "url": "https://www.oquilia.com/markets/today/2026-10-22",
+   "why": "Mid- and smallcap fund investors are seeing the sharpest drawdowns in this correction, so expect queries; investors are cutting riskier positions first. Midcap 100 fell 0.87% and Smallcap 100 1.14% (NSE data; one source shows −1.17%), while 38 of 50 Nifty stocks closed lower."
+  },
+  {
+   "cat": "stocks",
+   "date": "2026-10-22",
+   "impact": "watch",
+   "rank": 4,
+   "src": "StockGro",
+   "tags": [
+    "Swiggy",
+    "Q2 results",
+    "quick commerce"
+   ],
+   "title": "Swiggy Q2: loss narrows to ₹922 cr, revenue up 36.1% to ₹7,571 cr",
+   "url": "https://www.stockgro.club/blogs/trending/todays-stock-market-news-22-oct-2026/",
+   "why": "Swiggy sits in many new-age/consumption and midcap fund portfolios, and the market judged these numbers weak the next day (stock −16% on 23/10). Results came out on 22/10; the stock already fell 5.48% that session."
+  },
+  {
+   "cat": "stocks",
+   "date": "2026-10-22",
+   "impact": "watch",
+   "rank": 5,
+   "src": "NewsBytes",
+   "tags": [
+    "Indian Hotels",
+    "KEI Industries",
+    "Colgate",
+    "Q2 results"
+   ],
+   "title": "Indian Hotels +3.89% on strong earnings; KEI Industries −8.45% on margin worries",
+   "url": "https://www.newsbytesapp.com/news/business/indian-stocks-slide-as-sensex-falls-460-points-to-73249/tldr",
+   "why": "Results season is moving individual holdings sharply, which shows up in sector and midcap fund NAVs. Indian Hotels rose on strong earnings and tourism stocks led sectors (+1.10%), while KEI fell over margin concerns; Colgate-Palmolive posted 4.2% profit growth to ₹342 cr with margins narrowing to 28% from 31%."
+  },
+  {
+   "cat": "mf",
+   "date": "2026-10-22",
+   "impact": "watch",
+   "rank": 6,
+   "src": "Cafemutual",
+   "tags": [
+    "ZFunds",
+    "US stocks",
+    "distribution"
+   ],
+   "title": "ZFunds launches US stocks and ETFs, opens 5,000 accounts on day one",
+   "url": "https://cafemutual.com/news/industry/39117-zfunds-launches-us-stocks-and-etfs-opens-5000-accounts-on-day-one",
+   "why": "Distributor platforms are adding direct overseas investing, which competes with international fund-of-funds for client money. ZFunds (an MFD platform) said it opened 5,000 accounts on launch day."
+  }
+ ]
+}
