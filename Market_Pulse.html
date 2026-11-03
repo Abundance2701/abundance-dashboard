@@ -33,15 +33,38 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 h2.sec{margin:0 0 8px;font:600 11.5px var(--f-display);text-transform:uppercase;letter-spacing:.08em;color:var(--secondary)}
 
 /* index strip */
-.idx{display:grid;grid-template-columns:repeat(7,minmax(128px,1fr));gap:8px;overflow-x:auto;padding-bottom:2px;scrollbar-width:thin}
-.ix{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 10px;text-align:left;cursor:pointer;min-width:128px;display:grid;gap:1px;color:var(--ink)}
+.idx{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(112px,1fr);gap:8px;overflow-x:auto;padding-bottom:2px;scrollbar-width:thin}
+.ix{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 10px;text-align:left;cursor:pointer;min-width:112px;display:grid;gap:1px;color:var(--ink)}
 .ix[aria-pressed="true"]{border-color:var(--primary);box-shadow:inset 0 0 0 1px var(--primary)}
 .ix .n{font:600 11px var(--f-display);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ix .v{font:600 15px var(--f-display);font-variant-numeric:tabular-nums}
-.ix .c{font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums}
+.ix .c{white-space:nowrap;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
+.ix.flow{cursor:default;min-width:170px;background:#fffaf0;border-color:#efdcae}
+.ix.flow .row{display:flex;justify-content:space-between;gap:8px;font-size:13px;font-variant-numeric:tabular-nums}
+.ix.flow .row b{font:600 13.5px var(--f-display)}
+.ix.flow small{font-size:11px;color:var(--muted)}
+.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--up);margin-right:5px;vertical-align:1px;animation:pulse 2s infinite}
+@keyframes pulse{50%{opacity:.35}}
+@media (prefers-reduced-motion:reduce){.live-dot{animation:none}}
+.tabs{display:flex;gap:4px;margin:16px 0 0;border-bottom:1px solid var(--line)}
+.tabs button{font:600 13.5px var(--f-display);background:none;border:0;border-bottom:3px solid transparent;padding:7px 12px;color:var(--muted);cursor:pointer;margin-bottom:-1px}
+.tabs button[aria-selected="true"]{color:var(--primary);border-bottom-color:var(--primary)}
+.tabs .cnt{font:700 11px var(--f-body);background:var(--primary-soft);color:var(--primary);border-radius:999px;padding:0 6px;margin-left:5px}
+.newbar[hidden]{display:none}
+.newbar{position:sticky;top:8px;z-index:5;display:flex;justify-content:center;margin:0 0 8px}
+.newbar button{font:600 13px var(--f-display);background:var(--primary);color:#fff;border:0;border-radius:999px;padding:6px 14px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.15)}
+.lv{display:grid;grid-template-columns:62px minmax(0,1fr);gap:10px;padding:9px 14px;border-bottom:1px solid var(--line)}
+.lv:last-child{border-bottom:0}
+.lv .tm{font:600 12.5px var(--f-display);color:var(--muted);font-variant-numeric:tabular-nums;padding-top:2px}
+.lv .tm small{display:block;font:400 11px var(--f-body)}
+.lv a{color:var(--ink);text-decoration:none;font-size:14.5px;font-weight:700;line-height:1.35}
+.lv a:hover{color:var(--primary);text-decoration:underline}
+.lv .meta{margin-top:2px}
+.lv.fresh{background:var(--accent-soft)}
+.daysep{padding:6px 14px;font:600 11px var(--f-display);text-transform:uppercase;letter-spacing:.07em;color:var(--secondary);background:var(--soft)}
 .ix svg{width:100%;height:22px;display:block;margin-top:2px}
 .up{color:var(--up)}.down{color:var(--down)}
-.perf{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center;padding:12px 14px;margin-top:8px}
+.perf{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:12px 14px;margin-top:8px}
 .perf .who{min-width:150px}
 .perf .who b{display:block;font:600 14px var(--f-display)}
 .perf .who span{font-size:12.5px;color:var(--muted)}
@@ -105,7 +128,7 @@ aside .card{padding:12px 14px;margin-bottom:12px}
 .ev .d small{display:block;font:600 10.5px var(--f-body);color:var(--muted)}
 .ev .t{font-weight:700}.ev .x{color:var(--muted);font-size:12.5px}
 .note{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5}
-@media (max-width:900px){ .grid{grid-template-columns:1fr} .perf{grid-template-columns:1fr} .tiles{grid-template-columns:repeat(4,1fr)} }
+@media (max-width:900px){ .grid{grid-template-columns:1fr} .perf{grid-template-columns:1fr} .ix.flow{min-width:0} .tiles{grid-template-columns:repeat(4,1fr)} }
 @media (max-width:520px){ body{font-size:14.5px} .stats{gap:2px 12px} .tiles{gap:5px} .tile b{font-size:13px} .tiles{grid-template-columns:repeat(4,1fr)} .day h3{font-size:15.5px} }
 </style>
 </head>
@@ -121,9 +144,16 @@ aside .card{padding:12px 14px;margin-bottom:12px}
     <div class="card perf" id="perf" hidden>
       <div class="who" id="perfWho"></div>
       <div><div class="tiles" id="tiles"></div><div class="src" id="idxSrc"></div></div>
+      <div id="flow"></div>
     </div>
   </section>
 
+  <div class="tabs" role="tablist">
+    <button type="button" role="tab" id="tabLive" data-v="live" aria-selected="true"><span class="live-dot" aria-hidden="true"></span>Live today<span class="cnt" id="liveCnt" hidden></span></button>
+    <button type="button" role="tab" id="tabBrief" data-v="brief" aria-selected="false">Daily brief</button>
+  </div>
+
+  <div id="briefTop" hidden>
   <div class="datebar">
     <div class="dnav"><button type="button" class="arrow" id="prev" aria-label="Previous day">‹</button>
     <nav class="days" id="days" aria-label="Recent days"></nav>
@@ -137,12 +167,21 @@ aside .card{padding:12px 14px;margin-bottom:12px}
     <p id="dayP"></p>
     <div class="stats" id="stats"></div>
   </section>
+  </div>
 
   <div class="grid">
     <main>
+      <div id="liveView">
+        <div class="newbar" id="newBar" hidden><button type="button" id="newBtn"></button></div>
+        <div class="chips" id="lchips" role="group" aria-label="Filter live headlines"></div>
+        <div class="card" id="live"><div class="empty">Loading live headlines…</div></div>
+        <p class="note">Headlines as published, gathered every couple of minutes from Economic Times, Moneycontrol, Mint, Business Standard, BusinessLine, SEBI, RBI and Google News. Only market, mutual fund and regulation stories are kept; stock-tip lists are left out. "+2 more" means other publications ran the same story. These are not checked by anyone: for the explained version, see the next morning's Daily brief.</p>
+      </div>
+      <div id="briefView" hidden>
       <div class="chips" id="chips" role="group" aria-label="Filter by topic"></div>
       <div class="card" id="feed"><div class="empty">Loading stories…</div></div>
       <p class="note">Written each morning from live news (Business Standard, ET, Moneycontrol, Mint, Value Research, Cafemutual) and checked against the official SEBI, RBI and NSE notices on the right. Every story links to the article it came from. Bars: <span class="up">green</span> supportive, <span class="down">orange</span> negative, <span style="color:#a87800">yellow</span> to watch. Internal research, not investment advice.</p>
+      </div>
     </main>
     <aside>
       <div class="card"><h2 class="sec">Official notices · SEBI · RBI · NSE</h2><div id="official"><div class="empty">Loading…</div></div></div>
@@ -185,14 +224,35 @@ aside .card{padding:12px 14px;margin-bottom:12px}
     $('idx').innerHTML = L.map((x, i) => `<button type="button" class="ix" aria-pressed="${i === sel}" data-i="${i}" title="${esc(x.name)}: click for performance">
       <span class="n">${esc(x.name)}</span><span class="v">${inr(x.level)}</span>
       <span class="c ${cls(x.chgPct)}">${x.chg == null ? '' : (x.chg > 0 ? '+' : x.chg < 0 ? '−' : '') + inr(Math.abs(x.chg))} (${sg(x.chgPct)})</span>${spark(x.spark, (x.spark || [0]).at(-1) >= (x.spark || [0])[0])}</button>`).join('');
+    $('flow').innerHTML = flowCard();
     const x = L[sel];
     $('perf').hidden = false;
-    $('perfWho').innerHTML = `<b>${esc(x.name)} · performance</b><span>Close ${dd(x.date)} · ${inr(x.level)}</span>`;
+    $('perfWho').innerHTML = `<b>${esc(x.name)} · performance</b><span>${IX.live && marketOpen() ? 'Latest' : 'Close'} ${dd(x.date)} · ${inr(x.level)}</span>`;
     const P = x.perf || {};
     $('tiles').innerHTML = [['1D', x.chgPct], ['1W', P['1W']], ['1M', P['1M']], ['3M', P['3M']], ['6M', P['6M']], ['YTD', P.YTD], ['1Y', P['1Y']]]
       .map(([k, v]) => `<div class="tile ${cls(v)}"><b class="${cls(v)}">${sg(v)}</b><span>${k}</span></div>`).join('');
     const t = new Date(IX.updated);
-    $('idxSrc').textContent = `Price returns from daily closes (Yahoo Finance), updated ${t.toLocaleString('en-IN', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit', timeZone:'Asia/Kolkata' })} IST. During market hours the day's figure is the latest available price.`;
+    const live = IX.live ? `Live, refreshed every minute in market hours (${x.src === 'NSE' ? 'level from NSE' : 'level from Yahoo Finance, may lag ~15 min'})` : 'Daily closes from Yahoo Finance';
+    $('idxSrc').textContent = `${live}; return history from Yahoo Finance daily closes. Updated ${t.toLocaleString('en-IN', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit', timeZone:'Asia/Kolkata' })} IST.`;
+  }
+  const cr = v => v == null ? '—' : (v > 0 ? '+' : v < 0 ? '−' : '') + '₹' + Math.abs(Math.round(v)).toLocaleString('en-IN') + ' cr';
+  const fd = t => { const m = String(t || '').match(/(\d{1,2})-([A-Za-z]{3})-(\d{4})/); return m ? `${m[1].padStart(2, '0')}/${String(MON.indexOf(m[2][0].toUpperCase() + m[2].slice(1, 3).toLowerCase()) + 1).padStart(2, '0')}/${m[3]}` : String(t || ''); };
+  function flowCard() {
+    let f = IX && IX.fiidii;
+    if (!f || (f.fii == null && f.dii == null)) {            // fall back to the latest brief's stat line
+      const d = days.find(d => (d.stats || []).some(s => /fii/i.test(s.k)));
+      const st = d && d.stats.find(s => /fii/i.test(s.k));
+      if (!st) return '';
+      const m = String(st.v).match(/([+−-])₹?([\d,]+)\s*cr\s*\/\s*([+−-])₹?([\d,]+)/);
+      if (!m) return '';
+      const n = (sgn, v) => (sgn === '+' ? 1 : -1) * +v.replace(/,/g, '');
+      f = { date: dd(d.date), fii: n(m[1], m[2]), dii: n(m[3], m[4]), src: 'Daily brief (provisional)' };
+    }
+    return `<div class="ix flow" title="Net buying (+) or selling (−) in the cash market, ₹ crore. Source: ${esc(f.src)}">
+      <span class="n">FII / DII net (cash) · ${esc(fd(f.date))}</span>
+      <span class="row"><span>FII</span><b class="${cls(f.fii)}">${cr(f.fii)}</b></span>
+      <span class="row"><span>DII</span><b class="${cls(f.dii)}">${cr(f.dii)}</b></span>
+      <small>${/provisional/i.test(f.src) ? 'provisional' : ''}</small></div>`;
   }
 
   // ---------- news ----------
@@ -213,7 +273,9 @@ aside .card{padding:12px 14px;margin-bottom:12px}
   function render() {
     const D = allDates(), recent = D.slice(0, 7);
     const show = cur && !recent.includes(cur) ? [cur, ...recent] : recent;
-    $('days').innerHTML = show.sort().reverse().map(d => `<button type="button" aria-pressed="${d === cur}" data-d="${d}">${short(d)}</button>`).join('');
+    $('days').innerHTML = show.sort().map(d => `<button type="button" aria-pressed="${d === cur}" data-d="${d}">${short(d)}</button>`).join('');
+    const on = $('days').querySelector('[aria-pressed="true"]');
+    if (on) $('days').scrollLeft = on.offsetLeft + on.offsetWidth - $('days').clientWidth + 8;
     const ix = D.indexOf(cur);
     $('prev').disabled = ix < 0 || ix >= D.length - 1; $('next').disabled = ix <= 0;
     if (D.length) { $('pickDate').min = D[D.length - 1]; $('pickDate').max = D[0]; }
@@ -256,8 +318,7 @@ aside .card{padding:12px 14px;margin-bottom:12px}
   async function go(iso) { if (!iso) return; await ensureMonth(iso); cur = iso; render(); }
   async function load() {
     $('upd').textContent = 'Loading…';
-    const [news, ix, off] = await Promise.allSettled([getJSON('market-pulse.json'), getJSON('data/indices.json'), getJSON('data/official.json')]);
-    if (ix.status === 'fulfilled') { IX = ix.value; renderIdx(); }
+    const [news, ix, off] = await Promise.allSettled([getJSON('market-pulse.json'), loadMarket(), getJSON('data/official.json')]);
     if (off.status === 'fulfilled') { OFF = off.value; renderOfficial(); } else $('official').innerHTML = '<div class="empty">Official notices not available right now.</div>';
     if (news.status === 'fulfilled') {
       const data = news.value;
@@ -266,7 +327,7 @@ aside .card{padding:12px 14px;margin-bottom:12px}
       if (!cur || !days.some(d => d.date === cur)) cur = days[0] ? days[0].date : null;
       const t = data.updated ? new Date(data.updated) : null;
       $('upd').textContent = t ? 'Updated ' + t.toLocaleString('en-IN', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit', timeZone:'Asia/Kolkata' }) + ' IST' : '';
-      render();
+      render(); renderIdx();
     } else {
       $('upd').textContent = '';
       $('dayK').textContent = 'Unavailable'; $('dayH').textContent = 'Could not load the news right now.'; $('dayP').textContent = 'Press Refresh to try again.';
@@ -280,8 +341,82 @@ aside .card{padding:12px 14px;margin-bottom:12px}
   $('next').addEventListener('click', () => { const D = allDates(), i = D.indexOf(cur); if (i > 0) go(D[i - 1]); });
   $('pickDate').addEventListener('change', e => go(e.target.value));
   $('chips').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; filt = b.dataset.c; try { localStorage.setItem('pulse_filter', filt) } catch (x) {} render(); });
-  $('reload').addEventListener('click', load);
-  load();
+  $('reload').addEventListener('click', () => { load(); loadNews(); });
+
+  // ---------- live market data ----------
+  async function loadMarket() {
+    try {
+      const m = await getJSON('api/market');
+      if (!m.indices || m.indices.length < 4) throw new Error('thin');
+      IX = { ...m, live: true };
+    } catch (e) {
+      try { const f = await getJSON('data/indices.json'); IX = { ...f, live: false, fiidii: IX && IX.fiidii }; } catch (e2) {}
+    }
+    renderIdx();
+  }
+  const istNow = () => new Date(Date.now() + 5.5 * 3600e3);
+  const marketOpen = () => { const t = istNow(), d = t.getUTCDay(), m = t.getUTCHours() * 60 + t.getUTCMinutes(); return d > 0 && d < 6 && m >= 9 * 60 && m <= 15 * 60 + 45; };
+
+  // ---------- live headlines ----------
+  const LT = [['', 'All'], ['markets', 'Markets'], ['mf', 'Mutual funds'], ['rules', 'SEBI · RBI · AMFI'], ['economy', 'Economy'], ['global', 'Global & oil'], ['stocks', 'Companies'], ['other', 'Other']];
+  const LTL = Object.fromEntries(LT);
+  let LIVE = [], pending = [], seen = new Set(), lfilt = '', fresh = new Set(), firstLive = true;
+  try { lfilt = localStorage.getItem('pulse_lfilt') || '' } catch (e) {}
+  const istDay = t => new Date(t + 5.5 * 3600e3).toISOString().slice(0, 10);
+  const hm = t => new Date(t).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Kolkata' });
+  async function loadNews() {
+    let j; try { j = await getJSON('api/news'); } catch (e) { if (!LIVE.length) $('live').innerHTML = '<div class="empty">Live headlines are not available right now. The Daily brief tab still works.</div>'; return; }
+    const its = (j.items || []).filter(i => i.t);
+    if (firstLive) { LIVE = its; its.forEach(i => seen.add(i.id)); firstLive = false; renderLive(); return; }
+    const nw = its.filter(i => !seen.has(i.id));
+    if (!nw.length) return;
+    pending = its; nw.forEach(i => fresh.add(i.id));
+    $('newBtn').textContent = `${nw.length} new ${nw.length === 1 ? 'story' : 'stories'} · show`;
+    $('newBar').hidden = false;
+  }
+  $('newBtn').addEventListener('click', () => { LIVE = pending; LIVE.forEach(i => seen.add(i.id)); pending = []; $('newBar').hidden = true; renderLive(); });
+  function renderLive() {
+    const today = istDay(Date.now());
+    const cnt = {}; LIVE.forEach(i => cnt[i.topic] = (cnt[i.topic] || 0) + 1);
+    if (lfilt && !cnt[lfilt]) lfilt = '';
+    $('lchips').innerHTML = LT.filter(([k]) => !k || cnt[k]).map(([k, l]) => `<button type="button" data-c="${k}" aria-pressed="${lfilt === k}">${l}<span class="cnt">${k ? cnt[k] : LIVE.length}</span></button>`).join('');
+    const L = LIVE.filter(i => !lfilt || i.topic === lfilt);
+    const nToday = LIVE.filter(i => istDay(i.t) === today).length;
+    $('liveCnt').textContent = nToday; $('liveCnt').hidden = !nToday;
+    let last = '', html = '';
+    for (const i of L) {
+      const d = istDay(i.t);
+      if (d !== last) { html += `<div class="daysep">${d === today ? 'Today' : short(d)} · ${dd(d)}</div>`; last = d; }
+      html += `<div class="lv${fresh.has(i.id) ? ' fresh' : ''}"><div class="tm">${hm(i.t)}</div><div>
+        <a href="${esc(i.url)}" target="_blank" rel="noopener">${esc(i.title)}</a>
+        <div class="meta"><span class="cat">${esc(LTL[i.topic] || '')}</span><span>${esc(i.src)}${i.also && i.also.length ? ` <span title="${esc(i.also.join(', '))}">+${i.also.length} more</span>` : ''}</span></div></div></div>`;
+    }
+    $('live').innerHTML = html || '<div class="empty">No headlines in this topic yet.</div>';
+  }
+  $('lchips').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; lfilt = b.dataset.c; try { localStorage.setItem('pulse_lfilt', lfilt) } catch (x) {} renderLive(); });
+
+  // ---------- tabs ----------
+  let view = 'live'; try { view = localStorage.getItem('pulse_view') || 'live' } catch (e) {}
+  function setView(v) {
+    view = v; try { localStorage.setItem('pulse_view', v) } catch (e) {}
+    $('tabLive').setAttribute('aria-selected', v === 'live'); $('tabBrief').setAttribute('aria-selected', v === 'brief');
+    $('liveView').hidden = v !== 'live'; $('briefView').hidden = $('briefTop').hidden = v !== 'brief';
+    if (v === 'brief') render();
+  }
+  document.querySelector('.tabs').addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (b) setView(b.dataset.v); });
+  setView(view);
+
+  load(); loadNews();
+  // refresh: indices every minute in market hours (else 10 min), headlines every 3 min, brief every 30 min
+  let tick = 0;
+  setInterval(() => {
+    if (document.hidden) return;
+    tick++;
+    if (marketOpen() || tick % 10 === 0) loadMarket();
+    if (tick % 3 === 0) loadNews();
+    if (tick % 30 === 0) load();
+  }, 60000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) { loadMarket(); loadNews(); } });
 })();
 </script>
 </body>

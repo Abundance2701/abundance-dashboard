@@ -23,6 +23,7 @@ INDICES = [
     ('Nifty Smallcap 250', ['NIFTYSMLCAP250.NS', '^NIFTYSMLCAP250', '^CNXSC']),
     ('Nifty IT', ['^CNXIT']),
     ('India VIX', ['^INDIAVIX']),
+    ('S&P 500', ['^GSPC']),
 ]
 
 def closes(sym):
