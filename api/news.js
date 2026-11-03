@@ -24,8 +24,10 @@ const FEEDS = [
   ['Google News', 'https://news.google.com/rss/search?q=(%22mutual+fund%22+OR+AMFI+OR+SEBI+OR+%22fund+manager%22)+when:1d&hl=en-IN&gl=IN&ceid=IN:en'],
 ];
 
+// Google News re-lists many small sites; keep only established Indian/global business publications
+const TRUSTED = /economic times|^mint$|livemint|business standard|moneycontrol|businessline|cnbc ?tv18|ndtv profit|reuters|financial express|business today|value research|cafe ?mutual|morningstar|zee business|etmutualfunds|bloomberg|the hindu|times of india|hindustan times|india today|outlook money|fortune india|the print|bseindia|nse india|sebi|rbi|amfi|pib/i;
 const KEEP = /sensex|nifty|market|stock|share|equit|mutual fund|\bmfs?\b|\bamcs?\b|amfi|sebi|\brbi\b|repo|inflation|cpi|wpi|\bgdp\b|fii|fpi|\bdii\b|rupee|bond|yield|crude|brent|oil|gold|silver|fed\b|wall street|nasdaq|dow|s&p|ipo|listing|results|q[1-4]\b|profit|earnings|sip\b|nfo|fund manager|index|etf|rally|slump|selloff|sell-off|tariff|trade deal|gift nifty|budget|tax/i;
-const DROP = /stocks? to buy|buy or sell|top picks|multibagger|penny stock|technical pick|target price|trading ideas|stock recommendations|stocks? to watch|hot stocks|brokerage (calls|picks)|should you buy|horoscope|lottery|cricket|bollywood|smartphone|recipe|live score|quiz|photos:|in pics|watch:|video:|podcast|appeal no|adjudication order|settlement order|order in the matter|recovery certificate|notice of demand|money market operations|auction|vrrr/i;
+const DROP = /stocks? to buy|stocks? under ₹|stock under rs|shares? under ₹|sri lanka|pakistan|bangladesh|buy or sell|top picks|multibagger|penny stock|technical pick|target price|trading ideas|stock recommendations|stocks? to watch|hot stocks|brokerage (calls|picks)|should you buy|horoscope|lottery|cricket|bollywood|smartphone|recipe|live score|quiz|photos:|in pics|watch:|video:|podcast|appeal no|adjudication order|settlement order|order in the matter|recovery certificate|notice of demand|money market operations|auction|vrrr/i;
 const TOPICS = [
   ['rules', /sebi|amfi|\brbi\b|repo rate|monetary policy|mpc\b|circular|regulat|consultation paper|framework|guidelines|\bkyc\b|nominat|income tax|cbdt|gst council/i],
   ['mf', /mutual fund|\bmfs?\b|\bamcs?\b|\bnfo\b|\bsip\b|fund manager|\bscheme\b|index fund|\betfs?\b|\bsif\b|folio|aum\b|flexi ?cap|small ?cap fund|mid ?cap fund/i],
@@ -59,6 +61,7 @@ async function feed([src, url]) {
       const link = tag(x, 'link') || (x.match(/<guid[^>]*>([^<]+)</i) || [])[1] || '';
       const when = Date.parse(tag(x, 'pubDate') || tag(x, 'dc:date') || '') || null;
       if (src === 'Google News') { const s = tag(x, 'source'); if (s) { pub = s; title = title.replace(new RegExp('\\s+-\\s+' + s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$'), ''); } }
+      if (src === 'Google News' && !TRUSTED.test(pub)) continue;
       if (title) out.push({ title, url: link.trim(), src: pub, t: when, via: src });
     }
     return { src, url, ok: true, status: r.status, ms: Date.now() - t0, items: out };
