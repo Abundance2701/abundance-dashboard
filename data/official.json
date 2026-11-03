@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-03T10:18:28Z",
+ "updated": "2026-11-03T10:38:39Z",
  "items": [
   {
    "src": "RBI",
@@ -7,6 +7,13 @@
    "url": "https://www.rbi.org.in/scripts/NotificationUser.aspx?Id=13750&Mode=0",
    "date": "2026-11-03",
    "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of units issued by Zerodha CASE Asset Management Private Limited (formerly known as Zerodha Asset Management Private Limited) (Zerodha BSE Top 10 Banks ETF)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77255.pdf",
+   "date": "2026-11-03",
+   "important": false
   },
   {
    "src": "SEBI",
@@ -121,8 +128,8 @@
    10
   ],
   "https://nsearchives.nseindia.com/content/RSS/Circulars.xml": [
-   1,
-   0
+   2,
+   1
   ]
  },
  "errors": []
