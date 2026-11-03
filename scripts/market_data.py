@@ -103,13 +103,14 @@ def parse_date(d):
         try: return dt.datetime.strptime(f'{m.group(1)} {m.group(2)[:3]} {m.group(3)}', '%d %b %Y').date().isoformat()
         except Exception: pass
     return ''
-items, ferr = [], []
+items, ferr, counts = [], [], {}
 try: _prev = {(x['src'], x['title']): x.get('date', '') for x in json.load(open('data/official.json'))['items']}
 except Exception: _prev = {}
 for src, url in FEEDS:
     try:
-        root = ET.fromstring(get(url))
+        root = ET.fromstring(get(url)); n_all = n_kept = 0
         for it in root.iter('item'):
+            n_all += 1
             t = (it.findtext('title') or '').strip(); l = (it.findtext('link') or '').strip()
             d = (it.findtext('pubDate') or '').strip(); desc = re.sub('<[^>]+>', ' ', it.findtext('description') or '').strip()
             if not t: continue
@@ -117,7 +118,8 @@ for src, url in FEEDS:
             t = re.sub(r'\s+', ' ', t).replace('\u200b', '').strip()
             iso = parse_date(d) or parse_date(desc[:120]) or _prev.get((src, t)) or dt.datetime.now(IST).date().isoformat()  # undated: first day we saw it
             items.append({'src': src, 'title': t, 'url': l, 'date': iso,
-                          'important': bool(IMPORTANT.search(t + ' ' + desc[:300]))})
+                          'important': bool(IMPORTANT.search(t + ' ' + desc[:300]))}); n_kept += 1
+        counts[url] = [n_all, n_kept]
     except Exception as e:
         ferr.append(f'{src} {url}: {str(e)[:80]}')
 seen, uniq = set(), []
@@ -125,5 +127,5 @@ for i in sorted(items, key=lambda x: x['date'], reverse=True):
     k = (i['src'], i['title'])
     if k in seen: continue
     seen.add(k); uniq.append(i)
-json.dump({'updated': out['updated'], 'items': uniq[:120], 'errors': ferr}, open('data/official.json', 'w'), ensure_ascii=False, indent=1)
+json.dump({'updated': out['updated'], 'items': uniq[:120], 'counts': counts, 'errors': ferr}, open('data/official.json', 'w'), ensure_ascii=False, indent=1)
 print('official items:', len(uniq), 'errors:', ferr)
