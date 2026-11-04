@@ -1,0 +1,137 @@
+{
+ "about": "Economic and policy dates for the Coming up box. IPOs, results of Nifty 100 companies and NSE holidays are added live from NSE by api/events. Sources: MOSPI advance release calendar 2026-27 (updated 25/05/2026), RBI press release of 23/03/2026, US Federal Reserve FOMC calendar, MSCI review calendar. Extend this list before March 2027.",
+ "events": [
+  {
+   "date": "2026-11-08",
+   "type": "Market",
+   "title": "Diwali Muhurat trading (Sunday)",
+   "note": "Special evening session: continuous trading 2:20–3:30 pm IST."
+  },
+  {
+   "date": "2026-11-10",
+   "type": "Global",
+   "title": "US CPI (October data)",
+   "note": "About 7:00 pm IST."
+  },
+  {
+   "date": "2026-11-10",
+   "type": "Holiday",
+   "title": "Market holiday: Diwali-Balipratipada",
+   "note": "NSE and BSE closed."
+  },
+  {
+   "date": "2026-11-11",
+   "type": "Index",
+   "title": "MSCI November index review announced",
+   "note": "Changes take effect 01/12/2026; moves FII passive flows."
+  },
+  {
+   "date": "2026-11-12",
+   "type": "Data",
+   "title": "India CPI inflation (October)",
+   "note": "MOSPI, 4:00 pm."
+  },
+  {
+   "date": "2026-11-16",
+   "type": "Data",
+   "title": "India WPI inflation (October)",
+   "note": "Office of the Economic Adviser."
+  },
+  {
+   "date": "2026-11-24",
+   "type": "Holiday",
+   "title": "Market holiday: Guru Nanak Jayanti",
+   "note": "NSE and BSE closed."
+  },
+  {
+   "date": "2026-11-28",
+   "type": "Data",
+   "title": "India IIP (industrial output, October)",
+   "note": "MOSPI. Released the next working day if this is a holiday."
+  },
+  {
+   "date": "2026-11-30",
+   "type": "Data",
+   "title": "India GDP, Q2 FY27 (July–September)",
+   "note": "MOSPI quarterly estimate."
+  },
+  {
+   "date": "2026-12-04",
+   "type": "RBI",
+   "title": "RBI policy decision (MPC 02–04/12)",
+   "note": "Repo rate decision; matters most for debt funds."
+  },
+  {
+   "date": "2026-12-09",
+   "type": "Global",
+   "title": "US Fed decision (FOMC 08–09/12)",
+   "note": "Reaches India early on 10/12."
+  },
+  {
+   "date": "2026-12-12",
+   "type": "Data",
+   "title": "India CPI inflation (November)",
+   "note": "MOSPI. Saturday: may move to the next working day."
+  },
+  {
+   "date": "2026-12-25",
+   "type": "Holiday",
+   "title": "Market holiday: Christmas",
+   "note": "NSE and BSE closed."
+  },
+  {
+   "date": "2026-12-28",
+   "type": "Data",
+   "title": "India IIP (November)",
+   "note": "MOSPI."
+  },
+  {
+   "date": "2027-01-07",
+   "type": "Data",
+   "title": "GDP first advance estimate, FY27",
+   "note": "MOSPI. Feeds into Budget assumptions."
+  },
+  {
+   "date": "2027-01-12",
+   "type": "Data",
+   "title": "India CPI inflation (December)",
+   "note": "MOSPI."
+  },
+  {
+   "date": "2027-01-28",
+   "type": "Data",
+   "title": "India IIP (December)",
+   "note": "MOSPI."
+  },
+  {
+   "date": "2027-02-01",
+   "type": "Budget",
+   "title": "Union Budget 2027-28 (expected)",
+   "note": "Customarily presented on 01/02; watch for capital gains tax changes."
+  },
+  {
+   "date": "2027-02-05",
+   "type": "RBI",
+   "title": "RBI policy decision (MPC 03–05/02)",
+   "note": "Repo rate decision."
+  },
+  {
+   "date": "2027-02-12",
+   "type": "Data",
+   "title": "India CPI inflation (January)",
+   "note": "MOSPI."
+  },
+  {
+   "date": "2027-02-26",
+   "type": "Data",
+   "title": "India GDP, Q3 FY27 + second advance estimate",
+   "note": "MOSPI."
+  },
+  {
+   "date": "2027-03-12",
+   "type": "Data",
+   "title": "India CPI inflation (February)",
+   "note": "MOSPI."
+  }
+ ]
+}

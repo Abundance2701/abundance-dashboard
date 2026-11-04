@@ -15,6 +15,33 @@ const IDX = [
   ['India VIX', '^INDIAVIX', 'INDIA VIX'],
   ['S&P 500', '^GSPC', null],
 ];
+// Precious metals: international spot price converted to rupees (the same thing as TradingView's
+// XAUINRG / XAGINR), shown per 10 g and per kg. Yahoo spot symbols first, COMEX futures as fallback;
+// the latest level is replaced by a live spot quote from gold-api.com when it is available.
+const OZ = 31.1034768;
+const METALS = { gold: ['XAUUSD=X', 'GC=F'], silver: ['XAGUSD=X', 'SI=F'], fx: ['INR=X'] };
+async function firstOk(list) { for (const s of list) { try { const y = await yahoo(s); if (y.rows.length > 30) return { ...y, sym: s }; } catch (e) {} } return null; }
+async function spotNow(sym) {
+  try { const r = await fetch('https://api.gold-api.com/price/' + sym, { signal: AbortSignal.timeout(5000) }); if (!r.ok) return null; const j = await r.json(); return isFinite(+j.price) && +j.price > 0 ? +j.price : null; } catch (e) { return null; }
+}
+function card(name, rows, srcNote) {
+  if (!rows || rows.length < 2) return null;
+  const level = rows[rows.length - 1][1], prev = rows[rows.length - 2][1], chg = level - prev;
+  return { name, level: r2(level), chg: r2(chg), chgPct: r2(chg / prev * 100), date: rows[rows.length - 1][0], perf: rows.length > 30 ? perf(rows, level) : {}, spark: rows.slice(-22).map(r => r2(r[1])), src: srcNote, metal: true };
+}
+async function metals(notes) {
+  const [g, sv, fx, gs, ss] = await Promise.all([firstOk(METALS.gold), firstOk(METALS.silver), firstOk(METALS.fx), spotNow('XAU'), spotNow('XAG')]);
+  if (!g || !sv || !fx) { notes.push('metals: ' + [!g && 'gold', !sv && 'silver', !fx && 'USD/INR'].filter(Boolean).join(', ') + ' unavailable'); return []; }
+  const fxAt = (() => { const m = new Map(fx.rows); const ds = fx.rows.map(r => r[0]); return d => { if (m.has(d)) return m.get(d); let v = null; for (const x of ds) { if (x <= d) v = m.get(x); else break; } return v; }; })();
+  const fix = (y, live) => { const rows = y.rows.slice(); if (live && rows.length) { const ref = rows[rows.length - 1][1]; if (Math.abs(live / ref - 1) < 0.08) rows[rows.length - 1] = [rows[rows.length - 1][0], live]; } return rows; };
+  const gU = fix(g, gs), sU = fix(sv, ss);
+  const inr = (rows, k) => rows.map(([d, v]) => [d, fxAt(d) ? v / OZ * k * fxAt(d) : null]).filter(r => r[1] != null);
+  const sMap = new Map(sU);
+  const ratio = gU.filter(([d]) => sMap.has(d)).map(([d, v]) => [d, v / sMap.get(d)]);
+  const how = y => (/=X$/.test(y.sym) ? 'international spot' : 'COMEX futures') + ((y === g ? gs : ss) ? ', live spot from gold-api.com' : '') + ' × USD/INR (Yahoo)';
+  return [card('Gold · ₹/10 g', inr(gU, 10), how(g)), card('Silver · ₹/kg', inr(sU, 1000), how(sv)), card('Gold/Silver ratio', ratio, 'gold ÷ silver, both in $/oz')].filter(Boolean);
+}
+
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
 const r2 = v => v == null || !isFinite(v) ? null : Math.round(v * 100) / 100;
 
@@ -58,7 +85,7 @@ const nseDate = t => { const m = String(t || '').match(/(\d{1,2})-([A-Za-z]{3})-
 
 module.exports = async (req, res) => {
   const notes = [];
-  const [ys, ns] = await Promise.all([Promise.allSettled(IDX.map(([, s]) => yahoo(s))), nse().catch(e => ({ err: [String(e.message || e)] }))]);
+  const [ys, ns, mt] = await Promise.all([Promise.allSettled(IDX.map(([, s]) => yahoo(s))), nse().catch(e => ({ err: [String(e.message || e)] })), metals(notes).catch(e => (notes.push('metals: ' + e.message), []))]);
   (ns.err || []).forEach(e => notes.push(e));
   const nmap = {};
   ((ns.all && ns.all.data) || []).forEach(x => { nmap[String(x.index || x.indexSymbol).toUpperCase()] = x; });
@@ -79,6 +106,7 @@ module.exports = async (req, res) => {
     indices.push({ name, asOf: src === 'NSE' ? (ns.all.timestamp || null) : (y && y.time ? new Date(y.time).toISOString() : null), level: r2(level), chg: r2(chg), chgPct: prev ? r2(chg / prev * 100) : null, date: rows.length ? rows[rows.length - 1][0] : null,
       perf: rows.length > 30 ? perf(rows, level) : {}, spark: rows.slice(-22).map(r => r2(r[1])), src });
   });
+  indices.push(...mt);
   let fiidii = null;
   if (Array.isArray(ns.fiidii) && ns.fiidii.length) {
     const pick = re => ns.fiidii.find(x => re.test(x.category || ''));
