@@ -49,14 +49,25 @@ module.exports = async (req, res) => {
         note: [o && c ? `Open ${o.split('-').reverse().join('/')}–${c.split('-').reverse().join('/')}` : '', price ? `price ${String(price).replace(/\s+/g, ' ')}` : '', i.noOfTime ? `subscribed ${i.noOfTime}×` : ''].filter(Boolean).join(' · ') });
     }));
 
-    // Results of Nifty 100 companies
-    const big = new Set(n100.status === 'fulfilled' ? arr(n100.value).map(x => x.symbol).filter(Boolean) : []);
-    if (cal.status === 'fulfilled') {
+    // Results of Nifty 100 companies (member list: NSE API, else the official index CSV files)
+    const big = new Set(n100.status === 'fulfilled' ? arr(n100.value).map(x => x.symbol).filter(s => s && !/^NIFTY/i.test(s)) : []);
+    if (!big.size) for (const u of ['https://nsearchives.nseindia.com/content/indices/ind_nifty100list.csv', 'https://www.niftyindices.com/IndexConstituent/ind_nifty100list.csv']) {
+      try {
+        const r = await fetch(u, { headers: { 'User-Agent': UA, Accept: 'text/csv,*/*' }, signal: AbortSignal.timeout(6000) });
+        if (!r.ok) { notes.push('nifty100 csv ' + r.status); continue; }
+        const rows = (await r.text()).trim().split(/\r?\n/).map(l => l.split(','));
+        const k = rows[0].findIndex(h => /symbol/i.test(h));
+        rows.slice(1).forEach(c => c[k] && big.add(c[k].trim()));
+        if (big.size > 50) break;
+      } catch (e) { notes.push('nifty100 csv ' + (e.name || e.message)); }
+    }
+    if (big.size < 50) notes.push('Nifty 100 list unavailable: results left out');
+    if (cal.status === 'fulfilled' && big.size >= 50) {
       const byDay = {};
       arr(cal.value).forEach(e => {
         const d = iso(e.date || e.bm_date); if (!inWin(d)) return;
         if (!/result/i.test((e.purpose || '') + ' ' + (e.bm_purpose || '') + ' ' + (e.bm_desc || ''))) return;
-        if (big.size && !big.has(e.symbol)) return;
+        if (!big.has(e.symbol)) return;
         (byDay[d] = byDay[d] || new Set()).add(e.company || e.symbol);
       });
       Object.entries(byDay).forEach(([d, s]) => { const L = [...s]; out.push({ date: d, type: 'Results', title: `Q results: ${L.slice(0, 4).join(', ')}${L.length > 4 ? ` +${L.length - 4} more` : ''}`, note: L.length > 4 ? L.join(', ') : 'Board meetings to consider quarterly results (NSE event calendar).' }); });
