@@ -379,7 +379,7 @@
         <li><strong>Quartiles:</strong> each calendar year's return is ranked within the same SEBI sub-category <em>and</em> plan (Regular vs Direct ranked separately). Q1 = top 25%. Needs at least 4 funds with data that year. The latest year is year-to-date.</li>
         <li><strong>Peer set caveat:</strong> only currently active schemes are ranked, so funds that were merged or closed are missing from older years (survivorship bias). SEBI's 2017–18 recategorisation also means some funds ran a different mandate before 2018 — treat 2016–2018 ranks with care.</li>
         <li><strong>Risk ratios</strong> follow Value Research's published approach: month-end NAVs for the trailing 3 (or 5) years up to the last completed month. Std Dev is annualised. Sharpe and Sortino use the risk-free rate you enter; Sortino's downside counts only negative months. Alpha is Jensen's alpha, annualised. Max Drawdown is the worst peak-to-trough fall in daily NAV over the window.</li>
-        <li><strong>Beta &amp; Alpha benchmark:</strong> a direct-plan index fund is used as a proxy for the index (Nifty 50 for Large Cap, Midcap 150 for Mid Cap, Smallcap 250 for Small Cap, LargeMidcap 250 for Large &amp; Mid, Nifty 500 for Flexi/Multi/Focused/Value/ELSS/Sectoral/Aggressive Hybrid). Proxy returns sit slightly below the TRI due to the index fund's expense ratio. Debt and other hybrids show no Beta/Alpha.</li>
+        <li><strong>Beta &amp; Alpha benchmark:</strong> a direct-plan index fund is used as a proxy for the index (Nifty 50 for Large Cap, Midcap 150 for Mid Cap, Smallcap 250 for Small Cap, LargeMidcap 250 for Large &amp; Mid, Nifty 500 for Flexi/Multi/Focused/Value/ELSS/Sectoral/Aggressive Hybrid). The oldest proxy with at least ₹25 Cr AUM is used so there is enough history; for Nifty 500 the BSE 500 ETF fund-of-fund stands in, since Nifty 500 index funds only began in 2024. Proxy returns sit slightly below the TRI due to the index fund's expense ratio. Debt and other hybrids show no Beta/Alpha.</li>
         <li><strong>vs Index:</strong> every 3-year period ending at each month-end (up to 10 years back) is compared with the benchmark proxy. The proxy is a <em>direct-plan</em> index fund, so Regular-plan funds start about 1% a year behind on costs alone; compare in Direct plan for a cleaner read. Index funds for Midcap 150, Smallcap 250, LargeMidcap 250 and Nifty 500 only began around 2019–21, so those categories have fewer periods. Up/Down capture use monthly returns over the risk window.</li>
         <li><strong>AUM</strong> is the latest AMFI quarterly average per plan, in ₹ Cr.</li>
       </ul>
@@ -560,8 +560,12 @@ const BENCHMARKS = {
   midcap150:   { label: 'Nifty Midcap 150',      test: n => n.includes('midcap 150 index') },
   smallcap250: { label: 'Nifty Smallcap 250',    test: n => n.includes('smallcap 250 index') },
   largemid250: { label: 'Nifty LargeMidcap 250', test: n => /large ?midcap 250 index/.test(n) },
-  nifty500:    { label: 'Nifty 500',             test: n => n.includes('nifty 500 index') },
+  nifty500:    { label: 'Nifty 500',             test: n => n.includes('nifty 500 index'),
+                 // Nifty 500 index funds only launched in 2024 (too short for 3-year comparisons), so the BSE 500 ETF FoF
+                 // (Dec 2021) is allowed as a near-identical broad-market proxy; the longest-history one wins
+                 alt: n => /\bbse 500\b/.test(n) && !/s&p 500 top|nasdaq/.test(n) },
 };
+const PROXY_MIN_AUM_CR = 25;   // ignore tiny proxies (stale NAVs, tracking noise)
 
 // ---------- state ----------
 let masterData = null;
@@ -778,16 +782,26 @@ function catOrderOf(catKey) {
 }
 function resolveBenchmark(data, key) {
   const b = BENCHMARKS[key];
-  const cands = data.filter(r => isActive(r) && r.scheme_option === 'Growth' && r.scheme_plan === 'Direct'
-    && normCat(r).toLowerCase().includes('index') && !normName(r.scheme_name).includes('etf') && b.test(normName(r.scheme_name)));
+  const cands = data.filter(r => {
+    if (!isActive(r) || r.scheme_option !== 'Growth' || r.scheme_plan !== 'Direct' || isETF(r)) return false;
+    const n = normName(r.scheme_name), cat = normCat(r).toLowerCase(), raw = rawCat(r).toLowerCase();
+    if (cat.includes('index') && b.test(n)) return true;
+    return !!(b.alt && /fund of fund|fof|index/.test(cat + ' ' + raw + ' ' + n) && b.alt(n));
+  });
   if (!cands.length) return null;
-  cands.sort((x, y) => (parseFloat(y.aaum_cr_quarterly_avg) || 0) - (parseFloat(x.aaum_cr_quarterly_avg) || 0));
-  // Among proxies with at least a quarter of the largest one's AUM, take the one with the longest history (more rolling periods)
-  const big = parseFloat(cands[0].aaum_cr_quarterly_avg) || 0;
-  const pool = cands.filter(r => (parseFloat(r.aaum_cr_quarterly_avg) || 0) >= big * 0.25 && r.first_date);
+  const aum = r => parseFloat(r.aaum_cr_quarterly_avg) || 0;
   const iso = d => { d = String(d || ''); const m = /^(\d{2})[-/](\d{2})[-/](\d{4})/.exec(d); return m ? `${m[3]}-${m[2]}-${m[1]}` : d; };
-  pool.sort((x, y) => iso(x.first_date).localeCompare(iso(y.first_date)));
-  return pool[0] || cands[0];
+  // Rolling 3-year comparisons need years of history, so the oldest proxies with meaningful AUM are preferred.
+  // (The earlier rule kept only proxies with >= 25% of the largest one's AUM, which picked 2023-24 launches and left
+  // Large & Mid Cap and Flexi/Multi/Focused/Value/ELSS with no usable benchmark at all.)
+  let pool = cands.filter(r => aum(r) >= PROXY_MIN_AUM_CR && r.first_date);
+  if (!pool.length) pool = cands.slice();
+  // Oldest launch date in the pool; among proxies launched within a year of it, take the largest (tightest tracking)
+  const t = r => Date.parse(iso(r.first_date)) || Infinity;
+  const oldest = Math.min(...pool.map(t));
+  pool = pool.filter(r => t(r) <= oldest + 366 * DAY);
+  pool.sort((x, y) => aum(y) - aum(x));
+  return pool[0];
 }
 
 // ---------- fund picker ----------
