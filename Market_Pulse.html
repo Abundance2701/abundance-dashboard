@@ -61,7 +61,10 @@ h2.sec{margin:0 0 8px;font:600 11.5px var(--f-display);text-transform:uppercase;
 .lv a{color:var(--ink);text-decoration:none;font-size:14.5px;font-weight:700;line-height:1.35}
 .lv a:hover{color:var(--primary);text-decoration:underline}
 .lv .meta{margin-top:2px}
-.lv.fresh{background:var(--accent-soft)}
+.lv.fresh{background:#eef5f0;box-shadow:inset 3px 0 0 #7fb08f}
+.ix.fu{animation:fu 1.2s ease-out}.ix.fd{animation:fd 1.2s ease-out}
+@keyframes fu{from{background:#d7efe0}}@keyframes fd{from{background:#fbe1d6}}
+@media (prefers-reduced-motion:reduce){.ix.fu,.ix.fd{animation:none}}
 .daysep{padding:6px 14px;font:600 11px var(--f-display);text-transform:uppercase;letter-spacing:.07em;color:var(--secondary);background:var(--soft)}
 .ix svg{width:100%;height:22px;display:block;margin-top:2px}
 .up{color:var(--up)}.down{color:var(--down)}
@@ -214,6 +217,7 @@ aside .card{padding:12px 14px;margin-bottom:12px}
   try { filt = localStorage.getItem('pulse_filter') || ''; sel = +(localStorage.getItem('pulse_idx') || 0) } catch (e) {}
 
   // ---------- indices ----------
+  const LAST = {};                           // last level shown per card, to flash on change
   function spark(a, up) {
     if (!a || a.length < 2) return '';
     const mn = Math.min(...a), mx = Math.max(...a), w = 100, h = 22, r = mx - mn || 1;
@@ -223,7 +227,8 @@ aside .card{padding:12px 14px;margin-bottom:12px}
   function renderIdx() {
     if (!IX || !IX.indices || !IX.indices.length) { $('idx').innerHTML = ''; $('perf').hidden = true; return; }
     const L = IX.indices; if (sel >= L.length) sel = 0;
-    $('idx').innerHTML = L.map((x, i) => `<button type="button" class="ix" aria-pressed="${i === sel}" data-i="${i}" title="${esc(x.name)}: click for performance. Line = last ~22 trading days (about 1 month), green if higher than a month ago">
+    const tick = x => { const p = LAST[x.name]; LAST[x.name] = x.level; return p == null || p === x.level ? '' : x.level > p ? ' fu' : ' fd'; };
+    $('idx').innerHTML = L.map((x, i) => `<button type="button" class="ix${tick(x)}" aria-pressed="${i === sel}" data-i="${i}" title="${esc(x.name)}: click for performance. Line = last ~22 trading days (about 1 month), green if higher than a month ago">
       <span class="n">${esc(x.name)}</span><span class="v">${inr(x.level)}</span>
       <span class="c ${cls(x.chgPct)}">${x.chg == null ? '' : (x.chg > 0 ? '+' : x.chg < 0 ? '−' : '') + inr(Math.abs(x.chg))} (${sg(x.chgPct)})</span>${spark(x.spark, (x.spark || [0]).at(-1) >= (x.spark || [0])[0])}</button>`).join('');
     $('flow').innerHTML = flowCard();
@@ -234,7 +239,7 @@ aside .card{padding:12px 14px;margin-bottom:12px}
     $('tiles').innerHTML = [['1D', x.chgPct], ['1W', P['1W']], ['1M', P['1M']], ['3M', P['3M']], ['6M', P['6M']], ['YTD', P.YTD], ['1Y', P['1Y']]]
       .map(([k, v]) => `<div class="tile ${cls(v)}"><b class="${cls(v)}">${sg(v)}</b><span>${k}</span></div>`).join('');
     const t = new Date(IX.updated);
-    const live = x.metal ? `Price: ${x.src}. Per 10 g = XAUINRG × 10; per kg = XAGINR ÷ 31.1035 × 1,000. Excludes import duty and GST, so it is below Indian MCX or jeweller rates` : IX.live ? `Live, refreshed every minute in market hours (${x.src === 'NSE' ? 'level from NSE' : 'level from Yahoo Finance, may lag ~15 min'})` : 'Daily closes from Yahoo Finance';
+    const live = x.metal ? `Price: ${x.src}. Per 10 g = XAUINRG × 10; per kg = XAGINR ÷ 31.1035 × 1,000. Excludes import duty and GST, so it is below Indian MCX or jeweller rates` : IX.live ? `Live, refreshed every 15 seconds in market hours (${x.src === 'NSE' ? 'level from NSE' : 'level from Yahoo Finance, may lag ~15 min'})` : 'Daily closes from Yahoo Finance';
     $('idxSrc').textContent = `${live}; return history from Yahoo Finance daily closes. Card lines show the last ~22 trading days (about 1 month): green if the index is higher than a month ago, orange if lower. Updated ${t.toLocaleString('en-IN', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit', timeZone:'Asia/Kolkata' })} IST.`;
   }
   const cr = v => v == null ? '—' : (v > 0 ? '+' : v < 0 ? '−' : '') + '₹' + Math.abs(Math.round(v)).toLocaleString('en-IN') + ' cr';
@@ -449,10 +454,12 @@ aside .card{padding:12px 14px;margin-bottom:12px}
   setInterval(() => {
     if (document.hidden) return;
     tick++;
-    if (marketOpen() || tick % 10 === 0) loadMarket();
+    if (!marketOpen() && tick % 10 === 0) loadMarket();
     if (tick % 3 === 0) loadNews();
     if (tick % 30 === 0) { load(); loadEvents(); }
   }, 60000);
+  // in market hours: index cards every 15 seconds
+  setInterval(() => { if (!document.hidden && marketOpen()) loadMarket(); }, 15000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) { loadMarket(); loadNews(); } });
 })();
 </script>

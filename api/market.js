@@ -114,7 +114,7 @@ module.exports = async (req, res) => {
     fiidii = { date: (f || d || {}).date || null, fii: f ? r2(+f.netValue) : null, dii: d ? r2(+d.netValue) : null,
       fiiBuy: f ? r2(+f.buyValue) : null, fiiSell: f ? r2(+f.sellValue) : null, diiBuy: d ? r2(+d.buyValue) : null, diiSell: d ? r2(+d.sellValue) : null, src: 'NSE (provisional)' };
   }
-  res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+  res.setHeader('Cache-Control', 's-maxage=10, stale-while-revalidate=60');
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
   res.status(200).send(JSON.stringify({ updated: new Date().toISOString(), indices, fiidii, notes }));
 };
