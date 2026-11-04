@@ -39,7 +39,7 @@ async function metals(notes) {
   const sMap = new Map(sU);
   const ratio = gU.filter(([d]) => sMap.has(d)).map(([d, v]) => [d, v / sMap.get(d)]);
   const how = y => (/=X$/.test(y.sym) ? 'international spot' : 'COMEX futures') + ((y === g ? gs : ss) ? ', live spot from gold-api.com' : '') + ' × USD/INR (Yahoo)';
-  return [card('Gold · ₹/10 g', inr(gU, 10), how(g)), card('Silver · ₹/kg', inr(sU, 1000), how(sv)), card('Gold/Silver ratio', ratio, 'gold ÷ silver, both in $/oz')].filter(Boolean);
+  return [card('Gold · ₹/10 g', inr(gU, 10), how(g)), card('Silver · ₹/oz', inr(sU, OZ), how(sv)), card('Gold/Silver ratio', ratio, 'gold ÷ silver, both in $/oz')].filter(Boolean);
 }
 
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';

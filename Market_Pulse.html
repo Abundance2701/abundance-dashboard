@@ -239,7 +239,7 @@ aside .card{padding:12px 14px;margin-bottom:12px}
     $('tiles').innerHTML = [['1D', x.chgPct], ['1W', P['1W']], ['1M', P['1M']], ['3M', P['3M']], ['6M', P['6M']], ['YTD', P.YTD], ['1Y', P['1Y']]]
       .map(([k, v]) => `<div class="tile ${cls(v)}"><b class="${cls(v)}">${sg(v)}</b><span>${k}</span></div>`).join('');
     const t = new Date(IX.updated);
-    const live = x.metal ? `Price: ${x.src}. Per 10 g = XAUINRG × 10; per kg = XAGINR ÷ 31.1035 × 1,000. Excludes import duty and GST, so it is below Indian MCX or jeweller rates` : IX.live ? `Live, refreshed every 15 seconds in market hours (${x.src === 'NSE' ? 'level from NSE' : 'level from Yahoo Finance, may lag ~15 min'})` : 'Daily closes from Yahoo Finance';
+    const live = x.metal ? `Price: ${x.src}. Gold is per 10 g (= XAUINRG × 10, as XAUINRG is per gram). Silver is per troy ounce (31.1 g), the same unit as XAGINR; ÷ 31.1035 gives per gram, × 32.15 gives per kg. Excludes import duty and GST, so it is below Indian MCX or jeweller rates` : IX.live ? `Live, refreshed every 15 seconds in market hours (${x.src === 'NSE' ? 'level from NSE' : 'level from Yahoo Finance, may lag ~15 min'})` : 'Daily closes from Yahoo Finance';
     $('idxSrc').textContent = `${live}; return history from Yahoo Finance daily closes. Card lines show the last ~22 trading days (about 1 month): green if the index is higher than a month ago, orange if lower. Updated ${t.toLocaleString('en-IN', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit', timeZone:'Asia/Kolkata' })} IST.`;
   }
   const cr = v => v == null ? '—' : (v > 0 ? '+' : v < 0 ? '−' : '') + '₹' + Math.abs(Math.round(v)).toLocaleString('en-IN') + ' cr';
