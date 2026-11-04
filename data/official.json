@@ -1,10 +1,150 @@
 {
- "updated": "2026-11-04T09:53:30Z",
+ "updated": "2026-11-04T18:04:16Z",
  "items": [
+  {
+   "src": "SEBI",
+   "title": "SEBI Constitutes Working Group to Review the Innovators Growth Platform Framework",
+   "url": "https://www.sebi.gov.in/media-and-notifications/press-releases/nov-2026/sebi-constitutes-working-group-to-review-the-innovators-growth-platform-framework_105610.html",
+   "date": "2026-11-04",
+   "important": true
+  },
+  {
+   "src": "SEBI",
+   "title": "Review of Know Your Client process for individual Person Resident Outside India clients",
+   "url": "https://www.sebi.gov.in/legal/circulars/nov-2026/review-of-know-your-client-process-for-individual-person-resident-outside-india-clients_105603.html",
+   "date": "2026-11-04",
+   "important": false
+  },
   {
    "src": "RBI",
    "title": "Constitution of the Technical Consultative Committee for Financial Markets (TCCFM)",
    "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63914",
+   "date": "2026-11-04",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of Equity Shares of Bombay Coated and Special Steels Limited (IPO)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77305.zip",
+   "date": "2026-11-04",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of further issues of securities",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77304.pdf",
+   "date": "2026-11-04",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of further issue of Grasim Industries Limited",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77303.pdf",
+   "date": "2026-11-04",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Trade for Trade - Ennature Bio Pharma Limited",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77300.pdf",
+   "date": "2026-11-04",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Trade for Trade - IGL Spirits Limited",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77299.pdf",
+   "date": "2026-11-04",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Revised MWPL, Participant, Institutional and Non-Institutional Client Limits for CONCORDBIO",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CMPT77298.pdf",
+   "date": "2026-11-04",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of privately placed securities on the debt market segment of the Exchange",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77297.pdf",
+   "date": "2026-11-04",
+   "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of privately placed securities on capital market segment",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77296.pdf",
+   "date": "2026-11-04",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of units issued by Invesco Asset Management (India) Private Limited (Summit Active Asset Allocator Long-Short Fund)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77294.pdf",
+   "date": "2026-11-04",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Additional Short allocation Reports for collaterals",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CD77293.pdf",
+   "date": "2026-11-04",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Launch of Aditya Birla Sun Life Fixed Maturity Plan-Series VC (114 days) on NSE MF Invest Platform",
+   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77290.pdf",
+   "date": "2026-11-04",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of equity shares of Baheti Recycling Industries Limited on Capital Market Segment (Main Board) pursuant to Migration from SME Emerge platform",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77289.zip",
+   "date": "2026-11-04",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Applicability of Short-Term Additional Surveillance Measure (ST-ASM)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77288.zip",
+   "date": "2026-11-04",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Applicability of Additional Surveillance Measure (ASM)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77287.zip",
+   "date": "2026-11-04",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Applicability of Enhanced Surveillance Measure (ESM)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77286.zip",
+   "date": "2026-11-04",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Settlement of Request for Quote (RFQ) Transactions on Muhurat Trading",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CMPT77285.pdf",
+   "date": "2026-11-04",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Early Pay-in Securities for Gujarat Natural Resources Limited (GNRL)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CMPT77284.pdf",
+   "date": "2026-11-04",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Adjustment of Futures and Options contracts in the security PETRONET LNG LIMITED(PETRONET)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CMPT77282.pdf",
    "date": "2026-11-04",
    "important": false
   },
@@ -31,6 +171,27 @@
   },
   {
    "src": "NSE",
+   "title": "MFSS- Settlement Calendar for December 2026",
+   "url": "https://nsearchives.nseindia.com/content/circulars/MFSS77278.zip",
+   "date": "2026-11-04",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Availability of UTI financial Services Debt Fund for ongoing transactions on NSE MF Invest Platform",
+   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77277.pdf",
+   "date": "2026-11-04",
+   "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Availability of Motilal Oswal Nifty Midcap150 Plus 8-13 yr G-Sec 70:30 Index Fund for ongoing transactions on NSE MF Invest Platform",
+   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77276.pdf",
+   "date": "2026-11-04",
+   "important": true
+  },
+  {
+   "src": "NSE",
    "title": "COMMODITY DERIVATIVES - SETTLEMENT SCHEDULE FOR DECEMBER 2026",
    "url": "https://nsearchives.nseindia.com/content/circulars/COM77275.pdf",
    "date": "2026-11-04",
@@ -44,18 +205,32 @@
    "important": false
   },
   {
+   "src": "NSE",
+   "title": "Listing of Equity Shares of Bright Outdoor Media Limited pursuant to Migration from SME Platform of BSE to Capital Market Segment (Main Board) of National Stock Exchange of India Limited",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77273.zip",
+   "date": "2026-11-04",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of Partly Paid up Equity Shares allotted on Rights Basis of Ola Electric Mobility Limited",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77272.pdf",
+   "date": "2026-11-04",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Suspension of Non Convertible Securities (Privately placed)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77262.pdf",
+   "date": "2026-11-04",
+   "important": false
+  },
+  {
    "src": "SEBI",
    "title": "Memorandum of Understanding between Securities and Exchange Board of India (SEBI) and Digital India BHASHINI Division (DIBD)",
    "url": "https://www.sebi.gov.in/media-and-notifications/press-releases/nov-2026/memorandum-of-understanding-between-securities-and-exchange-board-of-india-sebi-and-digital-india-bhashini-division-dibd-_105575.html",
    "date": "2026-11-03",
    "important": false
-  },
-  {
-   "src": "RBI",
-   "title": "RBI launches the November 2026 round of the Inflation Expectations Survey of Households",
-   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63909",
-   "date": "2026-11-03",
-   "important": true
   },
   {
    "src": "RBI",
@@ -83,20 +258,6 @@
    "title": "Cooling off period for offer for sale by Private listed InvITs",
    "url": "https://www.sebi.gov.in/legal/circulars/nov-2026/cooling-off-period-for-offer-for-sale-by-private-listed-invits_105539.html",
    "date": "2026-11-02",
-   "important": true
-  },
-  {
-   "src": "SEBI",
-   "title": "Extension of timeline with respect to compliance of Digital Accessibility Circulars",
-   "url": "https://www.sebi.gov.in/legal/circulars/oct-2026/extension-of-timeline-with-respect-to-compliance-of-digital-accessibility-circulars_105523.html",
-   "date": "2026-10-30",
-   "important": true
-  },
-  {
-   "src": "SEBI",
-   "title": "Ease of Compliance for FPIs – Rationalisation of KYC Review Periodicity",
-   "url": "https://www.sebi.gov.in/media-and-notifications/press-releases/oct-2026/ease-of-compliance-for-fpis-rationalisation-of-kyc-review-periodicity_105522.html",
-   "date": "2026-10-30",
    "important": true
   },
   {
@@ -163,15 +324,15 @@
   ],
   "https://rbi.org.in/pressreleases_rss.xml": [
    10,
-   2
+   1
   ],
   "https://rbi.org.in/notifications_rss.xml": [
    10,
    10
   ],
   "https://nsearchives.nseindia.com/content/RSS/Circulars.xml": [
-   5,
-   5
+   34,
+   33
   ]
  },
  "errors": []
