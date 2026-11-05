@@ -8,6 +8,9 @@
      or Midcap 150 at 23650, 24600         backup for the line above: part N fires when ANY index reaches its Nth level
      Nifty 50 up 9% from 05/11/2026          up/down X% from that day's close; add 'or' lines for backups (fires once)
      Nifty 50 new high from 05/11/2026 until 25/11/2026
+     Nifty 50 52w high from 05/11/2026 until 04/02/2027   above the highest close of the past 52 weeks (fires once);
+     or Midcap 150 52w high                               add 'or' lines for backups (whichever index first)
+     [FP Goal Q1] <any line>                                a tag from the Financial Planning Tool: goal alert, tag shown in the title
      Nifty 50 fall 2% [close] [repeat] from <date> [until <date>]     fall from the highest close since <date>
      Nifty 500 rise 10% [repeat] from <date> [until <date>]           rise from the lowest close since <date>
      Nifty 50 rise 3% above high [repeat] from <date> [until <date>]  3% above the high of the month before <date>
@@ -41,7 +44,8 @@ function parseRule(text) {
   let lastAt = null;
   for (const raw of String(text || '').split(/\r?\n/)) {
     const line = raw.trim().replace(/\s+/g, ' '); if (!line) continue;
-    const l = line.toLowerCase().replace(/\bnifty(?! ?50\b| ?500\b)/g, 'nifty 50').replace(/\b(up|down) by\b/g, '$1').replace(/\bmidcap(?! 150)/g, 'midcap 150').replace(/\bsmallcap(?! 250)/g, 'smallcap 250');
+    const tm = line.match(/^\[fp:?\s*([^\]]*)\]\s*/i), tag = tm ? (tm[1].trim() || 'Goal') : null;   // [FP …] = goal alert from the planning tool
+    const l = line.slice(tm ? tm[0].length : 0).toLowerCase().replace(/\bnifty(?! ?50\b| ?500\b)/g, 'nifty 50').replace(/\b(up|down) by\b/g, '$1').replace(/\bmidcap(?! 150)/g, 'midcap 150').replace(/\bsmallcap(?! 250)/g, 'smallcap 250');
     const dates = k => { const m = l.match(new RegExp(k + ' (\\d{1,2}/\\d{1,2}/\\d{4})')); return m ? iso(m[1]) : null; };
     const from = dates('from'), until = dates('until');
     let m;
@@ -49,26 +53,30 @@ function parseRule(text) {
       const levels = m[3].split(',').map(x => +x.trim()).filter(x => x > 0);
       if (!levels.length) { bad.push(line); continue; }
       if (m[1]) { if (!lastAt) { bad.push(line); continue; } lastAt.alts.push({ idx: m[2], levels }); lastAt.src += '\n' + line; continue; }
-      lastAt = { type: 'at', alts: [{ idx: m[2], levels }], src: line }; out.push(lastAt); continue;
+      lastAt = { type: 'at', alts: [{ idx: m[2], levels }], src: line, tag }; out.push(lastAt); continue;
     }
     if ((m = l.match(new RegExp('^(or )?' + IDXRE + ' (up|down) ([\\d.]+) ?%')))) {
       if (!from) { bad.push(line); continue; }
       const alt = { idx: m[2], pct: +m[4], dir: m[3] };
       if (m[1]) { if (!lastAt || lastAt.type !== 'move') { bad.push(line); continue; } lastAt.alts.push(alt); lastAt.src += '\n' + line; continue; }
-      lastAt = { type: 'move', alts: [alt], from, until, src: line }; out.push(lastAt); continue;
+      lastAt = { type: 'move', alts: [alt], from, until, src: line, tag }; out.push(lastAt); continue;
     }
-    if (m === null && /^or /.test(l) && lastAt && lastAt.type === 'move') { bad.push(line); continue; }
+    if ((m = l.match(new RegExp('^(or )?' + IDXRE + ' 52 ?-?w(?:ee)?k? high')))) {
+      if (m[1]) { if (!lastAt || lastAt.type !== 'w52') { bad.push(line); continue; } lastAt.alts.push({ idx: m[2] }); lastAt.src += '\n' + line; continue; }
+      lastAt = { type: 'w52', alts: [{ idx: m[2] }], from, until, tag, src: line }; out.push(lastAt); continue;
+    }
+    if (m === null && /^or /.test(l) && lastAt && (lastAt.type === 'move' || lastAt.type === 'w52')) { bad.push(line); continue; }
     lastAt = null;
-    if ((m = l.match(new RegExp('^' + IDXRE + ' new high')))) { if (!from) { bad.push(line); continue; } out.push({ type: 'newHigh', idx: m[1], from, until, src: line }); continue; }
+    if ((m = l.match(new RegExp('^' + IDXRE + ' new high')))) { if (!from) { bad.push(line); continue; } out.push({ type: 'newHigh', idx: m[1], from, until, src: line, tag }); continue; }
     if ((m = l.match(new RegExp('^' + IDXRE + ' (fall|rise) ([\\d.]+) ?%( above high)?')))) {
       if (!from) { bad.push(line); continue; }
-      out.push({ type: m[2] === 'fall' ? 'fall' : m[4] ? 'aboveHigh' : 'rise', idx: m[1], pct: +m[3], from, until, close: /\bclose\b/.test(l), repeat: /\brepeat\b/.test(l), src: line }); continue;
+      out.push({ type: m[2] === 'fall' ? 'fall' : m[4] ? 'aboveHigh' : 'rise', idx: m[1], pct: +m[3], from, until, close: /\bclose\b/.test(l), repeat: /\brepeat\b/.test(l), src: line, tag }); continue;
     }
     if ((m = l.match(/^remind ([\d/,\s]+?)( unless (.+))?$/))) {
       const ds = m[1].split(',').map(x => iso(x.trim())); if (!ds.length || ds.some(x => !x)) { bad.push(line); continue; }
-      out.push({ type: 'remind', dates: ds, unless: m[3] ? m[3].trim() : null, src: line }); continue;
+      out.push({ type: 'remind', dates: ds, unless: m[3] ? m[3].trim() : null, src: line, tag }); continue;
     }
-    if ((m = l.match(/^deadline (\d{1,2}\/\d{1,2}\/\d{4})$/))) { const d = iso(m[1]); out.push({ type: 'remind', dates: [addDays(d, -7), d], deadline: d, src: line }); continue; }
+    if ((m = l.match(/^deadline (\d{1,2}\/\d{1,2}\/\d{4})$/))) { const d = iso(m[1]); out.push({ type: 'remind', dates: [addDays(d, -7), d], deadline: d, src: line, tag }); continue; }
     bad.push(line);
   }
   out.forEach(x => { x.id = hash(x.src); });
@@ -135,9 +143,10 @@ module.exports = async (req, res) => {
     const name = c.Full_Name || 'Client', { lines, bad } = parseRule(c.PB_Rule);
     for (const b of bad) {
       const k = `${c.id}/bad-${hash(b)}`; if (last(k) === T) continue;
-      badLines++; due.push({ c, k, title: `${name}: check this profit-booking rule line`, hit: `This line in PB Rule could not be read, so it is not being watched: "${b}". Fix it in Zoho CRM. Valid examples: "Nifty 50 at 26358, 27400" · "or Midcap 150 at 23650" · "Nifty 50 up 9% from 05/11/2026" · "Nifty 50 fall 2% from 13/11/2026 until 15/01/2027" · "Nifty 500 rise 10% repeat from 05/11/2026" · "remind 12/11/2026" · "deadline 15/01/2027". Dates as DD/MM/YYYY.` });
+      badLines++; due.push({ c, k, title: `${name}: check this profit-booking rule line`, hit: `This line in PB Rule could not be read, so it is not being watched: "${b}". Fix it in Zoho CRM. Valid examples: "Nifty 50 at 26358, 27400" · "or Midcap 150 at 23650" · "Nifty 50 up 9% from 05/11/2026" · "Nifty 50 52w high from 05/11/2026 until 04/02/2027" · "Nifty 50 fall 2% from 13/11/2026 until 15/01/2027" · "Nifty 500 rise 10% repeat from 05/11/2026" · "remind 12/11/2026" · "deadline 15/01/2027". Dates as DD/MM/YYYY.` });
     }
     for (const R of lines) {
+      const nm = R.tag ? `${name} · ${R.tag}` : name;
       if (R.from && T < R.from) continue;
       if (R.until && T > R.until) continue;
       const base = `${c.id}/${R.id}`;
@@ -146,7 +155,7 @@ module.exports = async (req, res) => {
         for (let i = 0; i < n; i++) {
           const k = `${base}-p${i + 1}`; if (last(k)) continue;
           const a = R.alts.find(a => a.levels[i] && ok(L[a.idx]) && L[a.idx] >= a.levels[i]);
-          if (a) due.push({ c, k, title: `${name}: ${LABEL[a.idx]} at ${fmt(a.levels[i])}, book part ${i + 1} of ${n}`, hit: `${LABEL[a.idx]} is at ${fmt(L[a.idx])}, at or above the level of ${fmt(a.levels[i])}.` });
+          if (a) due.push({ c, fp: !!R.tag, k, title: `${nm}: ${LABEL[a.idx]} at ${fmt(a.levels[i])}, book part ${i + 1} of ${n}`, hit: `${LABEL[a.idx]} is at ${fmt(L[a.idx])}, at or above the level of ${fmt(a.levels[i])}.` });
         }
         continue;
       }
@@ -155,7 +164,7 @@ module.exports = async (req, res) => {
         for (const a of R.alts) {
           const b = (H[a.idx] || []).find(r => r[0] >= R.from), now = L[a.idx]; if (!b || !ok(now)) continue;
           const chg = (now / b[1] - 1) * 100, hitIt = a.dir === 'up' ? chg >= a.pct : chg <= -a.pct;
-          if (hitIt) { due.push({ c, k, title: `${name}: ${LABEL[a.idx]} ${a.dir} ${a.pct}% since ${dmy(b[0])}`, hit: `${LABEL[a.idx]} is at ${fmt(now)}, ${chg >= 0 ? 'up' : 'down'} ${Math.abs(chg).toFixed(1)}% from its close of ${fmt(b[1])} on ${dmy(b[0])}.` }); break; }
+          if (hitIt) { due.push({ c, fp: !!R.tag, k, title: `${nm}: ${LABEL[a.idx]} ${a.dir} ${a.pct}% since ${dmy(b[0])}`, hit: `${LABEL[a.idx]} is at ${fmt(now)}, ${chg >= 0 ? 'up' : 'down'} ${Math.abs(chg).toFixed(1)}% from its close of ${fmt(b[1])} on ${dmy(b[0])}.` }); break; }
         }
         continue;
       }
@@ -164,8 +173,17 @@ module.exports = async (req, res) => {
           const k = `${base}-${d}`; if (last(k) || T < d || T > addDays(d, 5)) return;
           if (R.unless) { const fired = lines.some(o => o !== R && o.src.toLowerCase().includes(R.unless.toLowerCase()) && Object.keys(keys).some(x => x.startsWith(`${c.id}/${o.id}`))); if (fired) return; }
           const dl = R.deadline ? (d === R.deadline ? `Deadline today (${dmy(d)})` : `Deadline in 7 days (${dmy(R.deadline)})`) : `Reminder for ${dmy(d)}`;
-          due.push({ c, k, title: `${name}: ${dl.toLowerCase()}`, hit: `${dl}.` });
+          due.push({ c, fp: !!R.tag, k, title: `${nm}: ${dl.toLowerCase()}`, hit: `${dl}.` });
         });
+        continue;
+      }
+      if (R.type === 'w52') {                            // above the highest close of the past 52 weeks; fires once, whichever index first
+        const k = `${base}-w52`; if (last(k)) continue;
+        for (const a of R.alts) {
+          const now = L[a.idx], cs = closes(a.idx, addDays(T, -364)); if (!ok(now) || cs.length < 150) continue;
+          const hi = Math.max(...cs);
+          if (now > hi) { due.push({ c, fp: !!R.tag, k, title: `${nm}: ${LABEL[a.idx]} at a 52-week high`, hit: `${LABEL[a.idx]} is at ${fmt(now)}, above its highest close of the past 52 weeks (${fmt(hi)}).` }); break; }
+        }
         continue;
       }
       const k = base, lf = last(k);
@@ -175,20 +193,20 @@ module.exports = async (req, res) => {
       const lab = LABEL[R.idx];
       if (R.type === 'newHigh') {
         const cs = closes(R.idx, R.from); const hi = cs.length ? Math.max(...cs) : null;
-        if (hi && now > hi) due.push({ c, k, title: `${name}: ${lab} at a new high`, hit: `${lab} is at ${fmt(now)}, above every close since ${dmy(R.from)} (best ${fmt(hi)}).` });
+        if (hi && now > hi) due.push({ c, fp: !!R.tag, k, title: `${nm}: ${lab} at a new high`, hit: `${lab} is at ${fmt(now)}, above every close since ${dmy(R.from)} (best ${fmt(hi)}).` });
       } else if (R.type === 'fall') {
         if (R.close && !closedForDay) continue;
         const since = (R.repeat && lf) || R.from, cs = closes(R.idx, since); cs.push(now);
         const hi = Math.max(...cs);
-        if (now <= hi * (1 - R.pct / 100)) due.push({ c, k, title: `${name}: ${lab} down ${R.pct}% from its high`, hit: `${lab} ${R.close ? 'closed' : 'is'} at ${fmt(now)}, ${((1 - now / hi) * 100).toFixed(1)}% below its high of ${fmt(hi)} since ${dmy(since)}.` });
+        if (now <= hi * (1 - R.pct / 100)) due.push({ c, fp: !!R.tag, k, title: `${nm}: ${lab} down ${R.pct}% from its high`, hit: `${lab} ${R.close ? 'closed' : 'is'} at ${fmt(now)}, ${((1 - now / hi) * 100).toFixed(1)}% below its high of ${fmt(hi)} since ${dmy(since)}.` });
       } else if (R.type === 'rise') {
         const since = lf || R.from, cs = closes(R.idx, since); if (!cs.length) continue;
         const lo = Math.min(...cs);
-        if (now >= lo * (1 + R.pct / 100)) due.push({ c, k, title: `${name}: ${lab} up ${R.pct}% from its low`, hit: `${lab} is at ${fmt(now)}, up ${((now / lo - 1) * 100).toFixed(1)}% from its low of ${fmt(lo)} since ${dmy(since)}.` });
+        if (now >= lo * (1 + R.pct / 100)) due.push({ c, fp: !!R.tag, k, title: `${nm}: ${lab} up ${R.pct}% from its low`, hit: `${lab} is at ${fmt(now)}, up ${((now / lo - 1) * 100).toFixed(1)}% from its low of ${fmt(lo)} since ${dmy(since)}.` });
       } else if (R.type === 'aboveHigh') {
         const cs = closes(R.idx, addDays(R.from, -30), lf || addDays(R.from, -1)); if (!cs.length) continue;
         const hi = Math.max(...cs);
-        if (now >= hi * (1 + R.pct / 100)) due.push({ c, k, title: `${name}: ${lab} ${R.pct}% above its earlier high`, hit: `${lab} is at ${fmt(now)}, ${((now / hi - 1) * 100).toFixed(1)}% above its earlier high of ${fmt(hi)}.` });
+        if (now >= hi * (1 + R.pct / 100)) due.push({ c, fp: !!R.tag, k, title: `${nm}: ${lab} ${R.pct}% above its earlier high`, hit: `${lab} is at ${fmt(now)}, ${((now / hi - 1) * 100).toFixed(1)}% above its earlier high of ${fmt(hi)}.` });
       }
     }
   }
@@ -196,22 +214,22 @@ module.exports = async (req, res) => {
   if (req.query && req.query.test) {                 // one clearly marked test alert, no memory key
     due.length = 0; due.push({ c: { id: 'test', PB_Plan: 'This is a test of the profit-booking alerts. Please mark this to-do complete.' }, k: 'test/test', title: 'TEST: profit-booking alert check', hit: 'Test only. Nothing to do.' });
   }
-  for (const { c, k, title, hit } of due) {
+  for (const { c, k, title, hit, fp } of due) {
     fired++;
     if (dry) continue;
     const plan = c.PB_Plan ? esc(c.PB_Plan).replace(/\n/g, '<br>') : '';
-    const body = `<div><strong>Trigger reached, review for profit booking.</strong></div><div>${esc(hit)}</div>${plan ? `<div><br>Plan: ${plan}</div>` : ''}<div><br>Check exit load and short-term tax on units held under a year before redeeming.</div>${k === 'test/test' ? '' : `<div><br>pb-key: ${k}/${T}</div>`}`;
+    const body = `<div><strong>${fp ? 'Trigger reached, review moving this goal money to debt.' : 'Trigger reached, review for profit booking.'}</strong></div><div>${esc(hit)}</div>${plan ? `<div><br>Plan: ${plan}</div>` : ''}<div><br>Check exit load and short-term tax on units held under a year before redeeming.</div>${k === 'test/test' ? '' : `<div><br>pb-key: ${k}/${T}</div>`}`;
     let todo;
     try { todo = await B.createTodo(title, body, T); } catch (e) { notes.push('basecamp: ' + e.message); continue; }   // no to-do → no email, so the memory stays consistent
     try {
       const ACC = Z.env('ZOHO_MAIL_ACCOUNT_ID'), FROM = Z.env('FROM_ADDRESS'), tok = await Z.accessToken();
       const html = `<div style="font-family:Calibri,Arial,sans-serif;font-size:15px;color:#39293E">
-        <p style="font-size:17px;color:#005826"><b>${esc(title)}</b></p><p><b>Trigger reached, review for profit booking.</b><br>${esc(hit)}</p>
+        <p style="font-size:17px;color:#005826"><b>${esc(title)}</b></p><p><b>${fp ? 'Trigger reached, review moving this goal money to debt.' : 'Trigger reached, review for profit booking.'}</b><br>${esc(hit)}</p>
         ${plan ? `<p>Plan: ${plan}</p>` : ''}<p>Check exit load and short-term tax on units held under a year before redeeming.</p>
         <p><a href="${todo.app_url}">Open the Basecamp to-do</a> · <a href="https://abundance-dashboard-beta.vercel.app/Market_Pulse.html">Market Pulse</a></p>
         <p style="color:#6f6875;font-size:12px">Sent automatically by the Abundance dashboard from the PB Rule field in Zoho CRM. Internal reminder, not investment advice.</p></div>`;
       const r = await fetch(`${Z.urls().mail}/api/accounts/${ACC}/messages`, { method: 'POST', headers: { Authorization: `Zoho-oauthtoken ${tok}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fromAddress: FROM, toAddress: TO, subject: 'Profit booking alert · ' + title, content: html, mailFormat: 'html', askReceipt: 'no' }) });
+        body: JSON.stringify({ fromAddress: FROM, toAddress: TO, subject: (fp ? 'Goal alert · ' : 'Profit booking alert · ') + title, content: html, mailFormat: 'html', askReceipt: 'no' }) });
       if (r.ok) sent++; else notes.push('mail ' + r.status);
     } catch (e) { notes.push('mail: ' + e.message); }
   }
