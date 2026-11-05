@@ -14,6 +14,8 @@ const IDX = [
   ['Nifty IT', '^CNXIT', 'NIFTY IT'],
   ['India VIX', '^INDIAVIX', 'INDIA VIX'],
   ['S&P 500', '^GSPC', null],
+  ['Brent crude · $', 'BZ=F', null],
+  ['WTI crude · $', 'CL=F', null],
 ];
 // Precious metals: international spot price converted to rupees (the same thing as TradingView's
 // XAUINRG / XAGINR), shown per 10 g and per kg. Yahoo spot symbols first, COMEX futures as fallback;

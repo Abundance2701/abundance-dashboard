@@ -1,0 +1,16 @@
+name: API check
+# Manual only: prints what the live Vercel endpoints return (used to test Market Pulse from outside Vercel).
+on:
+  workflow_dispatch:
+    inputs:
+      paths:
+        description: 'Space-separated API paths'
+        default: 'api/movers api/market'
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          for p in ${{ github.event.inputs.paths }}; do
+            echo "=== $p"; curl -s -m 40 "https://abundance-dashboard-beta.vercel.app/$p?t=$(date +%s)" | head -c 6000; echo
+          done
