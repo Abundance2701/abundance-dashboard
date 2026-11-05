@@ -12,5 +12,5 @@ jobs:
     steps:
       - run: |
           for p in ${{ github.event.inputs.paths }}; do
-            echo "=== $p"; curl -s -m 40 "https://abundance-dashboard-beta.vercel.app/$p?t=$(date +%s)" | head -c 6000; echo
+            echo "=== $p"; case "$p" in *\?*) u="$p&t=$(date +%s)";; *) u="$p?t=$(date +%s)";; esac; curl -s -m 60 "https://abundance-dashboard-beta.vercel.app/$u" | head -c 6000; echo
           done
