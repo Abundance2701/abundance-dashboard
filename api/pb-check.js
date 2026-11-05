@@ -6,6 +6,7 @@
    Line formats (dates DD/MM/YYYY; index = Nifty 50 | Nifty 500 | Midcap 150 | Smallcap 250):
      Nifty 50 at 26358, 27400              one alert per level (part 1, part 2, ...)
      or Midcap 150 at 23650, 24600         backup for the line above: part N fires when ANY index reaches its Nth level
+     Nifty 50 up 9% from 05/11/2026          up/down X% from that day's close; add 'or' lines for backups (fires once)
      Nifty 50 new high from 05/11/2026 until 25/11/2026
      Nifty 50 fall 2% [close] [repeat] from <date> [until <date>]     fall from the highest close since <date>
      Nifty 500 rise 10% [repeat] from <date> [until <date>]           rise from the lowest close since <date>
@@ -40,7 +41,7 @@ function parseRule(text) {
   let lastAt = null;
   for (const raw of String(text || '').split(/\r?\n/)) {
     const line = raw.trim().replace(/\s+/g, ' '); if (!line) continue;
-    const l = line.toLowerCase();
+    const l = line.toLowerCase().replace(/\bnifty(?! ?50\b| ?500\b)/g, 'nifty 50').replace(/\b(up|down) by\b/g, '$1').replace(/\bmidcap(?! 150)/g, 'midcap 150').replace(/\bsmallcap(?! 250)/g, 'smallcap 250');
     const dates = k => { const m = l.match(new RegExp(k + ' (\\d{1,2}/\\d{1,2}/\\d{4})')); return m ? iso(m[1]) : null; };
     const from = dates('from'), until = dates('until');
     let m;
@@ -50,6 +51,13 @@ function parseRule(text) {
       if (m[1]) { if (!lastAt) { bad.push(line); continue; } lastAt.alts.push({ idx: m[2], levels }); lastAt.src += '\n' + line; continue; }
       lastAt = { type: 'at', alts: [{ idx: m[2], levels }], src: line }; out.push(lastAt); continue;
     }
+    if ((m = l.match(new RegExp('^(or )?' + IDXRE + ' (up|down) ([\\d.]+) ?%')))) {
+      if (!from) { bad.push(line); continue; }
+      const alt = { idx: m[2], pct: +m[4], dir: m[3] };
+      if (m[1]) { if (!lastAt || lastAt.type !== 'move') { bad.push(line); continue; } lastAt.alts.push(alt); lastAt.src += '\n' + line; continue; }
+      lastAt = { type: 'move', alts: [alt], from, until, src: line }; out.push(lastAt); continue;
+    }
+    if (m === null && /^or /.test(l) && lastAt && lastAt.type === 'move') { bad.push(line); continue; }
     lastAt = null;
     if ((m = l.match(new RegExp('^' + IDXRE + ' new high')))) { if (!from) { bad.push(line); continue; } out.push({ type: 'newHigh', idx: m[1], from, until, src: line }); continue; }
     if ((m = l.match(new RegExp('^' + IDXRE + ' (fall|rise) ([\\d.]+) ?%( above high)?')))) {
@@ -139,6 +147,15 @@ module.exports = async (req, res) => {
           const k = `${base}-p${i + 1}`; if (last(k)) continue;
           const a = R.alts.find(a => a.levels[i] && ok(L[a.idx]) && L[a.idx] >= a.levels[i]);
           if (a) due.push({ c, k, title: `${name}: ${LABEL[a.idx]} at ${fmt(a.levels[i])}, book part ${i + 1} of ${n}`, hit: `${LABEL[a.idx]} is at ${fmt(L[a.idx])}, at or above the level of ${fmt(a.levels[i])}.` });
+        }
+        continue;
+      }
+      if (R.type === 'move') {                           // up/down X% from the close on the 'from' date; fires once, whichever index first
+        const k = `${base}-move`; if (last(k)) continue;
+        for (const a of R.alts) {
+          const b = (H[a.idx] || []).find(r => r[0] >= R.from), now = L[a.idx]; if (!b || !ok(now)) continue;
+          const chg = (now / b[1] - 1) * 100, hitIt = a.dir === 'up' ? chg >= a.pct : chg <= -a.pct;
+          if (hitIt) { due.push({ c, k, title: `${name}: ${LABEL[a.idx]} ${a.dir} ${a.pct}% since ${dmy(b[0])}`, hit: `${LABEL[a.idx]} is at ${fmt(now)}, ${chg >= 0 ? 'up' : 'down'} ${Math.abs(chg).toFixed(1)}% from its close of ${fmt(b[1])} on ${dmy(b[0])}.` }); break; }
         }
         continue;
       }
