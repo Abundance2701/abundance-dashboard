@@ -135,7 +135,7 @@ module.exports = async (req, res) => {
     const name = c.Full_Name || 'Client', { lines, bad } = parseRule(c.PB_Rule);
     for (const b of bad) {
       const k = `${c.id}/bad-${hash(b)}`; if (last(k) === T) continue;
-      badLines++; due.push({ c, k, title: `${name}: check this profit-booking rule line`, hit: `This line in PB Rule could not be read, so it is not being watched: "${b}". Fix it in Zoho CRM (see the formats in the "Profit booking alert rules" note).` });
+      badLines++; due.push({ c, k, title: `${name}: check this profit-booking rule line`, hit: `This line in PB Rule could not be read, so it is not being watched: "${b}". Fix it in Zoho CRM. Valid examples: "Nifty 50 at 26358, 27400" · "or Midcap 150 at 23650" · "Nifty 50 up 9% from 05/11/2026" · "Nifty 50 fall 2% from 13/11/2026 until 15/01/2027" · "Nifty 500 rise 10% repeat from 05/11/2026" · "remind 12/11/2026" · "deadline 15/01/2027". Dates as DD/MM/YYYY.` });
     }
     for (const R of lines) {
       if (R.from && T < R.from) continue;
