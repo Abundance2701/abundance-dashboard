@@ -47,7 +47,7 @@ async function rules() {
   if (!m) throw new Error('Rules message not found on the Notes board.');
   const html = String(m.content || '');
   const raw = (html.match(/<pre[^>]*>([\s\S]*?)<\/pre>/i) || [])[1] || html;
-  const txt = raw.replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '').replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&');
+  const txt = raw.replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '').replace(/&quot;/g, '"').replace(/&#39;|&#x27;|&apos;/g, "'").replace(/&#(\d+);/g, (_, n) => String.fromCharCode(+n)).replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&');
   const s = txt.indexOf('['), e = txt.lastIndexOf(']');
   return JSON.parse(txt.slice(s, e + 1));
 }
