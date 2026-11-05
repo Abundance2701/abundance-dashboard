@@ -176,11 +176,14 @@ module.exports = async (req, res) => {
     }
   }
 
+  if (req.query && req.query.test) {                 // one clearly marked test alert, no memory key
+    due.length = 0; due.push({ c: { id: 'test', PB_Plan: 'This is a test of the profit-booking alerts. Please mark this to-do complete.' }, k: 'test/test', title: 'TEST: profit-booking alert check', hit: 'Test only. Nothing to do.' });
+  }
   for (const { c, k, title, hit } of due) {
     fired++;
     if (dry) continue;
     const plan = c.PB_Plan ? esc(c.PB_Plan).replace(/\n/g, '<br>') : '';
-    const body = `<div><strong>Trigger reached, review for profit booking.</strong></div><div>${esc(hit)}</div>${plan ? `<div><br>Plan: ${plan}</div>` : ''}<div><br>Check exit load and short-term tax on units held under a year before redeeming.</div><div><br>pb-key: ${k}/${T}</div>`;
+    const body = `<div><strong>Trigger reached, review for profit booking.</strong></div><div>${esc(hit)}</div>${plan ? `<div><br>Plan: ${plan}</div>` : ''}<div><br>Check exit load and short-term tax on units held under a year before redeeming.</div>${k === 'test/test' ? '' : `<div><br>pb-key: ${k}/${T}</div>`}`;
     let todo;
     try { todo = await B.createTodo(title, body, T); } catch (e) { notes.push('basecamp: ' + e.message); continue; }   // no to-do → no email, so the memory stays consistent
     try {
