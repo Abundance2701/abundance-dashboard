@@ -131,27 +131,3 @@ for i in sorted(items, key=lambda x: x['date'], reverse=True):
 json.dump({'updated': out['updated'], 'items': uniq[:120], 'counts': counts, 'errors': ferr}, open('data/official.json', 'w'), ensure_ascii=False, indent=1)
 print('official items:', len(uniq), 'errors:', ferr)
 
-# ---- Nifty 50 free-float weights (NSE index page data), so the page can show each stock's
-#      contribution in index points. Fetched from the previous close, before the market opens.
-try:
-    import http.cookiejar
-    cj = http.cookiejar.CookieJar()
-    op = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cj))
-    H = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
-         'Accept-Language': 'en-US,en;q=0.9'}
-    op.open(urllib.request.Request('https://www.nseindia.com/', headers={**H, 'Accept': 'text/html'}), timeout=30).read()
-    raw = op.open(urllib.request.Request('https://www.nseindia.com/api/equity-stockIndices?index=NIFTY%2050',
-                  headers={**H, 'Accept': 'application/json', 'Referer': 'https://www.nseindia.com/market-data/live-equity-market'}), timeout=30).read()
-    rows = [x for x in json.loads(raw)['data'] if x.get('priority') != 1 and x.get('symbol') != 'NIFTY 50']
-    # weight at the previous close: free-float market cap divided back by today's move (zero before the open)
-    base = {x['symbol']: float(x.get('ffmc') or 0) / (1 + float(x.get('pChange') or 0) / 100) for x in rows}
-    tot = sum(base.values())
-    if len(base) >= 45 and tot > 0:
-        json.dump({'updated': out['updated'], 'source': 'NSE Nifty 50 page (free-float market cap)',
-                   'weights': {k: round(v / tot * 100, 4) for k, v in sorted(base.items(), key=lambda kv: -kv[1])}},
-                  open('data/nifty50_weights.json', 'w'), indent=1)
-        print('nifty50 weights:', len(base))
-    else:
-        print('nifty50 weights: unexpected data', len(base))
-except Exception as e:
-    print('nifty50 weights failed:', str(e)[:120])

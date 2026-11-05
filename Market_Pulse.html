@@ -133,6 +133,30 @@ aside .card{padding:12px 14px;margin-bottom:12px}
 .ev .d small{display:block;font:600 10.5px var(--f-body);color:var(--muted)}
 .ev .t{font-weight:700}.ev .x{color:var(--muted);font-size:12.5px}
 .note{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5}
+/* what's moving the market */
+.why{margin-top:8px}
+.why>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 14px}
+.why>summary::-webkit-details-marker{display:none}
+.why>summary b{font:600 13.5px var(--f-display);color:var(--primary)}
+.why .wh{font-size:13px;color:var(--muted);flex:1 1 260px;min-width:0}
+.why .chev{font-size:13px;color:var(--primary);transition:transform .2s}
+.why[open] .chev{transform:rotate(180deg)}
+.wbody{padding:0 14px 14px;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:14px 22px}
+.wbody .story{font-size:14.5px;line-height:1.55;color:#4b4350}
+.wbody .story p{margin:0 0 6px}
+.wbody h5{margin:0 0 5px;font:600 11px var(--f-display);text-transform:uppercase;letter-spacing:.07em;color:var(--secondary)}
+.mv{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;font-size:13.5px;margin-bottom:10px}
+.mv span:nth-child(even){font-weight:700;font-variant-numeric:tabular-nums;text-align:right}
+.sbar{display:grid;grid-template-columns:110px minmax(0,1fr) 54px;gap:6px;align-items:center;font-size:12.5px;margin:2px 0}
+.sbar i{display:block;height:8px;border-radius:4px}
+.sbar b{text-align:right;font-variant-numeric:tabular-nums}
+.wbody svg{width:100%;height:64px;display:block}
+.wsrc{grid-column:1/-1;font-size:11.5px;color:var(--muted)}
+.whl a{display:block;font-size:13.5px;color:var(--ink);text-decoration:none;padding:3px 0;border-top:1px solid var(--line)}
+.whl a:first-of-type{border-top:0}
+.whl a:hover{color:var(--primary);text-decoration:underline}
+.whl small{color:var(--muted)}
+@media (max-width:900px){ .wbody{grid-template-columns:1fr} }
 @media (max-width:900px){ .grid{grid-template-columns:1fr} .perf{grid-template-columns:1fr} .ix.flow{min-width:0} .tiles{grid-template-columns:repeat(4,1fr)} }
 @media (max-width:520px){ body{font-size:14.5px} .stats{gap:2px 12px} .tiles{gap:5px} .tile b{font-size:13px} .tiles{grid-template-columns:repeat(4,1fr)} .day h3{font-size:15.5px} }
 </style>
@@ -151,6 +175,10 @@ aside .card{padding:12px 14px;margin-bottom:12px}
       <div><div class="tiles" id="tiles"></div><div class="src" id="idxSrc"></div></div>
       <div id="flow"></div>
     </div>
+    <details class="card why" id="why">
+      <summary><b>What's moving the market</b><span class="wh" id="whyHead">Loading…</span><span class="chev" aria-hidden="true">▾</span></summary>
+      <div class="wbody" id="whyBody"></div>
+    </details>
   </section>
 
   <div class="tabs" role="tablist">
@@ -413,6 +441,61 @@ aside .card{padding:12px 14px;margin-bottom:12px}
     ALL = pending.its; pending.nw.forEach(i => fresh.add(i.id)); markSeen(pending.nw); pending = null;
     $('newBar').hidden = true; renderLive(); window.scrollTo({ top: $('liveView').offsetTop - 10, behavior: 'smooth' });
   });
+  // ---------- what's moving the market (live, built from NSE + Yahoo numbers; nothing written by hand) ----------
+  let MV = null;
+  async function loadMovers() { try { MV = await getJSON('api/movers'); } catch (e) { if (!MV) $('whyHead').textContent = 'Not available right now.'; return; } renderWhy(); }
+  const pc = v => v == null ? '—' : (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(1) + '%';
+  const nm = s => ({ 'Oil & Natural Gas Corporation': 'ONGC', 'Tata Motors Passenger Vehicles': 'Tata Motors PV', 'Apollo Hospitals Enterprise': 'Apollo Hospitals', 'Maruti Suzuki India': 'Maruti Suzuki', 'Reliance Industries': 'Reliance', 'Larsen & Toubro': 'L&T', 'State Bank of India': 'SBI', 'Infosys': 'Infosys', 'Tata Consultancy Services': 'TCS' })[s.name] || s.name;
+  function pathSvg(p) {
+    if (!p || !p.pts || p.pts.length < 2) return '';
+    const v = p.pts.map(x => x[1]).concat(p.prev ? [p.prev] : []), mn = Math.min(...v), mx = Math.max(...v), r = mx - mn || 1, W = 300, H = 64;
+    const t0 = p.pts[0][0], t1 = t0 + 375 * 60e3;               // 09:15 → 15:30
+    const X = t => ((t - t0) / (t1 - t0) * W).toFixed(1), Y = y => (H - 4 - (y - mn) / r * (H - 8)).toFixed(1);
+    const last = p.pts[p.pts.length - 1][1], col = p.prev && last < p.prev ? 'var(--down)' : 'var(--up)';
+    return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Nifty 50 today, 5-minute steps">${p.prev ? `<line x1="0" x2="${W}" y1="${Y(p.prev)}" y2="${Y(p.prev)}" stroke="var(--muted)" stroke-dasharray="3 3" stroke-width="1" vector-effect="non-scaling-stroke"/>` : ''}<polyline points="${p.pts.map(([t, y]) => X(t) + ',' + Y(y)).join(' ')}" fill="none" stroke="${col}" stroke-width="1.8" vector-effect="non-scaling-stroke"/></svg>`;
+  }
+  function renderWhy() {
+    const M = MV; if (!M || !M.nifty) { $('whyHead').textContent = 'Not available right now.'; return; }
+    const n = M.nifty, gap = (n.open / n.prev - 1) * 100, pos = n.high > n.low ? (n.last - n.low) / (n.high - n.low) : .5;
+    const dir = n.chgPct > 0.05 ? 'up' : n.chgPct < -0.05 ? 'down' : 'flat';
+    const time = (n.asOf || '').split(' ')[1] || '';
+    const open = marketOpen();
+    const S = [];
+    S.push(`Nifty 50 ${open ? 'is' : 'closed'} ${dir === 'flat' ? 'flat' : dir} <b class="${cls(n.chgPct)}">${sg(n.chgPct)}</b> at ${inr(n.last)}${open && time ? ` (${time} IST)` : ''}.`);
+    let path = Math.abs(gap) >= 0.25 ? `It opened ${gap > 0 ? 'higher' : 'lower'} (${pc(gap)}) at ${inr(n.open)}` : `It opened near yesterday's close at ${inr(n.open)}`;
+    if (gap >= 0.25) path += n.last > n.open ? ' and has added to those gains' : n.last > n.prev ? ' but has given back part of the early rise' : ' but has given up all of the early rise';
+    else if (gap <= -0.25) path += n.last < n.open ? ' and has fallen further' : n.last < n.prev ? ' and has recovered part of the early fall' : ' and has recovered the early fall completely';
+    path += `. Day's range ${inr(n.low)}–${inr(n.high)}; ${open ? 'now' : 'it closed'} ${pos > 0.75 ? 'near the high' : pos < 0.25 ? 'near the low' : 'in the middle of the range'}.`;
+    S.push(path);
+    const br = [];
+    if (n.adv != null && n.dec != null) br.push(`${n.adv} of the 50 Nifty stocks are up and ${n.dec} down`);
+    const mid = (M.broad || []).find(b => /Midcap/.test(b.name)), sml = (M.broad || []).find(b => /Smallcap/.test(b.name)), vix = (M.broad || []).find(b => /VIX/.test(b.name));
+    if (mid && sml) { const avg = (mid.pct + sml.pct) / 2, d = avg - n.chgPct; br.push(`midcaps ${pc(mid.pct)} and smallcaps ${pc(sml.pct)}, ${Math.abs(d) < 0.3 ? 'broadly in line with large caps' : d > 0 ? 'doing better than large caps' : 'lagging large caps'}`); }
+    if (br.length) S.push(br.join('; ') + '.');
+    const sec = M.sectors || [];
+    if (sec.length > 3) S.push(`Strongest sectors: ${sec.slice(0, 3).map(x => `${x.name} ${pc(x.pct)}`).join(', ')}. Weakest: ${sec.slice(-3).reverse().map(x => `${x.name} ${pc(x.pct)}`).join(', ')}.`);
+    const H = (M.heavy || []).slice().sort((a, b) => Math.abs(b.pct) - Math.abs(a.pct));
+    if (H.length) S.push(`Biggest index weights: ${H.slice(0, 4).map(x => `${nm(x)} ${pc(x.pct)}`).join(', ')}.`);
+    const ctx = [];
+    if (vix) ctx.push(`India VIX ${vix.last.toFixed(2)} (${pc(vix.pct)})`);
+    const brent = IX && (IX.indices || []).find(x => /Brent/.test(x.name)); if (brent) ctx.push(`Brent $${brent.level.toFixed(2)} (${pc(brent.chgPct)})`);
+    const f = IX && IX.fiidii; if (f && f.fii != null) ctx.push(`FIIs ${f.fii >= 0 ? 'bought' : 'sold'} ₹${Math.abs(Math.round(f.fii)).toLocaleString('en-IN')} cr on ${fd(f.date)} (provisional)`);
+    if (ctx.length) S.push(ctx.join(' · ') + '.');
+    const lead = sec.length ? (n.chgPct >= 0 ? sec[0].name : sec[sec.length - 1].name) : '';
+    $('whyHead').innerHTML = `Nifty <b class="${cls(n.chgPct)}">${sg(n.chgPct)}</b> · ${n.adv != null ? `${n.adv} up / ${n.dec} down` : ''}${lead ? ` · ${n.chgPct >= 0 ? 'led by' : 'dragged by'} ${esc(lead)}` : ''} · tap for details`;
+    const list = L => L.map(x => `<span>${esc(nm(x))}</span><span class="${cls(x.pct)}">${pc(x.pct)}${x.pts != null ? ` · ${x.pts > 0 ? '+' : '−'}${Math.abs(x.pts).toFixed(0)} pts` : ''}</span>`).join('');
+    const mx = Math.max(...sec.map(x => Math.abs(x.pct)), 0.5);
+    // headlines today that name one of the movers, or are about the market move itself
+    const names = [...(M.up || []), ...(M.down || []), ...(M.heavy || [])].map(x => nm(x).split(' ').slice(0, nm(x).split(' ')[0].length > 4 ? 1 : 2).join(' ')).filter(w => w.length > 2);
+    const re = names.length ? new RegExp('\\b(' + names.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')', 'i') : null;
+    const T = todays(ALL), rel = T.filter(i => (re && re.test(i.title)) || (i.topic === 'markets' && /sensex|nifty/i.test(i.title))).slice(0, 6);
+    $('whyBody').innerHTML = `<div class="story">${S.map(x => `<p>${x}</p>`).join('')}${pathSvg(M.intraday)}<div class="src">Nifty 50 today in 5-minute steps; dashed line = yesterday's close.</div></div>
+      <div><h5>Top gainers in Nifty 50</h5><div class="mv">${list(M.up || [])}</div><h5>Top losers in Nifty 50</h5><div class="mv">${list(M.down || [])}</div></div>
+      <div><h5>Sectors today</h5>${sec.map(x => `<div class="sbar"><span>${esc(x.name)}</span><span><i style="width:${(Math.abs(x.pct) / mx * 100).toFixed(0)}%;background:${x.pct >= 0 ? 'var(--up)' : 'var(--down)'};${x.pct < 0 ? 'margin-left:auto' : ''}"></i></span><b class="${cls(x.pct)}">${pc(x.pct)}</b></div>`).join('')}</div>
+      <div class="whl"><h5>Related headlines</h5>${rel.length ? rel.map(i => `<a href="${esc(i.url)}" target="_blank" rel="noopener">${esc(i.title)} <small>${hm(i.t)} · ${esc(i.src)}</small></a>`).join('') : '<small>No matching headlines yet today.</small>'}</div>
+      <div class="wsrc">Built automatically from live numbers: Nifty level, range, breadth and sectors from NSE; stock moves from ${esc(M.source || 'NSE')}. Updates every 30 seconds in market hours. The "why" behind a stock's move is in the related headlines.</div>`;
+  }
+
   function renderLive() {
     const today = istDay(Date.now()), yday = istDay(Date.now() - 864e5);
     const T = todays(ALL), Y = ALL.filter(i => istDay(i.t) === yday);
@@ -434,6 +517,7 @@ aside .card{padding:12px 14px;margin-bottom:12px}
       : `<button type="button" class="more" id="yBtn">Show yesterday's headlines (${Y.length})</button>`;
     $('live').innerHTML = html;
     const yb = $('yBtn'); if (yb) yb.onclick = () => { showY = !showY; renderLive(); };
+    if (MV) renderWhy();
   }
   $('lchips').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; lfilt = b.dataset.c; try { localStorage.setItem('pulse_lfilt', lfilt) } catch (x) {} renderLive(); });
 
@@ -448,7 +532,7 @@ aside .card{padding:12px 14px;margin-bottom:12px}
   document.querySelector('.tabs').addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (b) setView(b.dataset.v); });
   setView(view);
 
-  load(); loadNews(); loadEvents();
+  load(); loadNews(); loadEvents(); loadMovers();
   // refresh: indices every minute in market hours (else 10 min), headlines every 3 min, brief every 30 min
   let tick = 0;
   setInterval(() => {
@@ -460,6 +544,7 @@ aside .card{padding:12px 14px;margin-bottom:12px}
   }, 60000);
   // in market hours: index cards every 15 seconds
   setInterval(() => { if (!document.hidden && marketOpen()) loadMarket(); }, 15000);
+  setInterval(() => { if (!document.hidden && marketOpen()) loadMovers(); }, 30000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) { loadMarket(); loadNews(); } });
 })();
 </script>

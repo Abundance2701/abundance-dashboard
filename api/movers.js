@@ -13,6 +13,8 @@ const r2 = v => v == null || !isFinite(v) ? null : Math.round(v * 100) / 100;
 const SECTORS = ['NIFTY BANK', 'NIFTY PRIVATE BANK', 'NIFTY PSU BANK', 'NIFTY FINANCIAL SERVICES', 'NIFTY IT', 'NIFTY AUTO', 'NIFTY FMCG', 'NIFTY PHARMA',
   'NIFTY HEALTHCARE INDEX', 'NIFTY METAL', 'NIFTY ENERGY', 'NIFTY OIL & GAS', 'NIFTY REALTY', 'NIFTY MEDIA', 'NIFTY CONSUMER DURABLES', 'NIFTY INDIA DEFENCE', 'NIFTY CAPITAL MARKETS'];
 const nice = s => s.replace(/^NIFTY /, '').replace(/ INDEX$/, '').toLowerCase().replace(/\b\w/g, c => c.toUpperCase()).replace(/\bIt\b/, 'IT').replace(/\bFmcg\b/, 'FMCG').replace(/\bPsu\b/, 'PSU').replace(/ & /g, ' & ');
+// the largest Nifty 50 weights (they move the index most); shown as their own row
+const HEAVY = ['HDFCBANK', 'RELIANCE', 'ICICIBANK', 'INFY', 'BHARTIARTL', 'LT', 'ITC', 'TCS', 'AXISBANK', 'SBIN'];
 const short = n => String(n || '').replace(/\s+(limited|ltd\.?)$/i, '').replace(/^the /i, '').trim();
 
 async function nseSession() {
@@ -84,6 +86,7 @@ module.exports = async (req, res) => {
   const key = s => s.pts != null ? s.pts : s.pct;
   stocks.sort((a, b) => key(b) - key(a));
   const up = stocks.filter(s => key(s) > 0).slice(0, 6), down = stocks.filter(s => key(s) < 0).slice(-6).reverse();
+  const heavy = HEAVY.map(h => stocks.find(s => s.sym === h)).filter(Boolean);
   const ptsSum = stocks.every(s => s.pts != null) ? r2(stocks.reduce((a, s) => a + s.pts, 0)) : null;
 
   // intraday path for the chart
@@ -95,5 +98,5 @@ module.exports = async (req, res) => {
 
   res.setHeader('Cache-Control', 's-maxage=20, stale-while-revalidate=60');
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
-  res.status(200).send(JSON.stringify({ updated: new Date().toISOString(), nifty, broad, sectors, up, down, count: stocks.length, ptsSum, source, intraday, notes }));
+  res.status(200).send(JSON.stringify({ updated: new Date().toISOString(), nifty, broad, sectors, up, down, heavy, count: stocks.length, ptsSum, source, intraday, notes }));
 };
