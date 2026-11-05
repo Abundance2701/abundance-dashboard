@@ -1,5 +1,5 @@
 name: Profit-booking backtest
-# Manual only: research run for the profit-booking alert rules. Prints results to the log.
+# Manual only: research runs for the profit-booking alert rules. Prints results to the log.
 on: workflow_dispatch
 jobs:
   run:
@@ -8,4 +8,4 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: '3.12' }
-      - run: python scripts/backtest_pb.py
+      - run: python scripts/backtest_pb2.py
