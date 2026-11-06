@@ -64,7 +64,8 @@ module.exports = async (req, res) => {
 
     if (b.action === 'test') {
       const checks = [];
-      const token = await accessToken();
+      let token;
+      try { token = await accessToken(); } catch (e) { checks.push(['Zoho sign-in', false, e.message]); return reply(res, 200, { checks }); }
       checks.push(['Zoho sign-in', true, `Refresh token works (Zoho region: zoho.${region()})`]);
       const accs = await mailAccounts(token).catch(e => e);
       if (accs instanceof Error) checks.push(['Zoho Mail', false, accs.message]);
@@ -75,7 +76,7 @@ module.exports = async (req, res) => {
         const allowed = acc ? [acc.primary, ...acc.sendFrom].map(s => s.toLowerCase()) : [];
         checks.push(['From address', !!acc && allowed.includes(from), from ? (allowed.includes(from) ? `${from} can send` : `${from} is not an address of this account. Allowed: ${allowed.join(', ')}`) : 'FROM_ADDRESS is missing']);
       }
-      const cr = await fetch(`${urls().crm}/crm/v8/Contacts/search?word=zzqx&per_page=1`, { headers: { Authorization: `Zoho-oauthtoken ${token}` } });
+      const cr = await fetch(`${urls().crm}/crm/v8/Contacts/search?word=zzqx&per_page=1`, { headers: { Authorization: `Zoho-oauthtoken ${token}` } }).catch(e => ({ ok: false, status: 'network: ' + e.message }));
       checks.push(['Zoho CRM', cr.ok || cr.status === 204, cr.ok || cr.status === 204 ? 'Contacts can be looked up' : `CRM refused (${cr.status}). Check the ZohoCRM.modules.contacts.READ scope.`]);
       return reply(res, 200, { checks });
     }

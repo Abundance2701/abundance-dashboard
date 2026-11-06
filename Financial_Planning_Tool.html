@@ -3413,8 +3413,9 @@ Move              = target − today; every change is shown (under ₹1,000 coun
   const KEY = 'pg_mailkey', getKey = () => { try { return localStorage.getItem(KEY) || ''; } catch (e) { return ''; } }, setKey = v => { try { v ? localStorage.setItem(KEY, v) : localStorage.removeItem(KEY); } catch (e) { } };
   async function api(path, init) {
     init = init || {}; init.headers = Object.assign({ 'x-abundance-key': getKey(), 'Content-Type': 'application/json' }, init.headers || {});
-    let r; try { r = await fetch(path, init); } catch (e) { throw Object.assign(new Error('Could not reach the dashboard. Open this tool from abundance-dashboard-beta.vercel.app and check the internet connection.'), { code: 0 }); }
-    if (r.status === 404) throw Object.assign(new Error('CRM alerts work only when this tool is opened from the dashboard website.'), { code: 404 });
+    const base = /vercel\.app$/.test(location.hostname) ? '' : 'https://abundance-dashboard-beta.vercel.app';   /* downloaded copy → the live site */
+    let r; try { r = await fetch(base + path, init); } catch (e) { throw Object.assign(new Error('Could not reach the dashboard website. Check the internet connection.'), { code: 0 }); }
+    if (r.status === 404) throw Object.assign(new Error('The CRM alerts service is not on the dashboard website yet.'), { code: 404 });
     const j = await r.json().catch(() => ({})); if (!r.ok) throw Object.assign(new Error(j.error || `Something went wrong (${r.status}).`), { code: r.status, j }); return j;
   }
   let S = null;   /* { goals, contacts, cid, choice: {goal: 'new'|'keep'}, drop: {goal: true} } */

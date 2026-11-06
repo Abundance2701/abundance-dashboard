@@ -36,6 +36,9 @@ async function crm(path, init) {
 }
 
 module.exports = async (req, res) => {
+  /* the downloaded copy of the tool (opened from the computer) calls this from another origin; the passcode still protects it */
+  res.setHeader('Access-Control-Allow-Origin', '*'); res.setHeader('Access-Control-Allow-Headers', 'x-abundance-key, content-type'); res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  if (req.method === 'OPTIONS') { res.statusCode = 204; return res.end(); }
   if (!Z.passcodeOk(req)) return Z.reply(res, 401, { error: 'Passcode did not match.' });
   try {
     if (req.method === 'GET') {
