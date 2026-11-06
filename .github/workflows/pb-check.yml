@@ -1,11 +1,9 @@
 name: Profit-booking alerts
-# Every 15 minutes in market hours (and once a day on weekends for date reminders), ask the
-# dashboard to check the profit-booking rules. All logic and secrets live in Vercel (api/pb-check);
-# this job only knocks on the door, and the reply holds counts only, never client names.
+# Manual run only. The regular schedule moved to cron-job.org on 06/11/2026 ("Abundance alerts":
+# every 15 min 08:00–16:45 IST Mon–Fri, 09:10 IST Sat–Sun) because GitHub's scheduler ran hours late or
+# skipped runs. Use "Run workflow" here to check the alert rules at once. All logic and secrets live in
+# Vercel (api/pb-check); the reply holds counts only, never client names.
 on:
-  schedule:
-    - cron: '*/15 3-10 * * 1-5'   # 08:30–16:15 IST, Mon–Fri
-    - cron: '40 3 * * 0,6'        # 09:10 IST, Sat–Sun
   workflow_dispatch:
 jobs:
   check:
