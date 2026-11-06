@@ -2,7 +2,7 @@
    line of the rule is newly met, creates a Basecamp to-do for Haritha in "Profit booking clients" and
    emails service@abundanceindia.com. Called every 15 minutes in market hours by .github/workflows/pb-check.yml.
 
-   Rules live in Zoho CRM → Contacts, two fields: "PB Rule" (one trigger per line) and "PB Plan" (note).
+   Rules live in Zoho CRM → Contacts, two fields: "Goal Alerts" (api Goal_Alerts, one trigger per line; replaced "PB Rule" on 06/11/2026) and "PB Plan" (note).
    Line formats (dates DD/MM/YYYY; index = Nifty 50 | Nifty 500 | Midcap 150 | Smallcap 250):
      Nifty 50 at 26358, 27400              one alert per level (part 1, part 2, ...)
      or Midcap 150 at 23650, 24600         backup for the line above: part N fires when ANY index reaches its Nth level
@@ -31,6 +31,7 @@ const B = require('./_bc');
 const Z = require('./_zoho');
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
 const TO = 'service@abundanceindia.com';
+const FIELD = 'Goal_Alerts';   /* Contacts → "Goal Alerts" (large text, 32,000 characters): every alert rule, profit booking and goals */
 const IDX = { 'nifty 50': ['NIFTY 50', '^NSEI'], 'nifty 500': ['NIFTY 500', '^CRSLDX'], 'midcap 150': ['NIFTY MIDCAP 150', 'NIFTYMIDCAP150.NS'], 'smallcap 250': ['NIFTY SMALLCAP 250', 'NIFTYSMLCAP250.NS'] };
 const LABEL = { 'nifty 50': 'Nifty 50', 'nifty 500': 'Nifty 500', 'midcap 150': 'Midcap 150', 'smallcap 250': 'Smallcap 250' };
 const istNow = () => new Date(Date.now() + 5.5 * 3600e3);
@@ -98,19 +99,26 @@ function parseRule(text) {
 /* ---------- data ---------- */
 async function zohoContacts() {
   const tok = await Z.accessToken(), H = { Authorization: `Zoho-oauthtoken ${tok}` };
-  // COQL first (one call); if this account's key can't use it, page through Contacts
+  const has = c => c[FIELD] && String(c[FIELD]).trim();
+  // COQL: Zoho can't filter on a large text field, so read every contact's rules (2,000 a call) and keep the filled ones
   try {
-    const r = await fetch(`${Z.urls().crm}/crm/v8/coql`, { method: 'POST', headers: { ...H, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ select_query: "select Full_Name, PB_Rule, PB_Plan from Contacts where PB_Rule is not null limit 2000" }) });
-    if (r.status === 204) return [];
-    if (r.ok) { const j = await r.json(); return j.data || []; }
+    const out = [];
+    for (let off = 0; off < 20000; off += 2000) {
+      const r = await fetch(`${Z.urls().crm}/crm/v8/coql`, { method: 'POST', headers: { ...H, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ select_query: `select Full_Name, ${FIELD}, PB_Plan from Contacts where id is not null limit 2000 offset ${off}` }) });
+      if (r.status === 204) break;
+      if (!r.ok) throw new Error('coql ' + r.status);
+      const j = await r.json(); (j.data || []).forEach(c => has(c) && out.push(c));
+      if (!(j.info && j.info.more_records)) break;
+    }
+    return out;
   } catch (e) {}
   const out = [];
   for (let page = 1; page <= 30; page++) {
-    const r = await fetch(`${Z.urls().crm}/crm/v8/Contacts?fields=Full_Name,PB_Rule,PB_Plan&per_page=200&page=${page}`, { headers: H });
+    const r = await fetch(`${Z.urls().crm}/crm/v8/Contacts?fields=Full_Name,${FIELD},PB_Plan&per_page=200&page=${page}`, { headers: H });
     if (r.status === 204) break;
     if (!r.ok) throw new Error('Zoho CRM ' + r.status);
-    const j = await r.json(); (j.data || []).forEach(c => c.PB_Rule && String(c.PB_Rule).trim() && out.push(c));
+    const j = await r.json(); (j.data || []).forEach(c => has(c) && out.push(c));
     if (!(j.info && j.info.more_records)) break;
   }
   return out;
@@ -152,10 +160,10 @@ module.exports = async (req, res) => {
 
   const due = [];
   for (const c of contacts) {
-    const name = c.Full_Name || 'Client', { lines, bad } = parseRule(c.PB_Rule);
+    const name = c.Full_Name || 'Client', { lines, bad } = parseRule(c[FIELD]);
     for (const b of bad) {
       const k = `${c.id}/bad-${hash(b)}`; if (last(k) === T) continue;
-      badLines++; due.push({ c, k, title: `${name}: check this profit-booking rule line`, hit: `This line in PB Rule could not be read, so it is not being watched: "${b}". Fix it in Zoho CRM. Valid examples: "Nifty 50 at 26358, 27400" · "or Midcap 150 at 23650" · "Nifty 50 up 9% from 05/11/2026" · "Nifty 50 52w high from 05/11/2026 until 04/02/2027" · "move to debt from 05/11/2026 by 31/08/2027" · "Nifty 50 fall 2% from 13/11/2026 until 15/01/2027" · "Nifty 500 rise 10% repeat from 05/11/2026" · "remind 12/11/2026" · "deadline 15/01/2027". Dates as DD/MM/YYYY.` });
+      badLines++; due.push({ c, k, title: `${name}: check this profit-booking rule line`, hit: `This line in Goal Alerts could not be read, so it is not being watched: "${b}". Fix it in Zoho CRM. Valid examples: "Nifty 50 at 26358, 27400" · "or Midcap 150 at 23650" · "Nifty 50 up 9% from 05/11/2026" · "Nifty 50 52w high from 05/11/2026 until 04/02/2027" · "move to debt from 05/11/2026 by 31/08/2027" · "Nifty 50 fall 2% from 13/11/2026 until 15/01/2027" · "Nifty 500 rise 10% repeat from 05/11/2026" · "remind 12/11/2026" · "deadline 15/01/2027". Dates as DD/MM/YYYY.` });
     }
     for (const R of lines) {
       const nm = R.tag ? `${name} · ${R.tag}` : name;
@@ -200,7 +208,8 @@ module.exports = async (req, res) => {
           const k = `${base}-${d}`; if (last(k) || T < d || T > addDays(d, 5)) return;
           if (R.unless) { const fired = lines.some(o => o !== R && o.src.toLowerCase().includes(R.unless.toLowerCase()) && Object.keys(keys).some(x => x.startsWith(`${c.id}/${o.id}`))); if (fired) return; }
           const dl = R.deadline ? (d === R.deadline ? `Deadline today (${dmy(d)})` : `Deadline in 7 days (${dmy(R.deadline)})`) : `Reminder for ${dmy(d)}`;
-          due.push({ c, fp: !!R.tag, k, title: `${nm}: ${dl.toLowerCase()}`, hit: `${dl}.` });
+          const qEnd = R.tag && R.unless && !R.deadline;   /* goal quarter-end line from the planning tool */
+          due.push({ c, fp: !!R.tag, k, title: qEnd ? `${nm}: no 52-week high this quarter, move a part to debt` : `${nm}: ${dl.toLowerCase()}`, hit: qEnd ? `Quarter ended ${dmy(d)} without a 52-week high. Review moving this quarter's part to debt.` : `${dl}.` });
         });
         continue;
       }
@@ -209,7 +218,7 @@ module.exports = async (req, res) => {
         for (const a of R.alts) {
           const now = L[a.idx], cs = closes(a.idx, addDays(T, -364)); if (!ok(now) || cs.length < 150) continue;
           const hi = Math.max(...cs);
-          if (now > hi) { due.push({ c, fp: !!R.tag, k, title: `${nm}: ${LABEL[a.idx]} at a 52-week high`, hit: `${LABEL[a.idx]} is at ${fmt(now)}, above its highest close of the past 52 weeks (${fmt(hi)}).` }); break; }
+          if (now > hi) { due.push({ c, fp: !!R.tag, k, title: `${nm}: ${LABEL[a.idx]} at a 52-week high`, hit: `${LABEL[a.idx]} is at ${fmt(now)}, above its highest close of the past 52 weeks (${fmt(hi)}).${R.tag ? " Good time to move this quarter's part to debt." : ''}` }); break; }
         }
         continue;
       }
@@ -254,7 +263,7 @@ module.exports = async (req, res) => {
         <p style="font-size:17px;color:#005826"><b>${esc(title)}</b></p><p><b>${fp ? 'Trigger reached, review moving this goal money to debt.' : 'Trigger reached, review for profit booking.'}</b><br>${esc(hit)}</p>
         ${plan ? `<p>Plan: ${plan}</p>` : ''}${fp ? '<p>Amount is from the plan date: check the current value, and include any SIP money built up for this goal.</p>' : ''}<p>Check exit load and short-term tax on units held under a year before redeeming.</p>
         <p><a href="${todo.app_url}">Open the Basecamp to-do</a> · <a href="https://abundance-dashboard-beta.vercel.app/Market_Pulse.html">Market Pulse</a></p>
-        <p style="color:#6f6875;font-size:12px">Sent automatically by the Abundance dashboard from the PB Rule field in Zoho CRM. Internal reminder, not investment advice.</p></div>`;
+        <p style="color:#6f6875;font-size:12px">Sent automatically by the Abundance dashboard from the Goal Alerts field in Zoho CRM. Internal reminder, not investment advice.</p></div>`;
       const r = await fetch(`${Z.urls().mail}/api/accounts/${ACC}/messages`, { method: 'POST', headers: { Authorization: `Zoho-oauthtoken ${tok}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ fromAddress: FROM, toAddress: TO, subject: (fp ? 'Goal alert · ' : 'Profit booking alert · ') + title, content: html, mailFormat: 'html', askReceipt: 'no' }) });
       if (r.ok) sent++; else notes.push('mail ' + r.status);

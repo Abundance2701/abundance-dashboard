@@ -3311,10 +3311,15 @@ Move              = target − today; every change is shown (under ₹1,000 coun
    Annual Review = last year's plan file (.json) + this year's updated Excel. Last year's file is only read: its figures are kept
    inside this year's plan (st.review) for the comparison; your settings (priorities, earmarks, assumptions, goal choices) carry over;
    last year's data corrections, notes and ticked action steps do not.
-   Create Alerts in CRM writes one [FP] line per goal into the client's PB Rule in Zoho CRM; /api/pb-check then alerts Haritha.
+   Create Alerts in CRM writes each goal's [FP] lines (quarter by quarter, in full) into the client's Goal Alerts field in Zoho CRM;
+   /api/pb-check then alerts Haritha.
    Only [FP] lines are ever changed (the server checks this too). */
 (() => {
   const E = s => FP.esc(String(s ?? '')), iso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  /* same split as api/pb-check.js: the window in equal parts of about 3 months (12 months = 4 quarters) */
+  const addD = (s, n) => new Date(Date.parse(s + 'T00:00:00Z') + n * 864e5).toISOString().slice(0, 10);
+  const quarters = (from, by) => { const days = Math.round((Date.parse(by) - Date.parse(from)) / 864e5); if (days <= 0) return [];
+    const n = Math.max(1, Math.round(days / 91.3)), at = i => addD(from, Math.round(days * i / n)); return Array.from({ length: n }, (_, i) => [at(i), addD(at(i + 1), -1)]); };
   const dmyI = s => s.split('-').reverse().join('/'), addM = (s, n) => { const [y, m] = s.split('-').map(Number), t = new Date(y, m - 1 + n, 1); return iso(t); };
   const unb64 = s => { const b = atob(s), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; };
   const keyOf = (wb, base, fallback) => (wb.Sheets['About You']?.C17?.v || base.self?.name || fallback).toString().trim();
@@ -3407,7 +3412,14 @@ Move              = target − today; every change is shown (under ₹1,000 coun
       if (eq < 1) return null;
       const gd = `${g.year}-${String(g.mon).padStart(2, '0')}-01`, open = addM(gd, -24), by = addM(gd, -12), from = open > today ? open : today, now = by <= today;
       const name = String(g.name).replace(/[\[\]·]/g, ' ').replace(/\s+/g, ' ').trim();
-      return { name, gd, eq, from, by: now ? from : by, now, line: `[FP ${name} · ${FP.inr(eq)}] move to debt from ${dmyI(from)} by ${dmyI(now ? from : by)}` };
+      const amt = FP.inr(eq), L = [];
+      if (now) L.push(`[FP ${name} · ${amt} · move to debt now] remind ${dmyI(today)}`);
+      else { const Q = quarters(from, by);
+        Q.forEach(([qs, qe], i) => { const t = `${name} · ${amt} · Q${i + 1} of ${Q.length}`;
+          L.push(`[FP ${t}] Nifty 50 52w high from ${dmyI(qs)} until ${dmyI(qe)}`, 'or Midcap 150 52w high', 'or Smallcap 250 52w high');
+          if (i < Q.length - 1) L.push(`[FP ${t}] remind ${dmyI(qe)} unless ${t}`); });
+        L.push(`[FP ${name} · ${amt}] deadline ${dmyI(by)}`); }
+      return { name, gd, eq, from, by: now ? from : by, now, line: L.join('\n') };
     }).filter(Boolean);
   };
   const KEY = 'pg_mailkey', getKey = () => { try { return localStorage.getItem(KEY) || ''; } catch (e) { return ''; } }, setKey = v => { try { v ? localStorage.setItem(KEY, v) : localStorage.removeItem(KEY); } catch (e) { } };
@@ -3471,13 +3483,13 @@ Move              = target − today; every change is shown (under ₹1,000 coun
       <div class="fpal" style="padding:16px 20px">
         ${contacts}${S.contacts?.length && S.msg ? `<p>${S.msg}</p>` : ''}
         <p class="hint">Goals under 3 years away with equity earmarked. From 2 years before the goal, Haritha gets one alert a quarter: on a 52-week high (Nifty 50, else Midcap 150 or Smallcap 250), or at quarter end if there's none. Everything must be in debt 1 year before the goal (alerts 7 days before and on the day).</p>
-        ${S.goals.length ? `<table><thead><tr><th>Goal</th><th>Alerts</th><th>PB Rule line</th><th></th></tr></thead><tbody>${rows}</tbody></table>` : '<p><b>No goal needs a move to debt:</b> none is under 3 years away with equity earmarked for it.</p>'}
+        ${S.goals.length ? `<table><thead><tr><th>Goal</th><th>Alerts</th><th>Goal Alerts lines</th><th></th></tr></thead><tbody>${rows}</tbody></table>` : '<p><b>No goal needs a move to debt:</b> none is under 3 years away with equity earmarked for it.</p>'}
         ${staleH}
-        ${manual.length ? `<h4>Your other PB Rule lines</h4><p class="hint">Not touched.</p><p class="ln">${E(manual.map(b => b.join('\n')).join('\n'))}</p>` : ''}
-        ${R ? `<h4>PB Rule after saving</h4><p class="ln">${E(R.text) || '(empty)'}</p><p class="hint ${len > 2000 ? 'no' : ''}">${len} of 2000 characters${len > 2000 ? ': too long. Don\'t create one goal, or shorten a goal name.' : ''}</p>` : ''}
+        ${manual.length ? `<h4>Your other alert lines</h4><p class="hint">Not touched.</p><p class="ln">${E(manual.map(b => b.join('\n')).join('\n'))}</p>` : ''}
+        ${R ? `<h4>Goal Alerts after saving</h4><p class="ln">${E(R.text) || '(empty)'}</p><p class="hint ${len > 32000 ? 'no' : ''}">${len.toLocaleString('en-IN')} of 32,000 characters${len > 32000 ? ': too long.' : ''}</p>` : ''}
         <p id="alMsg"></p>
       </div>
-      <div class="mfoot"><span class="hint" style="font-size:12.5px">Amounts are today's equity earmarked for the goal. Edit any line in CRM later; the next review shows your edit next to the plan's.</span><span style="display:flex;gap:10px"><button class="bt fpb" id="alC">Cancel</button><button class="bt pri fpb" id="alGo" ${R && changed && len <= 2000 && !S.busy ? '' : 'disabled'}>${R && !changed ? 'Nothing to change' : 'Create Alerts in CRM'}</button></span></div>`;
+      <div class="mfoot"><span class="hint" style="font-size:12.5px">Amounts are today's equity earmarked for the goal. Edit any line in CRM later; the next review shows your edit next to the plan's.</span><span style="display:flex;gap:10px"><button class="bt fpb" id="alC">Cancel</button><button class="bt pri fpb" id="alGo" ${R && changed && len <= 32000 && !S.busy ? '' : 'disabled'}>${R && !changed ? 'Nothing to change' : 'Create Alerts in CRM'}</button></span></div>`;
     $('#alX').onclick = $('#alC').onclick = FP.closeModal;
     document.querySelectorAll('[name=alC]').forEach(r => r.onchange = () => { S.cid = r.value; draw(); });
     document.querySelectorAll('[data-ch]').forEach(s => s.onchange = () => { S.choice[s.dataset.ch] = s.value; draw(); });

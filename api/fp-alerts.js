@@ -1,6 +1,6 @@
 /* /api/fp-alerts — "Create Alerts in CRM" from the Financial Planning Tool (annual reviews only).
-   GET  ?pan=ABCDE1234F[,PQRST5678K]  → the matching Zoho CRM contacts with their current PB Rule (read only)
-   POST { id, before, after }          → writes the new PB Rule to that contact
+   GET  ?pan=ABCDE1234F[,PQRST5678K]  → the matching Zoho CRM contacts with their current Goal Alerts (read only)
+   POST { id, before, after }          → writes the new Goal Alerts to that contact
 
    Safety rules, checked here on the server (not only in the page):
    - passcode (TOOL_PASSCODE) required;
@@ -13,7 +13,7 @@
 const Z = require('./_zoho');
 const { parseRule } = require('./pb-check');
 
-const MAX = 2000;
+const MAX = 32000;
 const lines = t => String(t || '').replace(/\r\n?/g, '\n').split('\n').map(s => s.trim()).filter(Boolean);
 /* blocks: a line plus the "or …" lines under it; [FP …] blocks are the planning tool's */
 const blocks = t => { const out = []; for (const l of lines(t)) { if (/^or\s/i.test(l) && out.length) out[out.length - 1].push(l); else out.push([l]); } return out; };
@@ -46,24 +46,24 @@ module.exports = async (req, res) => {
       if (!pans.length) return Z.reply(res, 400, { error: 'No valid PAN in the client data (About You sheet).' });
       const found = [];
       for (const pan of pans) {
-        const j = await crm(`Contacts/search?criteria=${encodeURIComponent(`(PAN_No:equals:${pan})`)}&fields=Full_Name,PAN_No,PB_Rule&per_page=10`);
-        (j.data || []).forEach(c => found.push({ id: c.id, name: c.Full_Name || '', pan: maskPan(c.PAN_No), forPan: maskPan(pan), rule: c.PB_Rule || '' }));
+        const j = await crm(`Contacts/search?criteria=${encodeURIComponent(`(PAN_No:equals:${pan})`)}&fields=Full_Name,PAN_No,Goal_Alerts&per_page=10`);
+        (j.data || []).forEach(c => found.push({ id: c.id, name: c.Full_Name || '', pan: maskPan(c.PAN_No), forPan: maskPan(pan), rule: c.Goal_Alerts || '' }));
       }
       return Z.reply(res, 200, { contacts: found });
     }
     if (req.method === 'POST') {
       const b = await Z.jsonBody(req), id = String(b.id || '');
       if (!/^\d{6,25}$/.test(id)) return Z.reply(res, 400, { error: 'Pick the CRM contact first.' });
-      const cur = ((await crm(`Contacts/${id}?fields=Full_Name,PB_Rule`)).data || [])[0];
+      const cur = ((await crm(`Contacts/${id}?fields=Full_Name,Goal_Alerts`)).data || [])[0];
       if (!cur) return Z.reply(res, 404, { error: 'That contact is no longer in CRM.' });
-      if (norm(cur.PB_Rule) !== norm(b.before)) return Z.reply(res, 409, { error: 'The PB Rule in CRM changed after you opened this preview. Close and open "Create Alerts in CRM" again.', rule: cur.PB_Rule || '' });
+      if (norm(cur.Goal_Alerts) !== norm(b.before)) return Z.reply(res, 409, { error: 'The Goal Alerts in CRM changed after you opened this preview. Close and open "Create Alerts in CRM" again.', rule: cur.Goal_Alerts || '' });
       const after = norm(b.after);
-      if (manual(after) !== manual(cur.PB_Rule)) return Z.reply(res, 400, { error: 'Only [FP] goal lines may be changed from the planning tool. Your other PB Rule lines must stay as they are.' });
+      if (manual(after) !== manual(cur.Goal_Alerts)) return Z.reply(res, 400, { error: 'Only [FP] goal lines may be changed from the planning tool. Your other Goal Alerts lines must stay as they are.' });
       const bad = parseRule(after).bad;
       if (bad.length) return Z.reply(res, 400, { error: `This line can't be read by the alert checker: "${bad[0]}"` });
-      if (after.length > MAX) return Z.reply(res, 400, { error: `PB Rule would be ${after.length} characters; Zoho allows ${MAX}. Leave out a goal or shorten a goal name.` });
-      if (after === norm(cur.PB_Rule)) return Z.reply(res, 200, { ok: true, unchanged: true, rule: after });
-      const w = await crm('Contacts', { method: 'PUT', body: JSON.stringify({ data: [{ id, PB_Rule: after || null }] }) });
+      if (after.length > MAX) return Z.reply(res, 400, { error: `Goal Alerts would be ${after.length} characters; Zoho allows ${MAX}.` });
+      if (after === norm(cur.Goal_Alerts)) return Z.reply(res, 200, { ok: true, unchanged: true, rule: after });
+      const w = await crm('Contacts', { method: 'PUT', body: JSON.stringify({ data: [{ id, Goal_Alerts: after || null }] }) });
       const st = w.data && w.data[0];
       if (!st || st.code !== 'SUCCESS') throw Object.assign(new Error('Zoho CRM did not save it' + (st && st.message ? ': ' + st.message : '.')), { status: 502 });
       return Z.reply(res, 200, { ok: true, rule: after, name: cur.Full_Name || '' });
