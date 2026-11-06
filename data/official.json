@@ -1,6 +1,146 @@
 {
- "updated": "2026-11-06T09:55:10Z",
+ "updated": "2026-11-06T17:33:29Z",
  "items": [
+  {
+   "src": "SEBI",
+   "title": "Commencement of SEBI (Settlement of Administrative and Civil Proceedings) Regulations, 2026",
+   "url": "https://www.sebi.gov.in/media-and-notifications/press-releases/nov-2026/commencement-of-sebi-settlement-of-administrative-and-civil-proceedings-regulations-2026_105680.html",
+   "date": "2026-11-06",
+   "important": true
+  },
+  {
+   "src": "RBI",
+   "title": "Census on Foreign Liabilities and Assets of Indian Direct Investment Entities for 2025-26",
+   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63941",
+   "date": "2026-11-06",
+   "important": false
+  },
+  {
+   "src": "RBI",
+   "title": "Sectoral Deployment of Credit by NBFC – September 2026",
+   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63940",
+   "date": "2026-11-06",
+   "important": false
+  },
+  {
+   "src": "RBI",
+   "title": "Reserve Bank of India – Bulletin Weekly Statistical Supplement – Extract",
+   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63939",
+   "date": "2026-11-06",
+   "important": false
+  },
+  {
+   "src": "RBI",
+   "title": "Directions under Section 35A read with Section 56 of the Banking Regulation Act, 1949 – Sri Guru Raghavendra Sahakara Bank Niyamitha, Bengaluru - Extension of Period",
+   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63938",
+   "date": "2026-11-06",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of further issues of securities",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77354.pdf",
+   "date": "2026-11-06",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Introduction of Futures & Options Contracts on Two Individual Securities",
+   "url": "https://nsearchives.nseindia.com/content/circulars/FAOP77353.pdf",
+   "date": "2026-11-06",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Graded Surveillance Measure (GSM) - Periodic relaxation of Surveillance action",
+   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77351.zip",
+   "date": "2026-11-06",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of privately placed securities on the debt market segment of the Exchange",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77350.pdf",
+   "date": "2026-11-06",
+   "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Update on Mechanism for Reporting - Currency derivative contracts involving INR",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CD77349.zip",
+   "date": "2026-11-06",
+   "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Applicability of Short-Term Additional Surveillance Measure (ST-ASM)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77347.zip",
+   "date": "2026-11-06",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Applicability of Enhanced Surveillance Measure (ESM)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77346.zip",
+   "date": "2026-11-06",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Applicability of Additional Surveillance Measure (ASM)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77345.zip",
+   "date": "2026-11-06",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Revision of limits relating to requirement of underlying exposure for currency derivatives contracts",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CD77344.zip",
+   "date": "2026-11-06",
+   "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of privately placed securities on capital market segment",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77343.pdf",
+   "date": "2026-11-06",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Extension of Display Period for Investor Awareness Messages under Project Jagrook",
+   "url": "https://nsearchives.nseindia.com/content/circulars/COMP77342.pdf",
+   "date": "2026-11-06",
+   "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Framework for net settlement of funds for transactions undertaken by mutual fund schemes in cash market",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CMPT77340.zip",
+   "date": "2026-11-06",
+   "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Trade for Trade - HGS (India) Limited (SME IPO)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77338.pdf",
+   "date": "2026-11-06",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Trade for Trade - Maxwell Engineering Solutions Limited (SME IPO)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77336.pdf",
+   "date": "2026-11-06",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Review of Know Your Client process for Individual Person Resident Outside India clients",
+   "url": "https://nsearchives.nseindia.com/content/circulars/INSP77335.pdf",
+   "date": "2026-11-06",
+   "important": false
+  },
   {
    "src": "NSE",
    "title": "Mock trading on Saturday, November 07, 2026 - No new version release",
@@ -17,51 +157,23 @@
   },
   {
    "src": "NSE",
-   "title": "Availability of Navi Multi Asset Omni FOF for ongoing transactions on NSE MF Invest Platform",
-   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77324.pdf",
+   "title": "Listing of Equity shares of Veefin Solutions Limited pursuant to Migration from SME Platform of BSE to Capital Market Segment (Main Board) of National Stock Exchange of India Limited",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77328.zip",
    "date": "2026-11-06",
    "important": false
   },
   {
-   "src": "SEBI",
-   "title": "Review of the framework for Accredited Investors",
-   "url": "https://www.sebi.gov.in/legal/circulars/nov-2026/review-of-the-framework-for-accredited-investors_105618.html",
-   "date": "2026-11-05",
-   "important": true
-  },
-  {
-   "src": "SEBI",
-   "title": "Framework for net settlement of funds for transactions undertaken by mutual fund schemes in cash market",
-   "url": "https://www.sebi.gov.in/legal/circulars/nov-2026/framework-for-net-settlement-of-funds-for-transactions-undertaken-by-mutual-fund-schemes-in-cash-market_105616.html",
-   "date": "2026-11-05",
-   "important": true
-  },
-  {
-   "src": "SEBI",
-   "title": "Revision of limits relating to requirement of underlying exposure for currency derivatives contracts",
-   "url": "https://www.sebi.gov.in/legal/circulars/nov-2026/revision-of-limits-relating-to-requirement-of-underlying-exposure-for-currency-derivatives-contracts_105614.html",
-   "date": "2026-11-05",
-   "important": true
-  },
-  {
-   "src": "RBI",
-   "title": "Foreign Exchange Turnover Data: October 26, 2026 – October 30, 2026",
-   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63930",
-   "date": "2026-11-05",
+   "src": "NSE",
+   "title": "Listing of Equity Shares of Vedant Poly Fabs Limited (SME IPO)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77326.zip",
+   "date": "2026-11-06",
    "important": false
   },
   {
-   "src": "RBI",
-   "title": "Foreign Exchange Turnover Data: October 19, 2026 – October 23, 2026",
-   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63929",
-   "date": "2026-11-05",
-   "important": false
-  },
-  {
-   "src": "RBI",
-   "title": "Foreign Exchange Turnover Data: October 12, 2026 – October 16, 2026",
-   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63928",
-   "date": "2026-11-05",
+   "src": "NSE",
+   "title": "Availability of Navi Multi Asset Omni FOF for ongoing transactions on NSE MF Invest Platform",
+   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77324.pdf",
+   "date": "2026-11-06",
    "important": false
   },
   {
@@ -72,45 +184,10 @@
    "important": true
   },
   {
-   "src": "SEBI",
-   "title": "SEBI Constitutes Working Group to Review the Innovators Growth Platform Framework",
-   "url": "https://www.sebi.gov.in/media-and-notifications/press-releases/nov-2026/sebi-constitutes-working-group-to-review-the-innovators-growth-platform-framework_105610.html",
-   "date": "2026-11-04",
-   "important": true
-  },
-  {
-   "src": "SEBI",
-   "title": "Review of Know Your Client process for individual Person Resident Outside India clients",
-   "url": "https://www.sebi.gov.in/legal/circulars/nov-2026/review-of-know-your-client-process-for-individual-person-resident-outside-india-clients_105603.html",
-   "date": "2026-11-04",
-   "important": false
-  },
-  {
-   "src": "SEBI",
-   "title": "Memorandum of Understanding between Securities and Exchange Board of India (SEBI) and Digital India BHASHINI Division (DIBD)",
-   "url": "https://www.sebi.gov.in/media-and-notifications/press-releases/nov-2026/memorandum-of-understanding-between-securities-and-exchange-board-of-india-sebi-and-digital-india-bhashini-division-dibd-_105575.html",
-   "date": "2026-11-03",
-   "important": false
-  },
-  {
    "src": "RBI",
    "title": "Foreign Exchange Management (Export and Import of Goods and Services) (Second Amendment) Regulations, 2026",
    "url": "https://www.rbi.org.in/scripts/NotificationUser.aspx?Id=13750&Mode=0",
    "date": "2026-11-03",
-   "important": true
-  },
-  {
-   "src": "SEBI",
-   "title": "Framework for Issuance of Depository Receipts on Units of REITs",
-   "url": "https://www.sebi.gov.in/legal/circulars/nov-2026/framework-for-issuance-of-depository-receipts-on-units-of-reits-_105558.html",
-   "date": "2026-11-02",
-   "important": true
-  },
-  {
-   "src": "SEBI",
-   "title": "Framework for Issuance of Depository Receipts on Units of InvITs",
-   "url": "https://www.sebi.gov.in/legal/circulars/nov-2026/framework-for-issuance-of-depository-receipts-on-units-of-invits-_105557.html",
-   "date": "2026-11-02",
    "important": true
   },
   {
@@ -166,19 +243,19 @@
  "counts": {
   "https://www.sebi.gov.in/sebirss.xml": [
    30,
-   8
+   1
   ],
   "https://rbi.org.in/pressreleases_rss.xml": [
    10,
-   3
+   4
   ],
   "https://rbi.org.in/notifications_rss.xml": [
    10,
    10
   ],
   "https://nsearchives.nseindia.com/content/RSS/Circulars.xml": [
-   7,
-   7
+   24,
+   24
   ]
  },
  "errors": []
