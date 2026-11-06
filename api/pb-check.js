@@ -10,7 +10,12 @@
      Nifty 50 new high from 05/11/2026 until 25/11/2026
      Nifty 50 52w high from 05/11/2026 until 04/02/2027   above the highest close of the past 52 weeks (fires once);
      or Midcap 150 52w high                               add 'or' lines for backups (whichever index first)
-     [FP Goal Q1] <any line>                                a tag from the Financial Planning Tool: goal alert, tag shown in the title
+     [FP Graduation · ₹8,00,000] move to debt from 05/11/2026 by 31/08/2027
+                                  goal money (written by the Financial Planning Tool): the window is split into quarters;
+                                  in each quarter one alert when Nifty 50 / Midcap 150 / Smallcap 250 makes a 52-week high,
+                                  otherwise a reminder at quarter end; then the deadline 7 days before and on the 'by' date.
+                                  If 'by' is on or before 'from', one "move to debt now" alert on the 'from' date.
+     [FP …] in front of any line marks it as a goal alert; the tag is shown in the alert title.
      Nifty 50 fall 2% [close] [repeat] from <date> [until <date>]     fall from the highest close since <date>
      Nifty 500 rise 10% [repeat] from <date> [until <date>]           rise from the lowest close since <date>
      Nifty 50 rise 3% above high [repeat] from <date> [until <date>]  3% above the high of the month before <date>
@@ -32,6 +37,12 @@ const istNow = () => new Date(Date.now() + 5.5 * 3600e3);
 const today = () => istNow().toISOString().slice(0, 10);
 const addDays = (d, n) => new Date(Date.parse(d + 'T00:00:00Z') + n * 864e5).toISOString().slice(0, 10);
 const dmy = d => d.split('-').reverse().join('/');
+const addMonths = (d, n) => { const [y, m, dd] = d.split('-').map(Number), t = new Date(Date.UTC(y, m - 1 + n, 1)), last = new Date(Date.UTC(t.getUTCFullYear(), t.getUTCMonth() + 1, 0)).getUTCDate();
+  return new Date(Date.UTC(t.getUTCFullYear(), t.getUTCMonth(), Math.min(dd, last))).toISOString().slice(0, 10); };
+const quarters = (from, by) => {   // the window split into equal parts of about 3 months (a 12-month window = 4 quarters)
+  const days = Math.round((Date.parse(by) - Date.parse(from)) / 864e5); if (days <= 0) return [];
+  const n = Math.max(1, Math.round(days / 91.3)), at = i => addDays(from, Math.round(days * i / n));
+  return Array.from({ length: n }, (_, i) => [at(i), addDays(at(i + 1), -1)]); };
 const iso = s => { const m = String(s).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); return m ? `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}` : null; };
 const fmt = v => Number(v).toLocaleString('en-IN', { maximumFractionDigits: 2 });
 const esc = s => String(s || '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -76,6 +87,7 @@ function parseRule(text) {
       const ds = m[1].split(',').map(x => iso(x.trim())); if (!ds.length || ds.some(x => !x)) { bad.push(line); continue; }
       out.push({ type: 'remind', dates: ds, unless: m[3] ? m[3].trim() : null, src: line, tag }); continue;
     }
+    if ((m = l.match(/^move to debt from (\d{1,2}\/\d{1,2}\/\d{4}) by (\d{1,2}\/\d{1,2}\/\d{4})$/))) { const f = iso(m[1]), b = iso(m[2]); if (!f || !b) { bad.push(line); continue; } out.push({ type: 'goal', start: f, by: b, src: line, tag }); continue; }
     if ((m = l.match(/^deadline (\d{1,2}\/\d{1,2}\/\d{4})$/))) { const d = iso(m[1]); out.push({ type: 'remind', dates: [addDays(d, -7), d], deadline: d, src: line, tag }); continue; }
     bad.push(line);
   }
@@ -143,7 +155,7 @@ module.exports = async (req, res) => {
     const name = c.Full_Name || 'Client', { lines, bad } = parseRule(c.PB_Rule);
     for (const b of bad) {
       const k = `${c.id}/bad-${hash(b)}`; if (last(k) === T) continue;
-      badLines++; due.push({ c, k, title: `${name}: check this profit-booking rule line`, hit: `This line in PB Rule could not be read, so it is not being watched: "${b}". Fix it in Zoho CRM. Valid examples: "Nifty 50 at 26358, 27400" · "or Midcap 150 at 23650" · "Nifty 50 up 9% from 05/11/2026" · "Nifty 50 52w high from 05/11/2026 until 04/02/2027" · "Nifty 50 fall 2% from 13/11/2026 until 15/01/2027" · "Nifty 500 rise 10% repeat from 05/11/2026" · "remind 12/11/2026" · "deadline 15/01/2027". Dates as DD/MM/YYYY.` });
+      badLines++; due.push({ c, k, title: `${name}: check this profit-booking rule line`, hit: `This line in PB Rule could not be read, so it is not being watched: "${b}". Fix it in Zoho CRM. Valid examples: "Nifty 50 at 26358, 27400" · "or Midcap 150 at 23650" · "Nifty 50 up 9% from 05/11/2026" · "Nifty 50 52w high from 05/11/2026 until 04/02/2027" · "move to debt from 05/11/2026 by 31/08/2027" · "Nifty 50 fall 2% from 13/11/2026 until 15/01/2027" · "Nifty 500 rise 10% repeat from 05/11/2026" · "remind 12/11/2026" · "deadline 15/01/2027". Dates as DD/MM/YYYY.` });
     }
     for (const R of lines) {
       const nm = R.tag ? `${name} · ${R.tag}` : name;
@@ -166,6 +178,21 @@ module.exports = async (req, res) => {
           const chg = (now / b[1] - 1) * 100, hitIt = a.dir === 'up' ? chg >= a.pct : chg <= -a.pct;
           if (hitIt) { due.push({ c, fp: !!R.tag, k, title: `${nm}: ${LABEL[a.idx]} ${a.dir} ${a.pct}% since ${dmy(b[0])}`, hit: `${LABEL[a.idx]} is at ${fmt(now)}, ${chg >= 0 ? 'up' : 'down'} ${Math.abs(chg).toFixed(1)}% from its close of ${fmt(b[1])} on ${dmy(b[0])}.` }); break; }
         }
+        continue;
+      }
+      if (R.type === 'goal') {                           // goal money: quarterly 52-week-high alerts, quarter-end fallback, deadline
+        const GI = ['nifty 50', 'midcap 150', 'smallcap 250'], win = d => T >= d && T <= addDays(d, 5);
+        if (R.by <= R.start) { const k = `${base}-now`; if (!last(k) && win(R.start)) due.push({ c, fp: true, k, title: `${nm}: move to debt now`, hit: `The goal's deadline to be in debt (${dmy(R.by)}) has been reached.` }); continue; }
+        const Q = quarters(R.start, R.by);
+        Q.forEach(([qs, qe], i) => {
+          const kw = `${base}-q${i + 1}-w52`, ke = `${base}-q${i + 1}-end`, of = `quarter ${i + 1} of ${Q.length}`; let hitNow = false;
+          if (!last(kw) && T >= qs && T <= qe) for (const ix of GI) {
+            const now = L[ix], cs = closes(ix, addDays(T, -364)); if (!ok(now) || cs.length < 150) continue; const hi = Math.max(...cs);
+            if (now > hi) { hitNow = true; due.push({ c, fp: true, k: kw, title: `${nm}: ${LABEL[ix]} at a 52-week high (${of})`, hit: `${LABEL[ix]} is at ${fmt(now)}, above its highest close of the past 52 weeks (${fmt(hi)}). Good time to move this quarter's part to debt.` }); break; }
+          }
+          if (!hitNow && i < Q.length - 1 && !last(kw) && !last(ke) && win(qe)) due.push({ c, fp: true, k: ke, title: `${nm}: ${of} ended, move a part to debt`, hit: `No 52-week high this quarter (${dmy(qs)} to ${dmy(qe)}). Review moving this quarter's part to debt. Must be fully in debt by ${dmy(R.by)}.` });
+        });
+        [addDays(R.by, -7), R.by].forEach(d => { const k = `${base}-${d}`; if (!last(k) && win(d)) due.push({ c, fp: true, k, title: `${nm}: ${d === R.by ? 'deadline today' : 'deadline in 7 days'} (${dmy(R.by)})`, hit: `This goal's money must be fully in debt by ${dmy(R.by)}.` }); });
         continue;
       }
       if (R.type === 'remind') {
@@ -218,14 +245,14 @@ module.exports = async (req, res) => {
     fired++;
     if (dry) continue;
     const plan = c.PB_Plan ? esc(c.PB_Plan).replace(/\n/g, '<br>') : '';
-    const body = `<div><strong>${fp ? 'Trigger reached, review moving this goal money to debt.' : 'Trigger reached, review for profit booking.'}</strong></div><div>${esc(hit)}</div>${plan ? `<div><br>Plan: ${plan}</div>` : ''}<div><br>Check exit load and short-term tax on units held under a year before redeeming.</div>${k === 'test/test' ? '' : `<div><br>pb-key: ${k}/${T}</div>`}`;
+    const body = `<div><strong>${fp ? 'Trigger reached, review moving this goal money to debt.' : 'Trigger reached, review for profit booking.'}</strong></div><div>${esc(hit)}</div>${plan ? `<div><br>Plan: ${plan}</div>` : ''}${fp ? '<div><br>Amount is from the plan date: check the current value, and include any SIP money built up for this goal.</div>' : ''}<div><br>Check exit load and short-term tax on units held under a year before redeeming.</div>${k === 'test/test' ? '' : `<div><br>pb-key: ${k}/${T}</div>`}`;
     let todo;
     try { todo = await B.createTodo(title, body, T); } catch (e) { notes.push('basecamp: ' + e.message); continue; }   // no to-do → no email, so the memory stays consistent
     try {
       const ACC = Z.env('ZOHO_MAIL_ACCOUNT_ID'), FROM = Z.env('FROM_ADDRESS'), tok = await Z.accessToken();
       const html = `<div style="font-family:Calibri,Arial,sans-serif;font-size:15px;color:#39293E">
         <p style="font-size:17px;color:#005826"><b>${esc(title)}</b></p><p><b>${fp ? 'Trigger reached, review moving this goal money to debt.' : 'Trigger reached, review for profit booking.'}</b><br>${esc(hit)}</p>
-        ${plan ? `<p>Plan: ${plan}</p>` : ''}<p>Check exit load and short-term tax on units held under a year before redeeming.</p>
+        ${plan ? `<p>Plan: ${plan}</p>` : ''}${fp ? '<p>Amount is from the plan date: check the current value, and include any SIP money built up for this goal.</p>' : ''}<p>Check exit load and short-term tax on units held under a year before redeeming.</p>
         <p><a href="${todo.app_url}">Open the Basecamp to-do</a> · <a href="https://abundance-dashboard-beta.vercel.app/Market_Pulse.html">Market Pulse</a></p>
         <p style="color:#6f6875;font-size:12px">Sent automatically by the Abundance dashboard from the PB Rule field in Zoho CRM. Internal reminder, not investment advice.</p></div>`;
       const r = await fetch(`${Z.urls().mail}/api/accounts/${ACC}/messages`, { method: 'POST', headers: { Authorization: `Zoho-oauthtoken ${tok}`, 'Content-Type': 'application/json' },
@@ -238,3 +265,4 @@ module.exports = async (req, res) => {
 };
 
 module.exports.parseRule = parseRule;
+module.exports.quarters = quarters;
