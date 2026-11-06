@@ -16,6 +16,15 @@
                                   otherwise a reminder at quarter end; then the deadline 7 days before and on the 'by' date.
                                   If 'by' is on or before 'from', one "move to debt now" alert on the 'from' date.
      [FP …] in front of any line marks it as a goal alert; the tag is shown in the alert title.
+     A goal block (what the Financial Planning Tool writes), one item per line:
+       GOAL ALERT: Graduation - Kavya · ₹9,67,000
+       Part 1 of 2: 06/11/2026 to 17/02/2027
+       Part 2 of 2: 18/02/2027 to 31/05/2027
+       In debt by: 01/06/2027
+       How: …                                   (wording only, not read)
+     Each part alerts once on a 52-week high (Nifty 50, else Midcap 150, else Smallcap 250); if none, a reminder on the
+     part's last day (not for the last part); "In debt by" alerts 7 days before and on the day. Each part and the deadline
+     remember their own alerts, so editing one date doesn't repeat the others.
      Nifty 50 fall 2% [close] [repeat] from <date> [until <date>]     fall from the highest close since <date>
      Nifty 500 rise 10% [repeat] from <date> [until <date>]           rise from the lowest close since <date>
      Nifty 50 rise 3% above high [repeat] from <date> [until <date>]  3% above the high of the month before <date>
@@ -53,9 +62,16 @@ const hash = s => crypto.createHash('sha1').update(s.toLowerCase().replace(/\s+/
 const IDXRE = '(nifty 50|nifty 500|midcap 150|smallcap 250)';
 function parseRule(text) {
   const out = [], bad = [];
-  let lastAt = null;
+  let lastAt = null, G = null;   /* G = the goal block being read */
   for (const raw of String(text || '').split(/\r?\n/)) {
     const line = raw.trim().replace(/\s+/g, ' '); if (!line) continue;
+    let gm;
+    if ((gm = line.match(/^goal alert:\s*(.+)$/i))) { const [nm, ...rest] = gm[1].split('·').map(x => x.trim()); G = { type: 'gblock', name: nm || 'Goal', amt: rest.join(' · '), parts: [], by: null, src: line }; out.push(G); lastAt = null; continue; }
+    if ((gm = line.match(/^part\s+(\d+)\s+of\s+(\d+)\s*:\s*(\d{1,2}\/\d{1,2}\/\d{4})\s+to\s+(\d{1,2}\/\d{1,2}\/\d{4})$/i))) {
+      const a = iso(gm[3]), b = iso(gm[4]); if (!G || !a || !b || b < a) { bad.push(line); continue; } G.parts.push({ no: +gm[1], of: +gm[2], from: a, to: b }); G.src += '\n' + line; continue; }
+    if ((gm = line.match(/^in debt by\s*:\s*(\d{1,2}\/\d{1,2}\/\d{4})$/i))) { const d = iso(gm[1]); if (!G || !d) { bad.push(line); continue; } G.by = d; G.src += '\n' + line; continue; }
+    if (/^how\s*:/i.test(line)) { if (!G) bad.push(line); continue; }
+    G = null;
     const tm = line.match(/^\[fp:?\s*([^\]]*)\]\s*/i), tag = tm ? (tm[1].trim() || 'Goal') : null;   // [FP …] = goal alert from the planning tool
     const l = line.slice(tm ? tm[0].length : 0).toLowerCase().replace(/\bnifty(?! ?50\b| ?500\b)/g, 'nifty 50').replace(/\b(up|down) by\b/g, '$1').replace(/\bmidcap(?! 150)/g, 'midcap 150').replace(/\bsmallcap(?! 250)/g, 'smallcap 250');
     const dates = k => { const m = l.match(new RegExp(k + ' (\\d{1,2}/\\d{1,2}/\\d{4})')); return m ? iso(m[1]) : null; };
@@ -186,6 +202,21 @@ module.exports = async (req, res) => {
           const chg = (now / b[1] - 1) * 100, hitIt = a.dir === 'up' ? chg >= a.pct : chg <= -a.pct;
           if (hitIt) { due.push({ c, fp: !!R.tag, k, title: `${nm}: ${LABEL[a.idx]} ${a.dir} ${a.pct}% since ${dmy(b[0])}`, hit: `${LABEL[a.idx]} is at ${fmt(now)}, ${chg >= 0 ? 'up' : 'down'} ${Math.abs(chg).toFixed(1)}% from its close of ${fmt(b[1])} on ${dmy(b[0])}.` }); break; }
         }
+        continue;
+      }
+      if (R.type === 'gblock') {                         // goal block: per part a 52-week-high alert, else a reminder on its last day; then the deadline
+        const GI = ['nifty 50', 'midcap 150', 'smallcap 250'], win = d => T >= d && T <= addDays(d, 5);
+        const amtS = (() => { const v = +String(R.amt).replace(/[^\d.]/g, ''); return !v ? '' : v >= 1e7 ? ` (₹${(v / 1e7).toFixed(2)} Cr)` : v >= 1e5 ? ` (₹${(v / 1e5).toFixed(2)} L)` : ` (₹${fmt(v)})`; })();
+        const who = `${name} · ${R.name}${amtS}`, gk = `${c.id}/g${hash(R.name)}`;
+        R.parts.forEach((P, i) => {
+          const pk = `${gk}-${hash(P.from + P.to)}`, kw = `${pk}-w52`, ke = `${pk}-end`, of = `part ${P.no} of ${P.of}`, isLast = i === R.parts.length - 1 && !!R.by; let hitNow = false;
+          if (!last(kw) && T >= P.from && T <= P.to) for (const ix of GI) {
+            const now = L[ix], cs = closes(ix, addDays(T, -364)); if (!ok(now) || cs.length < 150) continue; const hi = Math.max(...cs);
+            if (now > hi) { hitNow = true; due.push({ c, fp: true, k: kw, title: `${who}: ${of}, ${LABEL[ix]} at a 52-week high`, hit: `${LABEL[ix]} is at ${fmt(now)}, above its highest close of the past 52 weeks (${fmt(hi)}). Review moving this part to debt.` }); break; }
+          }
+          if (!hitNow && !isLast && !last(kw) && !last(ke) && win(P.to)) due.push({ c, fp: true, k: ke, title: `${who}: ${of} ended with no 52-week high`, hit: `No 52-week high between ${dmy(P.from)} and ${dmy(P.to)}. Review moving this part to debt.` });
+        });
+        if (R.by) [addDays(R.by, -7), R.by].forEach(d => { const k = `${gk}-by${hash(R.by)}-${d}`; if (!last(k) && win(d)) due.push({ c, fp: true, k, title: d === R.by ? `${who}: must be fully in debt today (${dmy(R.by)})` : `${who}: must be fully in debt by ${dmy(R.by)} (7 days left)`, hit: `This goal's money must be fully in debt by ${dmy(R.by)}.` }); });
         continue;
       }
       if (R.type === 'goal') {                           // goal money: quarterly 52-week-high alerts, quarter-end fallback, deadline

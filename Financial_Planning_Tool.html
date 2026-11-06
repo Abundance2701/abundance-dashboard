@@ -3401,27 +3401,39 @@ Move              = target − today; every change is shown (under ₹1,000 coun
     $('#fpAl').onclick = alerts;
   }
 
-  /* ---------- goal alerts ---------- */
-  const fpName = b => (b[0].match(/^\[fp:?\s*([^\]·]*)/i)?.[1] || '').trim();
-  const blocks = t => { const out = []; String(t || '').replace(/\r\n?/g, '\n').split('\n').map(s => s.trim()).filter(Boolean).forEach(l => { if (/^or\s/i.test(l) && out.length) out[out.length - 1].push(l); else out.push([l]); }); return out; };
-  const isFP = b => /^\[fp\b/i.test(b[0]);
-  FP.goalAlerts = () => {
-    const A = FP.calc.alloc(FP.d, FP.st), today = iso(new Date());
-    return A.goals.filter(g => g.on !== false && !g.due && g.year && g.type !== 'retirement' && g.type !== 'emergency' && g.n < 36).map(g => {
-      const eq = (g.src || []).filter(([l]) => (A.assets.find(a => a.label === l) || {}).cls === 'Equity').reduce((s, [, v]) => s + v, 0);
-      if (eq < 1) return null;
-      const gd = `${g.year}-${String(g.mon).padStart(2, '0')}-01`, open = addM(gd, -24), by = addM(gd, -12), from = open > today ? open : today, now = by <= today;
-      const name = String(g.name).replace(/[\[\]·]/g, ' ').replace(/\s+/g, ' ').trim();
-      const amt = FP.inr(eq), L = [];
-      if (now) L.push(`[FP ${name} · ${amt} · move to debt now] remind ${dmyI(today)}`);
-      else { const Q = quarters(from, by);
-        Q.forEach(([qs, qe], i) => { const t = `${name} · ${amt} · Q${i + 1} of ${Q.length}`;
-          L.push(`[FP ${t}] Nifty 50 52w high from ${dmyI(qs)} until ${dmyI(qe)}`, 'or Midcap 150 52w high', 'or Smallcap 250 52w high');
-          if (i < Q.length - 1) L.push(`[FP ${t}] remind ${dmyI(qe)} unless ${t}`); });
-        L.push(`[FP ${name} · ${amt}] deadline ${dmyI(by)}`); }
-      return { name, gd, eq, from, by: now ? from : by, now, line: L.join('\n') };
-    }).filter(Boolean);
+  /* ---------- goal alerts ----------
+     Each goal is written to Goal Alerts as a plain block the checker reads (api/pb-check.js):
+       GOAL ALERT: <goal> · ₹amount / Part i of n: <from> to <to> / In debt by: <date> / How: (wording)
+     Rows are editable here (amount, start, in-debt-by, parts and each part's end date); goals can be added by hand. */
+  const HOW = 'How: each part alerts once on a 52-week high (Nifty 50, Midcap 150 or Smallcap 250), else on its last day; In debt by alerts 7 days before and on the day';
+  const isPart = l => /^(part\s+\d+\s+of\s+\d+|in debt by|how)\s*:/i.test(l);
+  const blocks = t => { const out = []; String(t || '').replace(/\r\n?/g, '\n').split('\n').map(s => s.trim()).filter(Boolean).forEach(l => {
+    const prev = out[out.length - 1]; if (prev && (/^or\s/i.test(l) || (isPart(l) && /^goal alert:/i.test(prev[0])))) prev.push(l); else out.push([l]); }); return out; };
+  const isFP = b => /^(\[fp\b|goal alert:)/i.test(b[0]);
+  const fpName = b => ((b[0].match(/^goal alert:\s*([^·]*)/i) || b[0].match(/^\[fp:?\s*([^\]·]*)/i))?.[1] || '').trim();
+  const clean = s => String(s || '').replace(/[\[\]·:]/g, ' ').replace(/\s+/g, ' ').trim();
+  const today = () => iso(new Date());
+  const autoN = (a, b) => { const days = Math.round((Date.parse(b) - Date.parse(a)) / 864e5); return days <= 0 ? 0 : Math.min(6, Math.max(1, Math.round(days / 91.3))); };
+  const split = (a, b, n) => { const days = Math.round((Date.parse(b) - Date.parse(a)) / 864e5), at = i => addD(a, Math.round(days * i / n)); return Array.from({ length: n }, (_, i) => [at(i), addD(at(i + 1), -1)]); };
+  /* the parts of a row: equal split, unless you changed a part's end date */
+  const partsOf = r => {
+    if (!r.start || !r.by || r.by <= r.start || !r.n) return [];
+    const P = split(r.start, r.by, r.n);
+    if (r.ends) { for (let i = 0; i < P.length - 1; i++) { const e = r.ends[i]; if (e && e >= P[i][0] && e < addD(r.by, -1)) { P[i][1] = e; P[i + 1][0] = addD(e, 1); } } for (let i = 1; i < P.length; i++) if (P[i][0] > P[i][1]) return null; }
+    return P;
   };
+  const textOf = r => { const P = partsOf(r) || [], amt = +r.amt > 0 ? ` · ${FP.inr(+r.amt)}` : '';
+    return [`GOAL ALERT: ${clean(r.name)}${amt}`, ...P.map(([a, b], i) => `Part ${i + 1} of ${P.length}: ${dmyI(a)} to ${dmyI(b)}`), `In debt by: ${dmyI(r.by)}`, HOW].join('\n'); };
+  const goalDate = g => g.year ? `${g.year}-${String(g.mon).padStart(2, '0')}-01` : '';
+  const eqOf = (A, g) => (g.src || []).filter(([l]) => (A.assets.find(a => a.label === l) || {}).cls === 'Equity').reduce((s, [, v]) => s + v, 0);
+  const rowFor = (g, A, manual) => {
+    const gd = goalDate(g), t = today(), open = gd ? addM(gd, -24) : t, by0 = gd ? addM(gd, -12) : '';
+    const start = open > t ? open : t, by = by0 && by0 > start ? by0 : (by0 ? t : '');
+    return { key: (manual ? 'm' : 'p') + Math.random().toString(36).slice(2, 8), name: clean(g.name), gd, amt: Math.round(eqOf(A, g)), start, by, n: by ? autoN(start, by) : 1, ends: null, manual: !!manual, act: 'new' };
+  };
+  /* goals the plan flags: not due, not retirement/emergency, under 36 months, with equity earmarked */
+  FP.goalAlerts = () => { const A = FP.calc.alloc(FP.d, FP.st);
+    return A.goals.filter(g => g.on !== false && !g.due && g.year && g.type !== 'retirement' && g.type !== 'emergency' && g.n < 36 && eqOf(A, g) >= 1).map(g => rowFor(g, A, false)); };
   const KEY = 'pg_mailkey', getKey = () => { try { return localStorage.getItem(KEY) || ''; } catch (e) { return ''; } }, setKey = v => { try { v ? localStorage.setItem(KEY, v) : localStorage.removeItem(KEY); } catch (e) { } };
   async function api(path, init) {
     init = init || {}; init.headers = Object.assign({ 'x-abundance-key': getKey(), 'Content-Type': 'application/json' }, init.headers || {});
@@ -3430,10 +3442,9 @@ Move              = target − today; every change is shown (under ₹1,000 coun
     if (r.status === 404) throw Object.assign(new Error('The CRM alerts service is not on the dashboard website yet.'), { code: 404 });
     const j = await r.json().catch(() => ({})); if (!r.ok) throw Object.assign(new Error(j.error || `Something went wrong (${r.status}).`), { code: r.status, j }); return j;
   }
-  let S = null;   /* { goals, contacts, cid, choice: {goal: 'new'|'keep'}, drop: {goal: true} } */
+  let S = null;   /* { rows, contacts, cid, drop: {goal: true}, msg, busy } */
   async function alerts() {
-    S = { goals: FP.goalAlerts(), contacts: null, cid: null, choice: {}, drop: {}, msg: '', busy: false };
-    S.goals.forEach(g => S.choice[g.name] = 'new');
+    S = { rows: FP.goalAlerts(), contacts: null, cid: null, drop: {}, msg: '', busy: false };
     $('#mbox').classList.add('wide'); $('#modal').hidden = false; draw();
     if (!getKey()) return askKey();
     find();
@@ -3454,46 +3465,79 @@ Move              = target − today; every change is shown (under ₹1,000 coun
     draw();
   }
   const cur = () => S.contacts?.find(c => c.id === S.cid);
+  const crmOf = (bl, n) => bl.filter(b => isFP(b) && fpName(b).toLowerCase() === clean(n).toLowerCase());
+  const problem = r => !clean(r.name) ? 'Give the goal a name.' : !r.by ? 'Set the "In debt by" date.' : !r.start ? 'Set the start date.' : r.by < r.start ? '"In debt by" is before the start.' : partsOf(r) === null ? 'Part dates overlap: check the end dates.' : '';
   function result() {
     const c = cur(); if (!c) return null;
-    const bl = blocks(c.rule), mine = bl.filter(isFP), plan = new Set(S.goals.map(g => g.name.toLowerCase()));
-    const out = [];
-    bl.filter(b => !isFP(b)).forEach(b => out.push(b.join('\n')));                       /* manual lines first, exactly as they are */
-    mine.forEach(b => { const n = fpName(b).toLowerCase(); if (plan.has(n) ? S.choice[S.goals.find(g => g.name.toLowerCase() === n).name] === 'keep' : !S.drop[n]) out.push(b.join('\n')); });
-    S.goals.forEach(g => { const has = mine.some(b => fpName(b).toLowerCase() === g.name.toLowerCase()); if (S.choice[g.name] === 'new' || !has) if (S.choice[g.name] !== 'skip') out.push(g.line); });
-    return { text: out.join('\n'), bl, mine };
+    const bl = blocks(c.rule), out = [], names = new Set(S.rows.map(r => clean(r.name).toLowerCase()));
+    bl.filter(b => !isFP(b)).forEach(b => out.push(b.join('\n')));                       /* your other lines first, exactly as they are */
+    bl.filter(isFP).forEach(b => { const n = fpName(b).toLowerCase(), r = S.rows.find(x => clean(x.name).toLowerCase() === n);
+      if (r ? r.act === 'keep' : !S.drop[n]) out.push(b.join('\n')); });
+    S.rows.forEach(r => { if (r.act === 'new' && !problem(r)) out.push(textOf(r)); });
+    return { text: out.join('\n'), bl, names };
   }
+  const di = (v, attr) => `<input type="date" ${attr} value="${v || ''}" style="padding:4px 6px;border:1px solid var(--line);border-radius:6px;font:inherit;font-size:13px">`;
   function draw() {
-    if (!S) return; const c = cur(), R = result();
+    if (!S) return; const c = cur(), R = result(), A = FP.calc.alloc(FP.d, FP.st);
     const contacts = S.contacts == null ? '<p class="hint">Finding the client in Zoho CRM…</p>'
       : !S.contacts.length ? (S.msg || '<p class="no">No CRM contact has this client\'s PAN. Add the PAN in Zoho CRM (PAN field), then try again. Nothing was sent.</p>')
       : S.contacts.length > 1 ? `<p>Which CRM contact should get the alerts?</p>${S.contacts.map(x => `<label style="display:block;margin:4px 0"><input type="radio" name="alC" value="${x.id}" ${x.id === S.cid ? 'checked' : ''}> ${E(x.name)} <span class="hint">PAN ${E(x.pan)}</span></label>`).join('')}`
       : `<p>CRM contact: <b>${E(c.name)}</b> <span class="hint">PAN ${E(c.pan)}</span></p>`;
-    const mineOf = n => R ? R.mine.filter(b => fpName(b).toLowerCase() === n.toLowerCase()) : [];
-    const rows = S.goals.map(g => { const old = mineOf(g.name), same = old.length && old.map(b => b.join('\n')).join('\n') === g.line;
-      return `<tr><td><b>${E(g.name)}</b><div class="hint">due ${FP.dmy(new Date(g.gd))} · equity ${FP.inr(g.eq)}</div></td>
-        <td>${g.now ? '<span class="no">Window already passed: one "move to debt now" alert.</span>' : `Quarterly alerts ${dmyI(g.from)} → ${dmyI(g.by)}, then deadline`}</td>
-        <td>${old.length ? `<p class="hint">In CRM now:</p><p class="ln old">${E(old.map(b => b.join('\n')).join('\n'))}</p>` : ''}<p class="hint">${old.length ? 'From this plan:' : 'Will be written:'}</p><p class="ln">${E(g.line)}</p></td>
-        <td style="white-space:nowrap">${same ? '<span class="ok">Same as CRM</span>' : `<select data-ch="${E(g.name)}">${old.length ? `<option value="new" ${S.choice[g.name] === 'new' ? 'selected' : ''}>Use this plan's line</option><option value="keep" ${S.choice[g.name] === 'keep' ? 'selected' : ''}>Keep CRM line</option>` : `<option value="new" ${S.choice[g.name] === 'new' ? 'selected' : ''}>Create</option>`}<option value="skip" ${S.choice[g.name] === 'skip' ? 'selected' : ''}>${old.length ? 'Remove from CRM' : 'Don\'t create'}</option></select>`}</td></tr>`; }).join('');
-    const stale = R ? [...new Set(R.mine.map(fpName))].filter(n => !S.goals.some(g => g.name.toLowerCase() === n.toLowerCase())) : [];
-    const staleH = stale.length ? `<h4>[FP] lines in CRM for goals this plan doesn't flag</h4><p class="hint">The goal may be fully moved already, renamed, or more than 3 years away. Removing stops its alerts.</p><table><tbody>${stale.map(n => `<tr><td><p class="ln old">${E(R.mine.filter(b => fpName(b) === n).map(b => b.join('\n')).join('\n'))}</p></td><td style="white-space:nowrap"><select data-dr="${E(n.toLowerCase())}"><option value="keep" ${!S.drop[n.toLowerCase()] ? 'selected' : ''}>Keep</option><option value="drop" ${S.drop[n.toLowerCase()] ? 'selected' : ''}>Remove</option></select></td></tr>`).join('')}</tbody></table>` : '';
+    const used = new Set(S.rows.map(r => clean(r.name).toLowerCase()));
+    const planGoals = A.goals.filter(g => g.on !== false && !g.due && g.type !== 'emergency' && !used.has(clean(g.name).toLowerCase()));
+    const rows = S.rows.map((r, i) => {
+      const old = R ? crmOf(R.bl, r.name) : [], oldT = old.map(b => b.join('\n')).join('\n'), P = partsOf(r) || [], bad = problem(r), same = old.length && !bad && oldT === textOf(r);
+      const acts = old.length ? [['new', 'Replace CRM version with this'], ['keep', 'Keep CRM version'], ['skip', 'Remove from CRM']] : [['new', 'Create'], ['skip', 'Don\'t create']];
+      const nameCell = r.manual && !r.picked ? `<select data-pick="${i}" style="max-width:220px"><option value="">Choose a goal…</option>${planGoals.map(g => `<option value="${E(g.name)}">${E(g.name)}</option>`).join('')}<option value="__other">Other (type a name)</option></select>`
+        : r.manual && r.picked === '__other' ? `<input data-f="name" data-i="${i}" value="${E(r.name)}" placeholder="Goal name" style="padding:4px 6px;border:1px solid var(--line);border-radius:6px;width:200px">`
+        : `<b>${E(r.name)}</b>${r.gd ? `<div class="hint">goal ${FP.dmy(new Date(r.gd))}</div>` : ''}${r.manual ? '<div class="hint">added by you</div>' : ''}`;
+      return `<tr class="${r.act === 'skip' ? 'off' : ''}"><td>${nameCell}</td>
+        <td>₹ <input data-f="amt" data-i="${i}" inputmode="numeric" value="${+r.amt > 0 ? Math.round(r.amt) : ''}" placeholder="optional" style="padding:4px 6px;border:1px solid var(--line);border-radius:6px;width:110px"></td>
+        <td>${di(r.start, `data-f="start" data-i="${i}"`)}</td><td>${di(r.by, `data-f="by" data-i="${i}"`)}</td>
+        <td><select data-f="n" data-i="${i}">${[1, 2, 3, 4, 5, 6].map(k => `<option ${k === r.n ? 'selected' : ''}>${k}</option>`).join('')}</select></td>
+        <td>${same ? '<span class="ok">Same as CRM</span>' : `<select data-act="${i}">${acts.map(([v, l]) => `<option value="${v}" ${r.act === v ? 'selected' : ''}>${l}</option>`).join('')}</select>`}${r.manual ? ` <button class="link" data-del="${i}" title="Remove this row">✕</button>` : ''}</td></tr>
+        <tr class="${r.act === 'skip' ? 'off' : ''}"><td></td><td colspan="5" style="border-top:0;padding-top:0">
+          ${bad ? `<p class="no" style="margin:0 0 6px">${E(bad)}</p>` : !P.length ? '<p class="hint" style="margin:0 0 6px">No parts: one alert on the "In debt by" date.</p>'
+            : `<div class="hint" style="display:flex;flex-wrap:wrap;gap:6px 16px;margin-bottom:6px">${P.map(([a, b], k) => `<span>Part ${k + 1}: ${dmyI(a)} to ${k < P.length - 1 ? di(b, `data-end="${i}:${k}"`) : dmyI(b)}</span>`).join('')}</div>`}
+          <div style="display:grid;grid-template-columns:${old.length ? '1fr 1fr' : '1fr'};gap:8px">${old.length ? `<div><p class="hint" style="margin:0">In CRM now:</p><p class="ln old">${E(oldT)}</p></div>` : ''}<div><p class="hint" style="margin:0">${old.length ? 'This plan:' : 'Will be written:'}</p><p class="ln">${E(textOf(r))}</p></div></div></td></tr>`;
+    }).join('');
+    const stale = R ? [...new Set(R.bl.filter(isFP).map(fpName))].filter(n => !R.names.has(n.toLowerCase())) : [];
+    const staleH = stale.length ? `<h4>Goal alerts in CRM for goals not listed above</h4><p class="hint">The money may be moved already, or the goal renamed. Removing stops its alerts.</p><table><tbody>${stale.map(n => `<tr><td><p class="ln old">${E(crmOf(R.bl, n).map(b => b.join('\n')).join('\n'))}</p></td><td style="white-space:nowrap"><select data-dr="${E(n.toLowerCase())}"><option value="keep" ${!S.drop[n.toLowerCase()] ? 'selected' : ''}>Keep</option><option value="drop" ${S.drop[n.toLowerCase()] ? 'selected' : ''}>Remove</option></select></td></tr>`).join('')}</tbody></table>` : '';
     const manual = R ? R.bl.filter(b => !isFP(b)) : [];
     const len = R ? R.text.length : 0, changed = R && R.text !== blocks(c.rule).map(b => b.join('\n')).join('\n');
+    const dup = S.rows.some((r, i) => S.rows.findIndex(x => clean(x.name).toLowerCase() === clean(r.name).toLowerCase()) !== i && r.act !== 'skip');
+    const blocked = S.rows.some(r => r.act === 'new' && problem(r)) || dup;
+    const y = $('#mbox')?.scrollTop || 0;
     $('#mbox').innerHTML = `<header><h2 id="mTitle">Create Alerts in CRM</h2><button class="x" id="alX" aria-label="Close">✕</button></header>
       <div class="fpal" style="padding:16px 20px">
         ${contacts}${S.contacts?.length && S.msg ? `<p>${S.msg}</p>` : ''}
-        <p class="hint">Goals under 3 years away with equity earmarked. From 2 years before the goal, Haritha gets one alert a quarter: on a 52-week high (Nifty 50, else Midcap 150 or Smallcap 250), or at quarter end if there's none. Everything must be in debt 1 year before the goal (alerts 7 days before and on the day).</p>
-        ${S.goals.length ? `<table><thead><tr><th>Goal</th><th>Alerts</th><th>Goal Alerts lines</th><th></th></tr></thead><tbody>${rows}</tbody></table>` : '<p><b>No goal needs a move to debt:</b> none is under 3 years away with equity earmarked for it.</p>'}
+        <p class="hint">Goals under 3 years away with equity earmarked are listed. Change any amount, date or number of parts, or add a goal yourself. Parts are split evenly; change a part's end date to set your own.</p>
+        <table><thead><tr><th>Goal</th><th>Amount to move</th><th>Start</th><th>In debt by</th><th>Parts</th><th></th></tr></thead><tbody>${rows || '<tr><td colspan="6" class="hint">No goal is under 3 years away with equity earmarked. Add one below if needed.</td></tr>'}</tbody></table>
+        <p><button class="bt fpb" id="alAdd">+ Add goal alert</button></p>
+        ${dup ? '<p class="no">Two rows have the same goal name. Rename or remove one.</p>' : ''}
         ${staleH}
         ${manual.length ? `<h4>Your other alert lines</h4><p class="hint">Not touched.</p><p class="ln">${E(manual.map(b => b.join('\n')).join('\n'))}</p>` : ''}
-        ${R ? `<h4>Goal Alerts after saving</h4><p class="ln">${E(R.text) || '(empty)'}</p><p class="hint ${len > 32000 ? 'no' : ''}">${len.toLocaleString('en-IN')} of 32,000 characters${len > 32000 ? ': too long.' : ''}</p>` : ''}
+        ${R ? `<details><summary class="hint" style="cursor:pointer">Goal Alerts box after saving (${len.toLocaleString('en-IN')} of 32,000 characters)</summary><p class="ln">${E(R.text) || '(empty)'}</p></details>` : ''}
         <p id="alMsg"></p>
       </div>
-      <div class="mfoot"><span class="hint" style="font-size:12.5px">Amounts are today's equity earmarked for the goal. Edit any line in CRM later; the next review shows your edit next to the plan's.</span><span style="display:flex;gap:10px"><button class="bt fpb" id="alC">Cancel</button><button class="bt pri fpb" id="alGo" ${R && changed && len <= 32000 && !S.busy ? '' : 'disabled'}>${R && !changed ? 'Nothing to change' : 'Create Alerts in CRM'}</button></span></div>`;
+      <div class="mfoot"><span class="hint" style="font-size:12.5px">Alerts go to Haritha in Basecamp and to the service inbox. You can also edit the dates in CRM later.</span><span style="display:flex;gap:10px"><button class="bt fpb" id="alC">Cancel</button><button class="bt pri fpb" id="alGo" ${R && changed && len <= 32000 && !blocked && !S.busy ? '' : 'disabled'}>${R && !changed ? 'Nothing to change' : 'Create Alerts in CRM'}</button></span></div>`;
+    $('#mbox').scrollTop = y;
     $('#alX').onclick = $('#alC').onclick = FP.closeModal;
-    document.querySelectorAll('[name=alC]').forEach(r => r.onchange = () => { S.cid = r.value; draw(); });
-    document.querySelectorAll('[data-ch]').forEach(s => s.onchange = () => { S.choice[s.dataset.ch] = s.value; draw(); });
-    document.querySelectorAll('[data-dr]').forEach(s => s.onchange = () => { S.drop[s.dataset.dr] = s.value === 'drop'; draw(); });
+    document.querySelectorAll('[name=alC]').forEach(x => x.onchange = () => { S.cid = x.value; draw(); });
+    document.querySelectorAll('[data-act]').forEach(x => x.onchange = () => { S.rows[+x.dataset.act].act = x.value; draw(); });
+    document.querySelectorAll('[data-dr]').forEach(x => x.onchange = () => { S.drop[x.dataset.dr] = x.value === 'drop'; draw(); });
+    document.querySelectorAll('[data-del]').forEach(x => x.onclick = () => { S.rows.splice(+x.dataset.del, 1); draw(); });
+    document.querySelectorAll('[data-f]').forEach(x => x.onchange = () => { const r = S.rows[+x.dataset.i], f = x.dataset.f, v = x.value.trim();
+      if (f === 'amt') r.amt = +v.replace(/[^\d.]/g, '') || 0; else if (f === 'n') { r.n = +v; r.ends = null; } else if (f === 'name') r.name = v;
+      else { r[f] = v; r.ends = null; if (r.start && r.by && r.by > r.start && f !== 'n') r.n = autoN(r.start, r.by) || 1; }
+      draw(); });
+    document.querySelectorAll('[data-end]').forEach(x => x.onchange = () => { const [i, k] = x.dataset.end.split(':').map(Number), r = S.rows[i]; const P = partsOf(r) || [];
+      r.ends = r.ends || P.slice(0, -1).map(p => p[1]); r.ends[k] = x.value; draw(); });
+    document.querySelectorAll('[data-pick]').forEach(x => x.onchange = () => { const i = +x.dataset.pick, v = x.value; if (!v) return;
+      if (v === '__other') S.rows[i] = { ...S.rows[i], picked: '__other', name: '' };
+      else { const g = A.goals.find(g => g.name === v); S.rows[i] = { ...rowFor(g, A, true), key: S.rows[i].key, picked: v }; }
+      draw(); });
+    $('#alAdd').onclick = () => { const t = today(); S.rows.push({ key: 'm' + Math.random().toString(36).slice(2, 8), name: '', gd: '', amt: 0, start: t, by: '', n: 1, ends: null, manual: true, picked: '', act: 'new' }); draw(); };
     $('#alGo').onclick = save;
   }
   async function save() {
@@ -3501,7 +3545,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
     try {
       const j = await api('/api/fp-alerts', { method: 'POST', body: JSON.stringify({ id: c.id, before: c.rule, after: R.text }) });
       c.rule = j.rule; S.busy = false;
-      FP.set(s => { s.review = { ...s.review, alerts: { at: Date.now(), contact: c.name, lines: S.goals.filter(g => S.choice[g.name] !== 'skip').map(g => g.line) } }; });
+      FP.set(s => { s.review = { ...s.review, alerts: { at: Date.now(), contact: c.name, blocks: S.rows.filter(r => r.act === 'new' && !problem(r)).map(textOf) } }; });
       FP.closeModal(); FP.toast?.(`Alerts saved in CRM for ${c.name}`);
     } catch (e) {
       S.busy = false; if (e.code === 401) { setKey(''); return askKey('That passcode did not match. Enter it again.'); }

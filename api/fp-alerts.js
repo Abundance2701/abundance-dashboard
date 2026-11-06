@@ -16,8 +16,11 @@ const { parseRule } = require('./pb-check');
 const MAX = 32000;
 const lines = t => String(t || '').replace(/\r\n?/g, '\n').split('\n').map(s => s.trim()).filter(Boolean);
 /* blocks: a line plus the "or …" lines under it; [FP …] blocks are the planning tool's */
-const blocks = t => { const out = []; for (const l of lines(t)) { if (/^or\s/i.test(l) && out.length) out[out.length - 1].push(l); else out.push([l]); } return out; };
-const isFP = b => /^\[fp\b/i.test(b[0]);
+/* blocks: a line plus the lines that belong to it ("or …" lines; a GOAL ALERT's Part / In debt by / How lines).
+   [FP …] and GOAL ALERT blocks belong to the planning tool; everything else is the user's own. */
+const isPart = l => /^(part\s+\d+\s+of\s+\d+|in debt by|how)\s*:/i.test(l);
+const blocks = t => { const out = []; for (const l of lines(t)) { const prev = out[out.length - 1]; if (prev && (/^or\s/i.test(l) || (isPart(l) && /^goal alert:/i.test(prev[0])))) prev.push(l); else out.push([l]); } return out; };
+const isFP = b => /^(\[fp\b|goal alert:)/i.test(b[0]);
 const manual = t => blocks(t).filter(b => !isFP(b)).map(b => b.join('\n')).join('\n');
 const norm = t => lines(t).join('\n');
 const maskPan = p => { p = String(p || '').trim().toUpperCase(); return p.length >= 5 ? '•••••' + p.slice(-5) : ''; };
@@ -58,7 +61,7 @@ module.exports = async (req, res) => {
       if (!cur) return Z.reply(res, 404, { error: 'That contact is no longer in CRM.' });
       if (norm(cur.Goal_Alerts) !== norm(b.before)) return Z.reply(res, 409, { error: 'The Goal Alerts in CRM changed after you opened this preview. Close and open "Create Alerts in CRM" again.', rule: cur.Goal_Alerts || '' });
       const after = norm(b.after);
-      if (manual(after) !== manual(cur.Goal_Alerts)) return Z.reply(res, 400, { error: 'Only [FP] goal lines may be changed from the planning tool. Your other Goal Alerts lines must stay as they are.' });
+      if (manual(after) !== manual(cur.Goal_Alerts)) return Z.reply(res, 400, { error: 'Only goal alerts may be changed from the planning tool. Your other Goal Alerts lines must stay as they are.' });
       const bad = parseRule(after).bad;
       if (bad.length) return Z.reply(res, 400, { error: `This line can't be read by the alert checker: "${bad[0]}"` });
       if (after.length > MAX) return Z.reply(res, 400, { error: `Goal Alerts would be ${after.length} characters; Zoho allows ${MAX}.` });
