@@ -1357,7 +1357,7 @@ Corpus = PV(((1+${+rv.r.toFixed(4)}%)/(1+${+rv.infl.toFixed(4)}%))^(1/12)-1, ${r
     return withSt(st, () => FP.calc.goals({ ...FP.d, goals: gl }, st).find(x => x.idx === idx));
   };
   const rowP = (l, v, big) => `<div class="r"><span>${l}</span><b class="${big ? 'big' : ''}">${v}</b></div>`;
-  const renderPrev = () => {
+  const renderPrev0 = () => {
     const g = preview(), box = $('#gmPrev'); if (!box) return;
     if (!g) { box.innerHTML = '<p class="hint">Enter an amount to see the numbers.</p>'; return; }
     const due = g.type === 'emergency' ? 'Now' : g.due ? 'Due now' : `${MON[g.mon - 1]} ${g.year}`;
@@ -1367,6 +1367,7 @@ Corpus = PV(((1+${+rv.r.toFixed(4)}%)/(1+${+rv.infl.toFixed(4)}%))^(1/12)-1, ${r
       ${g.due ? rowP('Needed', 'Now, from existing savings') : rowP('Invest in', `${g.bk} · ${FP.pct(g.r, 1)}`) + rowP('Value needed today', FP.inr(g.lump)) + rowP('Or SIP / month', FP.inr(g.sip)) + rowP(`Or step-up SIP from`, FP.inr(g.step))}
       ${g.members ? `<p class="hint" style="margin-top:8px">Combines ${g.members.length} years. Edit each year below.</p>` : ''}`;
   };
+  const renderPrev = () => { renderPrev0(); const box = $('#gmPrev'); if (box && dr?.name && FP.goalAlertHTML) box.insertAdjacentHTML('beforeend', FP.goalAlertHTML(dr.name)); };   /* + the goal's alert in CRM, if any */
 
   const show = () => {
     const isNew = dr.mode === 'new', t = dr.mode === 'goal' || isNew ? FP.gtype(dr.name || '') : dr.mode;
@@ -3338,6 +3339,27 @@ Move              = target − today; every change is shown (under ₹1,000 coun
     .fpal .ln{font:12.5px/1.45 Consolas,monospace;white-space:pre-wrap;word-break:break-word;background:#f6f8f7;border-radius:6px;padding:6px 8px;margin:0}
     .fpal .old{background:#fbf3f2}.fpal h4{margin:16px 0 6px;font:700 14px var(--fh);color:var(--dark)}.fpal .hint{font-size:13px;color:var(--muted)}
     .fpal .no{color:#B42318}.fpal .ok{color:var(--green);font-weight:700}
+    .fpal{padding:16px 20px;display:flex;flex-direction:column;gap:12px}
+    .fa-who{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;font-size:14px}.fa-who .lab{color:var(--muted);font-size:13px}.fa-who small{color:var(--muted)}
+    .fa-pill{border:1px solid var(--line);border-radius:999px;padding:5px 12px;cursor:pointer;display:inline-flex;gap:6px;align-items:center}.fa-pill.on{border-color:var(--green);background:#eef6f1}.fa-pill input{accent-color:var(--green)}
+    .fa-link{margin-left:auto;font-size:13px;color:var(--green);font-weight:700;text-decoration:none}.fa-link:hover{text-decoration:underline}
+    .fa-intro{margin:0;font-size:13.5px;color:var(--muted);line-height:1.5}
+    .fa-card{border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:12px;background:#fff}.fa-card.off{opacity:.55}
+    .fa-card.slim{flex-direction:row;align-items:flex-start;gap:12px;padding:10px 12px}.fa-card.slim pre{flex:1;min-width:0;margin:0}.fa-card.slim .fa-in{width:130px;flex:none}
+    #alAdd{align-self:flex-start}
+    .fa-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.fa-top h4{margin:0;font:700 15.5px var(--fh);color:var(--dark)}.fa-top .hint{font-size:12.5px;margin-top:2px}
+    .fa-act{display:flex;align-items:center;gap:8px}.fa-x{border:0;background:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px}
+    .fa-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}@media(max-width:760px){.fa-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    .fa-grid label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+    .fa-in{height:34px;box-sizing:border-box;padding:0 10px;border:1px solid #cfd8d2;border-radius:8px;font:14px var(--fb,inherit);color:var(--dark);background:#fff;width:100%;min-width:0;text-transform:none;letter-spacing:0;font-weight:400}
+    .fa-in:focus{outline:2px solid rgba(0,88,38,.25);border-color:var(--green)}.fa-in:disabled{background:#f3f5f4;color:#9aa5a0}
+    .fa-top .fa-in{width:auto;min-width:180px}
+    .fa-parts{display:flex;flex-wrap:wrap;gap:8px}.fa-part{display:flex;align-items:center;gap:8px;background:#f6f8f7;border-radius:8px;padding:6px 10px;font-size:13.5px}
+    .fa-part .k{font-weight:700;color:var(--green)}.fa-part .to{color:var(--muted)}.fa-part .fa-in{width:150px;height:30px}.fa-part.gap{background:none;border:1px dashed var(--line);color:var(--muted)}
+    .fa-msg{margin:0;font-size:13.5px;padding:8px 10px;border-radius:8px}.fa-msg.warn{background:#fdf6e3;color:#7a5a12}.fa-msg.no{background:#fbecea;color:#B42318}
+    .fa-txt summary{cursor:pointer;font-size:13px;color:var(--green);font-weight:700}.fa-cmp{display:grid;gap:10px;margin-top:8px}.fa-cmp.two{grid-template-columns:1fr 1fr}.fa-cmp p{margin:0 0 4px}
+    .fpal pre.ln{margin:0}.fa-h{margin:6px 0 0;font:700 14px var(--fh)}
+    .fa-sum{margin-top:14px;padding-top:10px;border-top:2px solid var(--gold)}.fa-sum h3{margin:0 0 6px}
     .fpb{font:700 14px var(--fh)!important;text-transform:none!important;letter-spacing:0!important;padding:9px 18px!important}.fpb:disabled{opacity:.45;cursor:default}
   </style>`);
 
@@ -3395,10 +3417,11 @@ Move              = target − today; every change is shown (under ₹1,000 coun
   FP.render = (...a) => { r0(...a); bar(); };
   function bar() {
     let el = $('#rvBar'); const R = FP.st?.review;
-    if (!R || FP.base?.sample) { el?.remove(); return; }
+    if (!R || FP.base?.sample) { el?.remove(); document.querySelectorAll('.fpAlBtn').forEach(b => b.remove()); return; }
     if (!el) { $('#wrap').insertAdjacentHTML('afterbegin', '<div id="rvBar" class="noprint"></div>'); el = $('#rvBar'); }
-    el.innerHTML = `<span><b>Annual review</b> · compared with the plan of ${FP.dmy(new Date(R.at))} (${E(R.file)})</span><button class="bt pri fpb" id="fpAl">Create Alerts in CRM</button>`;
-    $('#fpAl').onclick = alerts;
+    el.innerHTML = `<span><b>Annual review</b> · compared with the plan of ${FP.dmy(new Date(R.at))} (${E(R.file)})</span>`;
+    ['lumpsum', 'sip'].forEach(id => { const h = document.querySelector(`#${id} > header`); if (!h || h.querySelector('.fpAlBtn')) return;
+      h.insertAdjacentHTML('beforeend', '<button class="hedit noprint fpAlBtn" title="Set alerts for moving goal money from equity to debt">Create Alerts in CRM</button>'); h.querySelector('.fpAlBtn').onclick = alerts; });
   }
 
   /* ---------- goal alerts ----------
@@ -3406,7 +3429,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
        GOAL ALERT: <goal> · ₹amount / Part i of n: <from> to <to> / In debt by: <date> / How: (wording)
      Rows are editable here (amount, start, in-debt-by, parts and each part's end date); goals can be added by hand. */
   const TRIG = { '52w': '52-week high', new: "new high since the part's start" };
-  const howOf = t => `How: each part alerts once on a ${t === 'new' ? 'new high since its start' : '52-week high'} (Nifty 50, Midcap 150 or Smallcap 250), else a reminder when it ends (the last part is covered by In debt by); In debt by alerts 7 days before and on the day`;
+  const howOf = t => `How: each part alerts once on a ${t === 'new' ? 'new high since its start' : '52-week high'} (Nifty 50, Midcap 150 or Smallcap 250), else a reminder when it ends (not if In debt by is within 7 days); In debt by alerts 7 days before and on the day`;
   const trigFor = (a, b) => a && b && (Date.parse(b) - Date.parse(a)) / 864e5 < 91 ? 'new' : '52w';   /* a few weeks: a 52-week high is unlikely, so watch for a new high */
   const isPart = l => /^(part\s+\d+\s+of\s+\d+|in debt by|watch for|how)\s*:/i.test(l);
   const blocks = t => { const out = []; String(t || '').replace(/\r\n?/g, '\n').split('\n').map(s => s.trim()).filter(Boolean).forEach(l => {
@@ -3424,7 +3447,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
     if (r.ends) { for (let i = 0; i < P.length; i++) { const e = r.ends[i]; if (!e) continue; if (e < P[i][0] || e > r.by) return null; P[i][1] = e; if (i < P.length - 1) P[i + 1][0] = addD(e, 1); } for (let i = 0; i < P.length; i++) if (P[i][0] > P[i][1]) return null; }
     return P;
   };
-  const textOf = r => { const P = partsOf(r) || [], amt = +r.amt > 0 ? ` · ${FP.inr(+r.amt)}` : '';
+  const textOf = r => { const P = partsOf(r) || [], amt = +r.amt > 0 ? ` · ₹${Math.round(+r.amt).toLocaleString('en-IN')}` : '';
     return [`GOAL ALERT: ${clean(r.name)}${amt}`, ...P.map(([a, b], i) => `Part ${i + 1} of ${P.length}: ${dmyI(a)} to ${dmyI(b)}`), `In debt by: ${dmyI(r.by)}`, ...(P.length ? [`Watch for: ${TRIG[r.trig] || TRIG['52w']}`, howOf(r.trig)] : [])].join('\n'); };
   const goalDate = g => g.year ? `${g.year}-${String(g.mon).padStart(2, '0')}-01` : '';
   const eqOf = (A, g) => (g.src || []).filter(([l]) => (A.assets.find(a => a.label === l) || {}).cls === 'Equity').reduce((s, [, v]) => s + v, 0);
@@ -3462,7 +3485,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
   async function find() {
     const pans = [FP.d.self?.pan, FP.d.spouse?.pan].map(p => String(p || '').replace(/\s/g, '').toUpperCase()).filter(p => /^[A-Z]{5}\d{4}[A-Z]$/.test(p));
     if (!pans.length) { S.msg = '<span class="no">No PAN in this client\'s Excel (About You). Add it in Client data so the right CRM contact can be found.</span>'; S.contacts = []; return draw(); }
-    try { S.contacts = (await api('/api/fp-alerts?pan=' + pans.join(','))).contacts || []; if (S.contacts.length === 1) S.cid = S.contacts[0].id; S.msg = ''; }
+    try { S.contacts = (await api('/api/fp-alerts?pan=' + pans.join(','))).contacts || []; if (S.contacts.length) S.cid = S.contacts[0].id; S.msg = ''; cache(); }
     catch (e) { if (e.code === 401) { setKey(''); return askKey('That passcode did not match. Enter it again.'); } S.contacts = []; S.msg = `<span class="no">${E(e.message)}</span>`; }
     draw();
   }
@@ -3478,55 +3501,65 @@ Move              = target − today; every change is shown (under ₹1,000 coun
     S.rows.forEach(r => { if (r.act === 'new' && !problem(r)) out.push(textOf(r)); });
     return { text: out.join('\n'), bl, names };
   }
-  const di = (v, attr) => `<input type="date" ${attr} value="${v || ''}" style="padding:4px 6px;border:1px solid var(--line);border-radius:6px;font:inherit;font-size:13px">`;
+  const di = (v, attr, dis) => `<input type="date" class="fa-in" ${attr} value="${v || ''}" ${dis ? 'disabled' : ''}>`;
+  const inr0 = v => '₹' + Math.round(+v || 0).toLocaleString('en-IN');
+  const crmLink = id => `https://crm.zoho.in/crm/tab/Contacts/${id}`;
   function draw() {
-    if (!S) return; const c = cur(), R = result(), A = FP.calc.alloc(FP.d, FP.st);
+    if (!S) return; const c = cur(), R = result(), A = FP.calc.alloc(FP.d, FP.st), t0 = today();
     const contacts = S.contacts == null ? '<p class="hint">Finding the client in Zoho CRM…</p>'
       : !S.contacts.length ? (S.msg || '<p class="no">No CRM contact has this client\'s PAN. Add the PAN in Zoho CRM (PAN field), then try again. Nothing was sent.</p>')
-      : S.contacts.length > 1 ? `<p>Which CRM contact should get the alerts?</p>${S.contacts.map(x => `<label style="display:block;margin:4px 0"><input type="radio" name="alC" value="${x.id}" ${x.id === S.cid ? 'checked' : ''}> ${E(x.name)} <span class="hint">PAN ${E(x.pan)}</span></label>`).join('')}`
-      : `<p>CRM contact: <b>${E(c.name)}</b> <span class="hint">PAN ${E(c.pan)}</span></p>`;
+      : `<div class="fa-who"><span class="lab">Alerts go on</span>${S.contacts.length > 1 ? S.contacts.map(x => `<label class="fa-pill${x.id === S.cid ? ' on' : ''}"><input type="radio" name="alC" value="${x.id}" ${x.id === S.cid ? 'checked' : ''}> ${E(x.name)} <small>PAN ${E(x.pan)}</small></label>`).join('') : `<b>${E(c.name)}</b> <small>PAN ${E(c.pan)}</small>`}
+          ${c ? `<a class="fa-link" href="${crmLink(c.id)}" target="_blank" rel="noopener">Open in Zoho CRM ↗</a>` : ''}</div>`;
     const used = new Set(S.rows.map(r => clean(r.name).toLowerCase()));
     const planGoals = A.goals.filter(g => g.on !== false && !g.due && g.type !== 'emergency' && !used.has(clean(g.name).toLowerCase()));
-    const rows = S.rows.map((r, i) => {
-      const old = R ? crmOf(R.bl, r.name) : [], oldT = old.map(b => b.join('\n')).join('\n'), P = partsOf(r) || [], bad = problem(r), same = old.length && !bad && oldT === textOf(r);
-      const acts = old.length ? [['new', 'Replace CRM version with this'], ['keep', 'Keep CRM version'], ['skip', 'Remove from CRM']] : [['new', 'Create'], ['skip', 'Don\'t create']];
-      const nameCell = r.manual && !r.picked ? `<select data-pick="${i}" style="max-width:220px"><option value="">Choose a goal…</option>${planGoals.map(g => `<option value="${E(g.name)}">${E(g.name)}</option>`).join('')}<option value="__other">Other (type a name)</option></select>`
-        : r.manual && r.picked === '__other' ? `<input data-f="name" data-i="${i}" value="${E(r.name)}" placeholder="Goal name" style="padding:4px 6px;border:1px solid var(--line);border-radius:6px;width:200px">`
-        : `<b>${E(r.name)}</b>${r.gd ? `<div class="hint">goal ${FP.dmy(new Date(r.gd))}</div>` : ''}${r.manual ? '<div class="hint">added by you</div>' : ''}`;
-      return `<tr class="${r.act === 'skip' ? 'off' : ''}"><td>${nameCell}</td>
-        <td>₹ <input data-f="amt" data-i="${i}" inputmode="numeric" value="${+r.amt > 0 ? Math.round(r.amt) : ''}" placeholder="optional" style="padding:4px 6px;border:1px solid var(--line);border-radius:6px;width:110px"></td>
-        <td>${di(r.start, `data-f="start" data-i="${i}"`)}</td><td>${di(r.by, `data-f="by" data-i="${i}"`)}</td>
-        <td><select data-f="n" data-i="${i}">${[1, 2, 3, 4, 5, 6].map(k => `<option ${k === r.n ? 'selected' : ''}>${k}</option>`).join('')}</select></td>
-        <td><select data-f="trig" data-i="${i}"><option value="52w" ${r.trig !== 'new' ? 'selected' : ''}>52-week high</option><option value="new" ${r.trig === 'new' ? 'selected' : ''}>New high</option></select></td>
-        <td>${same ? '<span class="ok">Same as CRM</span>' : `<select data-act="${i}">${acts.map(([v, l]) => `<option value="${v}" ${r.act === v ? 'selected' : ''}>${l}</option>`).join('')}</select>`}${r.manual ? ` <button class="link" data-del="${i}" title="Remove this row">✕</button>` : ''}</td></tr>
-        <tr class="${r.act === 'skip' ? 'off' : ''}"><td></td><td colspan="6" style="border-top:0;padding-top:0">
-          ${bad ? `<p class="no" style="margin:0 0 6px">${E(bad)}</p>` : !P.length ? '<p class="hint" style="margin:0 0 6px">No parts: one alert on the "In debt by" date.</p>'
-            : `<div class="hint" style="display:flex;flex-wrap:wrap;gap:6px 16px;margin-bottom:6px">${P.map(([a, b], k) => `<span>Part ${k + 1}: ${dmyI(a)} to ${di(b, `data-end="${i}:${k}"`)}</span>`).join('')}${P[P.length - 1][1] < addD(r.by, -1) ? `<span>then nothing until In debt by ${dmyI(r.by)}</span>` : ''}</div>`}
-          <div style="display:grid;grid-template-columns:${old.length ? '1fr 1fr' : '1fr'};gap:8px">${old.length ? `<div><p class="hint" style="margin:0">In CRM now:</p><p class="ln old">${E(oldT)}</p></div>` : ''}<div><p class="hint" style="margin:0">${old.length ? 'This plan:' : 'Will be written:'}</p><p class="ln">${E(textOf(r))}</p></div></div></td></tr>`;
-    }).join('');
+    const card = (r, i) => {
+      const old = R ? crmOf(R.bl, r.name) : [], oldT = old.map(b => b.join('\n')).join('\n'), P = partsOf(r) || [], bad = problem(r), now = r.by && r.start && r.by <= r.start;
+      const same = old.length && !bad && oldT === textOf(r);
+      const acts = old.length ? [['new', 'Replace CRM version'], ['keep', 'Keep CRM version'], ['skip', 'Remove from CRM']] : [['new', 'Create'], ['skip', 'Don\'t create']];
+      const head = r.manual && !r.picked ? `<select class="fa-in" data-pick="${i}"><option value="">Choose a goal…</option>${planGoals.map(g => `<option value="${E(g.name)}">${E(g.name)}</option>`).join('')}<option value="__other">Other (type a name)</option></select>`
+        : r.manual && r.picked === '__other' ? `<input class="fa-in" data-f="name" data-i="${i}" value="${E(r.name)}" placeholder="Goal name">`
+        : `<h4>${E(r.name)}</h4>`;
+      const sub = [r.gd ? `Goal ${MONS[+r.gd.slice(5, 7) - 1]} ${r.gd.slice(0, 4)}` : '', r.manual ? 'Added by you' : 'Suggested by the plan'].filter(Boolean).join(' · ');
+      const status = bad ? `<p class="fa-msg no">${E(bad)}</p>`
+        : now ? `<p class="fa-msg warn">This money should already be in debt (goal under 12 months away). One alert ${r.by === t0 ? 'today' : 'on ' + dmyI(r.by)}. To watch the market first, set a later "In debt by" date.</p>`
+        : `<div class="fa-parts">${P.map(([a, b], k) => `<div class="fa-part"><span class="k">Part ${k + 1}</span><span>${dmyI(a)}</span><span class="to">to</span>${di(b, `data-end="${i}:${k}"`)}</div>`).join('')}${P[P.length - 1][1] < addD(r.by, -1) ? `<div class="fa-part gap"><span class="k">Then</span><span>no alerts until In debt by ${dmyI(r.by)}</span></div>` : ''}</div>`;
+      return `<div class="fa-card${r.act === 'skip' ? ' off' : ''}">
+        <div class="fa-top"><div>${head}<div class="hint">${sub}</div></div>
+          <div class="fa-act">${same ? '<span class="chip">Same as CRM</span>' : `<select class="fa-in" data-act="${i}">${acts.map(([v, l]) => `<option value="${v}" ${r.act === v ? 'selected' : ''}>${l}</option>`).join('')}</select>`}${r.manual ? `<button class="fa-x" data-del="${i}" title="Remove this row" aria-label="Remove">✕</button>` : ''}</div></div>
+        <div class="fa-grid">
+          <label>Amount to move<input class="fa-in" data-f="amt" data-i="${i}" inputmode="numeric" value="${+r.amt > 0 ? Math.round(r.amt).toLocaleString('en-IN') : ''}" placeholder="₹ optional"></label>
+          <label>Start${di(r.start, `data-f="start" data-i="${i}"`)}</label>
+          <label>In debt by${di(r.by, `data-f="by" data-i="${i}"`)}</label>
+          <label>Parts<select class="fa-in" data-f="n" data-i="${i}" ${now ? 'disabled' : ''}>${now ? '<option>—</option>' : [1, 2, 3, 4, 5, 6].map(k => `<option ${k === r.n ? 'selected' : ''}>${k}</option>`).join('')}</select></label>
+          <label>Watch for<select class="fa-in" data-f="trig" data-i="${i}" ${now ? 'disabled' : ''}><option value="52w" ${r.trig !== 'new' ? 'selected' : ''}>52-week high</option><option value="new" ${r.trig === 'new' ? 'selected' : ''}>New high</option></select></label>
+        </div>
+        ${status}
+        <details class="fa-txt"><summary>${old.length ? 'Compare with CRM' : 'See what will be written in CRM'}</summary><div class="fa-cmp${old.length ? ' two' : ''}">${old.length ? `<div><p class="hint">In CRM now</p><pre class="ln old">${E(oldT)}</pre></div>` : ''}<div><p class="hint">${old.length ? 'From this plan' : 'Will be written'}</p><pre class="ln">${E(textOf(r))}</pre></div></div></details>
+      </div>`;
+    };
     const stale = R ? [...new Set(R.bl.filter(isFP).map(fpName))].filter(n => !R.names.has(n.toLowerCase())) : [];
-    const staleH = stale.length ? `<h4>Goal alerts in CRM for goals not listed above</h4><p class="hint">The money may be moved already, or the goal renamed. Removing stops its alerts.</p><table><tbody>${stale.map(n => `<tr><td><p class="ln old">${E(crmOf(R.bl, n).map(b => b.join('\n')).join('\n'))}</p></td><td style="white-space:nowrap"><select data-dr="${E(n.toLowerCase())}"><option value="keep" ${!S.drop[n.toLowerCase()] ? 'selected' : ''}>Keep</option><option value="drop" ${S.drop[n.toLowerCase()] ? 'selected' : ''}>Remove</option></select></td></tr>`).join('')}</tbody></table>` : '';
+    const staleH = stale.length ? `<h4 class="fa-h">Goal alerts already in CRM for other goals</h4><p class="hint">The money may already be moved, or the goal renamed. Removing stops its alerts.</p>${stale.map(n => `<div class="fa-card slim"><pre class="ln old">${E(crmOf(R.bl, n).map(b => b.join('\n')).join('\n'))}</pre><select class="fa-in" data-dr="${E(n.toLowerCase())}"><option value="keep" ${!S.drop[n.toLowerCase()] ? 'selected' : ''}>Keep</option><option value="drop" ${S.drop[n.toLowerCase()] ? 'selected' : ''}>Remove</option></select></div>`).join('')}` : '';
     const manual = R ? R.bl.filter(b => !isFP(b)) : [];
     const len = R ? R.text.length : 0, changed = R && R.text !== blocks(c.rule).map(b => b.join('\n')).join('\n');
-    const dup = S.rows.some((r, i) => S.rows.findIndex(x => clean(x.name).toLowerCase() === clean(r.name).toLowerCase()) !== i && r.act !== 'skip');
+    const dup = S.rows.some((r, i) => r.act !== 'skip' && S.rows.findIndex(x => x.act !== 'skip' && clean(x.name).toLowerCase() === clean(r.name).toLowerCase()) !== i);
     const blocked = S.rows.some(r => r.act === 'new' && problem(r)) || dup;
     const y = $('#mbox')?.scrollTop || 0;
     $('#mbox').innerHTML = `<header><h2 id="mTitle">Create Alerts in CRM</h2><button class="x" id="alX" aria-label="Close">✕</button></header>
-      <div class="fpal" style="padding:16px 20px">
+      <div class="fpal">
         ${contacts}${S.contacts?.length && S.msg ? `<p>${S.msg}</p>` : ''}
-        <p class="hint">Goals under 3 years away with equity earmarked are listed. Change any amount, date or number of parts, or add a goal yourself. Parts are split evenly; change any part's end date to set your own (the last part can end before In debt by).</p>
-        <table><thead><tr><th>Goal</th><th>Amount to move</th><th>Start</th><th>In debt by</th><th>Parts</th><th>Watch for</th><th></th></tr></thead><tbody>${rows || '<tr><td colspan="7" class="hint">No goal is under 3 years away with equity earmarked. Add one below if needed.</td></tr>'}</tbody></table>
-        <p><button class="bt fpb" id="alAdd">+ Add goal alert</button></p>
-        ${dup ? '<p class="no">Two rows have the same goal name. Rename or remove one.</p>' : ''}
+        <p class="fa-intro">From 2 years before a goal, its equity money moves to debt in parts. In each part Haritha gets one alert on a market high, or a reminder when the part ends; everything must be in debt by the date you set. Change anything below, or add a goal.</p>
+        ${S.rows.map(card).join('') || '<p class="hint">No goal is under 3 years away with equity earmarked. Add one if needed.</p>'}
+        <button class="bt fpb" id="alAdd">+ Add goal alert</button>
+        ${dup ? '<p class="fa-msg no">Two goals have the same name. Rename or remove one.</p>' : ''}
         ${staleH}
-        ${manual.length ? `<h4>Your other alert lines</h4><p class="hint">Not touched.</p><p class="ln">${E(manual.map(b => b.join('\n')).join('\n'))}</p>` : ''}
-        ${R ? `<details><summary class="hint" style="cursor:pointer">Goal Alerts box after saving (${len.toLocaleString('en-IN')} of 32,000 characters)</summary><p class="ln">${E(R.text) || '(empty)'}</p></details>` : ''}
+        ${manual.length ? `<h4 class="fa-h">Other alerts for this client</h4><p class="hint">Profit-booking and other lines. Not changed.</p><pre class="ln">${E(manual.map(b => b.join('\n')).join('\n'))}</pre>` : ''}
+        ${R ? `<details class="fa-txt"><summary>Whole Goal Alerts box after saving (${len.toLocaleString('en-IN')} of 32,000 characters)</summary><pre class="ln">${E(R.text) || '(empty)'}</pre></details>` : ''}
         <p id="alMsg"></p>
       </div>
-      <div class="mfoot"><span class="hint" style="font-size:12.5px">Alerts go to Haritha in Basecamp and to the service inbox. You can also edit the dates in CRM later.</span><span style="display:flex;gap:10px"><button class="bt fpb" id="alC">Cancel</button><button class="bt pri fpb" id="alGo" ${R && changed && len <= 32000 && !blocked && !S.busy ? '' : 'disabled'}>${R && !changed ? 'Nothing to change' : 'Create Alerts in CRM'}</button></span></div>`;
+      <div class="mfoot"><span class="hint" style="font-size:12.5px">Alerts go to Haritha in Basecamp and to the service inbox.</span><span style="display:flex;gap:10px"><button class="bt fpb" id="alC">Cancel</button><button class="bt pri fpb" id="alGo" ${R && changed && len <= 32000 && !blocked && !S.busy ? '' : 'disabled'}>${R && !changed ? 'Nothing to change' : 'Create Alerts in CRM'}</button></span></div>`;
     $('#mbox').scrollTop = y;
     $('#alX').onclick = $('#alC').onclick = FP.closeModal;
-    document.querySelectorAll('[name=alC]').forEach(x => x.onchange = () => { S.cid = x.value; draw(); });
+    document.querySelectorAll('[name=alC]').forEach(x => x.onchange = () => { S.cid = x.value; cache(); draw(); });
     document.querySelectorAll('[data-act]').forEach(x => x.onchange = () => { S.rows[+x.dataset.act].act = x.value; draw(); });
     document.querySelectorAll('[data-dr]').forEach(x => x.onchange = () => { S.drop[x.dataset.dr] = x.value === 'drop'; draw(); });
     document.querySelectorAll('[data-del]').forEach(x => x.onclick = () => { S.rows.splice(+x.dataset.del, 1); draw(); });
@@ -3540,14 +3573,27 @@ Move              = target − today; every change is shown (under ₹1,000 coun
       if (v === '__other') S.rows[i] = { ...S.rows[i], picked: '__other', name: '' };
       else { const g = A.goals.find(g => g.name === v); S.rows[i] = { ...rowFor(g, A, true), key: S.rows[i].key, picked: v }; }
       draw(); });
-    $('#alAdd').onclick = () => { const t = today(); S.rows.push({ key: 'm' + Math.random().toString(36).slice(2, 8), name: '', gd: '', amt: 0, start: t, by: '', n: 1, ends: null, trig: '52w', manual: true, picked: '', act: 'new' }); draw(); };
+    $('#alAdd').onclick = () => { S.rows.push({ key: 'm' + Math.random().toString(36).slice(2, 8), name: '', gd: '', amt: 0, start: t0, by: '', n: 1, ends: null, trig: '52w', manual: true, picked: '', act: 'new' }); draw(); };
     $('#alGo').onclick = save;
   }
+  /* remember this client's goal alerts as last seen in CRM, for the goal pop-up */
+  function cache() { const c = cur(); if (!c) return; const m = {}; blocks(c.rule).filter(isFP).forEach(b => { const n = fpName(b).toLowerCase(); m[n] = (m[n] ? m[n] + '\n' : '') + b.join('\n'); });
+    FP.st.review = { ...(FP.st.review || {}), crm: { at: Date.now(), id: c.id, name: c.name, goals: m } }; FP.save(); }
+  FP.goalAlertHTML = name => {
+    const C = FP.st?.review?.crm, t = C && name && C.goals[clean(name).toLowerCase()]; if (!t) return '';
+    const L = t.split('\n'), g = x => L.find(l => l.toLowerCase().startsWith(x));
+    const parts = L.filter(l => /^part\s+\d+/i.test(l)).map(l => l.replace(/^part\s+(\d+)\s+of\s+\d+\s*:\s*/i, 'Part $1: '));
+    const by = g('in debt by')?.split(':').slice(1).join(':').trim(), w = g('watch for')?.split(':').slice(1).join(':').trim(), amt = (L[0].split('·')[1] || '').trim();
+    return `<div class="fa-sum"><h3>Goal alert in CRM</h3>${amt ? rowP('Amount to move', amt) : ''}${parts.map(p => rowP(p.split(':')[0], p.split(':').slice(1).join(':').trim())).join('')}${by ? rowP('In debt by', by) : ''}${w ? rowP('Watch for', w) : ''}
+      <p class="hint" style="margin:6px 0 0">As seen in CRM on ${FP.dmy(new Date(C.at))} · <a href="${crmLink(C.id)}" target="_blank" rel="noopener">Open in Zoho CRM ↗</a></p></div>`;
+  };
+  const rowP = (l, v) => `<div style="display:flex;justify-content:space-between;gap:10px;padding:4px 0;border-bottom:1px solid var(--line);font-size:13.5px"><span>${E(l)}</span><b>${E(v)}</b></div>`;
+  const MONS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   async function save() {
     const c = cur(), R = result(); if (!c || !R) return; S.busy = true; $('#alGo').disabled = true; $('#alMsg').textContent = 'Saving to Zoho CRM…';
     try {
       const j = await api('/api/fp-alerts', { method: 'POST', body: JSON.stringify({ id: c.id, before: c.rule, after: R.text }) });
-      c.rule = j.rule; S.busy = false;
+      c.rule = j.rule; S.busy = false; cache();
       FP.set(s => { s.review = { ...s.review, alerts: { at: Date.now(), contact: c.name, blocks: S.rows.filter(r => r.act === 'new' && !problem(r)).map(textOf) } }; });
       FP.closeModal(); FP.toast?.(`Alerts saved in CRM for ${c.name}`);
     } catch (e) {

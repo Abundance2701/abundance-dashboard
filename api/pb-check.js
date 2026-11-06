@@ -24,7 +24,7 @@
        Watch for: 52-week high                  (or: new high since the part's start; default 52-week high)
        How: …                                   (wording only, not read)
      Each part alerts once on a 52-week high (Nifty 50, else Midcap 150, else Smallcap 250); if none, a reminder on the
-     part's last day (not for the last part); "In debt by" alerts 7 days before and on the day. Each part and the deadline
+     part's last day (skipped when that day is within 7 days of In debt by, which has its own alerts); "In debt by" alerts 7 days before and on the day. Each part and the deadline
      remember their own alerts, so editing one date doesn't repeat the others.
      Nifty 50 fall 2% [close] [repeat] from <date> [until <date>]     fall from the highest close since <date>
      Nifty 500 rise 10% [repeat] from <date> [until <date>]           rise from the lowest close since <date>
@@ -211,7 +211,7 @@ module.exports = async (req, res) => {
         const amtS = (() => { const v = +String(R.amt).replace(/[^\d.]/g, ''); return !v ? '' : v >= 1e7 ? ` (₹${(v / 1e7).toFixed(2)} Cr)` : v >= 1e5 ? ` (₹${(v / 1e5).toFixed(2)} L)` : ` (₹${fmt(v)})`; })();
         const who = `${name} · ${R.name}${amtS}`, gk = `${c.id}/g${hash(R.name)}`;
         R.parts.forEach((P, i) => {
-          const pk = `${gk}-${hash(P.from + P.to)}`, kw = `${pk}-w52`, ke = `${pk}-end`, of = `part ${P.no} of ${P.of}`, isLast = i === R.parts.length - 1 && !!R.by; let hitNow = false;
+          const pk = `${gk}-${hash(P.from + P.to)}`, kw = `${pk}-w52`, ke = `${pk}-end`, of = `part ${P.no} of ${P.of}`, isLast = !!R.by && P.to >= addDays(R.by, -7); let hitNow = false;   /* a part ending in the last 7 days: the In debt by alerts cover it */
           const nh = R.trig === 'new', what = nh ? `new high since ${dmy(P.from)}` : '52-week high';
           if (!last(kw) && T >= P.from && T <= P.to) for (const ix of GI) {
             const now = L[ix], cs = nh ? closes(ix, P.from) : closes(ix, addDays(T, -364)); if (!ok(now) || cs.length < (nh ? 1 : 150)) continue; const hi = Math.max(...cs);
