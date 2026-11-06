@@ -3405,8 +3405,10 @@ Move              = target − today; every change is shown (under ₹1,000 coun
      Each goal is written to Goal Alerts as a plain block the checker reads (api/pb-check.js):
        GOAL ALERT: <goal> · ₹amount / Part i of n: <from> to <to> / In debt by: <date> / How: (wording)
      Rows are editable here (amount, start, in-debt-by, parts and each part's end date); goals can be added by hand. */
-  const HOW = 'How: each part alerts once on a 52-week high (Nifty 50, Midcap 150 or Smallcap 250), else on its last day; In debt by alerts 7 days before and on the day';
-  const isPart = l => /^(part\s+\d+\s+of\s+\d+|in debt by|how)\s*:/i.test(l);
+  const TRIG = { '52w': '52-week high', new: "new high since the part's start" };
+  const howOf = t => `How: each part alerts once on a ${t === 'new' ? 'new high since its start' : '52-week high'} (Nifty 50, Midcap 150 or Smallcap 250), else a reminder when it ends (the last part is covered by In debt by); In debt by alerts 7 days before and on the day`;
+  const trigFor = (a, b) => a && b && (Date.parse(b) - Date.parse(a)) / 864e5 < 91 ? 'new' : '52w';   /* a few weeks: a 52-week high is unlikely, so watch for a new high */
+  const isPart = l => /^(part\s+\d+\s+of\s+\d+|in debt by|watch for|how)\s*:/i.test(l);
   const blocks = t => { const out = []; String(t || '').replace(/\r\n?/g, '\n').split('\n').map(s => s.trim()).filter(Boolean).forEach(l => {
     const prev = out[out.length - 1]; if (prev && (/^or\s/i.test(l) || (isPart(l) && /^goal alert:/i.test(prev[0])))) prev.push(l); else out.push([l]); }); return out; };
   const isFP = b => /^(\[fp\b|goal alert:)/i.test(b[0]);
@@ -3419,17 +3421,17 @@ Move              = target − today; every change is shown (under ₹1,000 coun
   const partsOf = r => {
     if (!r.start || !r.by || r.by <= r.start || !r.n) return [];
     const P = split(r.start, r.by, r.n);
-    if (r.ends) { for (let i = 0; i < P.length - 1; i++) { const e = r.ends[i]; if (e && e >= P[i][0] && e < addD(r.by, -1)) { P[i][1] = e; P[i + 1][0] = addD(e, 1); } } for (let i = 1; i < P.length; i++) if (P[i][0] > P[i][1]) return null; }
+    if (r.ends) { for (let i = 0; i < P.length; i++) { const e = r.ends[i]; if (!e) continue; if (e < P[i][0] || e > r.by) return null; P[i][1] = e; if (i < P.length - 1) P[i + 1][0] = addD(e, 1); } for (let i = 0; i < P.length; i++) if (P[i][0] > P[i][1]) return null; }
     return P;
   };
   const textOf = r => { const P = partsOf(r) || [], amt = +r.amt > 0 ? ` · ${FP.inr(+r.amt)}` : '';
-    return [`GOAL ALERT: ${clean(r.name)}${amt}`, ...P.map(([a, b], i) => `Part ${i + 1} of ${P.length}: ${dmyI(a)} to ${dmyI(b)}`), `In debt by: ${dmyI(r.by)}`, HOW].join('\n'); };
+    return [`GOAL ALERT: ${clean(r.name)}${amt}`, ...P.map(([a, b], i) => `Part ${i + 1} of ${P.length}: ${dmyI(a)} to ${dmyI(b)}`), `In debt by: ${dmyI(r.by)}`, ...(P.length ? [`Watch for: ${TRIG[r.trig] || TRIG['52w']}`, howOf(r.trig)] : [])].join('\n'); };
   const goalDate = g => g.year ? `${g.year}-${String(g.mon).padStart(2, '0')}-01` : '';
   const eqOf = (A, g) => (g.src || []).filter(([l]) => (A.assets.find(a => a.label === l) || {}).cls === 'Equity').reduce((s, [, v]) => s + v, 0);
   const rowFor = (g, A, manual) => {
     const gd = goalDate(g), t = today(), open = gd ? addM(gd, -24) : t, by0 = gd ? addM(gd, -12) : '';
     const start = open > t ? open : t, by = by0 && by0 > start ? by0 : (by0 ? t : '');
-    return { key: (manual ? 'm' : 'p') + Math.random().toString(36).slice(2, 8), name: clean(g.name), gd, amt: Math.round(eqOf(A, g)), start, by, n: by ? autoN(start, by) : 1, ends: null, manual: !!manual, act: 'new' };
+    return { key: (manual ? 'm' : 'p') + Math.random().toString(36).slice(2, 8), name: clean(g.name), gd, amt: Math.round(eqOf(A, g)), start, by, n: by ? autoN(start, by) : 1, ends: null, trig: trigFor(start, by), manual: !!manual, act: 'new' };
   };
   /* goals the plan flags: not due, not retirement/emergency, under 36 months, with equity earmarked */
   FP.goalAlerts = () => { const A = FP.calc.alloc(FP.d, FP.st);
@@ -3466,7 +3468,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
   }
   const cur = () => S.contacts?.find(c => c.id === S.cid);
   const crmOf = (bl, n) => bl.filter(b => isFP(b) && fpName(b).toLowerCase() === clean(n).toLowerCase());
-  const problem = r => !clean(r.name) ? 'Give the goal a name.' : !r.by ? 'Set the "In debt by" date.' : !r.start ? 'Set the start date.' : r.by < r.start ? '"In debt by" is before the start.' : partsOf(r) === null ? 'Part dates overlap: check the end dates.' : '';
+  const problem = r => !clean(r.name) ? 'Give the goal a name.' : !r.by ? 'Set the "In debt by" date.' : !r.start ? 'Set the start date.' : r.by < r.start ? '"In debt by" is before the start.' : partsOf(r) === null ? 'Check the part end dates: each must be after its start and not after "In debt by".' : '';
   function result() {
     const c = cur(); if (!c) return null;
     const bl = blocks(c.rule), out = [], names = new Set(S.rows.map(r => clean(r.name).toLowerCase()));
@@ -3495,10 +3497,11 @@ Move              = target − today; every change is shown (under ₹1,000 coun
         <td>₹ <input data-f="amt" data-i="${i}" inputmode="numeric" value="${+r.amt > 0 ? Math.round(r.amt) : ''}" placeholder="optional" style="padding:4px 6px;border:1px solid var(--line);border-radius:6px;width:110px"></td>
         <td>${di(r.start, `data-f="start" data-i="${i}"`)}</td><td>${di(r.by, `data-f="by" data-i="${i}"`)}</td>
         <td><select data-f="n" data-i="${i}">${[1, 2, 3, 4, 5, 6].map(k => `<option ${k === r.n ? 'selected' : ''}>${k}</option>`).join('')}</select></td>
+        <td><select data-f="trig" data-i="${i}"><option value="52w" ${r.trig !== 'new' ? 'selected' : ''}>52-week high</option><option value="new" ${r.trig === 'new' ? 'selected' : ''}>New high</option></select></td>
         <td>${same ? '<span class="ok">Same as CRM</span>' : `<select data-act="${i}">${acts.map(([v, l]) => `<option value="${v}" ${r.act === v ? 'selected' : ''}>${l}</option>`).join('')}</select>`}${r.manual ? ` <button class="link" data-del="${i}" title="Remove this row">✕</button>` : ''}</td></tr>
-        <tr class="${r.act === 'skip' ? 'off' : ''}"><td></td><td colspan="5" style="border-top:0;padding-top:0">
+        <tr class="${r.act === 'skip' ? 'off' : ''}"><td></td><td colspan="6" style="border-top:0;padding-top:0">
           ${bad ? `<p class="no" style="margin:0 0 6px">${E(bad)}</p>` : !P.length ? '<p class="hint" style="margin:0 0 6px">No parts: one alert on the "In debt by" date.</p>'
-            : `<div class="hint" style="display:flex;flex-wrap:wrap;gap:6px 16px;margin-bottom:6px">${P.map(([a, b], k) => `<span>Part ${k + 1}: ${dmyI(a)} to ${k < P.length - 1 ? di(b, `data-end="${i}:${k}"`) : dmyI(b)}</span>`).join('')}</div>`}
+            : `<div class="hint" style="display:flex;flex-wrap:wrap;gap:6px 16px;margin-bottom:6px">${P.map(([a, b], k) => `<span>Part ${k + 1}: ${dmyI(a)} to ${di(b, `data-end="${i}:${k}"`)}</span>`).join('')}${P[P.length - 1][1] < addD(r.by, -1) ? `<span>then nothing until In debt by ${dmyI(r.by)}</span>` : ''}</div>`}
           <div style="display:grid;grid-template-columns:${old.length ? '1fr 1fr' : '1fr'};gap:8px">${old.length ? `<div><p class="hint" style="margin:0">In CRM now:</p><p class="ln old">${E(oldT)}</p></div>` : ''}<div><p class="hint" style="margin:0">${old.length ? 'This plan:' : 'Will be written:'}</p><p class="ln">${E(textOf(r))}</p></div></div></td></tr>`;
     }).join('');
     const stale = R ? [...new Set(R.bl.filter(isFP).map(fpName))].filter(n => !R.names.has(n.toLowerCase())) : [];
@@ -3511,8 +3514,8 @@ Move              = target − today; every change is shown (under ₹1,000 coun
     $('#mbox').innerHTML = `<header><h2 id="mTitle">Create Alerts in CRM</h2><button class="x" id="alX" aria-label="Close">✕</button></header>
       <div class="fpal" style="padding:16px 20px">
         ${contacts}${S.contacts?.length && S.msg ? `<p>${S.msg}</p>` : ''}
-        <p class="hint">Goals under 3 years away with equity earmarked are listed. Change any amount, date or number of parts, or add a goal yourself. Parts are split evenly; change a part's end date to set your own.</p>
-        <table><thead><tr><th>Goal</th><th>Amount to move</th><th>Start</th><th>In debt by</th><th>Parts</th><th></th></tr></thead><tbody>${rows || '<tr><td colspan="6" class="hint">No goal is under 3 years away with equity earmarked. Add one below if needed.</td></tr>'}</tbody></table>
+        <p class="hint">Goals under 3 years away with equity earmarked are listed. Change any amount, date or number of parts, or add a goal yourself. Parts are split evenly; change any part's end date to set your own (the last part can end before In debt by).</p>
+        <table><thead><tr><th>Goal</th><th>Amount to move</th><th>Start</th><th>In debt by</th><th>Parts</th><th>Watch for</th><th></th></tr></thead><tbody>${rows || '<tr><td colspan="7" class="hint">No goal is under 3 years away with equity earmarked. Add one below if needed.</td></tr>'}</tbody></table>
         <p><button class="bt fpb" id="alAdd">+ Add goal alert</button></p>
         ${dup ? '<p class="no">Two rows have the same goal name. Rename or remove one.</p>' : ''}
         ${staleH}
@@ -3528,16 +3531,16 @@ Move              = target − today; every change is shown (under ₹1,000 coun
     document.querySelectorAll('[data-dr]').forEach(x => x.onchange = () => { S.drop[x.dataset.dr] = x.value === 'drop'; draw(); });
     document.querySelectorAll('[data-del]').forEach(x => x.onclick = () => { S.rows.splice(+x.dataset.del, 1); draw(); });
     document.querySelectorAll('[data-f]').forEach(x => x.onchange = () => { const r = S.rows[+x.dataset.i], f = x.dataset.f, v = x.value.trim();
-      if (f === 'amt') r.amt = +v.replace(/[^\d.]/g, '') || 0; else if (f === 'n') { r.n = +v; r.ends = null; } else if (f === 'name') r.name = v;
-      else { r[f] = v; r.ends = null; if (r.start && r.by && r.by > r.start && f !== 'n') r.n = autoN(r.start, r.by) || 1; }
+      if (f === 'amt') r.amt = +v.replace(/[^\d.]/g, '') || 0; else if (f === 'n') { r.n = +v; r.ends = null; } else if (f === 'name') r.name = v; else if (f === 'trig') { r.trig = v; r.trigSet = true; }
+      else { r[f] = v; r.ends = null; if (r.start && r.by && r.by > r.start) { r.n = autoN(r.start, r.by) || 1; if (!r.trigSet) r.trig = trigFor(r.start, r.by); } }
       draw(); });
     document.querySelectorAll('[data-end]').forEach(x => x.onchange = () => { const [i, k] = x.dataset.end.split(':').map(Number), r = S.rows[i]; const P = partsOf(r) || [];
-      r.ends = r.ends || P.slice(0, -1).map(p => p[1]); r.ends[k] = x.value; draw(); });
+      r.ends = r.ends || P.map(p => p[1]); r.ends[k] = x.value; draw(); });
     document.querySelectorAll('[data-pick]').forEach(x => x.onchange = () => { const i = +x.dataset.pick, v = x.value; if (!v) return;
       if (v === '__other') S.rows[i] = { ...S.rows[i], picked: '__other', name: '' };
       else { const g = A.goals.find(g => g.name === v); S.rows[i] = { ...rowFor(g, A, true), key: S.rows[i].key, picked: v }; }
       draw(); });
-    $('#alAdd').onclick = () => { const t = today(); S.rows.push({ key: 'm' + Math.random().toString(36).slice(2, 8), name: '', gd: '', amt: 0, start: t, by: '', n: 1, ends: null, manual: true, picked: '', act: 'new' }); draw(); };
+    $('#alAdd').onclick = () => { const t = today(); S.rows.push({ key: 'm' + Math.random().toString(36).slice(2, 8), name: '', gd: '', amt: 0, start: t, by: '', n: 1, ends: null, trig: '52w', manual: true, picked: '', act: 'new' }); draw(); };
     $('#alGo').onclick = save;
   }
   async function save() {

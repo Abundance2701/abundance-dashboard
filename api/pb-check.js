@@ -21,6 +21,7 @@
        Part 1 of 2: 06/11/2026 to 17/02/2027
        Part 2 of 2: 18/02/2027 to 31/05/2027
        In debt by: 01/06/2027
+       Watch for: 52-week high                  (or: new high since the part's start; default 52-week high)
        How: …                                   (wording only, not read)
      Each part alerts once on a 52-week high (Nifty 50, else Midcap 150, else Smallcap 250); if none, a reminder on the
      part's last day (not for the last part); "In debt by" alerts 7 days before and on the day. Each part and the deadline
@@ -66,10 +67,11 @@ function parseRule(text) {
   for (const raw of String(text || '').split(/\r?\n/)) {
     const line = raw.trim().replace(/\s+/g, ' '); if (!line) continue;
     let gm;
-    if ((gm = line.match(/^goal alert:\s*(.+)$/i))) { const [nm, ...rest] = gm[1].split('·').map(x => x.trim()); G = { type: 'gblock', name: nm || 'Goal', amt: rest.join(' · '), parts: [], by: null, src: line }; out.push(G); lastAt = null; continue; }
+    if ((gm = line.match(/^goal alert:\s*(.+)$/i))) { const [nm, ...rest] = gm[1].split('·').map(x => x.trim()); G = { type: 'gblock', name: nm || 'Goal', amt: rest.join(' · '), parts: [], by: null, trig: '52w', src: line }; out.push(G); lastAt = null; continue; }
     if ((gm = line.match(/^part\s+(\d+)\s+of\s+(\d+)\s*:\s*(\d{1,2}\/\d{1,2}\/\d{4})\s+to\s+(\d{1,2}\/\d{1,2}\/\d{4})$/i))) {
       const a = iso(gm[3]), b = iso(gm[4]); if (!G || !a || !b || b < a) { bad.push(line); continue; } G.parts.push({ no: +gm[1], of: +gm[2], from: a, to: b }); G.src += '\n' + line; continue; }
     if ((gm = line.match(/^in debt by\s*:\s*(\d{1,2}\/\d{1,2}\/\d{4})$/i))) { const d = iso(gm[1]); if (!G || !d) { bad.push(line); continue; } G.by = d; G.src += '\n' + line; continue; }
+    if ((gm = line.match(/^watch for\s*:\s*(.+)$/i))) { if (!G) { bad.push(line); continue; } G.trig = /new high/i.test(gm[1]) && !/52/.test(gm[1]) ? 'new' : '52w'; G.src += '\n' + line; continue; }
     if (/^how\s*:/i.test(line)) { if (!G) bad.push(line); continue; }
     G = null;
     const tm = line.match(/^\[fp:?\s*([^\]]*)\]\s*/i), tag = tm ? (tm[1].trim() || 'Goal') : null;   // [FP …] = goal alert from the planning tool
@@ -210,11 +212,12 @@ module.exports = async (req, res) => {
         const who = `${name} · ${R.name}${amtS}`, gk = `${c.id}/g${hash(R.name)}`;
         R.parts.forEach((P, i) => {
           const pk = `${gk}-${hash(P.from + P.to)}`, kw = `${pk}-w52`, ke = `${pk}-end`, of = `part ${P.no} of ${P.of}`, isLast = i === R.parts.length - 1 && !!R.by; let hitNow = false;
+          const nh = R.trig === 'new', what = nh ? `new high since ${dmy(P.from)}` : '52-week high';
           if (!last(kw) && T >= P.from && T <= P.to) for (const ix of GI) {
-            const now = L[ix], cs = closes(ix, addDays(T, -364)); if (!ok(now) || cs.length < 150) continue; const hi = Math.max(...cs);
-            if (now > hi) { hitNow = true; due.push({ c, fp: true, k: kw, title: `${who}: ${of}, ${LABEL[ix]} at a 52-week high`, hit: `${LABEL[ix]} is at ${fmt(now)}, above its highest close of the past 52 weeks (${fmt(hi)}). Review moving this part to debt.` }); break; }
+            const now = L[ix], cs = nh ? closes(ix, P.from) : closes(ix, addDays(T, -364)); if (!ok(now) || cs.length < (nh ? 1 : 150)) continue; const hi = Math.max(...cs);
+            if (now > hi) { hitNow = true; due.push({ c, fp: true, k: kw, title: `${who}: ${of}, ${LABEL[ix]} at a ${what}`, hit: `${LABEL[ix]} is at ${fmt(now)}, above its highest close ${nh ? 'since ' + dmy(P.from) : 'of the past 52 weeks'} (${fmt(hi)}). Review moving this part to debt.` }); break; }
           }
-          if (!hitNow && !isLast && !last(kw) && !last(ke) && win(P.to)) due.push({ c, fp: true, k: ke, title: `${who}: ${of} ended with no 52-week high`, hit: `No 52-week high between ${dmy(P.from)} and ${dmy(P.to)}. Review moving this part to debt.` });
+          if (!hitNow && !isLast && !last(kw) && !last(ke) && win(P.to)) due.push({ c, fp: true, k: ke, title: `${who}: ${of} ended with no ${nh ? 'new high' : '52-week high'}`, hit: `No ${what} between ${dmy(P.from)} and ${dmy(P.to)}. Review moving this part to debt.` });
         });
         if (R.by) [addDays(R.by, -7), R.by].forEach(d => { const k = `${gk}-by${hash(R.by)}-${d}`; if (!last(k) && win(d)) due.push({ c, fp: true, k, title: d === R.by ? `${who}: must be fully in debt today (${dmy(R.by)})` : `${who}: must be fully in debt by ${dmy(R.by)} (7 days left)`, hit: `This goal's money must be fully in debt by ${dmy(R.by)}.` }); });
         continue;
