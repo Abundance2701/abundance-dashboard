@@ -1,6 +1,27 @@
 {
- "updated": "2026-11-05T18:05:57Z",
+ "updated": "2026-11-06T09:55:10Z",
  "items": [
+  {
+   "src": "NSE",
+   "title": "Mock trading on Saturday, November 07, 2026 - No new version release",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CMTR77334.pdf",
+   "date": "2026-11-06",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Mock session on Saturday, November 07, 2026 - No new version release",
+   "url": "https://nsearchives.nseindia.com/content/circulars/COM77332.pdf",
+   "date": "2026-11-06",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Availability of Navi Multi Asset Omni FOF for ongoing transactions on NSE MF Invest Platform",
+   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77324.pdf",
+   "date": "2026-11-06",
+   "important": false
+  },
   {
    "src": "SEBI",
    "title": "Review of the framework for Accredited Investors",
@@ -45,157 +66,10 @@
   },
   {
    "src": "RBI",
-   "title": "Foreign Exchange Turnover Data: October 05, 2026 – October 09, 2026",
-   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63927",
-   "date": "2026-11-05",
-   "important": false
-  },
-  {
-   "src": "RBI",
-   "title": "Foreign Exchange Turnover Data: September 28, 2026 – October 01, 2026",
-   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63926",
-   "date": "2026-11-05",
-   "important": false
-  },
-  {
-   "src": "RBI",
-   "title": "Consolidation of Instructions Related to Priority Sector Lending – Drafts for Comments",
-   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63925",
-   "date": "2026-11-05",
-   "important": false
-  },
-  {
-   "src": "RBI",
-   "title": "Directions under Section 35A read with Section 56 of the Banking Regulation Act, 1949 – The Pusad Urban Co-operative Bank Ltd., Pusad, Dist. Yavatmal, Maharashtra – Extension of Period",
-   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63924",
-   "date": "2026-11-05",
-   "important": false
-  },
-  {
-   "src": "RBI",
    "title": "Master Directions on Cyber Resilience and Digital Payment Security Controls for non-bank Payment System Operators",
    "url": "https://www.rbi.org.in/scripts/NotificationUser.aspx?Id=13751&Mode=0",
    "date": "2026-11-05",
    "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of Equity Shares of Maxwell Engineering Solutions Limited (SME IPO)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77323.zip",
-   "date": "2026-11-05",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Trade for Trade - Bombay Coated and Special Steels Limited (IPO)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77321.pdf",
-   "date": "2026-11-05",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of Equity Shares of HGS (India) Limited (SME IPO)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77320.zip",
-   "date": "2026-11-05",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "DIVIDEND: Adjustment of Futures and Options contracts in the security PETRONET",
-   "url": "https://nsearchives.nseindia.com/content/circulars/FAOP77319.pdf",
-   "date": "2026-11-05",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of further issues of securities",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77318.pdf",
-   "date": "2026-11-05",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of privately placed securities on the debt market segment of the Exchange",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77317.pdf",
-   "date": "2026-11-05",
-   "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Applicability of Additional Surveillance Measure under IBC",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77315.zip",
-   "date": "2026-11-05",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Applicability of Short-Term Additional Surveillance Measure (ST-ASM)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77314.zip",
-   "date": "2026-11-05",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Applicability of Enhanced Surveillance Measure (ESM)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77313.zip",
-   "date": "2026-11-05",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Suspension of Trading in Non-Convertible Securities (Privately Placed)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77312.pdf",
-   "date": "2026-11-05",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Applicability of Additional Surveillance Measure (ASM)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77311.zip",
-   "date": "2026-11-05",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of privately placed securities on capital market segment",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77310.pdf",
-   "date": "2026-11-05",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "EGR - Settlement calendar for December 2026",
-   "url": "https://nsearchives.nseindia.com/content/circulars/EGR77309.pdf",
-   "date": "2026-11-05",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Availability of Choice Large & Mid Cap Fund on NSE MF Invest Platform",
-   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77307.pdf",
-   "date": "2026-11-05",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Schedule for Reporting of Holding Statement on account of Diwali - Muhurat Trading Session on Sunday, November 08, 2026",
-   "url": "https://nsearchives.nseindia.com/content/circulars/INSP77306.pdf",
-   "date": "2026-11-05",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Availability of Summit Active Asset Allocator Long-Short Fund (SIF) on NSE MF Invest Platform",
-   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77302.pdf",
-   "date": "2026-11-05",
-   "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Early Pay-in of Securities for Knowledge Marine & Engineering Works Limited (KMEW)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CMPT77251.pdf",
-   "date": "2026-11-05",
-   "important": false
   },
   {
    "src": "SEBI",
@@ -296,15 +170,15 @@
   ],
   "https://rbi.org.in/pressreleases_rss.xml": [
    10,
-   7
+   3
   ],
   "https://rbi.org.in/notifications_rss.xml": [
    10,
    10
   ],
   "https://nsearchives.nseindia.com/content/RSS/Circulars.xml": [
-   20,
-   17
+   7,
+   7
   ]
  },
  "errors": []
