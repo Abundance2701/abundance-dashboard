@@ -1,6 +1,20 @@
 {
- "updated": "2026-11-07T09:16:16Z",
+ "updated": "2026-11-09T10:23:16Z",
  "items": [
+  {
+   "src": "NSE",
+   "title": "Exit Offer to the Dissenting Unitholders of Oriental InfraTrust (InvIT)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77360.pdf",
+   "date": "2026-11-09",
+   "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Adjustment of Futures and Options contracts in the security OIL & NATURAL GAS CORPORATION LIMITED (ONGC)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CMPT77348.pdf",
+   "date": "2026-11-09",
+   "important": false
+  },
   {
    "src": "SEBI",
    "title": "Commencement of SEBI (Settlement of Administrative and Civil Proceedings) Regulations, 2026",
@@ -26,188 +40,6 @@
    "src": "RBI",
    "title": "Reserve Bank of India – Bulletin Weekly Statistical Supplement – Extract",
    "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63939",
-   "date": "2026-11-06",
-   "important": false
-  },
-  {
-   "src": "RBI",
-   "title": "Directions under Section 35A read with Section 56 of the Banking Regulation Act, 1949 – Sri Guru Raghavendra Sahakara Bank Niyamitha, Bengaluru - Extension of Period",
-   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63938",
-   "date": "2026-11-06",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of further issues of securities",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77354.pdf",
-   "date": "2026-11-06",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Introduction of Futures & Options Contracts on Two Individual Securities",
-   "url": "https://nsearchives.nseindia.com/content/circulars/FAOP77353.pdf",
-   "date": "2026-11-06",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Change in minimum redemption amount in certain schemes of Navi Mutual Fund on NSE MF Invest platform",
-   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77352.zip",
-   "date": "2026-11-06",
-   "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Graded Surveillance Measure (GSM) - Periodic relaxation of Surveillance action",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77351.zip",
-   "date": "2026-11-06",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of privately placed securities on the debt market segment of the Exchange",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77350.pdf",
-   "date": "2026-11-06",
-   "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Update on Mechanism for Reporting - Currency derivative contracts involving INR",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CD77349.zip",
-   "date": "2026-11-06",
-   "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Applicability of Short-Term Additional Surveillance Measure (ST-ASM)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77347.zip",
-   "date": "2026-11-06",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Applicability of Enhanced Surveillance Measure (ESM)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77346.zip",
-   "date": "2026-11-06",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Applicability of Additional Surveillance Measure (ASM)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77345.zip",
-   "date": "2026-11-06",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Revision of limits relating to requirement of underlying exposure for currency derivatives contracts",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CD77344.zip",
-   "date": "2026-11-06",
-   "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of privately placed securities on capital market segment",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77343.pdf",
-   "date": "2026-11-06",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Extension of Display Period for Investor Awareness Messages under Project Jagrook",
-   "url": "https://nsearchives.nseindia.com/content/circulars/COMP77342.pdf",
-   "date": "2026-11-06",
-   "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Extension of allotment date for Select Equity Ex-Top 100 Long- Short Fund NFO on NSE MF Invest Platform",
-   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77341.pdf",
-   "date": "2026-11-06",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Framework for net settlement of funds for transactions undertaken by mutual fund schemes in cash market",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CMPT77340.zip",
-   "date": "2026-11-06",
-   "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Availability of Nippon India Quarterly Interval Fund - Series II on NSE MF Invest Platform",
-   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77339.pdf",
-   "date": "2026-11-06",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Trade for Trade - HGS (India) Limited (SME IPO)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77338.pdf",
-   "date": "2026-11-06",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Availability of Eminence Hybrid Long-Short Fund under Specialized Investment Fund (SIF) on NSE MF Invest Platform",
-   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77337.pdf",
-   "date": "2026-11-06",
-   "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Trade for Trade - Maxwell Engineering Solutions Limited (SME IPO)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77336.pdf",
-   "date": "2026-11-06",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Review of Know Your Client process for Individual Person Resident Outside India clients",
-   "url": "https://nsearchives.nseindia.com/content/circulars/INSP77335.pdf",
-   "date": "2026-11-06",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Mock trading on Saturday, November 07, 2026 - No new version release",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CMTR77334.pdf",
-   "date": "2026-11-06",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Mock session on Saturday, November 07, 2026 - No new version release",
-   "url": "https://nsearchives.nseindia.com/content/circulars/COM77332.pdf",
-   "date": "2026-11-06",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Availability of Carnelian Small Cap Fund for ongoing transactions on NSE MF Invest Platform",
-   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77331.pdf",
-   "date": "2026-11-06",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of Equity shares of Veefin Solutions Limited pursuant to Migration from SME Platform of BSE to Capital Market Segment (Main Board) of National Stock Exchange of India Limited",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77328.zip",
-   "date": "2026-11-06",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of Equity Shares of Vedant Poly Fabs Limited (SME IPO)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77326.zip",
-   "date": "2026-11-06",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Availability of Navi Multi Asset Omni FOF for ongoing transactions on NSE MF Invest Platform",
-   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77324.pdf",
    "date": "2026-11-06",
    "important": false
   },
@@ -282,15 +114,15 @@
   ],
   "https://rbi.org.in/pressreleases_rss.xml": [
    10,
-   4
+   3
   ],
   "https://rbi.org.in/notifications_rss.xml": [
    10,
    10
   ],
   "https://nsearchives.nseindia.com/content/RSS/Circulars.xml": [
-   29,
-   29
+   3,
+   2
   ]
  },
  "errors": []
