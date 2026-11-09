@@ -1,12 +1,166 @@
 {
- "updated": "2026-11-09T10:23:16Z",
+ "updated": "2026-11-09T20:49:57Z",
  "items": [
+  {
+   "src": "RBI",
+   "title": "Supersession of Board of Directors of Abhyudaya Co-operative Bank Ltd., Mumbai - Extension of period",
+   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63951",
+   "date": "2026-11-09",
+   "important": false
+  },
+  {
+   "src": "RBI",
+   "title": "Reserve Bank cancels Certificate of Registration of Gandhinagar Leasing and Finance Ltd.",
+   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63949",
+   "date": "2026-11-09",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Settlement Calendar for Exit Offer to the Dissenting Unitholders of Oriental InfraTrust (InvIT)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CMPT77379.pdf",
+   "date": "2026-11-09",
+   "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of further issues of securities",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77378.pdf",
+   "date": "2026-11-09",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Reversal of action initiated against SPEL Semiconductor Limited (Symbol - SPELS) on account of payment of Annual Listing Fees (\"ALF\") for the Financial Year ended 2025-26",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77377.pdf",
+   "date": "2026-11-09",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Algo Provider Empanelment for Providing Algorithmic Trading Solutions",
+   "url": "https://nsearchives.nseindia.com/content/circulars/INVG77376.pdf",
+   "date": "2026-11-09",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Guidelines in pursuance of amendment to SEBI KYC (Know Your Client) Registration Agency (KRA) Regulations, 2011",
+   "url": "https://nsearchives.nseindia.com/content/circulars/ISC77375.pdf",
+   "date": "2026-11-09",
+   "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Applicability of Short-Term Additional Surveillance Measure (ST-ASM)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77374.zip",
+   "date": "2026-11-09",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Applicability of Additional Surveillance Measure (ASM)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77373.zip",
+   "date": "2026-11-09",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Trade for Trade - Vedant Poly Fabs Limited (SME IPO)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77372.pdf",
+   "date": "2026-11-09",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Change in series of Equity shares of Investment Companies (ICs) and Investment Holding Companies (IHCs)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77371.pdf",
+   "date": "2026-11-09",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Suspension of trading in Non-Convertible Securities (Privately Placed)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77370.pdf",
+   "date": "2026-11-09",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Applicability of Enhanced Surveillance Measure (ESM)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77369.zip",
+   "date": "2026-11-09",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of units issued by ICICI Prudential Asset Management Company Limited (ICICI Prudential BSE Power ETF)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77368.pdf",
+   "date": "2026-11-09",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Trade for Trade",
+   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77367.zip",
+   "date": "2026-11-09",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of units issued by AlphaGrep Investment Management Private Limited (Eminence Hybrid Long-Short Fund)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77366.pdf",
+   "date": "2026-11-09",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Suspension of trading in securities",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77365.pdf",
+   "date": "2026-11-09",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of privately placed securities on the debt market segment of the Exchange",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77364.pdf",
+   "date": "2026-11-09",
+   "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of privately placed securities on capital market segment",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77363.pdf",
+   "date": "2026-11-09",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Availability of SELECT EQUITY EX-TOP 100 LONG-SHORT FUND under Specialized Investment Fund (SIF) on NSE MF Invest Platform",
+   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77362.pdf",
+   "date": "2026-11-09",
+   "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Availability of Samco Equity Savings Fund on NSE MF Invest Platform",
+   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77361.pdf",
+   "date": "2026-11-09",
+   "important": false
+  },
   {
    "src": "NSE",
    "title": "Exit Offer to the Dissenting Unitholders of Oriental InfraTrust (InvIT)",
    "url": "https://nsearchives.nseindia.com/content/circulars/CML77360.pdf",
    "date": "2026-11-09",
    "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Listing & Trading of Equity Shares pursuant to Bonus Issue of Pashupati Cotspin Limited",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77357.pdf",
+   "date": "2026-11-09",
+   "important": false
   },
   {
    "src": "NSE",
@@ -21,27 +175,6 @@
    "url": "https://www.sebi.gov.in/media-and-notifications/press-releases/nov-2026/commencement-of-sebi-settlement-of-administrative-and-civil-proceedings-regulations-2026_105680.html",
    "date": "2026-11-06",
    "important": true
-  },
-  {
-   "src": "RBI",
-   "title": "Census on Foreign Liabilities and Assets of Indian Direct Investment Entities for 2025-26",
-   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63941",
-   "date": "2026-11-06",
-   "important": false
-  },
-  {
-   "src": "RBI",
-   "title": "Sectoral Deployment of Credit by NBFC – September 2026",
-   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63940",
-   "date": "2026-11-06",
-   "important": false
-  },
-  {
-   "src": "RBI",
-   "title": "Reserve Bank of India – Bulletin Weekly Statistical Supplement – Extract",
-   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63939",
-   "date": "2026-11-06",
-   "important": false
   },
   {
    "src": "RBI",
@@ -114,15 +247,15 @@
   ],
   "https://rbi.org.in/pressreleases_rss.xml": [
    10,
-   3
+   2
   ],
   "https://rbi.org.in/notifications_rss.xml": [
    10,
    10
   ],
   "https://nsearchives.nseindia.com/content/RSS/Circulars.xml": [
-   3,
-   2
+   24,
+   23
   ]
  },
  "errors": []
