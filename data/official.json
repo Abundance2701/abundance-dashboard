@@ -1,6 +1,48 @@
 {
- "updated": "2026-11-10T10:28:08Z",
+ "updated": "2026-11-10T17:56:35Z",
  "items": [
+  {
+   "src": "SEBI",
+   "title": "Notice of attachment dated November 10, 2026 issued against Secunderabad Healthcare Limited under RC No.7734 of 2024 in the matter of Secunderabad Healthcare Limited",
+   "url": "https://www.sebi.gov.in/enforcement/recovery-proceedings/nov-2026/notice-of-attachment-dated-november-10-2026-issued-against-secunderabad-healthcare-limited-under-rc-no-7734-of-2024-in-the-matter-of-secunderabad-healthcare-limited_105698.html",
+   "date": "2026-11-10",
+   "important": false
+  },
+  {
+   "src": "SEBI",
+   "title": "Notice of attachment dated November 10, 2026 issued against Chennai Commodities under RC No.7470 of 2023 in the matter of First Futures and Stocks Private Limited",
+   "url": "https://www.sebi.gov.in/enforcement/recovery-proceedings/nov-2026/notice-of-attachment-dated-november-10-2026-issued-against-chennai-commodities-under-rc-no-7470-of-2023-in-the-matter-of-first-futures-and-stocks-private-limited_105696.html",
+   "date": "2026-11-10",
+   "important": false
+  },
+  {
+   "src": "SEBI",
+   "title": "Notice of attachment dated November 10, 2026 issued against First Futures and Stocks Private Limited under RC No.7469 of 2023 in the matter of First Futures and Stocks Private Limited",
+   "url": "https://www.sebi.gov.in/enforcement/recovery-proceedings/nov-2026/notice-of-attachment-dated-november-10-2026-issued-against-first-futures-and-stocks-private-limited-under-rc-no-7469-of-2023-in-the-matter-of-first-futures-and-stocks-private-limited_105694.html",
+   "date": "2026-11-10",
+   "important": false
+  },
+  {
+   "src": "SEBI",
+   "title": "Prohibitory Order No. 1583 of 2026 issued against CAT Technologies Limited associated with RC 4398 of 2021 in the matter of CAT Technologies Ltd.",
+   "url": "https://www.sebi.gov.in/enforcement/recovery-proceedings/nov-2026/prohibitory-order-no-1583-of-2026-issued-against-cat-technologies-limited-associated-with-rc-4398-of-2021-in-the-matter-of-cat-technologies-ltd-_105693.html",
+   "date": "2026-11-10",
+   "important": false
+  },
+  {
+   "src": "SEBI",
+   "title": "Prohibitory Order No. 1582 of 2026 issued against Dinesh Kumar Jaiswal associated with RC 4395 of 2021 in the matter of CAT Technologies Ltd.",
+   "url": "https://www.sebi.gov.in/enforcement/recovery-proceedings/nov-2026/prohibitory-order-no-1582-of-2026-issued-against-dinesh-kumar-jaiswal-associated-with-rc-4395-of-2021-in-the-matter-of-cat-technologies-ltd-_105691.html",
+   "date": "2026-11-10",
+   "important": false
+  },
+  {
+   "src": "SEBI",
+   "title": "Prohibitory Order No. 1581 of 2026 issued against Dhiraj Kumar Jaiswal associated with RC 4391 of 2021 in the matter of CAT Technologies Ltd.",
+   "url": "https://www.sebi.gov.in/enforcement/recovery-proceedings/nov-2026/prohibitory-order-no-1581-of-2026-issued-against-dhiraj-kumar-jaiswal-associated-with-rc-4391-of-2021-in-the-matter-of-cat-technologies-ltd-_105689.html",
+   "date": "2026-11-10",
+   "important": false
+  },
   {
    "src": "RBI",
    "title": "Supersession of Board of Directors of Abhyudaya Co-operative Bank Ltd., Mumbai - Extension of period",
@@ -243,7 +285,7 @@
  "counts": {
   "https://www.sebi.gov.in/sebirss.xml": [
    30,
-   1
+   7
   ],
   "https://rbi.org.in/pressreleases_rss.xml": [
    10,
