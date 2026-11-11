@@ -189,7 +189,12 @@ async function closesFor(k, T, src) {
   if (nse && nse[nse.length - 1][0] >= lastWeekday) { src[k] = 'NSE'; return nse; }
   let y = null; try { y = await history(IDX[k][1]); } catch (e) { if (!nse) throw new Error('nse: ' + err + '; ' + e.message); }
   if (!nse) { src[k] = 'Yahoo (NSE failed: ' + err + ')'; return y; }
-  const last = nse[nse.length - 1][0], add = (y || []).filter(r => r[0] > last);
+  const last = nse[nse.length - 1][0], add = [];
+  let prev = nse[nse.length - 1][1];
+  for (const r of (y || []).filter(r => r[0] > last)) {        // Yahoo repeats the last close on NSE holidays: skip those rows
+    if (Math.abs(r[1] / prev - 1) < 0.00005) continue;
+    add.push(r); prev = r[1];
+  }
   src[k] = add.length ? `NSE + Yahoo for ${add.length} day(s) after ${last}` : 'NSE';
   return nse.concat(add);
 }
