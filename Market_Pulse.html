@@ -160,39 +160,37 @@ aside .card{padding:12px 14px;margin-bottom:12px}
 @media (max-width:900px){ .grid{grid-template-columns:1fr} .perf{grid-template-columns:1fr} .ix.flow{min-width:0} .tiles{grid-template-columns:repeat(4,1fr)} }
 @media (max-width:520px){ body{font-size:14.5px} .stats{gap:2px 12px} .tiles{gap:5px} .tile b{font-size:13px} .tiles{grid-template-columns:repeat(4,1fr)} .day h3{font-size:15.5px} }
 
-/* ---- top: watchlist (right) + panels (left) ---- */
-.top2{display:grid;grid-template-columns:minmax(0,1fr) 370px;gap:12px;align-items:start}
-.top2 .wl{grid-column:2;grid-row:1;padding:4px 0 6px;position:sticky;top:8px;max-height:calc(100vh - 16px);overflow:auto}
-.top2 .mainc{grid-column:1;grid-row:1;min-width:0}
-.top2 .perf{margin-top:0}
-.wlh,.wr{display:grid;grid-template-columns:minmax(0,1fr) 84px 64px 48px;gap:8px;align-items:center;padding:0 12px}
-.wlh{font:600 10.5px var(--f-display);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding-top:6px;padding-bottom:6px}
-.wlh span:not(:first-child),.wr .v,.wr .c{text-align:right}
-.wg{font:600 10.5px var(--f-display);text-transform:uppercase;letter-spacing:.08em;color:var(--secondary);padding:9px 12px 3px;border-top:1px solid var(--line)}
-.wr{width:100%;background:none;border:0;border-top:1px solid var(--soft);padding-top:6px;padding-bottom:6px;font:inherit;color:inherit;cursor:pointer;text-align:left}
+/* ---- watchlist (right column), compact like TradingView ---- */
+.grid{margin-top:0}
+main .perf{margin-top:0}
+aside .card.wl{padding:2px 0 4px}
+.wlh,.wr{display:grid;grid-template-columns:minmax(0,1fr) 78px 64px 54px;gap:6px;align-items:center;padding:0 12px}
+.wlh{font:600 11px var(--f-display);color:var(--muted);padding-top:7px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.wlh span:not(:first-child),.wr .v,.wr .c,.wr .p{text-align:right;white-space:nowrap}
+.wr{width:100%;background:none;border:0;border-bottom:1px solid var(--soft);padding-top:5px;padding-bottom:5px;font:inherit;color:inherit;cursor:pointer;text-align:left}
 .wr:hover{background:#f4f0e4}
 .wr[aria-pressed="true"]{background:var(--primary-soft);box-shadow:inset 3px 0 0 var(--primary)}
-.wr .n{font:600 13px/1.25 var(--f-display)}
-.wr .v{font:600 13.5px var(--f-display);font-variant-numeric:tabular-nums}
-.wr .c{font-variant-numeric:tabular-nums;line-height:1.15}
-.wr .c b{display:block;font:700 13px var(--f-body)}
-.wr .c small{font-size:11px;font-weight:700;opacity:.8}
-.wr svg{width:48px;height:20px;display:block}
+.wr .n{font:600 13px var(--f-display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wr .v{font:600 13px var(--f-display);font-variant-numeric:tabular-nums}
+.wr .c,.wr .p{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
 .wr.fu{animation:fu 1.2s ease-out}.wr.fd{animation:fd 1.2s ease-out}
 @media (prefers-reduced-motion:reduce){.wr.fu,.wr.fd{animation:none}}
-.wflow{border-top:1px solid var(--line);padding:4px 12px 2px}
-.wflow .wg{border:0;padding:6px 0 3px}
-.wflow .row{display:flex;justify-content:space-between;gap:8px;font-size:13.5px;padding:2px 0;font-variant-numeric:tabular-nums}
-.wflow .row b{font:600 13.5px var(--f-display)}
+.wflow{padding:6px 12px 2px}
+.wflow .wg{font:600 11px var(--f-display);color:var(--muted);padding:2px 0 3px}
+.wflow .row{display:flex;justify-content:space-between;gap:8px;font-size:13px;padding:1px 0;font-variant-numeric:tabular-nums}
+.wflow .row b{font:600 13px var(--f-display)}
 .wflow small{font-size:11px;color:var(--muted)}
-@media (max-width:900px){.top2{grid-template-columns:1fr}.top2 .wl,.top2 .mainc{grid-column:1;grid-row:auto}.top2 .wl{position:static;max-height:none}}
+@media (max-width:900px){.grid{display:flex;flex-direction:column}.grid aside{display:contents}.grid aside .wl{order:-1}.grid aside .card:not(.wl){order:1}}
 
 /* ---- what's moving: one small picture per question ---- */
-.wbody.nk{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));grid-auto-flow:row dense;gap:10px;padding:0 12px 12px;align-items:start}
-.nkc.tall{grid-row:span 2}
+.wbody.nk{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:0 12px 12px;align-items:stretch}
+.nkc.full{grid-column:1/-1}
+.nkstack{display:flex;flex-direction:column;gap:10px;min-width:0}.nkstack .nkc{flex:1}
+.gl2{display:grid;grid-template-columns:1fr 1fr;gap:4px 28px}
+.gl2 h6{margin:0 0 3px;font:600 11.5px var(--f-display);color:var(--muted)}
+@media (max-width:640px){.wbody.nk{grid-template-columns:1fr}.nkc.w2,.nkc.full{grid-column:auto}.gl2{grid-template-columns:1fr}}
 .nkc{border:1px solid var(--line);border-radius:10px;background:#fff;padding:10px 12px;display:flex;flex-direction:column;gap:6px;min-width:0}
 .nkc.w2{grid-column:span 2}
-@media (max-width:620px){.nkc.w2{grid-column:auto}}
 .nkc h5{margin:0;font:600 12.5px var(--f-display);color:var(--secondary);text-transform:none;letter-spacing:0}
 .nkc h5 em{font-style:normal;color:var(--muted);font-weight:600;font-size:11px;margin-right:6px}
 .nkc .cap{font-size:13.5px;line-height:1.45;color:#4b4350;margin:0}
@@ -208,7 +206,8 @@ aside .card{padding:12px 14px;margin-bottom:12px}
 .cols .tr i.dn{border-radius:0 0 4px 4px}
 .cols .tr b{position:absolute;left:0;right:0;font:700 12.5px var(--f-body);font-variant-numeric:tabular-nums}
 .cols .col span{font-size:11.5px;color:var(--muted);font-weight:700;padding-top:3px}
-.dvb{display:grid;grid-template-columns:96px minmax(0,1fr) 46px;gap:6px;align-items:center;font-size:12.5px;margin:1px 0}
+.dvb{display:grid;grid-template-columns:150px minmax(0,1fr) 52px;gap:10px;align-items:center;font-size:13px;margin:0;padding:3px 0}
+.dvb.sm{grid-template-columns:96px minmax(0,1fr) 46px}
 .dvb .tk{position:relative;height:10px;background:linear-gradient(var(--muted),var(--muted)) 50% 0/1px 100% no-repeat}
 .dvb .tk i{position:absolute;top:1px;bottom:1px;border-radius:3px}
 .dvb b{text-align:right;font-variant-numeric:tabular-nums}
@@ -232,24 +231,17 @@ aside .card{padding:12px 14px;margin-bottom:12px}
     <div class="r"><span id="upd"></span><button type="button" class="btn" id="reload">Refresh</button></div>
   </div>
 
-  <section aria-label="Indices" class="top2">
-   <aside class="card wl" aria-label="Watchlist">
-    <div class="wlh"><span>Watchlist</span><span>Last</span><span>Chg</span><span>1 month</span></div>
-    <div id="idx"></div>
-    <div id="flow"></div>
-   </aside>
-   <div class="mainc">
-    <div class="card perf" id="perf" hidden>
-      <div class="who" id="perfWho"></div>
-      <div><div class="tiles" id="tiles"></div><div class="src" id="idxSrc"></div></div>
-    </div>
-    <details class="card why" id="why" open>
-      <summary><b>What's moving the market</b><span class="wh" id="whyHead">Loading…</span><span class="chev" aria-hidden="true">▾</span></summary>
-      <div class="wbody" id="whyBody"></div>
-    </details>
-   </div>
-  </section>
 
+  <div class="grid">
+    <main>
+      <div class="card perf" id="perf" hidden>
+        <div class="who" id="perfWho"></div>
+        <div><div class="tiles" id="tiles"></div><div class="src" id="idxSrc"></div></div>
+      </div>
+      <details class="card why" id="why">
+        <summary><b>What's moving the market</b><span class="wh" id="whyHead">Loading…</span><span class="chev" aria-hidden="true">▾</span></summary>
+        <div class="wbody" id="whyBody"></div>
+      </details>
   <div class="tabs" role="tablist">
     <button type="button" role="tab" id="tabLive" data-v="live" aria-selected="true"><span class="live-dot" aria-hidden="true"></span>Live today<span class="cnt" id="liveCnt" hidden></span></button>
     <button type="button" role="tab" id="tabBrief" data-v="brief" aria-selected="false" hidden>Daily brief</button>
@@ -271,8 +263,6 @@ aside .card{padding:12px 14px;margin-bottom:12px}
   </section>
   </div>
 
-  <div class="grid">
-    <main>
       <div id="liveView">
         <div class="newbar" id="newBar" hidden><button type="button" id="newBtn"></button></div>
         <div class="chips" id="lchips" role="group" aria-label="Filter live headlines"></div>
@@ -286,6 +276,11 @@ aside .card{padding:12px 14px;margin-bottom:12px}
       </div>
     </main>
     <aside>
+      <div class="card wl" aria-label="Watchlist">
+        <div class="wlh"><span>Symbol</span><span>Last</span><span>Chg</span><span>Chg%</span></div>
+        <div id="idx"></div>
+        <div id="flow"></div>
+      </div>
       <div class="card"><h2 class="sec">Official notices · SEBI · RBI · NSE</h2><div id="official"><div class="empty">Loading…</div></div></div>
       <div class="card"><h2 class="sec">Coming up</h2><div id="events"></div></div>
     </aside>
@@ -325,14 +320,11 @@ aside .card{padding:12px 14px;margin-bottom:12px}
     if (!IX || !IX.indices || !IX.indices.length) { $('idx').innerHTML = ''; $('perf').hidden = true; return; }
     const L = IX.indices; if (sel >= L.length) sel = 0;
     const tick = x => { const p = LAST[x.name]; LAST[x.name] = x.level; return p == null || p === x.level ? '' : x.level > p ? ' fu' : ' fd'; };
-    const grp = x => /brent|wti|gold|silver/i.test(x.name) ? 'Commodities' : /s&p|nasdaq|dow|nikkei|hang|ftse|dax/i.test(x.name) ? 'Global' : 'India';
-    let lastG = '';
+    const SHORT = { 'Nifty Midcap 150': 'Midcap 150', 'Nifty Smallcap 250': 'Smallcap 250', 'Brent crude · $': 'Brent $', 'WTI crude · $': 'WTI $', 'Gold · ₹/10 g': 'Gold ₹/10g', 'Silver · ₹/kg': 'Silver ₹/kg', 'Gold/Silver ratio': 'Gold/Silver' };
     $('idx').innerHTML = L.map((x, i) => {
-      const g = grp(x), head = g !== lastG ? `<div class="wg">${g}</div>` : ''; lastG = g;
       const ch = x.chg == null ? '' : (x.chg > 0 ? '+' : x.chg < 0 ? '−' : '') + inr(Math.abs(x.chg));
-      return head + `<button type="button" class="wr${tick(x)}" aria-pressed="${i === sel}" data-i="${i}" title="${esc(x.name)}: click for performance. Line = last ~22 trading days (about 1 month), green if higher than a month ago">
-      <span class="n">${esc(x.name)}</span><span class="v">${inr(x.level)}</span>
-      <span class="c ${cls(x.chgPct)}"><b>${sg(x.chgPct)}</b><small>${ch}</small></span>${spark(x.spark, (x.spark || [0]).at(-1) >= (x.spark || [0])[0]) || '<span></span>'}</button>`;
+      return `<button type="button" class="wr${tick(x)}" aria-pressed="${i === sel}" data-i="${i}" title="${esc(x.name)}: click for performance">
+      <span class="n">${esc(SHORT[x.name] || x.name)}</span><span class="v">${inr(x.level)}</span><span class="c ${cls(x.chgPct)}">${ch}</span><span class="p ${cls(x.chgPct)}">${sg(x.chgPct)}</span></button>`;
     }).join('');
     $('flow').innerHTML = flowCard();
     const x = L[sel];
@@ -559,7 +551,7 @@ aside .card{padding:12px 14px;margin-bottom:12px}
     const f = IX && IX.fiidii; if (f && f.fii != null) ctx.push(`FIIs ${f.fii >= 0 ? 'bought' : 'sold'} ₹${Math.abs(Math.round(f.fii)).toLocaleString('en-IN')} cr on ${fd(f.date)} (provisional)`);
     if (ctx.length) S.push(ctx.join(' · ') + '.');
     const lead = sec.length ? (n.chgPct >= 0 ? sec[0].name : sec[sec.length - 1].name) : '';
-    $('whyHead').innerHTML = `Nifty <b class="${cls(n.chgPct)}">${sg(n.chgPct)}</b> · ${n.adv != null ? `${n.adv} up / ${n.dec} down` : ''}${lead ? ` · ${n.chgPct >= 0 ? 'led by' : 'dragged by'} ${esc(lead)}` : ''}`;
+    $('whyHead').innerHTML = `Nifty <b class="${cls(n.chgPct)}">${sg(n.chgPct)}</b> · ${n.adv != null ? `${n.adv} up / ${n.dec} down` : ''}${lead ? ` · ${n.chgPct >= 0 ? 'led by' : 'dragged by'} ${esc(lead)}` : ''} · tap for details`;
     const list = L => L.map(x => `<span>${esc(nm(x))}</span><span class="${cls(x.pct)}">${pc(x.pct)}${x.pts != null ? ` · ${x.pts > 0 ? '+' : '−'}${Math.abs(x.pts).toFixed(0)} pts` : ''}</span>`).join('');
     const mx = Math.max(...sec.map(x => Math.abs(x.pct)), 0.5);
     // headlines today that name one of the movers, or are about the market move itself
@@ -568,32 +560,27 @@ aside .card{padding:12px 14px;margin-bottom:12px}
     const T = todays(ALL), rel = T.filter(i => (re && re.test(i.title)) || (i.topic === 'markets' && /sensex|nifty/i.test(i.title))).slice(0, 6);
     const card = (q, pic, cap, w2) => `<div class="nkc${w2 === true ? ' w2' : w2 ? ' ' + w2 : ''}"><h5>${q}</h5>${pic}${cap ? `<p class="cap">${cap}</p>` : ''}</div>`;
     const C = [];
-    // 1. the day as a line, with yesterday's close, the open and where it is now marked
+    const bars = (rows, k, smallCls) => { const m = Math.max(...rows.map(r => Math.abs(r[1])), 0.5); return rows.map(([nmx, v]) => `<div class="dvb${smallCls ? ' sm' : ''}"><span>${esc(nmx)}</span><span class="tk"><i style="${v >= 0 ? 'left:50%' : 'right:50%'};width:${(Math.abs(v) / m * 50).toFixed(1)}%;background:${v >= 0 ? 'var(--up)' : 'var(--down)'}"></i></span><b class="${cls(v)}">${pc(v)}</b></div>`).join(''); };
+    // row 1: the day as a line (2 columns) + how many stocks joined in
     C.push(card('How did the day go?', dayPic(M.intraday, n), `${capOpen} ${capPath}`, true));
-    // 2. where it sits in today's range
-    C.push(card("Where did it end in today's range?", rangePic(n), `${open ? 'Now' : 'Closed'} ${pos > 0.75 ? 'near the high' : pos < 0.25 ? 'near the low' : 'in the middle'} of the day's range.`));
-    // 3. how many stocks joined in: 50 squares
     if (n.adv != null && n.dec != null) {
       const u = Math.min(50, n.adv), d = Math.min(50 - u, n.dec);
       C.push(card('How many stocks joined in?', `<div class="dots" role="img" aria-label="${u} up, ${d} down, ${50 - u - d} unchanged">${'<i class="u"></i>'.repeat(u)}${'<i class="d"></i>'.repeat(d)}${'<i></i>'.repeat(50 - u - d)}</div>`, `<b class="up">${n.adv} up</b> · <b class="down">${n.dec} down</b> of the 50 Nifty stocks${50 - u - d > 0 ? ` · ${50 - u - d} unchanged` : ''}.`));
     }
-    // 4. large vs mid vs small
-    if (mid && sml) C.push(card('Big, mid or small: who did better?', colsPic([['Large · Nifty 50', n.chgPct], ['Mid · 150', mid.pct], ['Small · 250', sml.pct]]), capSize));
-    // 5. sectors, diverging from a zero line
-    if (sec.length) C.push(card('Which sectors led and lagged?', sec.map(x => `<div class="dvb"><span>${esc(x.name)}</span><span class="tk"><i style="${x.pct >= 0 ? 'left:50%' : 'right:50%'};width:${(Math.abs(x.pct) / mx * 50).toFixed(1)}%;background:${x.pct >= 0 ? 'var(--up)' : 'var(--down)'}"></i></span><b class="${cls(x.pct)}">${pc(x.pct)}</b></div>`).join(''),
-      sec.length > 3 ? `Strongest: ${sec.slice(0, 3).map(x => esc(x.name)).join(', ')}. Weakest: ${sec.slice(-3).reverse().map(x => esc(x.name)).join(', ')}.` : '', 'tall'));
-    // 6. the heavyweights
-    if (H.length) C.push(card('What did the heavyweights do?', `<div class="chipg">${(M.heavy || []).map(x => `<span class="${cls(x.pct)}">${esc(nm(x))}<b>${pc(x.pct)}</b></span>`).join('')}</div>`, `The largest Nifty stocks move the index most. Biggest moves: ${H.slice(0, 4).map(x => `${esc(nm(x))} ${pc(x.pct)}`).join(', ')}.`));
-    // 7. top gainers / losers
-    C.push(card('Top gainers and losers in Nifty 50', `<div class="mv">${list(M.up || [])}</div><h5 style="font-size:11.5px;color:var(--muted)">Losers</h5><div class="mv">${list(M.down || [])}</div>`, ''));
-    // 8. mood and money
+    // row 2: sectors (2 columns) + a stack of big/mid/small and mood & money
+    if (sec.length) C.push(card('Which sectors led and lagged?', bars(sec.map(x => [x.name, x.pct])),
+      sec.length > 3 ? `Strongest: ${sec.slice(0, 3).map(x => esc(x.name)).join(', ')}. Weakest: ${sec.slice(-3).reverse().map(x => esc(x.name)).join(', ')}.` : '', true));
+    const stack = [];
+    if (mid && sml) stack.push(card('Big, mid or small: who did better?', bars([['Large caps', n.chgPct], ['Mid caps', mid.pct], ['Small caps', sml.pct]], 0, true), `Large = Nifty 50, mid = Midcap 150, small = Smallcap 250. ${capSize}`));
     const cx = [];
-    if (vix) cx.push(`<div><span>India VIX (expected swings)</span><b class="${cls(-vix.pct)}">${vix.last.toFixed(2)} <small style="display:inline;grid-column:auto" class="${cls(vix.pct)}">${pc(vix.pct)}</small></b></div>`);
-    if (brent) cx.push(`<div><span>Brent crude</span><b>$${brent.level.toFixed(2)} <small style="display:inline;grid-column:auto" class="${cls(brent.chgPct)}">${pc(brent.chgPct)}</small></b></div>`);
+    if (vix) cx.push(`<div><span>India VIX (expected swings)</span><b>${vix.last.toFixed(2)} <span class="${cls(vix.pct)}" style="font-size:12.5px">${pc(vix.pct)}</span></b></div>`);
+    if (brent) cx.push(`<div><span>Brent crude</span><b>$${brent.level.toFixed(2)} <span class="${cls(brent.chgPct)}" style="font-size:12.5px">${pc(brent.chgPct)}</span></b></div>`);
     if (f && f.fii != null) cx.push(`<div><span>FIIs ${f.fii >= 0 ? 'bought' : 'sold'} · ${esc(fd(f.date))}</span><b class="${cls(f.fii)}">₹${Math.abs(Math.round(f.fii)).toLocaleString('en-IN')} cr</b><small>provisional</small></div>`);
-    if (cx.length) C.push(card('Mood and money', `<div class="ctx">${cx.join('')}</div>`, ''));
-    // 9. related headlines
-    C.push(card('Related headlines', `<div class="whl">${rel.length ? rel.map(i => `<a href="${esc(i.url)}" target="_blank" rel="noopener">${esc(i.title)} <small>${hm(i.t)} · ${esc(i.src)}</small></a>`).join('') : '<small>No matching headlines yet today.</small>'}</div>`, '', true));
+    if (cx.length) stack.push(card('Mood and money', `<div class="ctx">${cx.join('')}</div>`, ''));
+    if (stack.length) C.push(`<div class="nkstack">${stack.join('')}</div>`);
+    // row 3: gainers and losers side by side; row 4: related headlines
+    C.push(card('Top gainers and losers in Nifty 50', `<div class="gl2"><div><h6>Gainers</h6><div class="mv">${list(M.up || [])}</div></div><div><h6>Losers</h6><div class="mv">${list(M.down || [])}</div></div></div>`, '', 'full'));
+    C.push(card('Related headlines', `<div class="whl">${rel.length ? rel.map(i => `<a href="${esc(i.url)}" target="_blank" rel="noopener">${esc(i.title)} <small>${hm(i.t)} · ${esc(i.src)}</small></a>`).join('') : '<small>No matching headlines yet today.</small>'}</div>`, '', 'full'));
     $('whyBody').className = 'wbody nk';
     $('whyBody').innerHTML = C.join('') + `<div class="wsrc">Built automatically from live numbers: Nifty level, range, breadth and sectors from NSE; stock moves from ${esc(M.source || 'NSE')}. Updates every 30 seconds in market hours. The "why" behind a stock's move is in the related headlines.</div>`;
   }
