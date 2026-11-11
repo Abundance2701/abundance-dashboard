@@ -191,7 +191,7 @@ async function closesFor(k, T, src) {
   if (!nse) { src[k] = 'Yahoo (NSE failed: ' + err + ')'; return y; }
   const last = nse[nse.length - 1][0], add = [];
   let prev = nse[nse.length - 1][1];
-  for (const r of (y || []).filter(r => r[0] > last)) {        // Yahoo repeats the last close on NSE holidays: skip those rows
+  for (const r of (y || []).filter(r => r[0] > last && r[0] < T)) {        // Yahoo repeats the last close on NSE holidays: skip those rows
     if (Math.abs(r[1] / prev - 1) < 0.00005) continue;
     add.push(r); prev = r[1];
   }
