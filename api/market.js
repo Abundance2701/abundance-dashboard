@@ -29,7 +29,7 @@ async function spotNow(sym) {
 function card(name, rows, srcNote) {
   if (!rows || rows.length < 2) return null;
   const level = rows[rows.length - 1][1], prev = rows[rows.length - 2][1], chg = level - prev;
-  return { name, level: r2(level), chg: r2(chg), chgPct: r2(chg / prev * 100), date: rows[rows.length - 1][0], perf: rows.length > 30 ? perf(rows, level) : {}, spark: rows.slice(-22).map(r => r2(r[1])), src: srcNote, metal: true };
+  return { name, level: r2(level), chg: r2(chg), chgPct: r2(chg / prev * 100), date: rows[rows.length - 1][0], perf: rows.length > 30 ? perf(rows, level) : {}, spark: rows.slice(-22).map(r => r2(r[1])), src: srcNote, metal: true, _rows: rows };
 }
 async function metals(notes) {
   const [g, sv, fx, gs, ss] = await Promise.all([firstOk(METALS.gold), firstOk(METALS.silver), firstOk(METALS.fx), spotNow('XAU'), spotNow('XAG')]);
@@ -106,9 +106,12 @@ module.exports = async (req, res) => {
     } else { level = rows[rows.length - 1][1]; prev = rows.length > 1 ? rows[rows.length - 2][1] : null; src = 'Yahoo'; }
     const chg = prev ? level - prev : null;
     indices.push({ name, asOf: src === 'NSE' ? (ns.all.timestamp || null) : (y && y.time ? new Date(y.time).toISOString() : null), level: r2(level), chg: r2(chg), chgPct: prev ? r2(chg / prev * 100) : null, date: rows.length ? rows[rows.length - 1][0] : null,
-      perf: rows.length > 30 ? perf(rows, level) : {}, spark: rows.slice(-22).map(r => r2(r[1])), src });
+      perf: rows.length > 30 ? perf(rows, level) : {}, spark: rows.slice(-22).map(r => r2(r[1])), src, _rows: rows });
   });
   indices.push(...mt);
+  // ?hist=1 adds about a year of daily closes ([date, close]) for the performance chart; asked for once per page load
+  const wantHist = !!(req.query && req.query.hist);
+  indices.forEach(x => { if (wantHist && x._rows) x.hist = x._rows.slice(-260).map(r => [r[0], r2(r[1])]); delete x._rows; });
   let fiidii = null;
   if (Array.isArray(ns.fiidii) && ns.fiidii.length) {
     const pick = re => ns.fiidii.find(x => re.test(x.category || ''));
@@ -116,7 +119,7 @@ module.exports = async (req, res) => {
     fiidii = { date: (f || d || {}).date || null, fii: f ? r2(+f.netValue) : null, dii: d ? r2(+d.netValue) : null,
       fiiBuy: f ? r2(+f.buyValue) : null, fiiSell: f ? r2(+f.sellValue) : null, diiBuy: d ? r2(+d.buyValue) : null, diiSell: d ? r2(+d.sellValue) : null, src: 'NSE (provisional)' };
   }
-  res.setHeader('Cache-Control', 's-maxage=10, stale-while-revalidate=60');
+  res.setHeader('Cache-Control', wantHist ? 's-maxage=600, stale-while-revalidate=3600' : 's-maxage=10, stale-while-revalidate=60');
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
   res.status(200).send(JSON.stringify({ updated: new Date().toISOString(), indices, fiidii, notes }));
 };
