@@ -3,11 +3,15 @@
    - each Nifty 50 stock's move and its contribution in index points            (NSE index page data)
      Points = stock's free-float weight × its % move × yesterday's Nifty close, which is how NSE
      itself calculates the index, so the contributions add up to the Nifty's actual move.
-   - if NSE refuses the stock list from cloud servers: Yahoo Finance prices for the 50 stocks
-     (list from NSE's index CSV), % move only, no points; "source" says which was used.
+   - if NSE's website refuses the stock list from cloud servers (it usually does from Vercel):
+     NSE's official MCP feed (api/_nsemcp.js): Nifty 50 gainers/losers (refreshed every 5 min) plus a
+     live quote for any stock missing from those lists. % move only: the feed has no index weights,
+     so no points. List of 50 from NSE's index CSV.
+   - last resort: Yahoo Finance prices, % move only, may lag 15 min. "source" says which was used.
    - Nifty's intraday path (5-minute bars, Yahoo) for the small chart.
    Cached 20 seconds. No secrets used. */
 
+const N = require('./_nsemcp');
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
 const r2 = v => v == null || !isFinite(v) ? null : Math.round(v * 100) / 100;
 const SECTORS = ['NIFTY BANK', 'NIFTY PRIVATE BANK', 'NIFTY PSU BANK', 'NIFTY FINANCIAL SERVICES', 'NIFTY IT', 'NIFTY AUTO', 'NIFTY FMCG', 'NIFTY PHARMA',
@@ -63,7 +67,7 @@ module.exports = async (req, res) => {
     source = 'NSE';
     if (!tot) notes.push('weights unavailable');
   } else {
-    // fallback: Nifty 50 list from the official CSV, prices from Yahoo
+    // Nifty 50 list from the official CSV
     let list = [];
     for (const u of ['https://nsearchives.nseindia.com/content/indices/ind_nifty50list.csv', 'https://www.niftyindices.com/IndexConstituent/ind_nifty50list.csv']) {
       try {
@@ -74,13 +78,29 @@ module.exports = async (req, res) => {
         if (list.length > 40) break;
       } catch (e) {}
     }
-    const qs = await Promise.allSettled(list.map(s => yq(s.sym + '.NS', '1d', '15m')));
-    stocks = list.map((s, i) => {
-      if (qs[i].status !== 'fulfilled') return null;
-      const m = qs[i].value.meta, p = m.chartPreviousClose || m.previousClose, l = m.regularMarketPrice;
-      return p && l ? { ...s, last: r2(l), pct: r2((l / p - 1) * 100), pts: null, t: m.regularMarketTime ? m.regularMarketTime * 1000 : null } : null;
-    }).filter(Boolean);
-    source = stocks.length ? 'Yahoo Finance (may lag up to 15 min; points not available)' : '';
+    // 1st choice: NSE's official MCP feed
+    try {
+      const mv = await N.call('live', 'nse_get_market_movers', { indexName: 'NIFTY', limit: 50 });
+      const got = {};
+      [...(mv.gainers || []), ...(mv.losers || [])].forEach(x => { if (x.symbol && isFinite(+x.perChange)) got[x.symbol] = { last: +x.ltp, pct: +x.perChange }; });
+      const known = list.length ? list : Object.keys(got).map(sym => ({ sym, name: sym, industry: '' }));
+      const missing = known.filter(s => !got[s.sym]);
+      const qs = await Promise.allSettled(missing.map(s => N.call('live', 'cm_get_stock_quote', { symbol: s.sym })));
+      qs.forEach((q, i) => { const st = q.status === 'fulfilled' && q.value && q.value.stock; if (st && +st.preClosePrice > 0 && +st.lastTradedPrice > 0) got[missing[i].sym] = { last: +st.lastTradedPrice, pct: +st.perChange }; });
+      const rows = known.filter(s => got[s.sym]).map(s => ({ ...s, last: r2(got[s.sym].last), pct: r2(got[s.sym].pct), pts: null }));
+      if (rows.length >= Math.min(45, known.length)) { stocks = rows; source = 'NSE official data feed (up to 5 min delayed; index points not available)'; }
+      else notes.push(`nse-mcp: only ${rows.length} stocks`);
+    } catch (e) { notes.push('nse-mcp: ' + (e.message || e)); }
+    // last resort: Yahoo Finance
+    if (!stocks.length) {
+      const qs = await Promise.allSettled(list.map(s => yq(s.sym + '.NS', '1d', '15m')));
+      stocks = list.map((s, i) => {
+        if (qs[i].status !== 'fulfilled') return null;
+        const m = qs[i].value.meta, p = m.chartPreviousClose || m.previousClose, l = m.regularMarketPrice;
+        return p && l ? { ...s, last: r2(l), pct: r2((l / p - 1) * 100), pts: null, t: m.regularMarketTime ? m.regularMarketTime * 1000 : null } : null;
+      }).filter(Boolean);
+      source = stocks.length ? 'Yahoo Finance (may lag up to 15 min; points not available)' : '';
+    }
     if (!stocks.length) notes.push('no stock data');
   }
   const key = s => s.pts != null ? s.pts : s.pct;

@@ -39,10 +39,13 @@
 const crypto = require('crypto');
 const B = require('./_bc');
 const Z = require('./_zoho');
+const N = require('./_nsemcp');
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
 const TO = 'service@abundanceindia.com';
 const FIELD = 'Goal_Alerts';   /* Contacts → "Goal Alerts" (large text, 32,000 characters): every alert rule, profit booking and goals */
 const IDX = { 'nifty 50': ['NIFTY 50', '^NSEI'], 'nifty 500': ['NIFTY 500', '^CRSLDX'], 'midcap 150': ['NIFTY MIDCAP 150', 'NIFTYMIDCAP150.NS'], 'smallcap 250': ['NIFTY SMALLCAP 250', 'NIFTYSMLCAP250.NS'] };
+/* NSE's official MCP names: [live name, end-of-day history name] */
+const NSEMCP = { 'nifty 50': ['NIFTY 50', 'Nifty 50'], 'nifty 500': ['NIFTY 500', 'Nifty 500'], 'midcap 150': ['NIFTY MIDCAP 150', 'Nifty Midcap 150'], 'smallcap 250': ['NIFTY SMLCAP 250', 'Nifty Smallcap 250'] };
 const LABEL = { 'nifty 50': 'Nifty 50', 'nifty 500': 'Nifty 500', 'midcap 150': 'Midcap 150', 'smallcap 250': 'Smallcap 250' };
 const istNow = () => new Date(Date.now() + 5.5 * 3600e3);
 const today = () => istNow().toISOString().slice(0, 10);
@@ -157,6 +160,39 @@ async function history(sym) {
   const x = (await r.json()).chart.result[0], off = (x.meta.gmtoffset || 19800) * 1000;
   return x.timestamp.map((t, i) => [new Date(t * 1000 + off).toISOString().slice(0, 10), x.indicators.quote[0].close[i]]).filter(r => r[1] != null);
 }
+/* Live levels from NSE's official MCP (1-3 min delay). Falls back to nse() (NSE website) if it fails. */
+async function mcpLive() {
+  const j = await N.call('live', 'cm_get_live_indices', { group: '', nameFilter: '' });
+  const map = {};
+  Object.values(j.indices || {}).forEach(g => (g || []).forEach(x => { map[String(x.indexName).toUpperCase()] = +x.last; }));
+  const out = {}; Object.entries(NSEMCP).forEach(([k, [n]]) => { if (isFinite(map[n]) && map[n] > 0) out[k] = map[n]; });
+  if (!Object.keys(out).length) throw new Error('no index values');
+  return out;
+}
+/* Daily closes, oldest first, from NSE's official end-of-day data: 2 years in two 12-month calls. */
+async function mcpHistory(k) {
+  const name = NSEMCP[k][1], rows = [];
+  let end = 'today';
+  for (let i = 0; i < 2; i++) {
+    const j = await N.call('eod', 'get_index_history', { indexName: name, months: 12, endDate: end });
+    (j.data || []).forEach(r => { if (r.date && isFinite(+r.close) && +r.close > 0) rows.push([r.date, +r.close]); });
+    if (!j.next_end_date) break; end = j.next_end_date;
+  }
+  if (rows.length < 200) throw new Error('only ' + rows.length + ' days');
+  const seen = {}; return rows.filter(r => !seen[r[0]] && (seen[r[0]] = 1)).sort((a, b) => a[0] < b[0] ? -1 : 1);
+}
+/* NSE closes first; Yahoo only fills days after NSE's latest file (NSE publishes after hours) or if NSE fails. */
+async function closesFor(k, T, src) {
+  let nse = null, err = '';
+  try { nse = await mcpHistory(k); } catch (e) { err = e.message; }
+  const lastWeekday = (() => { const d = new Date(T + 'T00:00:00Z'); do d.setUTCDate(d.getUTCDate() - 1); while ([0, 6].includes(d.getUTCDay())); return d.toISOString().slice(0, 10); })();
+  if (nse && nse[nse.length - 1][0] >= lastWeekday) { src[k] = 'NSE'; return nse; }
+  let y = null; try { y = await history(IDX[k][1]); } catch (e) { if (!nse) throw new Error('nse: ' + err + '; ' + e.message); }
+  if (!nse) { src[k] = 'Yahoo (NSE failed: ' + err + ')'; return y; }
+  const last = nse[nse.length - 1][0], add = (y || []).filter(r => r[0] > last);
+  src[k] = add.length ? `NSE + Yahoo for ${add.length} day(s) after ${last}` : 'NSE';
+  return nse.concat(add);
+}
 
 module.exports = async (req, res) => {
   const dry = !!(req.query && req.query.dry);
@@ -170,9 +206,11 @@ module.exports = async (req, res) => {
   todos.forEach(t => { for (const m of String(t.description || '').matchAll(/pb-key:\s*([\w\-]+\/[\w\-]+)\/(\d{4}-\d{2}-\d{2})/g)) (keys[m[1]] = keys[m[1]] || []).push(m[2]); });
   const last = k => (keys[k] || []).sort().slice(-1)[0] || null;
 
-  let L = {}; try { L = await nse(); } catch (e) { notes.push('live: ' + e.message); }
+  let L = {}, liveSrc = 'NSE MCP';
+  try { L = await mcpLive(); } catch (e) { notes.push('live nse-mcp: ' + e.message); liveSrc = 'NSE website'; try { L = await nse(); } catch (e2) { notes.push('live: ' + e2.message); liveSrc = 'none'; } }
   const H = {};
-  await Promise.all(Object.entries(IDX).map(async ([k, [, s]]) => { try { H[k] = (await history(s)).filter(r => r[0] < T); } catch (e) { notes.push(k + ' history: ' + e.message); } }));
+  const histSrc = {};
+  await Promise.all(Object.keys(IDX).map(async k => { try { H[k] = (await closesFor(k, T, histSrc)).filter(r => r[0] < T); } catch (e) { notes.push(k + ' history: ' + e.message); } }));
   const closes = (idx, a, b) => (H[idx] || []).filter(r => r[0] >= a && (!b || r[0] <= b)).map(r => r[1]);
   const ok = v => v != null && isFinite(v) && v > 0;
 
@@ -304,7 +342,7 @@ module.exports = async (req, res) => {
     } catch (e) { notes.push('mail: ' + e.message); }
   }
   res.setHeader('Cache-Control', 'no-store');
-  return Z.reply(res, 200, { ok: true, dry, clients: contacts.length, due: fired, unreadableLines: badLines, emailed: sent, live: L, notes });
+  return Z.reply(res, 200, { ok: true, dry, clients: contacts.length, due: fired, unreadableLines: badLines, emailed: sent, live: L, sources: { live: liveSrc, history: histSrc }, notes });
 };
 
 module.exports.parseRule = parseRule;
