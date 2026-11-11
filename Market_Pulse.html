@@ -159,6 +159,85 @@ aside .card{padding:12px 14px;margin-bottom:12px}
 @media (max-width:900px){ .wbody{grid-template-columns:1fr} }
 @media (max-width:900px){ .grid{grid-template-columns:1fr} .perf{grid-template-columns:1fr} .ix.flow{min-width:0} .tiles{grid-template-columns:repeat(4,1fr)} }
 @media (max-width:520px){ body{font-size:14.5px} .stats{gap:2px 12px} .tiles{gap:5px} .tile b{font-size:13px} .tiles{grid-template-columns:repeat(4,1fr)} .day h3{font-size:15.5px} }
+
+/* ---- watchlist (right column), compact like TradingView ---- */
+.grid{margin-top:0}
+main .perf{margin-top:0}
+aside .card.wl{padding:2px 0 4px}
+.wlh,.wr{display:grid;grid-template-columns:minmax(0,1fr) 78px 64px 54px;gap:6px;align-items:center;padding:0 12px}
+.wlh{font:600 11px var(--f-display);color:var(--muted);padding-top:7px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.wlh span:not(:first-child),.wr .v,.wr .c,.wr .p{text-align:right;white-space:nowrap}
+.wr{width:100%;background:none;border:0;border-bottom:1px solid var(--soft);padding-top:5px;padding-bottom:5px;font:inherit;color:inherit;cursor:pointer;text-align:left}
+.wr:hover{background:#f4f0e4}
+.wr[aria-pressed="true"]{background:var(--primary-soft);box-shadow:inset 3px 0 0 var(--primary)}
+.wr .n{font:600 13px var(--f-display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wr .v{font:600 13px var(--f-display);font-variant-numeric:tabular-nums}
+.wr .c,.wr .p{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
+.wr.fu{animation:fu 1.2s ease-out}.wr.fd{animation:fd 1.2s ease-out}
+@media (prefers-reduced-motion:reduce){.wr.fu,.wr.fd{animation:none}}
+.wflow{padding:6px 12px 2px}
+.wflow .wg{font:600 11px var(--f-display);color:var(--muted);padding:2px 0 3px}
+.wflow .row{display:flex;justify-content:space-between;gap:8px;font-size:13px;padding:1px 0;font-variant-numeric:tabular-nums}
+.wflow .row b{font:600 13px var(--f-display)}
+.wflow small{font-size:11px;color:var(--muted)}
+@media (max-width:900px){.grid{display:flex;flex-direction:column}.grid aside{display:contents}.grid aside .wl{order:-1}.grid aside .card:not(.wl){order:1}}
+
+/* ---- what's moving: one small picture per question ---- */
+.wbody.nk{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:0 12px 12px;align-items:stretch}
+.nkc.full{grid-column:1/-1}
+.nkstack{display:flex;flex-direction:column;gap:10px;min-width:0}.nkstack .nkc{flex:none}.nkstack .nkc:last-child{flex:1}
+.gl2{display:grid;grid-template-columns:1fr 1fr;gap:4px 28px}
+.gl2 h6{margin:0 0 3px;font:600 11.5px var(--f-display);color:var(--muted)}
+.nkc{border:1px solid var(--line);border-radius:10px;background:#fff;padding:10px 12px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.nkc.w2{grid-column:span 2}
+.nkc h5{margin:0;font:600 12.5px var(--f-display);color:var(--secondary);text-transform:none;letter-spacing:0}
+.nkc h5 em{font-style:normal;color:var(--muted);font-weight:600;font-size:11px;margin-right:6px}
+.nkc .cap{font-size:13.5px;line-height:1.45;color:#4b4350;margin:0}
+.nkc .cap b{font-weight:700}
+.nkc svg{display:block;width:100%;height:auto}
+.dots{display:grid;grid-template-columns:repeat(10,1fr);gap:3px;max-width:230px}
+.dots i{aspect-ratio:1;border-radius:3px;background:var(--flat-bg)}
+.dots i.u{background:var(--up)}.dots i.d{background:var(--down)}
+.cols{display:flex;align-items:stretch;gap:14px;height:118px;padding-top:4px}
+.cols .col{flex:1;display:grid;grid-template-rows:1fr auto;text-align:center;min-width:0}
+.cols .tr{position:relative;border-bottom:1px solid var(--muted)}
+.cols .tr i{position:absolute;left:22%;right:22%;border-radius:4px 4px 0 0}
+.cols .tr i.dn{border-radius:0 0 4px 4px}
+.cols .tr b{position:absolute;left:0;right:0;font:700 12.5px var(--f-body);font-variant-numeric:tabular-nums}
+.cols .col span{font-size:11.5px;color:var(--muted);font-weight:700;padding-top:3px}
+.dvb{display:grid;grid-template-columns:150px minmax(0,1fr) 52px;gap:10px;align-items:center;font-size:13px;margin:0;padding:1px 0}
+.dvb.sm{grid-template-columns:96px minmax(0,1fr) 46px}
+.dvb .tk{position:relative;height:10px;background:linear-gradient(var(--muted),var(--muted)) 50% 0/1px 100% no-repeat}
+.dvb .tk i{position:absolute;top:1px;bottom:1px;border-radius:3px}
+.dvb b{text-align:right;font-variant-numeric:tabular-nums}
+.chipg{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:5px}
+.chipg span{border-radius:8px;padding:5px 7px;font-size:12.5px;background:var(--flat-bg);display:flex;justify-content:space-between;gap:4px}
+.chipg span.up{background:var(--up-bg);color:var(--ink)}.chipg span.down{background:var(--down-bg);color:var(--ink)}
+.chipg span b{font-variant-numeric:tabular-nums}
+.chipg span.up b{color:var(--up)}.chipg span.down b{color:var(--down)}
+.ctx{display:grid;gap:6px}
+.ctx div{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;align-items:baseline;font-size:13.5px;border-bottom:1px dashed var(--line);padding-bottom:4px}
+.ctx div:last-child{border:0}
+.ctx b{font:600 14px var(--f-display);font-variant-numeric:tabular-nums}
+.ctx small{grid-column:1/-1;color:var(--muted);font-size:11.5px}
+.nkc .whl a{border-top:1px solid var(--line)}
+
+/* performance panel with chart */
+main .perf{grid-template-columns:auto minmax(0,1fr);align-items:center;gap:10px 16px}
+main .perf .pchart,main .perf .src{grid-column:1/-1}
+main .perf .src{margin-top:0}
+@media (max-width:700px){main .perf{grid-template-columns:1fr}}
+.perf .who b{white-space:normal}
+.tile{border:0;font:inherit;color:inherit;cursor:pointer}
+.tile:disabled{cursor:default}
+.tile[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--ink)}
+.pchart svg{display:block;width:100%;height:auto}
+.pchart .none{font-size:12.5px;color:var(--muted);padding:6px 0}
+/* live headlines: line the tab up with the filters below */
+.tabs button:first-child{padding-left:2px}
+#lchips{margin-top:10px}
+/* phones: one picture per row (kept last so it wins over the wider-card rules above) */
+@media (max-width:640px){.wbody.nk{grid-template-columns:1fr}.nkc.w2,.nkc.full{grid-column:auto}.gl2{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -168,19 +247,19 @@ aside .card{padding:12px 14px;margin-bottom:12px}
     <div class="r"><span id="upd"></span><button type="button" class="btn" id="reload">Refresh</button></div>
   </div>
 
-  <section aria-label="Indices">
-    <div class="idx" id="idx"></div>
-    <div class="card perf" id="perf" hidden>
-      <div class="who" id="perfWho"></div>
-      <div><div class="tiles" id="tiles"></div><div class="src" id="idxSrc"></div></div>
-      <div id="flow"></div>
-    </div>
-    <details class="card why" id="why">
-      <summary><b>What's moving the market</b><span class="wh" id="whyHead">Loading…</span><span class="chev" aria-hidden="true">▾</span></summary>
-      <div class="wbody" id="whyBody"></div>
-    </details>
-  </section>
 
+  <div class="grid">
+    <main>
+      <div class="card perf" id="perf" hidden>
+        <div class="who" id="perfWho"></div>
+        <div class="tiles" id="tiles"></div>
+        <div class="pchart" id="pchart"></div>
+        <div class="src" id="idxSrc"></div>
+      </div>
+      <details class="card why" id="why">
+        <summary><b>What's moving the market</b><span class="wh" id="whyHead">Loading…</span><span class="chev" aria-hidden="true">▾</span></summary>
+        <div class="wbody" id="whyBody"></div>
+      </details>
   <div class="tabs" role="tablist">
     <button type="button" role="tab" id="tabLive" data-v="live" aria-selected="true"><span class="live-dot" aria-hidden="true"></span>Live today<span class="cnt" id="liveCnt" hidden></span></button>
     <button type="button" role="tab" id="tabBrief" data-v="brief" aria-selected="false" hidden>Daily brief</button>
@@ -202,8 +281,6 @@ aside .card{padding:12px 14px;margin-bottom:12px}
   </section>
   </div>
 
-  <div class="grid">
-    <main>
       <div id="liveView">
         <div class="newbar" id="newBar" hidden><button type="button" id="newBtn"></button></div>
         <div class="chips" id="lchips" role="group" aria-label="Filter live headlines"></div>
@@ -217,6 +294,11 @@ aside .card{padding:12px 14px;margin-bottom:12px}
       </div>
     </main>
     <aside>
+      <div class="card wl" aria-label="Watchlist">
+        <div class="wlh"><span>Symbol</span><span>Last</span><span>Chg</span><span>Chg%</span></div>
+        <div id="idx"></div>
+        <div id="flow"></div>
+      </div>
       <div class="card"><h2 class="sec">Official notices · SEBI · RBI · NSE</h2><div id="official"><div class="empty">Loading…</div></div></div>
       <div class="card"><h2 class="sec">Coming up</h2><div id="events"></div></div>
     </aside>
@@ -256,16 +338,21 @@ aside .card{padding:12px 14px;margin-bottom:12px}
     if (!IX || !IX.indices || !IX.indices.length) { $('idx').innerHTML = ''; $('perf').hidden = true; return; }
     const L = IX.indices; if (sel >= L.length) sel = 0;
     const tick = x => { const p = LAST[x.name]; LAST[x.name] = x.level; return p == null || p === x.level ? '' : x.level > p ? ' fu' : ' fd'; };
-    $('idx').innerHTML = L.map((x, i) => `<button type="button" class="ix${tick(x)}" aria-pressed="${i === sel}" data-i="${i}" title="${esc(x.name)}: click for performance. Line = last ~22 trading days (about 1 month), green if higher than a month ago">
-      <span class="n">${esc(x.name)}</span><span class="v">${inr(x.level)}</span>
-      <span class="c ${cls(x.chgPct)}">${x.chg == null ? '' : (x.chg > 0 ? '+' : x.chg < 0 ? '−' : '') + inr(Math.abs(x.chg))} (${sg(x.chgPct)})</span>${spark(x.spark, (x.spark || [0]).at(-1) >= (x.spark || [0])[0])}</button>`).join('');
+    const SHORT = { 'Nifty Midcap 150': 'Midcap 150', 'Nifty Smallcap 250': 'Smallcap 250', 'Brent crude · $': 'Brent $', 'WTI crude · $': 'WTI $', 'Gold · ₹/10 g': 'Gold ₹/10g', 'Silver · ₹/kg': 'Silver ₹/kg', 'Gold/Silver ratio': 'Gold/Silver' };
+    $('idx').innerHTML = L.map((x, i) => {
+      const ch = x.chg == null ? '' : (x.chg > 0 ? '+' : x.chg < 0 ? '−' : '') + inr(Math.abs(x.chg));
+      return `<button type="button" class="wr${tick(x)}" aria-pressed="${i === sel}" data-i="${i}" title="${esc(x.name)}: click for performance">
+      <span class="n">${esc(SHORT[x.name] || x.name)}</span><span class="v">${inr(x.level)}</span><span class="c ${cls(x.chgPct)}">${ch}</span><span class="p ${cls(x.chgPct)}">${sg(x.chgPct)}</span></button>`;
+    }).join('');
     $('flow').innerHTML = flowCard();
     const x = L[sel];
     $('perf').hidden = false;
-    $('perfWho').innerHTML = `<b>${esc(x.name)} · performance</b><span>${IX.live && marketOpen() ? 'Latest' : 'Close'} ${dd(x.date)} · ${inr(x.level)}</span>`;
+    const isOpen = kindOpen(x), at = new Date(IX.updated).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Kolkata' });
+    $('perfWho').innerHTML = `<b>${esc(x.name)} · performance</b><span>${IX.live && isOpen ? `Latest ${at} IST` : `Close ${dd(x.date)}`} · ${inr(x.level)}</span>`;
     const P = x.perf || {};
     $('tiles').innerHTML = [['1D', x.chgPct], ['1W', P['1W']], ['1M', P['1M']], ['3M', P['3M']], ['6M', P['6M']], ['YTD', P.YTD], ['1Y', P['1Y']]]
-      .map(([k, v]) => `<div class="tile ${cls(v)}"><b class="${cls(v)}">${sg(v)}</b><span>${k}</span></div>`).join('');
+      .map(([k, v]) => `<button type="button" class="tile ${cls(v)}" data-r="${k}"${k === '1D' ? ' disabled title="Today: see What\'s moving the market"' : ` aria-pressed="${k === rng}" title="Show ${k} on the chart"`}><b class="${cls(v)}">${sg(v)}</b><span>${k}</span></button>`).join('');
+    $('pchart').innerHTML = perfChart(x);
     const t = new Date(IX.updated);
     const live = x.metal ? `Price: ${x.src}. Quoted the Indian way: gold per 10 g, silver per kg (÷ 1,000 for per gram). To compare with TradingView: XAUINRG × 10 = gold card; XAGINR ÷ 31.1035 × 1,000 = silver card. Excludes import duty and GST, so it is below Indian MCX or jeweller rates` : IX.live ? `Live, refreshed every 15 seconds in market hours (${x.src === 'NSE' ? 'level from NSE' : 'level from Yahoo Finance, may lag ~15 min'})` : 'Daily closes from Yahoo Finance';
     $('idxSrc').textContent = `${live}; return history from Yahoo Finance daily closes. Card lines show the last ~22 trading days (about 1 month): green if the index is higher than a month ago, orange if lower. Updated ${t.toLocaleString('en-IN', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit', timeZone:'Asia/Kolkata' })} IST.`;
@@ -283,10 +370,10 @@ aside .card{padding:12px 14px;margin-bottom:12px}
       const n = (sgn, v) => (sgn === '+' ? 1 : -1) * +v.replace(/,/g, '');
       f = { date: dd(d.date), fii: n(m[1], m[2]), dii: n(m[3], m[4]), src: 'Daily brief (provisional)' };
     }
-    return `<div class="ix flow" title="Net buying (+) or selling (−) in the cash market, ₹ crore. Source: ${esc(f.src)}">
-      <span class="n">FII / DII net (cash) · ${esc(fd(f.date))}</span>
-      <span class="row"><span>FII</span><b class="${cls(f.fii)}">${cr(f.fii)}</b></span>
-      <span class="row"><span>DII</span><b class="${cls(f.dii)}">${cr(f.dii)}</b></span>
+    return `<div class="wflow" title="Net buying (+) or selling (−) in the cash market, ₹ crore. Source: ${esc(f.src)}">
+      <div class="wg">FII / DII net (cash) · ${esc(fd(f.date))}</div>
+      <div class="row"><span>FII</span><b class="${cls(f.fii)}">${cr(f.fii)}</b></div>
+      <div class="row"><span>DII</span><b class="${cls(f.dii)}">${cr(f.dii)}</b></div>
       <small>${/provisional/i.test(f.src) ? 'provisional' : ''}</small></div>`;
   }
 
@@ -392,6 +479,80 @@ aside .card{padding:12px 14px;margin-bottom:12px}
   $('reload').addEventListener('click', () => { load(); loadNews(); });
 
   // ---------- live market data ----------
+
+  // which market a row belongs to, and whether that market is trading now
+  const nyNow = () => { const p = Object.fromEntries(new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', weekday: 'short', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(new Date()).map(x => [x.type, x.value])); return { d: p.weekday, m: (+p.hour % 24) * 60 + +p.minute }; };
+  const kindOf = x => x.metal || /brent|wti|gold|silver/i.test(x.name) ? 'comm' : /s&p|nasdaq|dow/i.test(x.name) ? 'us' : 'in';
+  function kindOpen(x) {
+    const k = kindOf(x), n = nyNow();
+    if (k === 'in') return marketOpen();
+    if (k === 'us') return ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].includes(n.d) && n.m >= 570 && n.m < 960;          // 9:30–16:00 New York
+    if (n.d === 'Sat') return false;                                                                            // commodities: Sun 18:00 to Fri 17:00 New York, 1-hour break daily
+    if (n.d === 'Sun') return n.m >= 1080;
+    if (n.d === 'Fri') return n.m < 1020;
+    return n.m < 1020 || n.m >= 1080;
+  }
+  // performance chart: about a year of daily closes, trimmed to the chosen period
+  let rng = '1Y', HIST = {};
+  try { rng = localStorage.getItem('pulse_rng') || '1Y'; } catch (e) {}
+  async function loadHist() { try { const h = await getJSON('api/market?hist=1'); (h.indices || []).forEach(x => { if (x.hist) HIST[x.name] = x.hist; }); renderIdx(); } catch (e) {} }
+
+  // place chart labels so they never overlap each other or leave the picture; drawn at real pixel size
+  function placeLabels(lab, W, top, bottom) {
+    const tw = l => l.t.length * 7.4 + 6, box = l => { const w = tw(l), x0 = l.a === 'end' ? l.x - w : l.a === 'middle' ? l.x - w / 2 : l.x; return { x0, x1: x0 + w, y0: l.y - 13, y1: l.y + 5 }; };
+    const hit = (a, b) => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
+    const done = [];
+    for (const l of lab) {
+      if (l.fixed) { done.push(l); continue; }
+      const w = tw(l);                                   // keep inside left/right edges
+      if (l.a === 'middle') l.x = Math.min(Math.max(l.x, w / 2 + 2), W - w / 2 - 2);
+      if (l.a === 'start') l.x = Math.min(l.x, W - w - 2);
+      if (l.a === 'end') l.x = Math.max(l.x, w + 2);
+      const y0 = l.y; let ok = false;
+      for (let k = 0; k < 12 && !ok; k++) {
+        const dy = k === 0 ? 0 : (k % 2 ? 1 : -1) * Math.ceil(k / 2) * 18;
+        l.y = Math.min(Math.max(y0 + dy, top + 13), bottom - 5);
+        ok = !done.some(d => hit(box(l), box(d)));
+      }
+      done.push(l);
+    }
+    return done.map(l => `<text x="${l.x.toFixed(1)}" y="${l.y.toFixed(1)}" text-anchor="${l.a}" font-size="12.5" font-weight="${l.w || 600}" fill="${l.c || 'var(--muted)'}" font-family="Calibri,Arial,sans-serif">${l.t}</text>`).join('');
+  }
+  function perfChart(x) {
+    let rows = (HIST[x.name] || []).slice();
+    if (!rows.length) return '<div class="none">Loading chart…</div>';
+    if (x.date && rows[rows.length - 1][0] < x.date) rows.push([x.date, x.level]); else rows[rows.length - 1] = [rows[rows.length - 1][0], x.level];
+    const end = new Date(rows[rows.length - 1][0] + 'T00:00:00Z'), from = new Date(end);
+    if (rng === 'YTD') from.setUTCMonth(0, 1); else from.setUTCDate(from.getUTCDate() - ({ '1W': 7, '1M': 30, '3M': 91, '6M': 182, '1Y': 365 }[rng] || 365));
+    const f = from.toISOString().slice(0, 10), base = rows.filter(r => r[0] < f).slice(-1)[0];
+    rows = (base ? [base] : []).concat(rows.filter(r => r[0] >= f));
+    if (rows.length < 2) return '<div class="none">Not enough history for this period.</div>';
+    const W = Math.max(300, Math.round(($('pchart').clientWidth || 760))), H = W < 520 ? 150 : 170;
+    const v = rows.map(r => r[1]), mn = Math.min(...v), mx = Math.max(...v), rr = mx - mn || 1;
+    const dp = mx < 100 ? 2 : 0, val = n => Number(n).toLocaleString('en-IN', { maximumFractionDigits: dp, minimumFractionDigits: dp });
+    const R = Math.max(val(v[v.length - 1]).length, ('Start ' + val(v[0])).length) * 7.4 + 16, L = 4, T = 20, B = 26;   // room for the end labels and the date row
+    const X = i => L + i / (rows.length - 1) * (W - L - R), Y = y => T + (1 - (y - mn) / rr) * (H - T - B);
+    const up = v[v.length - 1] >= v[0], col = up ? 'var(--up)' : 'var(--down)';
+    const line = rows.map((r, i) => X(i).toFixed(1) + ',' + Y(r[1]).toFixed(1)).join(' ');
+    const dlab = d => { const [yy, mm, d2] = d.split('-'); return rng === '1W' || rng === '1M' ? `${+d2} ${MON[+mm - 1]}` : `${MON[+mm - 1]} ${yy.slice(2)}`; };
+    const iMax = v.indexOf(mx), iMin = v.indexOf(mn), last = rows.length - 1;
+    let s = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${esc(x.name)}, ${rng}">`;
+    s += `<polygon points="${X(0).toFixed(1)},${H - B} ${line} ${X(last).toFixed(1)},${H - B}" fill="${col}" opacity=".08"/>`;
+    s += `<line x1="${L}" x2="${W - R}" y1="${Y(v[0]).toFixed(1)}" y2="${Y(v[0]).toFixed(1)}" stroke="var(--muted)" stroke-dasharray="4 4" stroke-width="1"/>`;
+    s += `<polyline points="${line}" fill="none" stroke="${col}" stroke-width="2" stroke-linejoin="round"/>`;
+    s += `<circle cx="${X(iMax).toFixed(1)}" cy="${Y(mx).toFixed(1)}" r="3" fill="var(--ink)"/><circle cx="${X(iMin).toFixed(1)}" cy="${Y(mn).toFixed(1)}" r="3" fill="var(--ink)"/>`;
+    s += `<circle cx="${X(last).toFixed(1)}" cy="${Y(v[last]).toFixed(1)}" r="4.5" fill="${col}"/>`;
+    const labs = [
+      { x: L, y: H - 6, t: dlab(rows[0][0]), a: 'start', fixed: true },
+      { x: W - R, y: H - 6, t: dlab(rows[last][0]), a: 'end', fixed: true },
+      { x: W - R + 8, y: Y(v[last]) + 4, t: val(v[last]), a: 'start', c: col, w: 700 },
+      { x: W - R + 8, y: Y(v[0]) + 4, t: 'Start ' + val(v[0]), a: 'start' },
+    ];
+    if (iMax !== last) labs.push({ x: X(iMax), y: Y(mx) - 7, t: 'High ' + val(mx), a: 'middle' });
+    if (iMin !== last) labs.push({ x: X(iMin), y: Y(mn) + 16, t: 'Low ' + val(mn), a: 'middle' });
+    return s + placeLabels(labs, W, 0, H - B + 2) + '</svg>';
+  }
+  $('tiles').addEventListener('click', e => { const b = e.target.closest('[data-r]'); if (!b || b.disabled) return; rng = b.dataset.r; try { localStorage.setItem('pulse_rng', rng) } catch (x) {} renderIdx(); });
   async function loadMarket() {
     try {
       const m = await getJSON('api/market');
@@ -466,12 +627,14 @@ aside .card{padding:12px 14px;margin-bottom:12px}
     if (gap >= 0.25) path += n.last > n.open ? ' and has added to those gains' : n.last > n.prev ? ' but has given back part of the early rise' : ' but has given up all of the early rise';
     else if (gap <= -0.25) path += n.last < n.open ? ' and has fallen further' : n.last < n.prev ? ' and has recovered part of the early fall' : ' and has recovered the early fall completely';
     path += `. Day's range ${inr(n.low)}–${inr(n.high)}; ${open ? 'now' : 'it closed'} ${pos > 0.75 ? 'near the high' : pos < 0.25 ? 'near the low' : 'in the middle of the range'}.`;
-    S.push(path);
+    S.push(path); const capPath = path, capOpen = S[0];
     const br = [];
     if (n.adv != null && n.dec != null) br.push(`${n.adv} of the 50 Nifty stocks are up and ${n.dec} down`);
     const mid = (M.broad || []).find(b => /Midcap/.test(b.name)), sml = (M.broad || []).find(b => /Smallcap/.test(b.name)), vix = (M.broad || []).find(b => /VIX/.test(b.name));
     if (mid && sml) { const avg = (mid.pct + sml.pct) / 2, d = avg - n.chgPct; br.push(`midcaps ${pc(mid.pct)} and smallcaps ${pc(sml.pct)}, ${Math.abs(d) < 0.3 ? 'broadly in line with large caps' : d > 0 ? 'doing better than large caps' : 'lagging large caps'}`); }
     if (br.length) S.push(br.join('; ') + '.');
+    const capBreadth = n.adv != null && n.dec != null ? `${n.adv} of the 50 Nifty stocks are up and ${n.dec} down.` : '';
+    const capSize = br.length > 1 || (!capBreadth && br.length) ? br[br.length - 1].replace(/^m/, 'M') + '.' : '';
     const sec = M.sectors || [];
     if (sec.length > 3) S.push(`Strongest sectors: ${sec.slice(0, 3).map(x => `${x.name} ${pc(x.pct)}`).join(', ')}. Weakest: ${sec.slice(-3).reverse().map(x => `${x.name} ${pc(x.pct)}`).join(', ')}.`);
     const H = (M.heavy || []).slice().sort((a, b) => Math.abs(b.pct) - Math.abs(a.pct));
@@ -489,11 +652,80 @@ aside .card{padding:12px 14px;margin-bottom:12px}
     const names = [...(M.up || []), ...(M.down || []), ...(M.heavy || [])].map(x => nm(x).split(' ').slice(0, nm(x).split(' ')[0].length > 4 ? 1 : 2).join(' ')).filter(w => w.length > 2);
     const re = names.length ? new RegExp('\\b(' + names.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')', 'i') : null;
     const T = todays(ALL), rel = T.filter(i => (re && re.test(i.title)) || (i.topic === 'markets' && /sensex|nifty/i.test(i.title))).slice(0, 6);
-    $('whyBody').innerHTML = `<div class="story">${S.map(x => `<p>${x}</p>`).join('')}${pathSvg(M.intraday)}<div class="src">Nifty 50 today in 5-minute steps; dashed line = yesterday's close.</div></div>
-      <div><h5>Top gainers in Nifty 50</h5><div class="mv">${list(M.up || [])}</div><h5>Top losers in Nifty 50</h5><div class="mv">${list(M.down || [])}</div></div>
-      <div><h5>Sectors today</h5>${sec.map(x => `<div class="sbar"><span>${esc(x.name)}</span><span><i style="width:${(Math.abs(x.pct) / mx * 100).toFixed(0)}%;background:${x.pct >= 0 ? 'var(--up)' : 'var(--down)'};${x.pct < 0 ? 'margin-left:auto' : ''}"></i></span><b class="${cls(x.pct)}">${pc(x.pct)}</b></div>`).join('')}</div>
-      <div class="whl"><h5>Related headlines</h5>${rel.length ? rel.map(i => `<a href="${esc(i.url)}" target="_blank" rel="noopener">${esc(i.title)} <small>${hm(i.t)} · ${esc(i.src)}</small></a>`).join('') : '<small>No matching headlines yet today.</small>'}</div>
-      <div class="wsrc">Built automatically from live numbers: Nifty level, range, breadth and sectors from NSE; stock moves from ${esc(M.source || 'NSE')}. Updates every 30 seconds in market hours. The "why" behind a stock's move is in the related headlines.</div>`;
+    const card = (q, pic, cap, w2) => `<div class="nkc${w2 === true ? ' w2' : w2 ? ' ' + w2 : ''}"><h5>${q}</h5>${pic}${cap ? `<p class="cap">${cap}</p>` : ''}</div>`;
+    const C = [];
+    const bars = (rows, k, smallCls) => { const m = Math.max(...rows.map(r => Math.abs(r[1])), 0.5); return rows.map(([nmx, v]) => `<div class="dvb${smallCls ? ' sm' : ''}"><span>${esc(nmx)}</span><span class="tk"><i style="${v >= 0 ? 'left:50%' : 'right:50%'};width:${(Math.abs(v) / m * 50).toFixed(1)}%;background:${v >= 0 ? 'var(--up)' : 'var(--down)'}"></i></span><b class="${cls(v)}">${pc(v)}</b></div>`).join(''); };
+    // row 1: the day as a line (2 columns) + how many stocks joined in
+    C.push(card('How did the day go?', dayPic(M.intraday, n), `${capOpen} ${capPath}`, true));
+    if (n.adv != null && n.dec != null) {
+      const u = Math.min(50, n.adv), d = Math.min(50 - u, n.dec);
+      C.push(card('How many stocks joined in?', `<div class="dots" role="img" aria-label="${u} up, ${d} down, ${50 - u - d} unchanged">${'<i class="u"></i>'.repeat(u)}${'<i class="d"></i>'.repeat(d)}${'<i></i>'.repeat(50 - u - d)}</div>`, `<b class="up">${n.adv} up</b> · <b class="down">${n.dec} down</b> of the 50 Nifty stocks${50 - u - d > 0 ? ` · ${50 - u - d} unchanged` : ''}.`));
+    }
+    // row 2: sectors (2 columns) + a stack of big/mid/small and mood & money
+    if (sec.length) C.push(card('Which sectors led and lagged?', bars(sec.map(x => [x.name, x.pct])),
+      sec.length > 3 ? `Strongest: ${sec.slice(0, 3).map(x => esc(x.name)).join(', ')}. Weakest: ${sec.slice(-3).reverse().map(x => esc(x.name)).join(', ')}.` : '', true));
+    const stack = [];
+    if (mid && sml) stack.push(card('Big, mid or small: who did better?', bars([['Large caps', n.chgPct], ['Mid caps', mid.pct], ['Small caps', sml.pct]], 0, true), `Large = Nifty 50, mid = Midcap 150, small = Smallcap 250. ${capSize}`));
+    const cx = [];
+    if (vix) cx.push(`<div><span>India VIX (expected swings)</span><b>${vix.last.toFixed(2)} <span class="${cls(vix.pct)}" style="font-size:12.5px">${pc(vix.pct)}</span></b></div>`);
+    if (brent) cx.push(`<div><span>Brent crude</span><b>$${brent.level.toFixed(2)} <span class="${cls(brent.chgPct)}" style="font-size:12.5px">${pc(brent.chgPct)}</span></b></div>`);
+    if (f && f.fii != null) cx.push(`<div><span>FIIs ${f.fii >= 0 ? 'bought' : 'sold'} · ${esc(fd(f.date))}</span><b class="${cls(f.fii)}">₹${Math.abs(Math.round(f.fii)).toLocaleString('en-IN')} cr</b><small>provisional</small></div>`);
+    if (cx.length) stack.push(card('Mood and money', `<div class="ctx">${cx.join('')}</div>`, ''));
+    if (stack.length) C.push(`<div class="nkstack">${stack.join('')}</div>`);
+    // row 3: gainers and losers side by side; row 4: related headlines
+    C.push(card('Top gainers and losers in Nifty 50', `<div class="gl2"><div><h6>Gainers</h6><div class="mv">${list(M.up || [])}</div></div><div><h6>Losers</h6><div class="mv">${list(M.down || [])}</div></div></div>`, '', 'full'));
+    C.push(card('Related headlines', `<div class="whl">${rel.length ? rel.map(i => `<a href="${esc(i.url)}" target="_blank" rel="noopener">${esc(i.title)} <small>${hm(i.t)} · ${esc(i.src)}</small></a>`).join('') : '<small>No matching headlines yet today.</small>'}</div>`, '', 'full'));
+    $('whyBody').className = 'wbody nk';
+    $('whyBody').innerHTML = C.join('') + `<div class="wsrc">Built automatically from live numbers: Nifty level, range, breadth and sectors from NSE; stock moves from ${esc(M.source || 'NSE')}. Updates every 30 seconds in market hours. The "why" behind a stock's move is in the related headlines.</div>`;
+  }
+  // ---- napkin pictures ----
+  const fmt0 = v => Number(v).toLocaleString('en-IN', { maximumFractionDigits: 0 });
+  function dayPic(p, n) {
+    if (!p || !p.pts || p.pts.length < 2) return pathSvg(p);
+    const mw = (document.querySelector('main') || {}).clientWidth || 800, one = mw < 640;
+    const W = Math.max(280, Math.round(one ? mw - 50 : (mw - 44) * 2 / 3 - 18)), H = 160, L = 4, T = 18, B = 24;
+    const v = p.pts.map(x => x[1]).concat(p.prev ? [p.prev] : []), mn = Math.min(...v), mx = Math.max(...v), r = mx - mn || 1;
+    const R = ('Yesterday ' + fmt0(p.prev || 0)).length * 7.4 + 16;
+    const t0 = p.pts[0][0], t1 = t0 + 375 * 60e3;
+    const X = t => L + (t - t0) / (t1 - t0) * (W - L - R), Y = y => T + (1 - (y - mn) / r) * (H - T - B);
+    const last = p.pts[p.pts.length - 1], first = p.pts[0], up = !p.prev || last[1] >= p.prev, col = up ? 'var(--up)' : 'var(--down)';
+    const line = p.pts.map(([t, y]) => X(t).toFixed(1) + ',' + Y(y).toFixed(1)).join(' ');
+    const hhmm = m => { const d = new Date(t0 + m * 60e3 + 5.5 * 3600e3); return String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0'); };
+    let s = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" style="max-width:100%;height:auto" role="img" aria-label="Nifty 50 today in 5-minute steps">`;
+    s += `<polygon points="${X(first[0]).toFixed(1)},${Y(p.prev || mn).toFixed(1)} ${line} ${X(last[0]).toFixed(1)},${Y(p.prev || mn).toFixed(1)}" fill="${col}" opacity=".1"/>`;
+    if (p.prev) s += `<line x1="${L}" x2="${W - R}" y1="${Y(p.prev).toFixed(1)}" y2="${Y(p.prev).toFixed(1)}" stroke="var(--muted)" stroke-dasharray="4 4"/>`;
+    s += `<polyline points="${line}" fill="none" stroke="${col}" stroke-width="2.2" stroke-linejoin="round"/>`;
+    s += `<circle cx="${X(first[0]).toFixed(1)}" cy="${Y(first[1]).toFixed(1)}" r="4" fill="#fff" stroke="var(--ink)" stroke-width="1.6"/><circle cx="${X(last[0]).toFixed(1)}" cy="${Y(last[1]).toFixed(1)}" r="4.5" fill="${col}"/>`;
+    const labs = [0, 165, 375].map(m => ({ x: L + m / 375 * (W - L - R), y: H - 6, t: hhmm(m), a: m === 0 ? 'start' : m === 375 ? 'end' : 'middle', fixed: true }));
+    labs.push({ x: W - R + 8, y: Y(last[1]) + 4, t: (marketOpen() ? 'Now ' : 'Close ') + fmt0(last[1]), a: 'start', c: col, w: 700 });
+    if (p.prev) labs.push({ x: W - R + 8, y: Y(p.prev) + 4, t: 'Yesterday ' + fmt0(p.prev), a: 'start' });
+    labs.push({ x: X(first[0]) + 9, y: Y(first[1]) + (Y(first[1]) < 40 ? 18 : -9), t: 'Open ' + fmt0(n.open), a: 'start', c: 'var(--ink)' });
+    return s + placeLabels(labs, W, 0, H - B + 2) + '</svg>';
+  }
+  function rangePic(n) {
+    const W = 240, H = 70, L = 10, R = 10, y = 30, lo = Math.min(n.low, n.prev), hi = Math.max(n.high, n.prev), r = hi - lo || 1;
+    const X = v => L + (v - lo) / r * (W - L - R);
+    const tx = (x, yy, t, a, c, w) => `<text x="${x.toFixed(1)}" y="${yy}" text-anchor="${a}" font-size="12.5" font-weight="${w || 600}" fill="${c || 'var(--muted)'}" font-family="Calibri,Arial,sans-serif">${t}</text>`;
+    const anc = x => x < 55 ? 'start' : x > W - 55 ? 'end' : 'middle';
+    const col = n.last >= n.prev ? 'var(--up)' : 'var(--down)';
+    let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Day's range ${inr(n.low)} to ${inr(n.high)}">`;
+    s += `<line x1="${X(n.low)}" x2="${X(n.high)}" y1="${y}" y2="${y}" stroke="var(--line)" stroke-width="10" stroke-linecap="round"/>`;
+    s += tx(X(n.low), y + 24, 'Low ' + fmt0(n.low), anc(X(n.low))) + tx(X(n.high), y + 24, 'High ' + fmt0(n.high), anc(X(n.high)));
+    s += `<line x1="${X(n.prev)}" x2="${X(n.prev)}" y1="${y - 10}" y2="${y + 10}" stroke="var(--muted)" stroke-width="2" stroke-dasharray="3 2"/>`;
+    s += `<circle cx="${X(n.open)}" cy="${y}" r="5" fill="#fff" stroke="var(--ink)" stroke-width="1.6"/>`;
+    s += `<circle cx="${X(n.last)}" cy="${y}" r="6.5" fill="${col}" stroke="#fff" stroke-width="1.5"/>`;
+    s += tx(X(n.last), y - 13, (marketOpen() ? 'Now ' : 'Close ') + fmt0(n.last), anc(X(n.last)), col, 700);
+    return s + `</svg><div style="font-size:11.5px;color:var(--muted)">○ open · ● ${marketOpen() ? 'now' : 'close'} · ┆ yesterday's close ${fmt0(n.prev)}</div>`;
+  }
+  function colsPic(rows) {
+    const mx = Math.max(...rows.map(r => Math.abs(r[1])), 0.5), neg = rows.some(r => r[1] < 0), pos = rows.some(r => r[1] > 0);
+    const zero = neg && pos ? 50 : neg ? 8 : 92;            // % from top where the zero line sits
+    return `<div class="cols">${rows.map(([k, v]) => {
+      const h = Math.abs(v) / mx * (neg && pos ? 40 : 76), up = v >= 0;
+      return `<div class="col"><div class="tr" style="border-bottom:0;background:linear-gradient(var(--muted),var(--muted)) 0 ${zero}%/100% 1px no-repeat">
+        <i class="${up ? '' : 'dn'}" style="${up ? `bottom:${100 - zero}%` : `top:${zero}%`};height:${h.toFixed(1)}%;background:${up ? 'var(--up)' : 'var(--down)'}"></i>
+        <b class="${cls(v)}" style="${up ? `bottom:calc(${100 - zero + h}% + 2px)` : `top:calc(${zero + h}% + 2px)`}">${pc(v)}</b></div><span>${k}</span></div>`;
+    }).join('')}</div>`;
   }
 
   function renderLive() {
@@ -544,6 +776,9 @@ aside .card{padding:12px 14px;margin-bottom:12px}
   }, 60000);
   // in market hours: index cards every 15 seconds
   setInterval(() => { if (!document.hidden && marketOpen()) loadMarket(); }, 15000);
+  let rsz; addEventListener('resize', () => { clearTimeout(rsz); rsz = setTimeout(() => { renderIdx(); if (MV) renderWhy(); }, 200); });
+  $('why').addEventListener('toggle', () => { if ($('why').open && MV) renderWhy(); });
+  loadHist(); setInterval(() => { if (!document.hidden) loadHist(); }, 30 * 60e3);
   setInterval(() => { if (!document.hidden && marketOpen()) loadMovers(); }, 30000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) { loadMarket(); loadNews(); } });
 })();
