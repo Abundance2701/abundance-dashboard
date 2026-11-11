@@ -188,7 +188,8 @@ aside .card{padding:12px 14px;margin-bottom:12px}
 @media (max-width:900px){.top2{grid-template-columns:1fr}.top2 .wl,.top2 .mainc{grid-column:1;grid-row:auto}.top2 .wl{position:static;max-height:none}}
 
 /* ---- what's moving: one small picture per question ---- */
-.wbody.nk{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;padding:0 12px 12px}
+.wbody.nk{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));grid-auto-flow:row dense;gap:10px;padding:0 12px 12px;align-items:start}
+.nkc.tall{grid-row:span 2}
 .nkc{border:1px solid var(--line);border-radius:10px;background:#fff;padding:10px 12px;display:flex;flex-direction:column;gap:6px;min-width:0}
 .nkc.w2{grid-column:span 2}
 @media (max-width:620px){.nkc.w2{grid-column:auto}}
@@ -565,7 +566,7 @@ aside .card{padding:12px 14px;margin-bottom:12px}
     const names = [...(M.up || []), ...(M.down || []), ...(M.heavy || [])].map(x => nm(x).split(' ').slice(0, nm(x).split(' ')[0].length > 4 ? 1 : 2).join(' ')).filter(w => w.length > 2);
     const re = names.length ? new RegExp('\\b(' + names.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')', 'i') : null;
     const T = todays(ALL), rel = T.filter(i => (re && re.test(i.title)) || (i.topic === 'markets' && /sensex|nifty/i.test(i.title))).slice(0, 6);
-    const card = (q, pic, cap, w2) => `<div class="nkc${w2 ? ' w2' : ''}"><h5>${q}</h5>${pic}${cap ? `<p class="cap">${cap}</p>` : ''}</div>`;
+    const card = (q, pic, cap, w2) => `<div class="nkc${w2 === true ? ' w2' : w2 ? ' ' + w2 : ''}"><h5>${q}</h5>${pic}${cap ? `<p class="cap">${cap}</p>` : ''}</div>`;
     const C = [];
     // 1. the day as a line, with yesterday's close, the open and where it is now marked
     C.push(card('How did the day go?', dayPic(M.intraday, n), `${capOpen} ${capPath}`, true));
@@ -580,7 +581,7 @@ aside .card{padding:12px 14px;margin-bottom:12px}
     if (mid && sml) C.push(card('Big, mid or small: who did better?', colsPic([['Large · Nifty 50', n.chgPct], ['Mid · 150', mid.pct], ['Small · 250', sml.pct]]), capSize));
     // 5. sectors, diverging from a zero line
     if (sec.length) C.push(card('Which sectors led and lagged?', sec.map(x => `<div class="dvb"><span>${esc(x.name)}</span><span class="tk"><i style="${x.pct >= 0 ? 'left:50%' : 'right:50%'};width:${(Math.abs(x.pct) / mx * 50).toFixed(1)}%;background:${x.pct >= 0 ? 'var(--up)' : 'var(--down)'}"></i></span><b class="${cls(x.pct)}">${pc(x.pct)}</b></div>`).join(''),
-      sec.length > 3 ? `Strongest: ${sec.slice(0, 3).map(x => esc(x.name)).join(', ')}. Weakest: ${sec.slice(-3).reverse().map(x => esc(x.name)).join(', ')}.` : ''));
+      sec.length > 3 ? `Strongest: ${sec.slice(0, 3).map(x => esc(x.name)).join(', ')}. Weakest: ${sec.slice(-3).reverse().map(x => esc(x.name)).join(', ')}.` : '', 'tall'));
     // 6. the heavyweights
     if (H.length) C.push(card('What did the heavyweights do?', `<div class="chipg">${(M.heavy || []).map(x => `<span class="${cls(x.pct)}">${esc(nm(x))}<b>${pc(x.pct)}</b></span>`).join('')}</div>`, `The largest Nifty stocks move the index most. Biggest moves: ${H.slice(0, 4).map(x => `${esc(nm(x))} ${pc(x.pct)}`).join(', ')}.`));
     // 7. top gainers / losers
