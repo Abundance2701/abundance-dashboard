@@ -222,6 +222,19 @@ aside .card.wl{padding:2px 0 4px}
 .ctx b{font:600 14px var(--f-display);font-variant-numeric:tabular-nums}
 .ctx small{grid-column:1/-1;color:var(--muted);font-size:11.5px}
 .nkc .whl a{border-top:1px solid var(--line)}
+
+/* performance panel with chart */
+main .perf{grid-template-columns:auto minmax(0,1fr);align-items:center;gap:10px 16px}
+main .perf .pchart,main .perf .src{grid-column:1/-1}
+main .perf .src{margin-top:0}
+.tile{border:0;font:inherit;color:inherit;cursor:pointer}
+.tile:disabled{cursor:default}
+.tile[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--ink)}
+.pchart svg{display:block;width:100%;height:auto}
+.pchart .none{font-size:12.5px;color:var(--muted);padding:6px 0}
+/* live headlines: line the tab up with the filters below */
+.tabs button:first-child{padding-left:2px}
+#lchips{margin-top:10px}
 </style>
 </head>
 <body>
@@ -236,7 +249,9 @@ aside .card.wl{padding:2px 0 4px}
     <main>
       <div class="card perf" id="perf" hidden>
         <div class="who" id="perfWho"></div>
-        <div><div class="tiles" id="tiles"></div><div class="src" id="idxSrc"></div></div>
+        <div class="tiles" id="tiles"></div>
+        <div class="pchart" id="pchart"></div>
+        <div class="src" id="idxSrc"></div>
       </div>
       <details class="card why" id="why">
         <summary><b>What's moving the market</b><span class="wh" id="whyHead">Loading…</span><span class="chev" aria-hidden="true">▾</span></summary>
@@ -329,10 +344,12 @@ aside .card.wl{padding:2px 0 4px}
     $('flow').innerHTML = flowCard();
     const x = L[sel];
     $('perf').hidden = false;
-    $('perfWho').innerHTML = `<b>${esc(x.name)} · performance</b><span>${IX.live && marketOpen() ? 'Latest' : 'Close'} ${dd(x.date)} · ${inr(x.level)}</span>`;
+    const isOpen = kindOpen(x), at = new Date(IX.updated).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Kolkata' });
+    $('perfWho').innerHTML = `<b>${esc(x.name)} · performance</b><span>${IX.live && isOpen ? `Latest ${at} IST` : `Close ${dd(x.date)}`} · ${inr(x.level)}</span>`;
     const P = x.perf || {};
     $('tiles').innerHTML = [['1D', x.chgPct], ['1W', P['1W']], ['1M', P['1M']], ['3M', P['3M']], ['6M', P['6M']], ['YTD', P.YTD], ['1Y', P['1Y']]]
-      .map(([k, v]) => `<div class="tile ${cls(v)}"><b class="${cls(v)}">${sg(v)}</b><span>${k}</span></div>`).join('');
+      .map(([k, v]) => `<button type="button" class="tile ${cls(v)}" data-r="${k}"${k === '1D' ? ' disabled title="Today: see What\'s moving the market"' : ` aria-pressed="${k === rng}" title="Show ${k} on the chart"`}><b class="${cls(v)}">${sg(v)}</b><span>${k}</span></button>`).join('');
+    $('pchart').innerHTML = perfChart(x);
     const t = new Date(IX.updated);
     const live = x.metal ? `Price: ${x.src}. Quoted the Indian way: gold per 10 g, silver per kg (÷ 1,000 for per gram). To compare with TradingView: XAUINRG × 10 = gold card; XAGINR ÷ 31.1035 × 1,000 = silver card. Excludes import duty and GST, so it is below Indian MCX or jeweller rates` : IX.live ? `Live, refreshed every 15 seconds in market hours (${x.src === 'NSE' ? 'level from NSE' : 'level from Yahoo Finance, may lag ~15 min'})` : 'Daily closes from Yahoo Finance';
     $('idxSrc').textContent = `${live}; return history from Yahoo Finance daily closes. Card lines show the last ~22 trading days (about 1 month): green if the index is higher than a month ago, orange if lower. Updated ${t.toLocaleString('en-IN', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit', timeZone:'Asia/Kolkata' })} IST.`;
@@ -459,6 +476,51 @@ aside .card.wl{padding:2px 0 4px}
   $('reload').addEventListener('click', () => { load(); loadNews(); });
 
   // ---------- live market data ----------
+
+  // which market a row belongs to, and whether that market is trading now
+  const nyNow = () => { const p = Object.fromEntries(new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', weekday: 'short', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(new Date()).map(x => [x.type, x.value])); return { d: p.weekday, m: (+p.hour % 24) * 60 + +p.minute }; };
+  const kindOf = x => x.metal || /brent|wti|gold|silver/i.test(x.name) ? 'comm' : /s&p|nasdaq|dow/i.test(x.name) ? 'us' : 'in';
+  function kindOpen(x) {
+    const k = kindOf(x), n = nyNow();
+    if (k === 'in') return marketOpen();
+    if (k === 'us') return ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].includes(n.d) && n.m >= 570 && n.m < 960;          // 9:30–16:00 New York
+    if (n.d === 'Sat') return false;                                                                            // commodities: Sun 18:00 to Fri 17:00 New York, 1-hour break daily
+    if (n.d === 'Sun') return n.m >= 1080;
+    if (n.d === 'Fri') return n.m < 1020;
+    return n.m < 1020 || n.m >= 1080;
+  }
+  // performance chart: about a year of daily closes, trimmed to the chosen period
+  let rng = '1Y', HIST = {};
+  try { rng = localStorage.getItem('pulse_rng') || '1Y'; } catch (e) {}
+  async function loadHist() { try { const h = await getJSON('api/market?hist=1'); (h.indices || []).forEach(x => { if (x.hist) HIST[x.name] = x.hist; }); renderIdx(); } catch (e) {} }
+  function perfChart(x) {
+    let rows = (HIST[x.name] || []).slice();
+    if (!rows.length) return '<div class="none">Loading chart…</div>';
+    if (x.date && rows[rows.length - 1][0] < x.date) rows.push([x.date, x.level]); else rows[rows.length - 1] = [rows[rows.length - 1][0], x.level];
+    const end = new Date(rows[rows.length - 1][0] + 'T00:00:00Z'), from = new Date(end);
+    if (rng === 'YTD') from.setUTCMonth(0, 1); else from.setUTCDate(from.getUTCDate() - ({ '1W': 7, '1M': 30, '3M': 91, '6M': 182, '1Y': 365 }[rng] || 365));
+    const f = from.toISOString().slice(0, 10), base = rows.filter(r => r[0] < f).slice(-1)[0];
+    rows = (base ? [base] : []).concat(rows.filter(r => r[0] >= f));
+    if (rows.length < 2) return '<div class="none">Not enough history for this period.</div>';
+    const W = 780, H = 170, L = 6, R = 92, T = 16, B = 24, v = rows.map(r => r[1]), mn = Math.min(...v), mx = Math.max(...v), rr = mx - mn || 1;
+    const X = i => L + i / (rows.length - 1) * (W - L - R), Y = y => T + (1 - (y - mn) / rr) * (H - T - B);
+    const up = v[v.length - 1] >= v[0], col = up ? 'var(--up)' : 'var(--down)';
+    const line = rows.map((r, i) => X(i).toFixed(1) + ',' + Y(r[1]).toFixed(1)).join(' ');
+    const tx = (xx, yy, t, a, c, w) => `<text x="${xx.toFixed(1)}" y="${yy.toFixed(1)}" text-anchor="${a}" font-size="13" font-weight="${w || 600}" fill="${c || 'var(--muted)'}" font-family="Calibri,Arial,sans-serif">${t}</text>`;
+    const lab = d => { const [yy, mm, dd2] = d.split('-'); return rng === '1W' || rng === '1M' ? `${+dd2} ${MON[+mm - 1]}` : `${MON[+mm - 1]} ${yy.slice(2)}`; };
+    const iMax = v.indexOf(mx), iMin = v.indexOf(mn), dp = mx < 100 ? 2 : 0, val = n => Number(n).toLocaleString('en-IN', { maximumFractionDigits: dp, minimumFractionDigits: dp });
+    let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(x.name)}, ${rng}">`;
+    s += `<polygon points="${X(0).toFixed(1)},${H - B} ${line} ${X(rows.length - 1).toFixed(1)},${H - B}" fill="${col}" opacity=".08"/>`;
+    s += `<line x1="${L}" x2="${W - R}" y1="${Y(v[0])}" y2="${Y(v[0])}" stroke="var(--muted)" stroke-dasharray="4 4" stroke-width="1"/>`;
+    s += `<polyline points="${line}" fill="none" stroke="${col}" stroke-width="2" stroke-linejoin="round"/>`;
+    s += `<circle cx="${X(iMax)}" cy="${Y(mx)}" r="3" fill="var(--ink)"/>` + tx(Math.min(Math.max(X(iMax), 40), W - R - 40), Y(mx) - 6, 'High ' + val(mx), 'middle');
+    s += `<circle cx="${X(iMin)}" cy="${Y(mn)}" r="3" fill="var(--ink)"/>` + tx(Math.min(Math.max(X(iMin), 40), W - R - 40), Y(mn) + 16, 'Low ' + val(mn), 'middle');
+    s += `<circle cx="${X(rows.length - 1)}" cy="${Y(v[v.length - 1])}" r="4.5" fill="${col}"/>` + tx(W - R + 8, Y(v[v.length - 1]) + 4, val(v[v.length - 1]), 'start', col, 700);
+    s += tx(W - R + 8, Y(v[0]) + (Math.abs(Y(v[0]) - Y(v[v.length - 1])) < 16 ? (Y(v[0]) > Y(v[v.length - 1]) ? 16 : -8) : 4), 'Start ' + val(v[0]), 'start');
+    s += tx(L, H - 6, lab(rows[0][0]), 'start') + tx(W - R, H - 6, lab(rows[rows.length - 1][0]), 'end');
+    return s + '</svg>';
+  }
+  $('tiles').addEventListener('click', e => { const b = e.target.closest('[data-r]'); if (!b || b.disabled) return; rng = b.dataset.r; try { localStorage.setItem('pulse_rng', rng) } catch (x) {} renderIdx(); });
   async function loadMarket() {
     try {
       const m = await getJSON('api/market');
@@ -680,6 +742,7 @@ aside .card.wl{padding:2px 0 4px}
   }, 60000);
   // in market hours: index cards every 15 seconds
   setInterval(() => { if (!document.hidden && marketOpen()) loadMarket(); }, 15000);
+  loadHist(); setInterval(() => { if (!document.hidden) loadHist(); }, 30 * 60e3);
   setInterval(() => { if (!document.hidden && marketOpen()) loadMovers(); }, 30000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) { loadMarket(); loadNews(); } });
 })();
