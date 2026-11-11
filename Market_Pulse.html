@@ -498,19 +498,19 @@ main .perf .src{margin-top:0}
 
   // place chart labels so they never overlap each other or leave the picture; drawn at real pixel size
   function placeLabels(lab, W, top, bottom) {
-    const box = l => { const w = l.t.length * 6.9 + 4, x0 = l.a === 'end' ? l.x - w : l.a === 'middle' ? l.x - w / 2 : l.x; return { x0, x1: x0 + w, y0: l.y - 11, y1: l.y + 3 }; };
+    const tw = l => l.t.length * 7.4 + 6, box = l => { const w = tw(l), x0 = l.a === 'end' ? l.x - w : l.a === 'middle' ? l.x - w / 2 : l.x; return { x0, x1: x0 + w, y0: l.y - 13, y1: l.y + 5 }; };
     const hit = (a, b) => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
     const done = [];
     for (const l of lab) {
       if (l.fixed) { done.push(l); continue; }
-      const w = l.t.length * 6.9 + 4;                    // keep inside left/right edges
+      const w = tw(l);                                   // keep inside left/right edges
       if (l.a === 'middle') l.x = Math.min(Math.max(l.x, w / 2 + 2), W - w / 2 - 2);
       if (l.a === 'start') l.x = Math.min(l.x, W - w - 2);
       if (l.a === 'end') l.x = Math.max(l.x, w + 2);
       const y0 = l.y; let ok = false;
       for (let k = 0; k < 12 && !ok; k++) {
-        const dy = k === 0 ? 0 : (k % 2 ? 1 : -1) * Math.ceil(k / 2) * 13;
-        l.y = Math.min(Math.max(y0 + dy, top + 11), bottom - 3);
+        const dy = k === 0 ? 0 : (k % 2 ? 1 : -1) * Math.ceil(k / 2) * 18;
+        l.y = Math.min(Math.max(y0 + dy, top + 13), bottom - 5);
         ok = !done.some(d => hit(box(l), box(d)));
       }
       done.push(l);
@@ -529,7 +529,7 @@ main .perf .src{margin-top:0}
     const W = Math.max(300, Math.round(($('pchart').clientWidth || 760))), H = W < 520 ? 150 : 170;
     const v = rows.map(r => r[1]), mn = Math.min(...v), mx = Math.max(...v), rr = mx - mn || 1;
     const dp = mx < 100 ? 2 : 0, val = n => Number(n).toLocaleString('en-IN', { maximumFractionDigits: dp, minimumFractionDigits: dp });
-    const R = Math.max(val(v[v.length - 1]).length, ('Start ' + val(v[0])).length) * 6.9 + 14, L = 4, T = 20, B = 26;   // room for the end labels and the date row
+    const R = Math.max(val(v[v.length - 1]).length, ('Start ' + val(v[0])).length) * 7.4 + 16, L = 4, T = 20, B = 26;   // room for the end labels and the date row
     const X = i => L + i / (rows.length - 1) * (W - L - R), Y = y => T + (1 - (y - mn) / rr) * (H - T - B);
     const up = v[v.length - 1] >= v[0], col = up ? 'var(--up)' : 'var(--down)';
     const line = rows.map((r, i) => X(i).toFixed(1) + ',' + Y(r[1]).toFixed(1)).join(' ');
@@ -684,7 +684,7 @@ main .perf .src{margin-top:0}
     const mw = (document.querySelector('main') || {}).clientWidth || 800, one = mw < 640;
     const W = Math.max(280, Math.round(one ? mw - 50 : (mw - 44) * 2 / 3 - 18)), H = 160, L = 4, T = 18, B = 24;
     const v = p.pts.map(x => x[1]).concat(p.prev ? [p.prev] : []), mn = Math.min(...v), mx = Math.max(...v), r = mx - mn || 1;
-    const R = ('Yesterday ' + fmt0(p.prev || 0)).length * 6.9 + 14;
+    const R = ('Yesterday ' + fmt0(p.prev || 0)).length * 7.4 + 16;
     const t0 = p.pts[0][0], t1 = t0 + 375 * 60e3;
     const X = t => L + (t - t0) / (t1 - t0) * (W - L - R), Y = y => T + (1 - (y - mn) / r) * (H - T - B);
     const last = p.pts[p.pts.length - 1], first = p.pts[0], up = !p.prev || last[1] >= p.prev, col = up ? 'var(--up)' : 'var(--down)';
