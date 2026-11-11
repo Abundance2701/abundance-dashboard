@@ -227,6 +227,8 @@ aside .card.wl{padding:2px 0 4px}
 main .perf{grid-template-columns:auto minmax(0,1fr);align-items:center;gap:10px 16px}
 main .perf .pchart,main .perf .src{grid-column:1/-1}
 main .perf .src{margin-top:0}
+@media (max-width:700px){main .perf{grid-template-columns:1fr}}
+.perf .who b{white-space:normal}
 .tile{border:0;font:inherit;color:inherit;cursor:pointer}
 .tile:disabled{cursor:default}
 .tile[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--ink)}
@@ -493,6 +495,28 @@ main .perf .src{margin-top:0}
   let rng = '1Y', HIST = {};
   try { rng = localStorage.getItem('pulse_rng') || '1Y'; } catch (e) {}
   async function loadHist() { try { const h = await getJSON('api/market?hist=1'); (h.indices || []).forEach(x => { if (x.hist) HIST[x.name] = x.hist; }); renderIdx(); } catch (e) {} }
+
+  // place chart labels so they never overlap each other or leave the picture; drawn at real pixel size
+  function placeLabels(lab, W, top, bottom) {
+    const box = l => { const w = l.t.length * 6.9 + 4, x0 = l.a === 'end' ? l.x - w : l.a === 'middle' ? l.x - w / 2 : l.x; return { x0, x1: x0 + w, y0: l.y - 11, y1: l.y + 3 }; };
+    const hit = (a, b) => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
+    const done = [];
+    for (const l of lab) {
+      if (l.fixed) { done.push(l); continue; }
+      const w = l.t.length * 6.9 + 4;                    // keep inside left/right edges
+      if (l.a === 'middle') l.x = Math.min(Math.max(l.x, w / 2 + 2), W - w / 2 - 2);
+      if (l.a === 'start') l.x = Math.min(l.x, W - w - 2);
+      if (l.a === 'end') l.x = Math.max(l.x, w + 2);
+      const y0 = l.y; let ok = false;
+      for (let k = 0; k < 12 && !ok; k++) {
+        const dy = k === 0 ? 0 : (k % 2 ? 1 : -1) * Math.ceil(k / 2) * 13;
+        l.y = Math.min(Math.max(y0 + dy, top + 11), bottom - 3);
+        ok = !done.some(d => hit(box(l), box(d)));
+      }
+      done.push(l);
+    }
+    return done.map(l => `<text x="${l.x.toFixed(1)}" y="${l.y.toFixed(1)}" text-anchor="${l.a}" font-size="12.5" font-weight="${l.w || 600}" fill="${l.c || 'var(--muted)'}" font-family="Calibri,Arial,sans-serif">${l.t}</text>`).join('');
+  }
   function perfChart(x) {
     let rows = (HIST[x.name] || []).slice();
     if (!rows.length) return '<div class="none">Loading chart…</div>';
@@ -502,23 +526,30 @@ main .perf .src{margin-top:0}
     const f = from.toISOString().slice(0, 10), base = rows.filter(r => r[0] < f).slice(-1)[0];
     rows = (base ? [base] : []).concat(rows.filter(r => r[0] >= f));
     if (rows.length < 2) return '<div class="none">Not enough history for this period.</div>';
-    const W = 780, H = 170, L = 6, R = 92, T = 16, B = 24, v = rows.map(r => r[1]), mn = Math.min(...v), mx = Math.max(...v), rr = mx - mn || 1;
+    const W = Math.max(300, Math.round(($('pchart').clientWidth || 760))), H = W < 520 ? 150 : 170;
+    const v = rows.map(r => r[1]), mn = Math.min(...v), mx = Math.max(...v), rr = mx - mn || 1;
+    const dp = mx < 100 ? 2 : 0, val = n => Number(n).toLocaleString('en-IN', { maximumFractionDigits: dp, minimumFractionDigits: dp });
+    const R = Math.max(val(v[v.length - 1]).length, ('Start ' + val(v[0])).length) * 6.9 + 14, L = 4, T = 20, B = 26;   // room for the end labels and the date row
     const X = i => L + i / (rows.length - 1) * (W - L - R), Y = y => T + (1 - (y - mn) / rr) * (H - T - B);
     const up = v[v.length - 1] >= v[0], col = up ? 'var(--up)' : 'var(--down)';
     const line = rows.map((r, i) => X(i).toFixed(1) + ',' + Y(r[1]).toFixed(1)).join(' ');
-    const tx = (xx, yy, t, a, c, w) => `<text x="${xx.toFixed(1)}" y="${yy.toFixed(1)}" text-anchor="${a}" font-size="13" font-weight="${w || 600}" fill="${c || 'var(--muted)'}" font-family="Calibri,Arial,sans-serif">${t}</text>`;
-    const lab = d => { const [yy, mm, dd2] = d.split('-'); return rng === '1W' || rng === '1M' ? `${+dd2} ${MON[+mm - 1]}` : `${MON[+mm - 1]} ${yy.slice(2)}`; };
-    const iMax = v.indexOf(mx), iMin = v.indexOf(mn), dp = mx < 100 ? 2 : 0, val = n => Number(n).toLocaleString('en-IN', { maximumFractionDigits: dp, minimumFractionDigits: dp });
-    let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(x.name)}, ${rng}">`;
-    s += `<polygon points="${X(0).toFixed(1)},${H - B} ${line} ${X(rows.length - 1).toFixed(1)},${H - B}" fill="${col}" opacity=".08"/>`;
-    s += `<line x1="${L}" x2="${W - R}" y1="${Y(v[0])}" y2="${Y(v[0])}" stroke="var(--muted)" stroke-dasharray="4 4" stroke-width="1"/>`;
+    const dlab = d => { const [yy, mm, d2] = d.split('-'); return rng === '1W' || rng === '1M' ? `${+d2} ${MON[+mm - 1]}` : `${MON[+mm - 1]} ${yy.slice(2)}`; };
+    const iMax = v.indexOf(mx), iMin = v.indexOf(mn), last = rows.length - 1;
+    let s = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${esc(x.name)}, ${rng}">`;
+    s += `<polygon points="${X(0).toFixed(1)},${H - B} ${line} ${X(last).toFixed(1)},${H - B}" fill="${col}" opacity=".08"/>`;
+    s += `<line x1="${L}" x2="${W - R}" y1="${Y(v[0]).toFixed(1)}" y2="${Y(v[0]).toFixed(1)}" stroke="var(--muted)" stroke-dasharray="4 4" stroke-width="1"/>`;
     s += `<polyline points="${line}" fill="none" stroke="${col}" stroke-width="2" stroke-linejoin="round"/>`;
-    s += `<circle cx="${X(iMax)}" cy="${Y(mx)}" r="3" fill="var(--ink)"/>` + tx(Math.min(Math.max(X(iMax), 40), W - R - 40), Y(mx) - 6, 'High ' + val(mx), 'middle');
-    s += `<circle cx="${X(iMin)}" cy="${Y(mn)}" r="3" fill="var(--ink)"/>` + tx(Math.min(Math.max(X(iMin), 40), W - R - 40), Y(mn) + 16, 'Low ' + val(mn), 'middle');
-    s += `<circle cx="${X(rows.length - 1)}" cy="${Y(v[v.length - 1])}" r="4.5" fill="${col}"/>` + tx(W - R + 8, Y(v[v.length - 1]) + 4, val(v[v.length - 1]), 'start', col, 700);
-    s += tx(W - R + 8, Y(v[0]) + (Math.abs(Y(v[0]) - Y(v[v.length - 1])) < 16 ? (Y(v[0]) > Y(v[v.length - 1]) ? 16 : -8) : 4), 'Start ' + val(v[0]), 'start');
-    s += tx(L, H - 6, lab(rows[0][0]), 'start') + tx(W - R, H - 6, lab(rows[rows.length - 1][0]), 'end');
-    return s + '</svg>';
+    s += `<circle cx="${X(iMax).toFixed(1)}" cy="${Y(mx).toFixed(1)}" r="3" fill="var(--ink)"/><circle cx="${X(iMin).toFixed(1)}" cy="${Y(mn).toFixed(1)}" r="3" fill="var(--ink)"/>`;
+    s += `<circle cx="${X(last).toFixed(1)}" cy="${Y(v[last]).toFixed(1)}" r="4.5" fill="${col}"/>`;
+    const labs = [
+      { x: L, y: H - 6, t: dlab(rows[0][0]), a: 'start', fixed: true },
+      { x: W - R, y: H - 6, t: dlab(rows[last][0]), a: 'end', fixed: true },
+      { x: W - R + 8, y: Y(v[last]) + 4, t: val(v[last]), a: 'start', c: col, w: 700 },
+      { x: W - R + 8, y: Y(v[0]) + 4, t: 'Start ' + val(v[0]), a: 'start' },
+    ];
+    if (iMax !== last) labs.push({ x: X(iMax), y: Y(mx) - 7, t: 'High ' + val(mx), a: 'middle' });
+    if (iMin !== last) labs.push({ x: X(iMin), y: Y(mn) + 16, t: 'Low ' + val(mn), a: 'middle' });
+    return s + placeLabels(labs, W, 0, H - B + 2) + '</svg>';
   }
   $('tiles').addEventListener('click', e => { const b = e.target.closest('[data-r]'); if (!b || b.disabled) return; rng = b.dataset.r; try { localStorage.setItem('pulse_rng', rng) } catch (x) {} renderIdx(); });
   async function loadMarket() {
@@ -650,23 +681,25 @@ main .perf .src{margin-top:0}
   const fmt0 = v => Number(v).toLocaleString('en-IN', { maximumFractionDigits: 0 });
   function dayPic(p, n) {
     if (!p || !p.pts || p.pts.length < 2) return pathSvg(p);
-    const W = 520, H = 150, L = 8, R = 118, T = 20, B = 24;
+    const mw = (document.querySelector('main') || {}).clientWidth || 800, one = mw < 640;
+    const W = Math.max(280, Math.round(one ? mw - 50 : (mw - 44) * 2 / 3 - 18)), H = 160, L = 4, T = 18, B = 24;
     const v = p.pts.map(x => x[1]).concat(p.prev ? [p.prev] : []), mn = Math.min(...v), mx = Math.max(...v), r = mx - mn || 1;
+    const R = ('Yesterday ' + fmt0(p.prev || 0)).length * 6.9 + 14;
     const t0 = p.pts[0][0], t1 = t0 + 375 * 60e3;
     const X = t => L + (t - t0) / (t1 - t0) * (W - L - R), Y = y => T + (1 - (y - mn) / r) * (H - T - B);
     const last = p.pts[p.pts.length - 1], first = p.pts[0], up = !p.prev || last[1] >= p.prev, col = up ? 'var(--up)' : 'var(--down)';
     const line = p.pts.map(([t, y]) => X(t).toFixed(1) + ',' + Y(y).toFixed(1)).join(' ');
-    const area = `${X(first[0]).toFixed(1)},${Y(p.prev || mn).toFixed(1)} ${line} ${X(last[0]).toFixed(1)},${Y(p.prev || mn).toFixed(1)}`;
-    const tx = (x, y, t, a, c, w) => `<text x="${x}" y="${y}" text-anchor="${a || 'start'}" font-size="15" font-weight="${w || 600}" fill="${c || 'var(--muted)'}" font-family="Calibri,Arial,sans-serif">${t}</text>`;
     const hhmm = m => { const d = new Date(t0 + m * 60e3 + 5.5 * 3600e3); return String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0'); };
-    let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Nifty 50 today in 5-minute steps">`;
-    s += `<polygon points="${area}" fill="${col}" opacity=".1"/>`;
-    if (p.prev) s += `<line x1="${L}" x2="${W - R}" y1="${Y(p.prev)}" y2="${Y(p.prev)}" stroke="var(--muted)" stroke-dasharray="4 4"/>` + tx(W - R + 6, Y(p.prev) + 5, "Yesterday " + fmt0(p.prev));
+    let s = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" style="max-width:100%;height:auto" role="img" aria-label="Nifty 50 today in 5-minute steps">`;
+    s += `<polygon points="${X(first[0]).toFixed(1)},${Y(p.prev || mn).toFixed(1)} ${line} ${X(last[0]).toFixed(1)},${Y(p.prev || mn).toFixed(1)}" fill="${col}" opacity=".1"/>`;
+    if (p.prev) s += `<line x1="${L}" x2="${W - R}" y1="${Y(p.prev).toFixed(1)}" y2="${Y(p.prev).toFixed(1)}" stroke="var(--muted)" stroke-dasharray="4 4"/>`;
     s += `<polyline points="${line}" fill="none" stroke="${col}" stroke-width="2.2" stroke-linejoin="round"/>`;
-    s += `<circle cx="${X(first[0])}" cy="${Y(first[1])}" r="4" fill="#fff" stroke="var(--ink)" stroke-width="1.6"/>` + tx(X(first[0]) + 9, Y(first[1]) + (Y(first[1]) < 40 ? 22 : -10), 'Open ' + fmt0(n.open), 'start', 'var(--ink)');
-    s += `<circle cx="${X(last[0])}" cy="${Y(last[1])}" r="4.5" fill="${col}"/>` + tx(W - R + 6, Y(last[1]) + (p.prev && Math.abs(Y(last[1]) - Y(p.prev)) < 16 ? (Y(last[1]) < Y(p.prev) ? -8 : 20) : 5), (marketOpen() ? 'Now ' : 'Close ') + fmt0(last[1]), 'start', col, 700);
-    [0, 165, 375].forEach(m => { s += tx(L + m / 375 * (W - L - R), H - 5, hhmm(m), m === 0 ? 'start' : m === 375 ? 'end' : 'middle'); });
-    return s + '</svg>';
+    s += `<circle cx="${X(first[0]).toFixed(1)}" cy="${Y(first[1]).toFixed(1)}" r="4" fill="#fff" stroke="var(--ink)" stroke-width="1.6"/><circle cx="${X(last[0]).toFixed(1)}" cy="${Y(last[1]).toFixed(1)}" r="4.5" fill="${col}"/>`;
+    const labs = [0, 165, 375].map(m => ({ x: L + m / 375 * (W - L - R), y: H - 6, t: hhmm(m), a: m === 0 ? 'start' : m === 375 ? 'end' : 'middle', fixed: true }));
+    labs.push({ x: W - R + 8, y: Y(last[1]) + 4, t: (marketOpen() ? 'Now ' : 'Close ') + fmt0(last[1]), a: 'start', c: col, w: 700 });
+    if (p.prev) labs.push({ x: W - R + 8, y: Y(p.prev) + 4, t: 'Yesterday ' + fmt0(p.prev), a: 'start' });
+    labs.push({ x: X(first[0]) + 9, y: Y(first[1]) + (Y(first[1]) < 40 ? 18 : -9), t: 'Open ' + fmt0(n.open), a: 'start', c: 'var(--ink)' });
+    return s + placeLabels(labs, W, 0, H - B + 2) + '</svg>';
   }
   function rangePic(n) {
     const W = 240, H = 70, L = 10, R = 10, y = 30, lo = Math.min(n.low, n.prev), hi = Math.max(n.high, n.prev), r = hi - lo || 1;
@@ -742,6 +775,8 @@ main .perf .src{margin-top:0}
   }, 60000);
   // in market hours: index cards every 15 seconds
   setInterval(() => { if (!document.hidden && marketOpen()) loadMarket(); }, 15000);
+  let rsz; addEventListener('resize', () => { clearTimeout(rsz); rsz = setTimeout(() => { renderIdx(); if (MV) renderWhy(); }, 200); });
+  $('why').addEventListener('toggle', () => { if ($('why').open && MV) renderWhy(); });
   loadHist(); setInterval(() => { if (!document.hidden) loadHist(); }, 30 * 60e3);
   setInterval(() => { if (!document.hidden && marketOpen()) loadMovers(); }, 30000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) { loadMarket(); loadNews(); } });
