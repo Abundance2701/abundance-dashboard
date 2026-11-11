@@ -1,6 +1,13 @@
 {
- "updated": "2026-11-10T17:56:35Z",
+ "updated": "2026-11-11T09:52:17Z",
  "items": [
+  {
+   "src": "NSE",
+   "title": "EGR - Multiple Settlements Scheduled on November 11, 2026",
+   "url": "https://nsearchives.nseindia.com/content/circulars/EGR77380.pdf",
+   "date": "2026-11-11",
+   "important": false
+  },
   {
    "src": "SEBI",
    "title": "Notice of attachment dated November 10, 2026 issued against Secunderabad Healthcare Limited under RC No.7734 of 2024 in the matter of Secunderabad Healthcare Limited",
@@ -54,160 +61,6 @@
    "src": "RBI",
    "title": "Reserve Bank cancels Certificate of Registration of Gandhinagar Leasing and Finance Ltd.",
    "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63949",
-   "date": "2026-11-09",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Settlement Calendar for Exit Offer to the Dissenting Unitholders of Oriental InfraTrust (InvIT)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CMPT77379.pdf",
-   "date": "2026-11-09",
-   "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of further issues of securities",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77378.pdf",
-   "date": "2026-11-09",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Reversal of action initiated against SPEL Semiconductor Limited (Symbol - SPELS) on account of payment of Annual Listing Fees (\"ALF\") for the Financial Year ended 2025-26",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77377.pdf",
-   "date": "2026-11-09",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Algo Provider Empanelment for Providing Algorithmic Trading Solutions",
-   "url": "https://nsearchives.nseindia.com/content/circulars/INVG77376.pdf",
-   "date": "2026-11-09",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Guidelines in pursuance of amendment to SEBI KYC (Know Your Client) Registration Agency (KRA) Regulations, 2011",
-   "url": "https://nsearchives.nseindia.com/content/circulars/ISC77375.pdf",
-   "date": "2026-11-09",
-   "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Applicability of Short-Term Additional Surveillance Measure (ST-ASM)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77374.zip",
-   "date": "2026-11-09",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Applicability of Additional Surveillance Measure (ASM)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77373.zip",
-   "date": "2026-11-09",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Trade for Trade - Vedant Poly Fabs Limited (SME IPO)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77372.pdf",
-   "date": "2026-11-09",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Change in series of Equity shares of Investment Companies (ICs) and Investment Holding Companies (IHCs)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77371.pdf",
-   "date": "2026-11-09",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Suspension of trading in Non-Convertible Securities (Privately Placed)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77370.pdf",
-   "date": "2026-11-09",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Applicability of Enhanced Surveillance Measure (ESM)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77369.zip",
-   "date": "2026-11-09",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of units issued by ICICI Prudential Asset Management Company Limited (ICICI Prudential BSE Power ETF)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77368.pdf",
-   "date": "2026-11-09",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Trade for Trade",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77367.zip",
-   "date": "2026-11-09",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of units issued by AlphaGrep Investment Management Private Limited (Eminence Hybrid Long-Short Fund)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77366.pdf",
-   "date": "2026-11-09",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Suspension of trading in securities",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77365.pdf",
-   "date": "2026-11-09",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of privately placed securities on the debt market segment of the Exchange",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77364.pdf",
-   "date": "2026-11-09",
-   "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of privately placed securities on capital market segment",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77363.pdf",
-   "date": "2026-11-09",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Availability of SELECT EQUITY EX-TOP 100 LONG-SHORT FUND under Specialized Investment Fund (SIF) on NSE MF Invest Platform",
-   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77362.pdf",
-   "date": "2026-11-09",
-   "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Availability of Samco Equity Savings Fund on NSE MF Invest Platform",
-   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77361.pdf",
-   "date": "2026-11-09",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Exit Offer to the Dissenting Unitholders of Oriental InfraTrust (InvIT)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77360.pdf",
-   "date": "2026-11-09",
-   "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Listing & Trading of Equity Shares pursuant to Bonus Issue of Pashupati Cotspin Limited",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77357.pdf",
-   "date": "2026-11-09",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Adjustment of Futures and Options contracts in the security OIL & NATURAL GAS CORPORATION LIMITED (ONGC)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CMPT77348.pdf",
    "date": "2026-11-09",
    "important": false
   },
@@ -296,8 +149,8 @@
    10
   ],
   "https://nsearchives.nseindia.com/content/RSS/Circulars.xml": [
-   24,
-   23
+   2,
+   1
   ]
  },
  "errors": []
