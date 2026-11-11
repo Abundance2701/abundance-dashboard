@@ -161,23 +161,23 @@ aside .card{padding:12px 14px;margin-bottom:12px}
 @media (max-width:520px){ body{font-size:14.5px} .stats{gap:2px 12px} .tiles{gap:5px} .tile b{font-size:13px} .tiles{grid-template-columns:repeat(4,1fr)} .day h3{font-size:15.5px} }
 
 /* ---- top: watchlist (right) + panels (left) ---- */
-.top2{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:12px;align-items:start}
+.top2{display:grid;grid-template-columns:minmax(0,1fr) 370px;gap:12px;align-items:start}
 .top2 .wl{grid-column:2;grid-row:1;padding:4px 0 6px;position:sticky;top:8px;max-height:calc(100vh - 16px);overflow:auto}
 .top2 .mainc{grid-column:1;grid-row:1;min-width:0}
 .top2 .perf{margin-top:0}
-.wlh,.wr{display:grid;grid-template-columns:minmax(0,1fr) 86px 70px 56px;gap:8px;align-items:center;padding:0 12px}
+.wlh,.wr{display:grid;grid-template-columns:minmax(0,1fr) 84px 64px 48px;gap:8px;align-items:center;padding:0 12px}
 .wlh{font:600 10.5px var(--f-display);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding-top:6px;padding-bottom:6px}
 .wlh span:not(:first-child),.wr .v,.wr .c{text-align:right}
 .wg{font:600 10.5px var(--f-display);text-transform:uppercase;letter-spacing:.08em;color:var(--secondary);padding:9px 12px 3px;border-top:1px solid var(--line)}
 .wr{width:100%;background:none;border:0;border-top:1px solid var(--soft);padding-top:6px;padding-bottom:6px;font:inherit;color:inherit;cursor:pointer;text-align:left}
 .wr:hover{background:#f4f0e4}
 .wr[aria-pressed="true"]{background:var(--primary-soft);box-shadow:inset 3px 0 0 var(--primary)}
-.wr .n{font:600 13.5px var(--f-display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wr .n{font:600 13px/1.25 var(--f-display)}
 .wr .v{font:600 13.5px var(--f-display);font-variant-numeric:tabular-nums}
 .wr .c{font-variant-numeric:tabular-nums;line-height:1.15}
 .wr .c b{display:block;font:700 13px var(--f-body)}
 .wr .c small{font-size:11px;font-weight:700;opacity:.8}
-.wr svg{width:56px;height:20px;display:block}
+.wr svg{width:48px;height:20px;display:block}
 .wr.fu{animation:fu 1.2s ease-out}.wr.fd{animation:fd 1.2s ease-out}
 @media (prefers-reduced-motion:reduce){.wr.fu,.wr.fd{animation:none}}
 .wflow{border-top:1px solid var(--line);padding:4px 12px 2px}
@@ -600,29 +600,29 @@ aside .card{padding:12px 14px;margin-bottom:12px}
   const fmt0 = v => Number(v).toLocaleString('en-IN', { maximumFractionDigits: 0 });
   function dayPic(p, n) {
     if (!p || !p.pts || p.pts.length < 2) return pathSvg(p);
-    const W = 600, H = 150, L = 8, R = 92, T = 14, B = 22;
+    const W = 520, H = 150, L = 8, R = 118, T = 20, B = 24;
     const v = p.pts.map(x => x[1]).concat(p.prev ? [p.prev] : []), mn = Math.min(...v), mx = Math.max(...v), r = mx - mn || 1;
     const t0 = p.pts[0][0], t1 = t0 + 375 * 60e3;
     const X = t => L + (t - t0) / (t1 - t0) * (W - L - R), Y = y => T + (1 - (y - mn) / r) * (H - T - B);
     const last = p.pts[p.pts.length - 1], first = p.pts[0], up = !p.prev || last[1] >= p.prev, col = up ? 'var(--up)' : 'var(--down)';
     const line = p.pts.map(([t, y]) => X(t).toFixed(1) + ',' + Y(y).toFixed(1)).join(' ');
     const area = `${X(first[0]).toFixed(1)},${Y(p.prev || mn).toFixed(1)} ${line} ${X(last[0]).toFixed(1)},${Y(p.prev || mn).toFixed(1)}`;
-    const tx = (x, y, t, a, c, w) => `<text x="${x}" y="${y}" text-anchor="${a || 'start'}" font-size="12" font-weight="${w || 600}" fill="${c || 'var(--muted)'}" font-family="Calibri,Arial,sans-serif">${t}</text>`;
+    const tx = (x, y, t, a, c, w) => `<text x="${x}" y="${y}" text-anchor="${a || 'start'}" font-size="15" font-weight="${w || 600}" fill="${c || 'var(--muted)'}" font-family="Calibri,Arial,sans-serif">${t}</text>`;
     const hhmm = m => { const d = new Date(t0 + m * 60e3 + 5.5 * 3600e3); return String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0'); };
     let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Nifty 50 today in 5-minute steps">`;
     s += `<polygon points="${area}" fill="${col}" opacity=".1"/>`;
-    if (p.prev) s += `<line x1="${L}" x2="${W - R}" y1="${Y(p.prev)}" y2="${Y(p.prev)}" stroke="var(--muted)" stroke-dasharray="4 4"/>` + tx(W - R + 6, Y(p.prev) + 4, "Yesterday " + fmt0(p.prev));
+    if (p.prev) s += `<line x1="${L}" x2="${W - R}" y1="${Y(p.prev)}" y2="${Y(p.prev)}" stroke="var(--muted)" stroke-dasharray="4 4"/>` + tx(W - R + 6, Y(p.prev) + 5, "Yesterday " + fmt0(p.prev));
     s += `<polyline points="${line}" fill="none" stroke="${col}" stroke-width="2.2" stroke-linejoin="round"/>`;
-    s += `<circle cx="${X(first[0])}" cy="${Y(first[1])}" r="4" fill="#fff" stroke="var(--ink)" stroke-width="1.6"/>` + tx(X(first[0]) + 7, Y(first[1]) + (Y(first[1]) < 26 ? 14 : -7), 'Open ' + fmt0(n.open), 'start', 'var(--ink)');
-    s += `<circle cx="${X(last[0])}" cy="${Y(last[1])}" r="4.5" fill="${col}"/>` + tx(W - R + 6, Y(last[1]) + (p.prev && Math.abs(Y(last[1]) - Y(p.prev)) < 16 ? (Y(last[1]) < Y(p.prev) ? -6 : 16) : 4), (marketOpen() ? 'Now ' : 'Close ') + fmt0(last[1]), 'start', col, 700);
+    s += `<circle cx="${X(first[0])}" cy="${Y(first[1])}" r="4" fill="#fff" stroke="var(--ink)" stroke-width="1.6"/>` + tx(X(first[0]) + 9, Y(first[1]) + (Y(first[1]) < 40 ? 22 : -10), 'Open ' + fmt0(n.open), 'start', 'var(--ink)');
+    s += `<circle cx="${X(last[0])}" cy="${Y(last[1])}" r="4.5" fill="${col}"/>` + tx(W - R + 6, Y(last[1]) + (p.prev && Math.abs(Y(last[1]) - Y(p.prev)) < 16 ? (Y(last[1]) < Y(p.prev) ? -8 : 20) : 5), (marketOpen() ? 'Now ' : 'Close ') + fmt0(last[1]), 'start', col, 700);
     [0, 165, 375].forEach(m => { s += tx(L + m / 375 * (W - L - R), H - 5, hhmm(m), m === 0 ? 'start' : m === 375 ? 'end' : 'middle'); });
     return s + '</svg>';
   }
   function rangePic(n) {
-    const W = 300, H = 74, L = 14, R = 14, y = 34, lo = Math.min(n.low, n.prev), hi = Math.max(n.high, n.prev), r = hi - lo || 1;
+    const W = 240, H = 70, L = 10, R = 10, y = 30, lo = Math.min(n.low, n.prev), hi = Math.max(n.high, n.prev), r = hi - lo || 1;
     const X = v => L + (v - lo) / r * (W - L - R);
-    const tx = (x, yy, t, a, c, w) => `<text x="${x.toFixed(1)}" y="${yy}" text-anchor="${a}" font-size="11.5" font-weight="${w || 600}" fill="${c || 'var(--muted)'}" font-family="Calibri,Arial,sans-serif">${t}</text>`;
-    const anc = x => x < 60 ? 'start' : x > W - 60 ? 'end' : 'middle';
+    const tx = (x, yy, t, a, c, w) => `<text x="${x.toFixed(1)}" y="${yy}" text-anchor="${a}" font-size="12.5" font-weight="${w || 600}" fill="${c || 'var(--muted)'}" font-family="Calibri,Arial,sans-serif">${t}</text>`;
+    const anc = x => x < 55 ? 'start' : x > W - 55 ? 'end' : 'middle';
     const col = n.last >= n.prev ? 'var(--up)' : 'var(--down)';
     let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Day's range ${inr(n.low)} to ${inr(n.high)}">`;
     s += `<line x1="${X(n.low)}" x2="${X(n.high)}" y1="${y}" y2="${y}" stroke="var(--line)" stroke-width="10" stroke-linecap="round"/>`;
