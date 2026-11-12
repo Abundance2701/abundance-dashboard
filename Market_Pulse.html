@@ -338,7 +338,7 @@ main .perf .src{margin-top:0}
     if (!IX || !IX.indices || !IX.indices.length) { $('idx').innerHTML = ''; $('perf').hidden = true; return; }
     const L = IX.indices; if (sel >= L.length) sel = 0;
     const tick = x => { const p = LAST[x.name]; LAST[x.name] = x.level; return p == null || p === x.level ? '' : x.level > p ? ' fu' : ' fd'; };
-    const SHORT = { 'Nifty Midcap 150': 'Midcap 150', 'Nifty Smallcap 250': 'Smallcap 250', 'Brent crude · $': 'Brent $', 'WTI crude · $': 'WTI $', 'Gold · ₹/10 g': 'Gold ₹/10g', 'Silver · ₹/kg': 'Silver ₹/kg', 'Gold/Silver ratio': 'Gold/Silver' };
+    const SHORT = { 'Multicap 50:25:25': 'Multicap', 'Nifty Midcap 150': 'Midcap 150', 'Nifty Smallcap 250': 'Smallcap 250', 'Brent crude · $': 'Brent $', 'WTI crude · $': 'WTI $', 'Gold · ₹/10 g': 'Gold ₹/10g', 'Silver · ₹/kg': 'Silver ₹/kg', 'Gold/Silver ratio': 'Gold/Silver' };
     $('idx').innerHTML = L.map((x, i) => {
       const ch = x.chg == null ? '' : (x.chg > 0 ? '+' : x.chg < 0 ? '−' : '') + inr(Math.abs(x.chg));
       return `<button type="button" class="wr${tick(x)}" aria-pressed="${i === sel}" data-i="${i}" title="${esc(x.name)}: click for performance">
