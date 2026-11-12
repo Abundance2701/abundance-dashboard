@@ -366,6 +366,14 @@ const PH1 = [
   { key: 'sectoral_thematic',bench: 'NIFTY 500',                  src: [], broad: true },
 ];
 const PH1_BY = Object.fromEntries(PH1.map(c => [c.key, c]));
+// Funds whose long-period returns differ from AMFI's official figures (check of 12/11/2026, data to 30/10/2026).
+// All are merged schemes: AMFI may report a different predecessor's history. Shown with a ⚠ so they are read with care.
+const VALIDATION_FLAGS = {
+  '101594': 'HSBC Large Cap (Regular): 10Y return here 10.66% vs AMFI 10.47% (to 30/10/2026). Its fund house took over L&T Mutual Fund in 2022; AMFI may report a different predecessor scheme\'s history.',
+  '106871': 'LIC MF Large Cap (Regular): 5Y 4.01% here vs AMFI 4.74%; 10Y 8.91% vs 9.23% (to 30/10/2026). Its fund house took over IDBI Mutual Fund\'s schemes in 2023; AMFI may report a different predecessor scheme\'s history.',
+  '101539': 'Sundaram Mid Cap (Regular): 10Y 12.26% here vs AMFI 12.35% (to 30/10/2026). Its fund house took over Principal Mutual Fund; AMFI may report a different predecessor scheme\'s history.',
+  '100795': 'Sundaram Small Cap (Regular): 5Y 13.15% vs AMFI 13.27%; 10Y 12.58% vs 13.03% (to 30/10/2026). Its fund house took over Principal Mutual Fund; AMFI may report a different predecessor scheme\'s history.',
+};
 const benchLabel = name => (TRI && TRI.idx[name] ? TRI.idx[name].label : name) + ' TRI';
 
 // =====================================================================================
@@ -608,7 +616,7 @@ function render() {
   } else funds.sort((a, b) => (b.aum || 0) - (a.aum || 0));
   const head = `<tr><th data-k="">Fund<span class="sub">click a name for detail</span></th><th data-k="__aum">AUM ₹ Cr<span class="sub">quarterly avg</span></th>${cols.map(c => `<th data-k="${c.k}" title="Click to sort">${c.label}${sortKey === c.k ? (sortDir === -1 ? ' ▼' : ' ▲') : ''}<span class="sub">${c.sub}</span></th>`).join('')}</tr>`;
   const brow = `<tr class="bench"><td>${esc(bench.label)}<div class="fsub">Category benchmark${cfg.broad ? ' — broad market, not each fund\'s own sector index' : ''}</div></td><td>—</td>${cols.map(c => `<td>${c.bcell ? c.bcell() : '—'}</td>`).join('')}</tr>`;
-  const body = funds.map(o => `<tr><td><span class="fname" data-code="${o.code}">${esc(o.name)}</span><div class="fsub">${o.age < 3 ? '<span class="warn">Under 3 years old · </span>' : ''}since ${fmtDate(o.since)}</div></td><td>${crore(o.aum)}</td>${cols.map(c => `<td>${c.cell(o)}</td>`).join('')}</tr>`).join('');
+  const body = funds.map(o => `<tr><td><span class="fname" data-code="${o.code}">${esc(o.name)}</span>${VALIDATION_FLAGS[o.code] ? ` <span class="warn" title="${esc(VALIDATION_FLAGS[o.code])}">⚠</span>` : ''}<div class="fsub">${o.age < 3 ? '<span class="warn">Under 3 years old · </span>' : ''}since ${fmtDate(o.since)}</div></td><td>${crore(o.aum)}</td>${cols.map(c => `<td>${c.cell(o)}</td>`).join('')}</tr>`).join('');
   $('tbl').innerHTML = `<thead>${head}</thead><tbody>${brow}${body}</tbody>`;
   const aumQ = funds.find(o => o.aumQ)?.aumQ;
   $('meta').innerHTML = `<b>${esc(CANON_LABEL[RESULT.catKey])}</b> · ${plan} plans · ${funds.length} funds · benchmark <b>${esc(bench.label)}</b>` +
@@ -653,6 +661,7 @@ function openDetail(code) {
   if (isNum(o.downCap) && isNum(o.upCap)) say.push(`Over the last ${winLabel(RESULT.W)}, in months the index fell the fund took <b>${o.downCap.toFixed(0)}%</b> of the fall; in months it rose the fund captured <b>${o.upCap.toFixed(0)}%</b> of the rise (capture ratio ${o.capRatio.toFixed(2)}).`);
   $('modal').innerHTML = `<button class="close" onclick="document.getElementById('modalBg').style.display='none'">×</button>
     <h2>${esc(o.name)}</h2><div class="meta">${esc(CANON_LABEL[RESULT.catKey])} · ${RESULT.plan} plan · benchmark ${esc(b.label)} · data to ${fmtDate(M0)} · latest NAV ${o.lastNav.nav} on ${fmtDate(o.lastNav.t)}</div>
+    ${VALIDATION_FLAGS[code] ? `<div class="say warn">⚠ ${esc(VALIDATION_FLAGS[code])}</div>` : ''}
     ${say.length ? `<div class="say">${say.join('<br>')}</div>` : ''}
     <h3 style="font-size:14px;margin:12px 0 6px">Lead over the index in every 3-year period</h3>${chart}
     <div class="grid2" style="margin-top:12px">
@@ -715,6 +724,8 @@ $('methodBox').innerHTML = `
 <li><b>Consistency:</b> every 3-year period ending at each month-end, for all start dates in the last 10 years (up to 85 periods). Shows the share of periods the fund beat the index, plus its typical (median), worst and best lead.</li>
 <li><b>Up / Down capture (Morningstar method):</b> in the months the index rose, the fund's geometric average monthly return ÷ the index's, × 100. The same for months it fell. Down capture below 100 means the fund fell less. Capture ratio = up ÷ down; above 1 is favourable.</li>
 <li><b>Risk:</b> volatility = standard deviation of monthly returns, annualised. Max fall = deepest month-end drop in the window. Sortino uses downside deviation below the risk-free rate. Sharpe uses total volatility. Beta and Jensen's alpha come from monthly returns versus the index. Information ratio = average lead ÷ tracking error.</li>
+<li><b>Date convention:</b> returns run month-end to month-end (e.g. 31/10/2025 → 31/10/2026). AMFI and factsheets measure from the same date a year earlier (30/10/2025 → 30/10/2026), so a 1-year figure can differ by a few tenths of a point when the market moved on those days. Both are correct for their dates.</li>
+<li><b>Accuracy check (12/11/2026):</b> against AMFI's official performance data to 30/10/2026, the index returns matched exactly on 1 year and within 0.02 pts on 3, 5 and 10 years (AMFI counts leap days). For 84 large, mid and small cap Regular funds, 288 return figures matched with an average gap of 0.01 pts. Four schemes from fund-house takeovers differ on 5 or 10 years and are marked ⚠. Some other merged schemes show “—” for long periods because the NAV source starts at the merger date.</li>
 <li><b>No estimates:</b> if a fund is too young for a measure, it shows “—”. Duplicate share classes with identical NAVs are hidden.</li>
 <li><b>Coming next (Phase 2):</b> scoring each fund against its peers, style analysis (value, growth, quality, momentum), behaviour in different market phases, and a back-test of whether the scores pick better funds. The style rule by default is that <b>no single style dominates</b> a portfolio.</li>
 </ul>`;
