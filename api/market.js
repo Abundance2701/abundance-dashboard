@@ -7,6 +7,7 @@
 const IDX = [
   // name, Yahoo symbol, NSE index name
   ['Nifty 50', '^NSEI', 'NIFTY 50'],
+  ['Nifty 500', '^CRSLDX', 'NIFTY 500'],
   ['Sensex', '^BSESN', null],
   ['Bank Nifty', '^NSEBANK', 'NIFTY BANK'],
   ['Nifty Midcap 150', 'NIFTYMIDCAP150.NS', 'NIFTY MIDCAP 150'],
