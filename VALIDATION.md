@@ -94,3 +94,68 @@ Caveats:
 1. Do not score funds mainly on past 3Y returns or capture ratio.
 2. Use down capture as a behaviour/fit trait (risk-profile matching and diversification), not as a predictor of returns.
 3. Every score must pass the back-test before it is used.
+
+---
+
+## Phase 2 — 12/11/2026
+
+### 1. New data
+- **Holdings:** `data/holdings_2026-09.json`, a copy of the Abundance holdings pipeline output (`wbdata_2026-09.json`, portfolios as on 30/09/2026).
+  - 500 funds from 26 AMCs. Not yet covered: HSBC, LIC, Union, ITI, JM, Bank of India, Samco, Taurus, JioBlackRock, Groww, and some others.
+  - Index weights come from ICICI Prudential index fund/ETF portfolios on the same date.
+- **Matching holdings to schemes:** name-key match, exact or a unique prefix.
+  - Core 5 categories (Regular): 126 funds matched.
+  - 0 matches where the holdings-file category disagreed with the scheme's category.
+  - Every unmatched fund belongs to an AMC the pipeline does not cover.
+- **Active share recomputed** with ½ × Σ|fund − index| on equity weights. It matches the pipeline's own figure exactly for the funds checked (e.g. Axis Large Cap 39.8, ABSL Flexi Cap 60.6).
+
+### 2. Formulas (Node unit tests against independent checks)
+| Test | Result |
+|---|---|
+| Style solver: exact 30/70 mix of two of four factors | 0.3000 / 0.7000 / 0 / 0, R² = 1.000000 |
+| Style solver vs brute-force 1%-grid on 3 factors (noisy data) | solver 17.1/51.9/31.0, SSE 1.1848e-3 ≤ grid 17/52/31, SSE 1.1849e-3 |
+| Style solver: series equal to one factor | 0 / 0 / 1 / 0 |
+| Percentile ranks [5,1,3,–,2,4] and ties [1,2,2,3] | [100,0,50,–,25,75] and [0,50,50,100] |
+
+- **Size mix sanity:** each category index regressed on Nifty 100 / Midcap 150 / Smallcap 250 gives the expected answer, with R² = 1.000:
+  - Nifty 100: 100/0/0
+  - Midcap 150: 0/100/0
+  - Smallcap 250: 0/0/100
+  - LargeMidcap 250: 50/50/0
+  - Nifty 500: 71/19/10
+- **Style overlap found:** the plain Nifty 100 comes out as "71% low-volatility" on the four style indices. The style indices overlap heavily, so the tool shows **tilt vs the fund's own index**, never absolute style levels.
+
+### 3. Back-test (walk-forward, Regular plans, core 5 categories, 5-year window)
+- **Method:** at each 31 October from 2014 to 2023, every fund with 5+ years of history was scored using data only up to that date. Each score was compared with the fund's lead over its Tier-1 TRI in the next 3 years.
+- **Coverage:** 49 tests, 8–25 funds each.
+
+| Picking by | Avg rank correlation with next-3Y lead | Positive in | Top ¼ − bottom ¼ (pts a year) |
+|---|---|---|---|
+| Overall score | −0.01 | 22 of 49 | −0.3 |
+| Consistency part | 0.01 | 26 of 49 | −0.2 |
+| Risk-adjusted part | −0.00 | 26 of 49 | −0.5 |
+| Downside part | −0.04 | 21 of 49 | −0.0 |
+| Best past 3Y return | −0.00 | 23 of 49 | −0.5 |
+
+- By category, the score's correlation was: Large Cap +0.21, Large & Mid +0.11, Mid Cap −0.21, Small Cap −0.04, Flexi Cap −0.09.
+
+**Does downside behaviour persist?** Same tests, measured over the next 3 years:
+
+| Past → next 3 years | Avg correlation | Positive in |
+|---|---|---|
+| Down capture → down capture | 0.17 | 37 of 49 |
+| Volatility → volatility | 0.14 | 33 of 49 |
+| Downside part → max fall | 0.05 | 27 of 49 |
+| Overall score → down capture | 0.07 | 30 of 49 |
+
+- Small Cap shows the strongest downside persistence (down capture 0.45, volatility 0.34).
+
+**Conclusion:**
+- Past-performance measures, alone or combined, did **not** predict which funds beat their index over the next 3 years.
+- Downside behaviour persists modestly.
+- The score is therefore labelled a *track-record* score, not a forecast.
+
+**Limits:**
+- Survivorship: only funds alive today are included.
+- Today's SEBI categories are applied to pre-2018 years.
+- Small samples per test.
