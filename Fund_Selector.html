@@ -625,7 +625,7 @@ function render() {
     (view === 'cons' ? ' · every 3-year period starting in the last 10 years, month by month' : '') +
     (aumQ ? ` · AUM: ${aumPeriodLabel(aumQ)}` : '');
   const notes = [];
-  if (plan === 'Regular') notes.push('Regular-plan returns are after the higher expense ratio; the index has no costs, so Regular funds start roughly 0.5–1.5 pts a year behind. Compare funds with each other, not just with the index.');
+  if (plan === 'Regular') notes.push('Regular-plan returns are after the higher expense ratio, and the index has no costs. Across 147 large, large & mid, flexi, mid and small cap funds, Regular plans trailed their own Direct plans by a median 1.2 pts a year over 3 years (middle half 1.0–1.5; AMFI data to 30/10/2026). Compare funds with each other, not just with the index.');
   if (cfg.broad) notes.push('Sectoral/thematic funds each have their own sector benchmark; here they are compared with the Nifty 500 TRI only as a broad-market reference.');
   if (RESULT.dupes) notes.push(`${RESULT.dupes} duplicate share class(es) with identical NAVs hidden (largest AUM kept).`);
   if (RESULT.noNav.length) notes.push(`No NAV history returned for: ${RESULT.noNav.map(esc).join(', ')}.`);
