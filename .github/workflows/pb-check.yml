@@ -1,12 +1,13 @@
 name: Profit-booking alerts
-# The main schedule is cron-job.org ("Abundance alerts": every 15 min 08:00–16:45 IST Mon–Fri, job time zone
-# Asia/Kolkata). This workflow is a BACKUP: it runs the same check twice on weekdays (about 10:37 and 14:37 IST;
+# The main schedule is cron-job.org ("Abundance alerts", Mon–Fri, job time zone
+# Asia/Kolkata; 8:15, 2:45, 2:50, 3:45, 3:50 IST). This workflow is a BACKUP: it runs the check twice on weekdays (about 8:37 AM and 3:52 PM IST;
 # GitHub may run it late) so alerts still go out, if late, when cron-job.org stops or is misconfigured.
 # Alerts are never sent twice (api/pb-check remembers what it sent). The job fails (and GitHub emails the repo
 # owner) when the check answers with an error. "Run workflow" runs it at once. The reply holds counts only.
 on:
   schedule:
-    - cron: '7 5,9 * * 1-5'
+    - cron: '7 3 * * 1-5'
+    - cron: '22 10 * * 1-5'
   workflow_dispatch:
 jobs:
   check:
