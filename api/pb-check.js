@@ -232,9 +232,9 @@ module.exports = async (req, res) => {
   /* Market triggers are judged near the close, not intraday (MF NAVs use the closing value):
      2:40–3:00 PM IST on weekdays the live level stands in for the close, in time to redeem before the 3 PM cut-off;
      from 3:31 PM the live level IS the close. Other runs (8:15 AM) send only dated reminders and deadlines.
-     ?market=1 forces a market check (dry runs, for testing). */
+     ?market=1 or ?dry=market forces a market check (?dry=market = a dry run that also checks the market). */
   const weekday = wd >= 1 && wd <= 5, nearClose = weekday && mins >= 14 * 60 + 40 && mins <= 15 * 60, afterClose = weekday && mins >= 15 * 60 + 31;
-  const marketNow = nearClose || afterClose || !!(req.query && req.query.market);
+  const marketNow = nearClose || afterClose || !!(req.query && (req.query.market || req.query.dry === 'market'));
   const hhmm = `${String(Math.floor(mins / 60) % 12 || 12)}:${String(mins % 60).padStart(2, '0')} ${mins >= 720 ? 'PM' : 'AM'}`;
   const AT = v => afterClose ? `closed at ${fmt(v)}` : `is at ${fmt(v)} at ${hhmm} IST, near the close`;
   const endedOn = d => (T > d || (T === d && afterClose)) && T <= addDays(d, 10);   // a period counts as over only after that day's close
