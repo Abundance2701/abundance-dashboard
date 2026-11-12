@@ -250,7 +250,7 @@ async function load(id) {
   try {
     const j = await call('?id=' + encodeURIComponent(id));
     S = { id: j.id, name: j.name, rule: j.rule, plan: j.plan, live: j.live || {}, cards: j.blocks.map(fromBlock), deleted: [] };
-    openIdx = -1; planTouched = false; $('plan').value = S.plan || ''; if (!S.plan && S.cards.length) $('plan').value = planFromAlerts();
+    openIdx = -1; planTouched = false; $('plan').value = S.plan || ''; if (!S.plan && S.cards.length) $('plan').value = planFromAlerts(); S.planShown = $('plan').value;
     render(); $('emptyMsg').classList.add('hide'); $('client').classList.remove('hide');
   } catch (e) { $('emptyMsg').innerHTML = `<span class="err">${esc(e.message)}</span>`; }
 }
@@ -260,7 +260,7 @@ const updateBar = () => $('bar').classList.toggle('hide', !dirty());
 $('plan').addEventListener('input', () => { planTouched = true; updateBar(); });
 $('planAuto').onclick = () => { $('plan').value = planFromAlerts(); planTouched = false; updateBar(); };
 /* the plan follows the alerts until you type in it yourself */
-const followPlan = () => { if (!planTouched && S.cards.some(c => c.dirty || c.isNew) || (!planTouched && S.deleted.length)) $('plan').value = planFromAlerts(); updateBar(); };
+const followPlan = () => { if (!planTouched) $('plan').value = S.cards.some(c => c.dirty || c.isNew) || S.deleted.length ? planFromAlerts() : S.planShown; updateBar(); };
 window.addEventListener('beforeunload', e => { if (dirty()) { e.preventDefault(); e.returnValue = ''; } });
 
 /* ---------- list ---------- */
