@@ -159,3 +159,21 @@ Caveats:
 - Survivorship: only funds alive today are included.
 - Today's SEBI categories are applied to pre-2018 years.
 - Small samples per test.
+
+---
+
+## Accuracy of style and size estimates — 12/11/2026
+Core 5 categories, Regular plans.
+
+- **Returns-based size mix vs actual holdings** (112 funds with both):
+  - Median absolute gap: large 9.8 pts, mid 10.0 pts, small 5.2 pts.
+  - 80th percentile: 20.6 / 16.1 / 12.9 pts.
+  - Too rough, so it was **removed**. Company size now comes only from holdings.
+- **Style-tilt stability** (146 funds), measured as the change in tilt vs own index when the 36-month window moves:
+  - Moved 3 months: median 1.1–2.3 pts (80th percentile 2.1–4.7).
+  - Moved 12 months: median 2.3–7.1 pts (80th percentile 3.1–14.2; quality and momentum are the noisiest).
+  - So only tilts of **15+ pts** are shown as a "lean".
+- **Market phases** changed:
+  - Size leader each month = the best of Nifty 100 / Midcap 150 / Smallcap 250.
+  - Style leader = the best of Value 50 / Quality 50 / Momentum 50 / Low Vol 30.
+  - There is no NSE growth-style index, so growth-led months cannot be tagged.
