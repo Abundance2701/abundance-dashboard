@@ -717,20 +717,21 @@ async function runCategories(vals) {
     setStatus('<span class="spinner"></span>Calculating…'); await new Promise(r => setTimeout(r, 20));
     RESULTS = {}; order = [];
     for (const ck of cats) {
-      const rows = groups[ck].filter(r => NAVS[r.scheme_code] && NAVS[r.scheme_code].length);
+      // keep one share class where several carry identical NAVs (e.g. legacy Plan B / Plan C), largest AUM first
+      const seen = new Set(); let dupes = 0; const rows = [];
+      for (const r of groups[ck].filter(r => NAVS[r.scheme_code] && NAVS[r.scheme_code].length).sort((a, b) => (parseFloat(b.aaum_cr_quarterly_avg) || 0) - (parseFloat(a.aaum_cr_quarterly_avg) || 0))) {
+        const arr = NAVS[r.scheme_code], p0 = valAt(arr, 0), p12 = valAt(arr, 12), key = p0 && p12 ? `${r.amc}|${p0.nav.toFixed(4)}|${p12.nav.toFixed(4)}` : null;
+        if (key && seen.has(key)) { dupes++; continue; } if (key) seen.add(key); rows.push(r);
+      }
       if (!rows.length) continue;
       const t1 = TIER1[ck];
       let yard, yardDaily = null, yardLabel, isPeer = false;
       if (t1 && TRI.idx[t1.bench]) { yard = TRI.idx[t1.bench].arr; yardDaily = DAILY && DAILY[t1.bench]; yardLabel = TRI.idx[t1.bench].label + ' TRI'; }
       else { yard = peerSeries(rows.map(r => NAVS[r.scheme_code])); isPeer = true; yardLabel = `Peer median (${rows.length} funds)`; }
       const D0 = yardDaily ? yardDaily[yardDaily.length - 1].t : Math.max(...rows.map(r => NAVS[r.scheme_code].at(-1).t));
-      // de-duplicate share classes with identical NAVs
-      const seen = new Set(); let dupes = 0; const funds = [];
-      const sorted = rows.map(r => ({ r, aum: parseFloat(r.aaum_cr_quarterly_avg) })).sort((a, b) => (b.aum || 0) - (a.aum || 0));
-      for (const { r, aum } of sorted) {
-        const arr = NAVS[r.scheme_code], p0 = valAt(arr, 0), p12 = valAt(arr, 12);
-        const key = p0 && p12 ? `${r.amc}|${p0.nav.toFixed(4)}|${p12.nav.toFixed(4)}` : null;
-        if (key && seen.has(key)) { dupes++; continue; } if (key) seen.add(key);
+      const funds = [];
+      for (const r of rows) {
+        const arr = NAVS[r.scheme_code], aum = parseFloat(r.aaum_cr_quarterly_avg);
         const o = { r, code: r.scheme_code, name: r.scheme_name, amc: r.amc, cat: ck === '__other' ? normCat(r) : CANON_LABEL[ck], aum: isNaN(aum) ? null : aum, aumQ: r.aaum_quarter,
           since: arr[0].t, lastNav: arr[arr.length - 1], hist: histMonths(arr), ...analyse(arr, yard, W, rfA), ...trailing(arr, D0) };
         if (EQUITY_CATS.has(ck) && !isPeer) { Object.assign(o, styleProfile(arr)); o.ph = phases(arr, yard); o.hold = findHoldings(r.scheme_name); o.bets = o.hold ? bets(o.hold, t1.bench) : null; }
