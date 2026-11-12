@@ -70,6 +70,11 @@ const amtLabel = a => { const v = +String(a == null ? '' : a).replace(/[^\d.]/g,
 const hash = s => crypto.createHash('sha1').update(s.toLowerCase().replace(/\s+/g, ' ').trim()).digest('hex').slice(0, 8);
 
 /* ---------- reading a rule ---------- */
+/* "Midcap", "nifty 500", "Multicap 50:25:25" … → the index key, or null */
+const GOAL_IDX = ['nifty 50', 'midcap 150', 'smallcap 250'];
+function normIdx(t) { const l = ' ' + String(t).toLowerCase().trim().replace(/\s+/g, ' ') + ' ';
+  const n = l.replace(/\bnifty(?! ?50\b| ?500\b)/g, 'nifty 50').replace(/\bmidcap(?! 150)/g, 'midcap 150').replace(/\bsmallcap(?! 250)/g, 'smallcap 250').replace(/\b(?:nifty ?500 )?multicap(?: 50:25:25)?(?=\s)/g, 'multicap 50:25:25').trim();
+  return Object.keys(LABEL).find(k => k === n) || null; }
 const IDXRE = '(nifty 50|nifty 500|midcap 150|smallcap 250|multicap 50:25:25)';   /* Multicap 50:25:25 = Nifty500 Multicap 50:25:25 (50% large, 25% mid, 25% small) */
 function parseRule(text) {
   const out = [], bad = [];
@@ -88,6 +93,9 @@ function parseRule(text) {
       const a = iso(gm[3]), b = iso(gm[4]); if (!G || !a || !b || b < a) { bad.push(line); continue; } G.parts.push({ no: +gm[1], of: +gm[2], from: a, to: b, amt: lineAmt || null }); G.src += '\n' + line; lineAmt = lineAmts = null; continue; }
     if ((gm = line.match(/^in debt by\s*:\s*(\d{1,2}\/\d{1,2}\/\d{4})$/i))) { const d = iso(gm[1]); if (!G || !d) { bad.push(line); continue; } G.by = d; G.src += '\n' + line; continue; }
     if ((gm = line.match(/^watch for\s*:\s*(.+)$/i))) { if (!G) { bad.push(line); continue; } G.trig = /new high/i.test(gm[1]) && !/52/.test(gm[1]) ? 'new' : '52w'; G.src += '\n' + line; continue; }
+    if ((gm = line.match(/^indices\s*:\s*(.+)$/i))) {   /* which indices a goal watches (any one); default Nifty 50, Midcap 150, Smallcap 250 */
+      const ks = gm[1].split(/,|\bor\b|\//i).map(x => normIdx(x)).filter(Boolean);
+      if (!G || !ks.length || ks.length !== gm[1].split(/,|\bor\b|\//i).filter(x => x.trim()).length) { bad.push(line); continue; } G.idxs = [...new Set(ks)]; G.src += '\n' + line; continue; }
     if (/^how\s*:/i.test(line)) { if (!G) bad.push(line); continue; }
     G = null;
     const tm = line.match(/^\[fp:?\s*([^\]]*)\]\s*/i), tag = tm ? (tm[1].trim() || 'Goal') : null;   // [FP …] = goal alert from the planning tool
@@ -287,7 +295,7 @@ module.exports = async (req, res) => {
         continue;
       }
       if (R.type === 'gblock') {                         // goal block: per part a 52-week-high alert, else a reminder on its last day; then the deadline
-        const GI = ['nifty 50', 'midcap 150', 'smallcap 250'], win = d => T >= d && T <= addDays(d, 10);
+        const GI = R.idxs || GOAL_IDX, win = d => T >= d && T <= addDays(d, 10);
         const amtS = amtLabel(R.amt);
         const who = `${name} · ${R.name}${amtS}`, gk = `${c.id}/g${hash(R.name)}`;
         R.parts.forEach((P, i) => {

@@ -143,6 +143,7 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const IDX = [['nifty 50', 'Nifty 50'], ['nifty 500', 'Nifty 500'], ['multicap 50:25:25', 'Multicap 50:25:25'], ['midcap 150', 'Midcap 150'], ['smallcap 250', 'Smallcap 250']];
 const LAB = Object.fromEntries(IDX);
+const GOAL_DEF = ['nifty 50', 'midcap 150', 'smallcap 250'];   /* what a goal watches when no Indices line is given */
 const dmy = iso => iso ? iso.split('-').reverse().join('/') : '';
 const inr = v => Number(v).toLocaleString('en-IN', { maximumFractionDigits: 2 });
 const today = () => new Date(Date.now() + 5.5 * 3600e3).toISOString().slice(0, 10);
@@ -167,7 +168,7 @@ const blank = t => ({
   at: { alts: [{ idx: 'nifty 50', levels: '' }], amts: [] },
   updown: { dir: 'up', base: 'close', idxs: ['nifty 50'], pct: '', from: today(), until: '', close: false, repeat: false },
   move: { dir: 'up', idxs: ['nifty 50'], pct: '', from: today(), until: '' },
-  gblock: { name: '', amt: '', parts: [{ from: today(), to: '', amt: '' }], by: '', trig: '52w', how: '' },
+  gblock: { name: '', amt: '', idxs: ['nifty 50', 'midcap 150', 'smallcap 250'], parts: [{ from: today(), to: '', amt: '' }], by: '', trig: '52w', how: '' },
   w52: { idxs: ['nifty 50'], from: today(), until: '' },
   newHigh: { idxs: ['nifty 50'], from: today(), until: '' },
   fall: { idxs: ['nifty 50'], pct: '', from: today(), until: '', close: true, repeat: false },
@@ -192,7 +193,7 @@ function fromParsed(b) {
     Object.assign(m, { idxs: al.map(a => a.idx), pct: R.pct, from: R.from, until: R.until || '', close: !!R.close, repeat: !!R.repeat }); }
   else if (R.type === 'remind' && R.deadline) { m.type = 'deadline'; m.date = R.deadline; }
   else if (R.type === 'remind') { m.dates = R.dates.slice(); m.unless = R.unless || ''; }
-  else if (R.type === 'gblock') { const how = (b.text.split('\n').find(l => /^how\s*:/i.test(l)) || '').replace(/^how\s*:\s*/i, ''); Object.assign(m, { name: R.name, amt: String(R.amt || '').replace(/[^\d.]/g, ''), parts: R.parts.map(p => ({ from: p.from, to: p.to, amt: p.amt ? String(p.amt) : '' })), by: R.by || '', trig: R.trig, how }); }
+  else if (R.type === 'gblock') { const how = (b.text.split('\n').find(l => /^how\s*:/i.test(l)) || '').replace(/^how\s*:\s*/i, ''); Object.assign(m, { name: R.name, idxs: R.idxs || GOAL_DEF.slice(), amt: String(R.amt || '').replace(/[^\d.]/g, ''), parts: R.parts.map(p => ({ from: p.from, to: p.to, amt: p.amt ? String(p.amt) : '' })), by: R.by || '', trig: R.trig, how }); }
   else if (R.type === 'goal') { m.start = R.start; m.by = R.by; }
   if (['move', 'fall', 'rise', 'aboveHigh'].includes(m.type)) { m.base = { move: 'close', fall: 'high', rise: 'low', aboveHigh: 'prevHigh' }[m.type]; m.dir = m.type === 'move' ? m.dir : m.type === 'fall' ? 'down' : 'up'; m.type = 'updown'; }
   return m;
@@ -233,7 +234,7 @@ function toText(m) {
     case 'deadline': return withAmt(m, [`${pre(m)}deadline ${D(m.date)}`]);
     case 'goal': return withAmt(m, [`${pre(m)}move to debt from ${D(m.start)} by ${D(m.by)}`]);
     case 'gblock': { const n = m.parts.length, amt = Number(m.amt) ? ' · ₹' + Number(m.amt).toLocaleString('en-IN') : '';
-      return [`GOAL ALERT: ${m.name.replace(/·/g, '-').trim()}${amt}`, ...m.parts.map((p, i) => `Part ${i + 1} of ${n}: ${D(p.from)} to ${D(p.to)}${Number(p.amt) > 0 ? ' · ' + rupee(p.amt) : ''}`), m.by ? `In debt by: ${D(m.by)}` : '', `Watch for: ${m.trig === 'new' ? "new high since the part's start" : '52-week high'}`, m.how.trim() ? `How: ${m.how.trim()}` : ''].filter(Boolean).join('\n'); }
+      return [`GOAL ALERT: ${m.name.replace(/·/g, '-').trim()}${amt}`, ...m.parts.map((p, i) => `Part ${i + 1} of ${n}: ${D(p.from)} to ${D(p.to)}${Number(p.amt) > 0 ? ' · ' + rupee(p.amt) : ''}`), m.by ? `In debt by: ${D(m.by)}` : '', `Watch for: ${m.trig === 'new' ? "new high since the part's start" : '52-week high'}`, (m.idxs || []).join() !== GOAL_DEF.join() ? `Indices: ${ix(m).map(k => LAB[k]).join(', ')}` : '', m.how.trim() ? `How: ${m.how.trim()}` : ''].filter(Boolean).join('\n'); }
     case 'raw': return String(m.text || '').trim();
   }
   return '';
@@ -253,7 +254,7 @@ function problems(m) {
     case 'remind': if (!m.dates.filter(Boolean).length) e.push('Add at least one date'); if (m.unlessRef && !S.cards.includes(m.unlessRef)) e.push('The alert it was linked to was deleted: pick another or "always send"'); break;
     case 'deadline': need(m.date, 'Date'); break;
     case 'goal': need(m.start, 'Start'); need(m.by, 'By'); break;
-    case 'gblock': need(m.name.trim(), 'Goal name'); if (!m.parts.length) e.push('Add at least one part');
+    case 'gblock': need(m.name.trim(), 'Goal name'); if (!m.idxs.length) e.push('Tick at least one index'); if (!m.parts.length) e.push('Add at least one part');
       m.parts.forEach((p, i) => { if (!p.from || !p.to) e.push(`Part ${i + 1}: both dates are needed`); else if (p.to < p.from) e.push(`Part ${i + 1}: end is before start`); if (i && p.from && m.parts[i - 1].to && p.from <= m.parts[i - 1].to) e.push(`Part ${i + 1} overlaps part ${i}`); });
       if (m.by && m.parts.length && m.parts[m.parts.length - 1].to && m.by < m.parts[m.parts.length - 1].to) e.push('In debt by is before the last part ends'); break;
     case 'raw': if (!String(m.text || '').trim()) e.push('Type the rule line'); break;
@@ -280,7 +281,7 @@ function summary0(m) {
       return `Reminder on ${m.dates.filter(Boolean).map(D).join(', ') || '…'}${ref ? ` (skipped if the alert "${short}" has already fired)` : m.unless ? ` (skipped if a line containing "${m.unless}" has fired)` : ''}`; }
     case 'deadline': return `Deadline ${D(m.date) || '…'}: reminders 7 days before and on the day`;
     case 'goal': return `Goal money to debt from ${D(m.start)} by ${D(m.by)}`;
-    case 'gblock': return `${m.name || 'Goal'}${Number(m.amt) ? ' · ₹' + Number(m.amt).toLocaleString('en-IN') : ''}: ${m.parts.length} part${m.parts.length > 1 ? 's' : ''}${m.parts.some(p => Number(p.amt) > 0) ? ' (' + m.parts.map(p => rupee(p.amt || 0)).join(' + ') + ')' : ''}, watching for ${m.trig === 'new' ? 'a new high' : 'a 52-week high'}${m.by ? ', in debt by ' + D(m.by) : ''}`;
+    case 'gblock': return `${m.name || 'Goal'}${Number(m.amt) ? ' · ₹' + Number(m.amt).toLocaleString('en-IN') : ''}: ${m.parts.length} part${m.parts.length > 1 ? 's' : ''}${m.parts.some(p => Number(p.amt) > 0) ? ' (' + m.parts.map(p => rupee(p.amt || 0)).join(' + ') + ')' : ''}, watching ${names(m)} for ${m.trig === 'new' ? 'a new high' : 'a 52-week high'}${m.by ? ', in debt by ' + D(m.by) : ''}`;
     case 'raw': return m.text || '…';
   }
 }
@@ -433,7 +434,8 @@ function form(m) {
       f.append(w, btn('+ Add a part', 'addrow', () => { const last = m.parts[m.parts.length - 1]; const nx = last && last.to ? new Date(Date.parse(last.to) + 864e5).toISOString().slice(0, 10) : ''; m.parts.push({ from: nx, to: '', amt: '' }); m.dirty = true; render(); }),
         (() => { const t = m.parts.reduce((a, p) => a + (Number(p.amt) || 0), 0); return t ? hint(`Parts add up to ${rupee(t)}${Number(m.amt) && t !== Number(m.amt) ? ` · goal amount is ${rupee(m.amt)}` : ''}`) : ''; })(),
         row(fld('In debt by', inp('date', m.by, ch(v => m.by = v))), fld('Watch for', s)),
-        hint('Each part alerts once when Nifty 50, Midcap 150 or Smallcap 250 reaches the trigger; if none, a reminder after the part ends. "In debt by" sends reminders 7 days before and on the day.'),
+        idxF('Watch these indices (any one reaching the trigger alerts)'),
+        hint('Each part alerts once when any ticked index reaches the trigger; if none does, a reminder after the part ends. "In debt by" sends reminders 7 days before and on the day.'),
         fld('How (optional note, not read by the checker)', inp('text', m.how, ch(v => m.how = v)), 'grow')); break; }
     case 'raw': { const t = document.createElement('textarea'); t.value = m.text; t.oninput = () => { m.text = t.value; m.dirty = true; refreshCard(); }; f.append(fld('Rule line(s)', t, 'grow'), hint('Formats: "Nifty 50 at 26358, 27400" · "Nifty 50 up 1.5% from 11/11/2026" · "remind 12/11/2026" · "deadline 15/01/2027". Dates DD/MM/YYYY.')); break; }
   }

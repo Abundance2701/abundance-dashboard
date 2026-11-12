@@ -3431,7 +3431,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
   const TRIG = { '52w': '52-week high', new: "new high since the part's start" };
   const howOf = t => `How: each part alerts once on a ${t === 'new' ? 'new high since its start' : '52-week high'} (Nifty 50, Midcap 150 or Smallcap 250), else a reminder when it ends (not if In debt by is within 7 days); In debt by alerts 7 days before and on the day`;
   const trigFor = (a, b) => a && b && (Date.parse(b) - Date.parse(a)) / 864e5 < 91 ? 'new' : '52w';   /* a few weeks: a 52-week high is unlikely, so watch for a new high */
-  const isPart = l => /^(part\s+\d+\s+of\s+\d+|in debt by|watch for|how)\s*:/i.test(l);
+  const isPart = l => /^(part\s+\d+\s+of\s+\d+|in debt by|watch for|indices|how)\s*:/i.test(l);
   const blocks = t => { const out = []; String(t || '').replace(/\r\n?/g, '\n').split('\n').map(s => s.trim()).filter(Boolean).forEach(l => {
     const prev = out[out.length - 1]; if (prev && (/^or\s/i.test(l) || (isPart(l) && /^goal alert:/i.test(prev[0])))) prev.push(l); else out.push([l]); }); return out; };
   const isFP = b => /^(\[fp\b|goal alert:)/i.test(b[0]);
@@ -3583,8 +3583,8 @@ Move              = target − today; every change is shown (under ₹1,000 coun
     const C = FP.st?.review?.crm, t = C && name && C.goals[clean(name).toLowerCase()]; if (!t) return '';
     const L = t.split('\n'), g = x => L.find(l => l.toLowerCase().startsWith(x));
     const parts = L.filter(l => /^part\s+\d+/i.test(l)).map(l => l.replace(/^part\s+(\d+)\s+of\s+\d+\s*:\s*/i, 'Part $1: '));
-    const by = g('in debt by')?.split(':').slice(1).join(':').trim(), w = g('watch for')?.split(':').slice(1).join(':').trim(), amt = (L[0].split('·')[1] || '').trim();
-    return `<div class="fa-sum"><h3>Goal alert in CRM</h3>${amt ? rowP('Amount to move', amt) : ''}${parts.map(p => rowP(p.split(':')[0], p.split(':').slice(1).join(':').trim())).join('')}${by ? rowP('In debt by', by) : ''}${w ? rowP('Watch for', w) : ''}
+    const by = g('in debt by')?.split(':').slice(1).join(':').trim(), w = g('watch for')?.split(':').slice(1).join(':').trim(), ixl = g('indices')?.split(':').slice(1).join(':').trim(), amt = (L[0].split('·')[1] || '').trim();
+    return `<div class="fa-sum"><h3>Goal alert in CRM</h3>${amt ? rowP('Amount to move', amt) : ''}${parts.map(p => rowP(p.split(':')[0], p.split(':').slice(1).join(':').trim())).join('')}${by ? rowP('In debt by', by) : ''}${w ? rowP('Watch for', w) : ''}${ixl ? rowP('Indices', ixl) : ''}
       <p class="hint" style="margin:6px 0 0">As seen in CRM on ${FP.dmy(new Date(C.at))} · <a href="${crmLink(C.id)}" target="_blank" rel="noopener">Open in Zoho CRM ↗</a></p></div>`;
   };
   const rowP = (l, v) => `<div style="display:flex;justify-content:space-between;gap:10px;padding:4px 0;border-bottom:1px solid var(--line);font-size:13.5px"><span>${E(l)}</span><b>${E(v)}</b></div>`;

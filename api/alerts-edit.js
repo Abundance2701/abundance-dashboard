@@ -78,7 +78,7 @@ function status(cid, R, keys, L, H, T) {
   } else if (R.type === 'gblock') {
     R.parts.forEach(p => { const pk = `-${hash(p.from + p.to)}`, hit = sent.find(x => x.k === pk + '-w52'), end = sent.find(x => x.k === pk + '-end');
       let st = hit ? `alerted ${dmy(hit.d)}` : end ? `ended without a trigger, reminder sent ${dmy(end.d)}` : T < p.from ? 'not started' : T > p.to ? 'ended' : 'watching';
-      if (!hit && T >= p.from && T <= p.to) { const best = ['nifty 50', 'midcap 150', 'smallcap 250'].map(k => { const cs = R.trig === 'new' ? closes(k, p.from) : closes(k, D.addDays(T, -364)); if (!cs.length || !now(k)) return null; const hi = Math.max(...cs); return { k, hi, gap: hi / now(k) }; }).filter(Boolean).sort((a, b) => a.gap - b.gap)[0];
+      if (!hit && T >= p.from && T <= p.to) { const best = (R.idxs || ['nifty 50', 'midcap 150', 'smallcap 250']).map(k => { const cs = R.trig === 'new' ? closes(k, p.from) : closes(k, D.addDays(T, -364)); if (!cs.length || !now(k)) return null; const hi = Math.max(...cs); return { k, hi, gap: hi / now(k) }; }).filter(Boolean).sort((a, b) => a.gap - b.gap)[0];
         if (best) st += `: needs ${lab(best.k)} above ${fmt(best.hi)}${away(best.k, best.hi)}`; else if (R.trig === 'new') st += ' (from the day after it starts)'; }
       out.push(`Part ${p.no} of ${p.of}${p.amt ? ' · ₹' + Number(p.amt).toLocaleString('en-IN') : ''} (${dmy(p.from)}–${dmy(p.to)}): ${st}`); });
     if (R.by) { const bs = sent.filter(x => x.k.startsWith(`-by${hash(R.by)}`)); out.push(`In debt by ${dmy(R.by)}: ${bs.length ? 'reminders sent ' + bs.map(x => dmy(x.d)).join(', ') : 'reminders 7 days before and on the day'}`); }
