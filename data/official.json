@@ -1,6 +1,13 @@
 {
- "updated": "2026-11-11T17:55:59Z",
+ "updated": "2026-11-12T10:21:28Z",
  "items": [
+  {
+   "src": "RBI",
+   "title": "RBI releases data on ECB / FCCB / RDB for September 2026",
+   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63961",
+   "date": "2026-11-12",
+   "important": true
+  },
   {
    "src": "SEBI",
    "title": "Reporting requirement under Foreign Account Tax Compliance Act (FATCA) and Common Reporting Standard (CRS) revised through Income-Tax Act, 2025 read with Income-Tax Rules, 2026",
@@ -177,20 +184,6 @@
    "important": false
   },
   {
-   "src": "RBI",
-   "title": "Supersession of Board of Directors of Abhyudaya Co-operative Bank Ltd., Mumbai - Extension of period",
-   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63951",
-   "date": "2026-11-09",
-   "important": false
-  },
-  {
-   "src": "RBI",
-   "title": "Reserve Bank cancels Certificate of Registration of Gandhinagar Leasing and Finance Ltd.",
-   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63949",
-   "date": "2026-11-09",
-   "important": false
-  },
-  {
    "src": "SEBI",
    "title": "Commencement of SEBI (Settlement of Administrative and Civil Proceedings) Regulations, 2026",
    "url": "https://www.sebi.gov.in/media-and-notifications/press-releases/nov-2026/commencement-of-sebi-settlement-of-administrative-and-civil-proceedings-regulations-2026_105680.html",
@@ -268,7 +261,7 @@
   ],
   "https://rbi.org.in/pressreleases_rss.xml": [
    10,
-   3
+   2
   ],
   "https://rbi.org.in/notifications_rss.xml": [
    10,
