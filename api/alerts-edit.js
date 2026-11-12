@@ -45,7 +45,8 @@ function status(cid, R, keys, L, H, T) {
   const P = prefixOf(cid, R), sent = Object.entries(keys).filter(([k]) => k === P || k.startsWith(P + '-')).flatMap(([k, ds]) => ds.map(d => ({ k: k.slice(P.length), d }))).sort((a, b) => a.d < b.d ? -1 : 1);
   const lab = k => D.LABEL[k], now = k => L[k];
   const closes = (k, a) => (H[k] || []).filter(r => r[0] >= a).map(r => r[1]);
-  const away = (k, lvl) => now(k) ? ` · now ${fmt(now(k))} (${((lvl / now(k) - 1) * 100).toFixed(1)}% away)` : '';
+  const away = (k, lvl, down) => { const n = now(k); if (!n) return ''; const g = down ? 1 - lvl / n : lvl / n - 1;
+    return g <= 0 ? ` · now ${fmt(n)}: already there, alerts at the next 2:45 PM / 3:45 PM check if it holds` : ` · now ${fmt(n)} (${(g * 100).toFixed(1)}% to go)`; };
   const out = [];
   if (R.from && T < R.from) out.push(`Starts ${dmy(R.from)}`);
   if (R.until && T > R.until) out.push(`Ended ${dmy(R.until)}`);
@@ -60,14 +61,14 @@ function status(cid, R, keys, L, H, T) {
   } else if (R.type === 'move') {
     const s = sent[0]; if (s) out.push(`Alerted ${dmy(s.d)}`);
     else R.alts.forEach(a => { const b = (H[a.idx] || []).find(r => r[0] >= R.from); if (!b) { out.push(`${lab(a.idx)}: waiting for the ${dmy(R.from)} close`); return; }
-      const lvl = b[1] * (1 + (a.dir === 'up' ? 1 : -1) * a.pct / 100); out.push(`${lab(a.idx)}: needs ${a.dir === 'up' ? '≥' : '≤'} ${fmt(lvl)} (${a.dir} ${a.pct}% from ${fmt(b[1])} on ${dmy(b[0])})${away(a.idx, lvl)}`); });
+      const lvl = b[1] * (1 + (a.dir === 'up' ? 1 : -1) * a.pct / 100); out.push(`${lab(a.idx)}: needs ${a.dir === 'up' ? '≥' : '≤'} ${fmt(lvl)} (${a.dir} ${a.pct}% from ${fmt(b[1])} on ${dmy(b[0])})${away(a.idx, lvl, a.dir === 'down')}`); });
   } else if (R.type === 'w52' || R.type === 'newHigh') {
     const s = sent[0]; if (s && !R.repeat) out.push(`Alerted ${dmy(s.d)}`);
     else (R.alts || [{ idx: R.idx }]).forEach(a => { const cs = R.type === 'w52' ? closes(a.idx, D.addDays(T, -364)) : closes(a.idx, R.from); if (!cs.length) return; const hi = Math.max(...cs); out.push(`${lab(a.idx)}: needs a close above ${fmt(hi)}${away(a.idx, hi)}`); });
   } else if (['fall', 'rise', 'aboveHigh'].includes(R.type)) {
     sent.forEach(s => out.push(`Alerted ${dmy(s.d)}`));
     if (!sent.length || R.repeat) { const lf = sent.length ? sent[sent.length - 1].d : null, since = (R.repeat && lf) || R.from, cs = closes(R.idx, since);
-      if (cs.length && R.type === 'fall') { const hi = Math.max(...cs, now(R.idx) || 0), lvl = hi * (1 - R.pct / 100); out.push(`Needs ${lab(R.idx)} ≤ ${fmt(lvl)} (${R.pct}% below its high of ${fmt(hi)} since ${dmy(since)})${away(R.idx, lvl)}`); }
+      if (cs.length && R.type === 'fall') { const hi = Math.max(...cs, now(R.idx) || 0), lvl = hi * (1 - R.pct / 100); out.push(`Needs ${lab(R.idx)} ≤ ${fmt(lvl)} (${R.pct}% below its high of ${fmt(hi)} since ${dmy(since)})${away(R.idx, lvl, true)}`); }
       if (cs.length && R.type === 'rise') { const lo = Math.min(...cs), lvl = lo * (1 + R.pct / 100); out.push(`Needs ${lab(R.idx)} ≥ ${fmt(lvl)} (${R.pct}% above its low of ${fmt(lo)} since ${dmy(since)})${away(R.idx, lvl)}`); } }
   } else if (R.type === 'remind') {
     R.dates.forEach(d => { const s = sent.find(x => x.k === '-' + d); out.push(s ? `${dmy(d)}: sent ${dmy(s.d)}` : T > D.addDays(d, 10) ? `${dmy(d)}: passed` : `${dmy(d)}: coming up${R.unless ? ` (skipped if "${R.unless}" alerts first)` : ''}`); });
