@@ -89,9 +89,20 @@ function parseRule(text) {
     try {
     let gm;
     if ((gm = line.match(/^goal alert:\s*(.+)$/i))) { const [nm, ...rest] = gm[1].split('·').map(x => x.trim()); G = { type: 'gblock', name: nm || 'Goal', amt: rest.join(' · '), parts: [], by: null, trig: '52w', src: line }; out.push(G); lastAt = null; continue; }
-    if ((gm = line.match(/^part\s+(\d+)\s+of\s+(\d+)\s*:\s*(\d{1,2}\/\d{1,2}\/\d{4})\s+to\s+(\d{1,2}\/\d{1,2}\/\d{4})$/i))) {
-      const a = iso(gm[3]), b = iso(gm[4]); if (!G || !a || !b || b < a) { bad.push(line); continue; } G.parts.push({ no: +gm[1], of: +gm[2], from: a, to: b, amt: lineAmt || null }); G.src += '\n' + line; lineAmt = lineAmts = null; continue; }
-    if ((gm = line.match(/^in debt by\s*:\s*(\d{1,2}\/\d{1,2}\/\d{4})$/i))) { const d = iso(gm[1]); if (!G || !d) { bad.push(line); continue; } G.by = d; G.src += '\n' + line; continue; }
+    /* Part N of M: <from> [to <to>] [· levels Nifty 50 26358, Midcap 150 23650] [· ₹amount]   (no "to" = no end date) */
+    if ((gm = line.match(/^part\s+(\d+)\s+of\s+(\d+)\s*:\s*(?:from\s+)?(\d{1,2}\/\d{1,2}\/\d{4})(?:\s+to\s+(\d{1,2}\/\d{1,2}\/\d{4}))?(?:\s*·\s*levels?\s+(.+))?$/i))) {
+      const a = iso(gm[3]), b = gm[4] ? iso(gm[4]) : ''; let levels = null, okL = true;
+      if (gm[5]) { levels = {}; gm[5].split(',').forEach(x => { const lm = x.trim().match(/^(.+?)\s+([\d,]+(?:\.\d+)?)$/), k = lm && normIdx(lm[1]); if (!k) okL = false; else levels[k] = +lm[2].replace(/,/g, ''); }); }
+      if (!G || !a || (gm[4] && !b) || (b && b < a) || !okL) { bad.push(line); continue; }
+      G.parts.push({ no: +gm[1], of: +gm[2], from: a, to: b, amt: lineAmt || null, levels }); G.src += '\n' + line; lineAmt = lineAmts = null; continue; }
+    if ((gm = line.match(/^trigger\s*:\s*(.+)$/i))) {   /* what each part waits for */
+      const t = gm[1].toLowerCase().trim(); let tr = null, pm;
+      if (/^new high/.test(t)) tr = ['new']; else if (/^52/.test(t)) tr = ['52w']; else if (/^(all[- ]?time high|ath)\b/.test(t)) tr = ['ath']; else if (/^(index )?level/.test(t)) tr = ['level'];
+      else if ((pm = t.match(/^(up|down|fall|rise)\s+([\d.]+)\s*%/))) tr = [pm[1], +pm[2]];
+      if (!G || !tr || (tr[1] != null && !(tr[1] > 0))) { bad.push(line); continue; } G.trig = tr[0]; G.pct = tr[1] || null; G.src += '\n' + line; continue; }
+    if ((gm = line.match(/^remind(?:ers?)?\s*:\s*(.+)$/i))) {   /* extra reminder dates for this alert */
+      const ds = gm[1].split(',').map(x => iso(x.trim())); if (!G || !ds.length || ds.some(x => !x)) { bad.push(line); continue; } G.rem = ds; G.src += '\n' + line; continue; }
+    if ((gm = line.match(/^(?:in debt by|done by|must be done by)\s*:\s*(\d{1,2}\/\d{1,2}\/\d{4})$/i))) { const d = iso(gm[1]); if (!G || !d) { bad.push(line); continue; } G.by = d; G.src += '\n' + line; continue; }
     if ((gm = line.match(/^watch for\s*:\s*(.+)$/i))) { if (!G) { bad.push(line); continue; } G.trig = /new high/i.test(gm[1]) && !/52/.test(gm[1]) ? 'new' : '52w'; G.src += '\n' + line; continue; }
     if ((gm = line.match(/^indices\s*:\s*(.+)$/i))) {   /* which indices a goal watches (any one); default Nifty 50, Midcap 150, Smallcap 250 */
       const ks = gm[1].split(/,|\bor\b|\//i).map(x => normIdx(x)).filter(Boolean);
@@ -197,10 +208,10 @@ async function mcpLive() {
   return out;
 }
 /* Daily closes, oldest first, from NSE's official end-of-day data: 2 years in two 12-month calls. */
-async function mcpHistory(k) {
+async function mcpHistory(k, years = 2) {
   const name = NSEMCP[k][1], rows = [];
   let end = 'today';
-  for (let i = 0; i < 2; i++) {
+  for (let i = 0; i < years; i++) {
     const j = await N.call('eod', 'get_index_history', { indexName: name, months: 12, endDate: end });
     (j.data || []).forEach(r => { if (r.date && isFinite(+r.close) && +r.close > 0) rows.push([r.date, +r.close]); });
     if (!j.next_end_date) break; end = j.next_end_date;
@@ -209,9 +220,9 @@ async function mcpHistory(k) {
   const seen = {}; return rows.filter(r => !seen[r[0]] && (seen[r[0]] = 1)).sort((a, b) => a[0] < b[0] ? -1 : 1);
 }
 /* NSE closes first; Yahoo only fills days after NSE's latest file (NSE publishes after hours) or if NSE fails. */
-async function closesFor(k, T, src) {
+async function closesFor(k, T, src, years = 2) {
   let nse = null, err = '';
-  try { nse = await mcpHistory(k); } catch (e) { err = e.message; }
+  try { nse = await mcpHistory(k, years); } catch (e) { err = e.message; }
   const lastWeekday = (() => { const d = new Date(T + 'T00:00:00Z'); do d.setUTCDate(d.getUTCDate() - 1); while ([0, 6].includes(d.getUTCDay())); return d.toISOString().slice(0, 10); })();
   if (nse && nse[nse.length - 1][0] >= lastWeekday) { src[k] = 'NSE'; return nse; }
   let y = null; try { if (!IDX[k][1]) throw new Error('no Yahoo symbol'); y = await history(IDX[k][1]); } catch (e) { if (!nse) throw new Error('nse: ' + err + '; ' + e.message); }
@@ -246,7 +257,8 @@ module.exports = async (req, res) => {
   try { L = await mcpLive(); } catch (e) { notes.push('live nse-mcp: ' + e.message); liveSrc = 'NSE website'; try { L = await nse(); } catch (e2) { notes.push('live: ' + e2.message); liveSrc = 'none'; } }
   const H = {};
   const histSrc = {};
-  await Promise.all(Object.keys(IDX).map(async k => { try { H[k] = (await closesFor(k, T, histSrc)).filter(r => r[0] < T); } catch (e) { notes.push(k + ' history: ' + e.message); } }));
+  const years = contacts.some(c => /all[- ]?time high|\bath\b/i.test(String(c[FIELD] || ''))) ? 5 : 2;   /* all-time high needs the long history */
+  await Promise.all(Object.keys(IDX).map(async k => { try { H[k] = (await closesFor(k, T, histSrc, years)).filter(r => r[0] < T); } catch (e) { notes.push(k + ' history: ' + e.message); } }));
   const missLive = Object.keys(IDX).filter(k => !(L[k] > 0)), missHist = Object.keys(IDX).filter(k => !(H[k] && H[k].length > 150));
   if (missLive.length && marketHours) problems.push({ type: 'live', text: 'No live market level for ' + missLive.map(k => LABEL[k]).join(', ') + ' (' + notes.filter(n => /live/.test(n)).join('; ') + '). Alerts that depend on these indices are not being checked right now.' });
   if (missHist.length) problems.push({ type: 'history', text: 'No closing-price history for ' + missHist.map(k => LABEL[k]).join(', ') + ' (' + notes.filter(n => /history/.test(n)).join('; ') + '). Alerts that need past closes for these indices are not being checked right now.' });
@@ -299,15 +311,29 @@ module.exports = async (req, res) => {
         const amtS = amtLabel(R.amt);
         const who = `${name} · ${R.name}${amtS}`, gk = `${c.id}/g${hash(R.name)}`;
         R.parts.forEach((P, i) => {
-          const pk = `${gk}-${hash(P.from + P.to)}`, kw = `${pk}-w52`, ke = `${pk}-end`, of = `part ${P.no} of ${P.of}${P.amt ? amtLabel(P.amt) : ''}`, isLast = !!R.by && P.to >= addDays(R.by, -7); let hitNow = false;   /* a part ending in the last 7 days: the In debt by alerts cover it */
-          const nh = R.trig === 'new', what = nh ? `new high since ${dmy(P.from)}` : '52-week high';
-          if (marketNow && !last(kw) && T >= P.from && T <= P.to) for (const ix of GI) {
-            const now = L[ix], cs = nh ? closes(ix, P.from) : closes(ix, addDays(T, -364)); if (!ok(now) || cs.length < (nh ? 1 : 150)) continue; const hi = Math.max(...cs);
-            if (now > hi) { hitNow = true; due.push({ c, fp: true, k: kw, title: `${who}: ${of}, ${LABEL[ix]} at a ${what}`, hit: `${LABEL[ix]} ${AT(now)}, above its highest close ${nh ? 'since ' + dmy(P.from) : 'of the past 52 weeks'} (${fmt(hi)}). Review moving this part to debt.` }); break; }
+          const pk = `${gk}-${hash(P.from + (P.to || '#' + P.no))}`, kw = `${pk}-w52`, ke = `${pk}-end`, of = `part ${P.no} of ${P.of}${P.amt ? amtLabel(P.amt) : ''}`, isLast = !!R.by && !!P.to && P.to >= addDays(R.by, -7); let hitNow = false;   /* a part ending in the last 7 days: the deadline alerts cover it */
+          const kind = R.trig || '52w', pct = R.pct, WHAT = { new: `new high since ${dmy(P.from)}`, '52w': '52-week high', ath: 'all-time high', level: 'its level', up: `${pct}% rise`, down: `${pct}% fall`, fall: `${pct}% fall from its high`, rise: `${pct}% rise from its low` }[kind] || 'trigger';
+          if (marketNow && !last(kw) && T >= P.from && (!P.to || T <= P.to)) for (const ix of GI) {
+            const now = L[ix]; if (!ok(now)) continue; let hit = null;
+            if (kind === 'new' || kind === '52w' || kind === 'ath') {
+              const cs = kind === 'new' ? closes(ix, P.from) : kind === '52w' ? closes(ix, addDays(T, -364)) : closes(ix, '1900-01-01'); if (cs.length < (kind === 'new' ? 1 : 150)) continue; const hi = Math.max(...cs);
+              if (now > hi) hit = [`at ${kind === 'new' ? 'a new high since ' + dmy(P.from) : kind === '52w' ? 'a 52-week high' : 'an all-time high'}`, `above its highest close ${kind === 'new' ? 'since ' + dmy(P.from) : kind === '52w' ? 'of the past 52 weeks' : 'ever (' + dmy((H[ix] || [])[0] ? H[ix][0][0] : P.from) + ' onwards)'} (${fmt(hi)})`];
+            } else if (kind === 'level') {
+              const lvl = P.levels && P.levels[ix]; if (!lvl) continue; if (now >= lvl) hit = [`at ${fmt(lvl)}`, `at or above the level of ${fmt(lvl)}`];
+            } else if (kind === 'up' || kind === 'down') {
+              const b = (H[ix] || []).find(r => r[0] >= P.from); if (!b) continue; const chg = (now / b[1] - 1) * 100;
+              if (kind === 'up' ? chg >= pct - 1e-9 : chg <= -pct + 1e-9) hit = [`${kind} ${pct}% since ${dmy(b[0])}`, `${kind} ${Math.abs(chg).toFixed(1)}% from its close of ${fmt(b[1])} on ${dmy(b[0])}`];
+            } else if (kind === 'fall') {
+              const cs = closes(ix, P.from); cs.push(now); const hi = Math.max(...cs); if (now <= hi * (1 - pct / 100) * (1 + 1e-12)) hit = [`down ${pct}% from its high`, `${((1 - now / hi) * 100).toFixed(1)}% below its high of ${fmt(hi)} since ${dmy(P.from)}`];
+            } else if (kind === 'rise') {
+              const cs = closes(ix, P.from); if (!cs.length) continue; const lo = Math.min(...cs); if (now >= lo * (1 + pct / 100) * (1 - 1e-12)) hit = [`up ${pct}% from its low`, `up ${((now / lo - 1) * 100).toFixed(1)}% from its low of ${fmt(lo)} since ${dmy(P.from)}`];
+            }
+            if (hit) { hitNow = true; due.push({ c, fp: true, k: kw, title: `${who}: ${of}, ${LABEL[ix]} ${hit[0]}`, hit: `${LABEL[ix]} ${AT(now)}, ${hit[1]}. Review moving this part.` }); break; }
           }
-          if (!hitNow && !isLast && !last(kw) && !last(ke) && endedOn(P.to)) due.push({ c, fp: true, k: ke, title: `${who}: ${of} ended with no ${nh ? 'new high' : '52-week high'}`, hit: `No ${what} between ${dmy(P.from)} and ${dmy(P.to)}. Review moving this part to debt.` });
+          if (P.to && !hitNow && !isLast && !last(kw) && !last(ke) && endedOn(P.to)) due.push({ c, fp: true, k: ke, title: `${who}: ${of} ended with no ${WHAT}`, hit: `No ${WHAT} between ${dmy(P.from)} and ${dmy(P.to)}. Review moving this part.` });
         });
-        if (R.by) [addDays(R.by, -7), R.by].forEach(d => { const k = `${gk}-by${hash(R.by)}-${d}`; if (!last(k) && win(d)) due.push({ c, fp: true, k, title: d === R.by ? `${who}: must be fully in debt today (${dmy(R.by)})` : `${who}: must be fully in debt by ${dmy(R.by)} (7 days left)`, hit: `This goal's money must be fully in debt by ${dmy(R.by)}.` }); });
+        if (R.by) [addDays(R.by, -7), R.by].forEach(d => { const k = `${gk}-by${hash(R.by)}-${d}`; if (!last(k) && win(d)) due.push({ c, fp: true, k, title: d === R.by ? `${who}: deadline today (${dmy(R.by)})` : `${who}: deadline in 7 days (${dmy(R.by)})`, hit: `This money must be fully moved by ${dmy(R.by)}.` }); });
+        (R.rem || []).forEach(d => { const k = `${gk}-r${d}`; if (!last(k) && win(d)) due.push({ c, fp: true, k, title: `${who}: reminder for ${dmy(d)}`, hit: `Reminder for ${dmy(d)}.` }); });
         continue;
       }
       if (R.type === 'goal') {                           // goal money: quarterly 52-week-high alerts, quarter-end fallback, deadline

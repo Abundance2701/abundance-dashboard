@@ -3431,7 +3431,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
   const TRIG = { '52w': '52-week high', new: "new high since the part's start" };
   const howOf = t => `How: each part alerts once on a ${t === 'new' ? 'new high since its start' : '52-week high'} (Nifty 50, Midcap 150 or Smallcap 250), else a reminder when it ends (not if In debt by is within 7 days); In debt by alerts 7 days before and on the day`;
   const trigFor = (a, b) => a && b && (Date.parse(b) - Date.parse(a)) / 864e5 < 91 ? 'new' : '52w';   /* a few weeks: a 52-week high is unlikely, so watch for a new high */
-  const isPart = l => /^(part\s+\d+\s+of\s+\d+|in debt by|watch for|indices|how)\s*:/i.test(l);
+  const isPart = l => /^(part\s+\d+\s+of\s+\d+|in debt by|done by|must be done by|watch for|trigger|indices|remind(?:ers?)?|how)\s*:/i.test(l);
   const blocks = t => { const out = []; String(t || '').replace(/\r\n?/g, '\n').split('\n').map(s => s.trim()).filter(Boolean).forEach(l => {
     const prev = out[out.length - 1]; if (prev && (/^or\s/i.test(l) || (isPart(l) && /^goal alert:/i.test(prev[0])))) prev.push(l); else out.push([l]); }); return out; };
   const isFP = b => /^(\[fp\b|goal alert:)/i.test(b[0]);

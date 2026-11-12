@@ -76,12 +76,25 @@ function status(cid, R, keys, L, H, T) {
   } else if (R.type === 'remind') {
     R.dates.forEach(d => { const s = sent.find(x => x.k === '-' + d); out.push(s ? `${dmy(d)}: sent ${dmy(s.d)}` : T > D.addDays(d, 10) ? `${dmy(d)}: passed` : `${dmy(d)}: coming up${R.unless ? ` (skipped if "${R.unless}" alerts first)` : ''}`); });
   } else if (R.type === 'gblock') {
-    R.parts.forEach(p => { const pk = `-${hash(p.from + p.to)}`, hit = sent.find(x => x.k === pk + '-w52'), end = sent.find(x => x.k === pk + '-end');
-      let st = hit ? `alerted ${dmy(hit.d)}` : end ? `ended without a trigger, reminder sent ${dmy(end.d)}` : T < p.from ? 'not started' : T > p.to ? 'ended' : 'watching';
-      if (!hit && T >= p.from && T <= p.to) { const best = (R.idxs || ['nifty 50', 'midcap 150', 'smallcap 250']).map(k => { const cs = R.trig === 'new' ? closes(k, p.from) : closes(k, D.addDays(T, -364)); if (!cs.length || !now(k)) return null; const hi = Math.max(...cs); return { k, hi, gap: hi / now(k) }; }).filter(Boolean).sort((a, b) => a.gap - b.gap)[0];
-        if (best) st += `: needs ${lab(best.k)} above ${fmt(best.hi)}${away(best.k, best.hi)}`; else if (R.trig === 'new') st += ' (from the day after it starts)'; }
-      out.push(`Part ${p.no} of ${p.of}${p.amt ? ' · ₹' + Number(p.amt).toLocaleString('en-IN') : ''} (${dmy(p.from)}–${dmy(p.to)}): ${st}`); });
-    if (R.by) { const bs = sent.filter(x => x.k.startsWith(`-by${hash(R.by)}`)); out.push(`In debt by ${dmy(R.by)}: ${bs.length ? 'reminders sent ' + bs.map(x => dmy(x.d)).join(', ') : 'reminders 7 days before and on the day'}`); }
+    const GI = R.idxs || ['nifty 50', 'midcap 150', 'smallcap 250'], kind = R.trig || '52w', pct = R.pct;
+    R.parts.forEach(p => { const pk = `-${hash(p.from + (p.to || '#' + p.no))}`, hit = sent.find(x => x.k === pk + '-w52'), end = sent.find(x => x.k === pk + '-end');
+      let st = hit ? `alerted ${dmy(hit.d)}` : end ? `ended without a trigger, reminder sent ${dmy(end.d)}` : T < p.from ? 'not started' : p.to && T > p.to ? 'ended' : 'watching';
+      if (!hit && T >= p.from && (!p.to || T <= p.to)) {
+        /* the nearest index to its trigger: [index, level needed, true if it must fall to it] */
+        const need = GI.map(k => { const n = now(k); if (!n) return null; let lvl = null, down = false;
+          if (kind === 'new') { const cs = closes(k, p.from); if (cs.length) lvl = Math.max(...cs); }
+          else if (kind === '52w') { const cs = closes(k, D.addDays(T, -364)); if (cs.length) lvl = Math.max(...cs); }
+          else if (kind === 'ath') { const cs = closes(k, '1900-01-01'); if (cs.length) lvl = Math.max(...cs); }
+          else if (kind === 'level') lvl = p.levels && p.levels[k] || null;
+          else if (kind === 'up' || kind === 'down') { const b = (H[k] || []).find(r => r[0] >= p.from); if (b) { lvl = b[1] * (1 + (kind === 'up' ? 1 : -1) * pct / 100); down = kind === 'down'; } }
+          else if (kind === 'fall') { const cs = closes(k, p.from); cs.push(n); lvl = Math.max(...cs) * (1 - pct / 100); down = true; }
+          else if (kind === 'rise') { const cs = closes(k, p.from); if (cs.length) lvl = Math.min(...cs) * (1 + pct / 100); }
+          return lvl ? { k, lvl, down, gap: down ? 1 - lvl / n : lvl / n - 1 } : null; }).filter(Boolean).sort((a, b) => a.gap - b.gap)[0];
+        if (need) st += `: needs ${lab(need.k)} ${need.down ? '≤' : kind === 'level' ? '≥' : 'above'} ${fmt(need.lvl)}${away(need.k, need.lvl, need.down)}`;
+        else if (kind === 'new' || kind === 'up' || kind === 'down' || kind === 'rise') st += ' (from the day after it starts)'; }
+      out.push(`Part ${p.no} of ${p.of}${p.amt ? ' · ₹' + Number(p.amt).toLocaleString('en-IN') : ''} (${dmy(p.from)}${p.to ? '–' + dmy(p.to) : ' onwards'}): ${st}`); });
+    if (R.by) { const bs = sent.filter(x => x.k.startsWith(`-by${hash(R.by)}`)); out.push(`Done by ${dmy(R.by)}: ${bs.length ? 'reminders sent ' + bs.map(x => dmy(x.d)).join(', ') : 'reminders 7 days before and on the day'}`); }
+    (R.rem || []).forEach(d => { const s2 = sent.find(x => x.k === `-r${d}`); out.push(`Reminder ${dmy(d)}: ${s2 ? 'sent ' + dmy(s2.d) : T > D.addDays(d, 10) ? 'passed' : 'coming up'}`); });
   } else if (R.type === 'goal') sent.forEach(s => out.push(`Alerted ${dmy(s.d)}`));
   return { lines: out, sent: sent.map(s => s.d) };
 }
@@ -93,7 +106,7 @@ function lost(cid, keys, after) {
     Object.keys(keys).forEach(k => { if (k !== P && !k.startsWith(P + '-')) return;
       if (R.type !== 'gblock') { still.add(k); return; }
       const rest = k.slice(P.length);                                 // -<parthash>-w52 | -<parthash>-end | -by<hash>-<date>
-      if (R.parts.some(p => rest.startsWith(`-${hash(p.from + p.to)}-`)) || (R.by && rest.startsWith(`-by${hash(R.by)}`))) still.add(k); }); });
+      if (R.parts.some(p => rest.startsWith(`-${hash(p.from + (p.to || '#' + p.no))}-`)) || (R.by && rest.startsWith(`-by${hash(R.by)}`)) || (R.rem || []).some(d => rest === `-r${d}`)) still.add(k); }); });
   return Object.keys(keys).filter(k => !k.startsWith(cid + '/bad-') && !still.has(k));
 }
 
@@ -113,11 +126,11 @@ module.exports = async (req, res) => {
     if (req.method === 'GET') {
       const id = String((req.query && req.query.id) || ''); if (!/^\d{6,25}$/.test(id)) return Z.reply(res, 400, { error: 'Pick a client first.' });
       const T = D.today();
-      const [c, keys, L, H] = await Promise.all([
-        crm(`Contacts/${id}?fields=Full_Name,Goal_Alerts,PB_Plan`).then(j => (j.data || [])[0]),
-        history(id),
-        D.mcpLive().catch(() => D.nse()).catch(() => ({})),
-        (async () => { const H = {}, src = {}; await Promise.all(Object.keys(D.IDX).map(async k => { try { H[k] = (await D.closesFor(k, T, src)).filter(r => r[0] < T); } catch (e) {} })); return H; })(),
+      const cP = crm(`Contacts/${id}?fields=Full_Name,Goal_Alerts,PB_Plan`).then(j => (j.data || [])[0]);
+      const [c, keys, L, H] = await Promise.all([cP, history(id), D.mcpLive().catch(() => D.nse()).catch(() => ({})),
+        /* closes: 2 years, or 5 when an alert waits for an all-time high */
+        cP.then(async c => { const yrs = /all[- ]?time high|\bath\b/i.test(String((c && c.Goal_Alerts) || '')) ? 5 : 2, H = {}, src = {};
+          await Promise.all(Object.keys(D.IDX).map(async k => { try { H[k] = (await D.closesFor(k, T, src, yrs)).filter(r => r[0] < T); } catch (e) {} })); return H; }),
       ]);
       if (!c) return Z.reply(res, 404, { error: 'That contact is no longer in CRM.' });
       const rule = String(c.Goal_Alerts || ''), out = blocks(rule).map(b => {

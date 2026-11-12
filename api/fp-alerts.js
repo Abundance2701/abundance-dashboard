@@ -18,7 +18,7 @@ const lines = t => String(t || '').replace(/\r\n?/g, '\n').split('\n').map(s => 
 /* blocks: a line plus the "or …" lines under it; [FP …] blocks are the planning tool's */
 /* blocks: a line plus the lines that belong to it ("or …" lines; a GOAL ALERT's Part / In debt by / How lines).
    [FP …] and GOAL ALERT blocks belong to the planning tool; everything else is the user's own. */
-const isPart = l => /^(part\s+\d+\s+of\s+\d+|in debt by|watch for|indices|how)\s*:/i.test(l);
+const isPart = l => /^(part\s+\d+\s+of\s+\d+|in debt by|done by|must be done by|watch for|trigger|indices|remind(?:ers?)?|how)\s*:/i.test(l);
 const blocks = t => { const out = []; for (const l of lines(t)) { const prev = out[out.length - 1]; if (prev && (/^or\s/i.test(l) || (isPart(l) && /^goal alert:/i.test(prev[0])))) prev.push(l); else out.push([l]); } return out; };
 const isFP = b => /^(\[fp\b|goal alert:)/i.test(b[0]);
 const manual = t => blocks(t).filter(b => !isFP(b)).map(b => b.join('\n')).join('\n');

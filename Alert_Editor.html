@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
 <!-- Goal Alerts Editor: edit a client's alert rules (Zoho CRM → Contacts → "Goal Alerts" + "Goal Alert Plan")
-     as simple cards with date pickers. The server (api/alerts-edit.js) reads every line with the same reader as the
+     with one simple form per alert. The server (api/alerts-edit.js) reads every line with the same reader as the
      alert checker (api/pb-check.js), refuses anything it can't read, and warns when an edit lets an earlier alert fire
      again. Passcode = the dashboard tools' passcode (shared with Portfolio Generator, localStorage pg_mailkey). -->
 <style>
@@ -112,7 +112,7 @@ pre.text{background:#f6f8f7;border:1px solid var(--line);border-radius:8px;paddi
       <input id="q" type="search" placeholder="Search a client by name…" autocomplete="off" aria-label="Search a client">
       <div class="results hide" id="results" role="listbox"></div>
     </div>
-    <div class="hint" style="margin-top:6px">Alerts are checked at 2:45 PM (near the close, before the 3 PM cut-off) and 3:45 PM (closing values) on weekdays; dated reminders go out at 8:15 AM.</div>
+    <div class="hint" style="margin-top:6px">Checked on weekdays at 2:45 PM (near the close, before the 3 PM cut-off) and 3:45 PM (closing values). Reminders and deadlines go out at 8:15 AM.</div>
   </div>
 
   <div id="client" class="hide">
@@ -121,13 +121,10 @@ pre.text{background:#f6f8f7;border:1px solid var(--line);border-radius:8px;paddi
       <div class="levels" id="levels"></div>
     </div>
     <div id="cards"></div>
-    <div class="panel" id="addPanel">
-      <button class="btn gold" id="addBtn" type="button">+ Add alert</button>
-      <div class="types hide" id="types"></div>
-    </div>
+    <div class="panel"><button class="btn gold" id="addBtn" type="button">+ Add alert</button></div>
     <div class="panel">
-      <label class="f" for="plan" style="font-size:13px">Goal Alert Plan <span class="hint" style="font-weight:400">(note copied into every alert email for this client)</span></label>
-      <textarea id="plan" placeholder="e.g. Move ₹6L each from equity to debt by 18/12 for the SWP."></textarea>
+      <div class="row" style="justify-content:space-between;align-items:center"><label class="f" for="plan" style="font-size:13px">Goal Alert Plan <span class="hint" style="font-weight:400">(written from the alerts; edit if needed. Copied into every alert email for this client)</span></label><button class="btn ghost sm" id="planAuto" type="button">Rewrite from alerts</button></div>
+      <textarea id="plan" style="margin-top:6px"></textarea>
     </div>
   </div>
   <div class="empty" id="emptyMsg">Search a client to see and edit their alerts.</div>
@@ -137,160 +134,91 @@ pre.text{background:#f6f8f7;border:1px solid var(--line);border-radius:8px;paddi
 
 <script>
 'use strict';
+/* Goal Alerts Editor. Every alert is one form: name, amount, trigger (dropdown), indices (any one), parts
+   (dates, amount, levels), done-by date and extra reminders. Saved as a "GOAL ALERT" block in Zoho CRM
+   (Contacts → Goal Alerts), the format api/pb-check.js reads. The server re-checks every line before saving. */
 const API = (location.protocol === 'file:' ? 'https://abundance-dashboard-beta.vercel.app' : '') + '/api/alerts-edit';
 const KEY = 'pg_mailkey', getKey = () => { try { return localStorage.getItem(KEY) || ''; } catch (e) { return ''; } }, setKey = v => { try { v ? localStorage.setItem(KEY, v) : localStorage.removeItem(KEY); } catch (e) {} };
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const IDX = [['nifty 50', 'Nifty 50'], ['nifty 500', 'Nifty 500'], ['multicap 50:25:25', 'Multicap 50:25:25'], ['midcap 150', 'Midcap 150'], ['smallcap 250', 'Smallcap 250']];
 const LAB = Object.fromEntries(IDX);
-const GOAL_DEF = ['nifty 50', 'midcap 150', 'smallcap 250'];   /* what a goal watches when no Indices line is given */
+const GOAL_DEF = ['nifty 50', 'midcap 150', 'smallcap 250'];   /* what an alert watches when CRM has no Indices line */
 const dmy = iso => iso ? iso.split('-').reverse().join('/') : '';
+const D = dmy;
+const short = iso => iso ? iso.split('-').reverse().slice(0, 2).join('/') : '';
 const inr = v => Number(v).toLocaleString('en-IN', { maximumFractionDigits: 2 });
+const num = v => Number(String(v == null ? '' : v).replace(/[^\d.]/g, '')) || 0;
+const rupee = v => '₹' + num(v).toLocaleString('en-IN');
+const lakh = v => { const n = num(v); return n >= 1e7 ? '₹' + (n / 1e7).toFixed(2) + ' Cr' : n >= 1e5 ? '₹' + (n / 1e5).toFixed(2) + ' L' : rupee(n); };
 const today = () => new Date(Date.now() + 5.5 * 3600e3).toISOString().slice(0, 10);
 
-/* ---------- alert types: label, card colour, blank model, summary, form, text ---------- */
-const TYPES = {
-  at: { name: 'Index reaches a level', hint: 'Book profit in parts at set index levels', cls: '' },
-  updown: { name: 'Index up / down %', hint: 'From a day\'s close, or from the high / low since a date', cls: '' },
-  move: { name: 'Index up / down %', noAdd: true, cls: '' },
-  gblock: { name: 'Goal: move to debt in parts', hint: 'Watch windows + an in-debt-by date', cls: 'goal' },
-  w52: { name: '52-week high', hint: 'Above the past year\'s highest close', cls: '' },
-  newHigh: { name: 'New high since a date', hint: 'Above every close since a date', cls: '' },
-  fall: { name: 'Index up / down %', noAdd: true, cls: '' },
-  rise: { name: 'Index up / down %', noAdd: true, cls: '' },
-  aboveHigh: { name: 'Index up / down %', noAdd: true, cls: '' },
-  remind: { name: 'Reminder on date(s)', hint: 'One or more dates', cls: 'time' },
-  deadline: { name: 'Deadline', hint: 'Reminders 7 days before and on the day', cls: 'time' },
-  goal: { name: 'Goal (older format)', hint: '', cls: 'goal', noAdd: true },
-  raw: { name: 'Text line', hint: 'Type a rule line by hand (advanced)', cls: '' },
-};
-const blank = t => ({
-  at: { alts: [{ idx: 'nifty 50', levels: '' }], amts: [] },
-  updown: { dir: 'up', base: 'close', idxs: ['nifty 50'], pct: '', from: today(), until: '', close: false, repeat: false },
-  move: { dir: 'up', idxs: ['nifty 50'], pct: '', from: today(), until: '' },
-  gblock: { name: '', amt: '', idxs: ['nifty 50', 'midcap 150', 'smallcap 250'], parts: [{ from: today(), to: '', amt: '' }], by: '', trig: '52w', how: '' },
-  w52: { idxs: ['nifty 50'], from: today(), until: '' },
-  newHigh: { idxs: ['nifty 50'], from: today(), until: '' },
-  fall: { idxs: ['nifty 50'], pct: '', from: today(), until: '', close: true, repeat: false },
-  rise: { idxs: ['nifty 50'], pct: '', from: today(), until: '', repeat: false },
-  aboveHigh: { idxs: ['nifty 50'], pct: '', from: today(), until: '', repeat: false },
-  remind: { dates: [''], unless: '' },
-  deadline: { date: '' },
-  goal: { start: '', by: '' },
-  raw: { text: '' },
-}[t]);
+/* ---------- the trigger list ---------- */
+const TRIG = [
+  ['new', 'New high since the part starts', ''], ['52w', '52-week high', ''], ['ath', 'All-time high', ''],
+  ['level', 'Index reaches a level', 'level'], ['up', '% up from the part\'s start', '%'], ['down', '% down from the part\'s start', '%'],
+  ['fall', '% fall from its high', '%'], ['rise', '% rise from its low', '%'],
+];
+const TL = Object.fromEntries(TRIG.map(t => [t[0], t[1]]));
+const isPct = t => ['up', 'down', 'fall', 'rise'].includes(t);
+const trigWords = m => ({ new: 'a new high since the part starts', '52w': 'a 52-week high', ath: 'an all-time high', level: 'its level', up: `${m.pct || '…'}% up from the part's start`, down: `${m.pct || '…'}% down from the part's start`, fall: `a ${m.pct || '…'}% fall from its high`, rise: `a ${m.pct || '…'}% rise from its low` }[m.trig]);
+const trigLine = m => ({ new: 'new high', '52w': '52-week high', ath: 'all-time high', level: 'level', up: `up ${m.pct}%`, down: `down ${m.pct}%`, fall: `fall ${m.pct}% from high`, rise: `rise ${m.pct}% from low` }[m.trig]);
 
-/* model from the server's parsed line (R = api/pb-check parseRule output) */
-function fromParsed(b) {
-  if (!b.R) return { type: 'raw', tag: '', text: b.text, orig: b.text, bad: b.bad, status: [], sent: [] };
-  const R = b.R, m = { type: R.type, tag: R.tag || '', amt: R.type === 'gblock' ? '' : (R.amt || ''), orig: b.text, status: b.status || [], sent: b.sent || [] };
-  if (R.type === 'at') { m.alts = R.alts.map(a => ({ idx: a.idx, levels: a.levels.join(', ') })); m.amts = R.amts ? R.amts.map(String) : R.amt ? [String(R.amt)] : []; m.amt = ''; }
-  else if (R.type === 'move' && R.alts.some(a => a.pct !== R.alts[0].pct || a.dir !== R.alts[0].dir)) return { type: 'raw', tag: '', text: b.text, orig: b.text, status: b.status || [], sent: b.sent || [] };   // mixed % per index: keep as text
-  else if (R.type === 'move') Object.assign(m, { dir: R.alts[0].dir, idxs: R.alts.map(a => a.idx), pct: R.alts[0].pct, from: R.from, until: R.until || '' });
-  else if (R.type === 'w52') Object.assign(m, { idxs: R.alts.map(a => a.idx), from: R.from || '', until: R.until || '' });
-  else if (['newHigh', 'fall', 'rise', 'aboveHigh'].includes(R.type)) { const al = R.alts || [{ idx: R.idx, pct: R.pct }];
-    if (al.some(a => a.pct != null && a.pct !== al[0].pct)) return { type: 'raw', tag: '', text: b.text, orig: b.text, status: b.status || [], sent: b.sent || [] };
-    Object.assign(m, { idxs: al.map(a => a.idx), pct: R.pct, from: R.from, until: R.until || '', close: !!R.close, repeat: !!R.repeat }); }
-  else if (R.type === 'remind' && R.deadline) { m.type = 'deadline'; m.date = R.deadline; }
-  else if (R.type === 'remind') { m.dates = R.dates.slice(); m.unless = R.unless || ''; }
-  else if (R.type === 'gblock') { const how = (b.text.split('\n').find(l => /^how\s*:/i.test(l)) || '').replace(/^how\s*:\s*/i, ''); Object.assign(m, { name: R.name, idxs: R.idxs || GOAL_DEF.slice(), amt: String(R.amt || '').replace(/[^\d.]/g, ''), parts: R.parts.map(p => ({ from: p.from, to: p.to, amt: p.amt ? String(p.amt) : '' })), by: R.by || '', trig: R.trig, how }); }
-  else if (R.type === 'goal') { m.start = R.start; m.by = R.by; }
-  if (['move', 'fall', 'rise', 'aboveHigh'].includes(m.type)) { m.base = { move: 'close', fall: 'high', rise: 'low', aboveHigh: 'prevHigh' }[m.type]; m.dir = m.type === 'move' ? m.dir : m.type === 'fall' ? 'down' : 'up'; m.type = 'updown'; }
-  return m;
+/* ---------- model ---------- */
+const blankAlert = () => ({ name: '', amt: '', trig: 'new', pct: '', idxs: ['nifty 50'], parts: [{ from: today(), to: '', amt: '', levels: {} }], by: '', rem: [], how: '', orig: null, status: [], sent: [], isNew: true, dirty: true });
+function fromBlock(b) {
+  if (!b.R || b.R.type !== 'gblock') return { old: true, text: b.text, orig: b.text, bad: b.bad, status: b.status || [], sent: b.sent || [] };   /* older one-line formats: shown read-only */
+  const R = b.R, how = (b.text.split('\n').find(l => /^how\s*:/i.test(l)) || '').replace(/^how\s*:\s*/i, '');
+  return { name: R.name, amt: String(R.amt || '').replace(/[^\d.]/g, ''), trig: R.trig || '52w', pct: R.pct || '', idxs: R.idxs || GOAL_DEF.slice(),
+    parts: R.parts.map(p => ({ from: p.from, to: p.to || '', amt: p.amt ? String(p.amt) : '', levels: Object.assign({}, p.levels || {}) })),
+    by: R.by || '', rem: (R.rem || []).slice(), how, orig: b.text, status: b.status || [], sent: b.sent || [] };
 }
-
-/* ---------- model → text lines (the exact formats api/pb-check.js reads) ---------- */
-const D = iso => dmy(iso);
-const pre = m => m.tag ? `[FP ${m.tag}] ` : '';
-const rng = m => `${m.from ? ' from ' + D(m.from) : ''}${m.until ? ' until ' + D(m.until) : ''}`;
-/* indices in the order chosen (the first one is the main line, the rest are "or" backups) */
-const ix = m => m.idxs.length ? m.idxs : ['nifty 50'];
-/* optional amount: " · ₹1,50,000" at the end of the first line (the checker shows it in the alert title) */
-const withAmt = (m, lines) => { const v = Number(String(m.amt || '').replace(/[^\d.]/g, '')); if (v > 0) lines[0] += ' · ₹' + v.toLocaleString('en-IN'); return lines.join('\n'); };
-/* "remind … unless <first line of another alert>": the reminder is skipped if that alert has already fired */
-const firstLine = c => toText(c).split('\n')[0].replace(/\s*·\s*₹[\d,.]+\s*$/, '');
-const unlessText = m => m.unlessRef ? (S.cards.includes(m.unlessRef) ? firstLine(m.unlessRef) : '') : String(m.unless || '').trim();
-/* "Index up / down %": which checker line it becomes */
-const udKind = m => ({ close: 'move', high: 'fall', low: 'rise', prevHigh: 'aboveHigh' }[m.base] || 'move');
-const asKind = m => m.type === 'updown' ? Object.assign({}, m, { type: udKind(m) }) : m;
-const rupee = v => '₹' + Number(String(v).replace(/[^\d.]/g, '')).toLocaleString('en-IN');
-const nlevels = m => Math.max(1, ...m.alts.map(a => String(a.levels).split(/[,\s]+/).filter(Boolean).length));
+/* model → the exact lines api/pb-check.js reads */
 function toText(m) {
-  if (m.type === 'updown' && (m.dirty || m.orig == null)) return toText(Object.assign(asKind(m), { dirty: true, orig: null }));
-  if (m.type === 'remind' && !m.dirty && m.orig != null && m.unlessRef && S.cards.includes(m.unlessRef) && !firstLine(m.unlessRef).toLowerCase().includes(String(m.unless).toLowerCase())) m.dirty = true;   // the linked alert changed: re-link
-  if (m.type === 'remind' && !m.dirty && m.orig != null && m.unlessRef && !S.cards.includes(m.unlessRef)) m.dirty = true;                                        // the linked alert was deleted
-  if (!m.dirty && m.orig != null) return m.orig;
-  switch (m.type) {
-    case 'at': { const L = m.alts.map((a, i) => `${i ? 'or ' : pre(m)}${LAB[a.idx]} at ${String(a.levels).split(/[,\s]+/).filter(Boolean).map(x => x.replace(/[^\d.]/g, '')).join(', ')}`);
-      const am = (m.amts || []).slice(0, nlevels(m)); if (am.some(v => Number(v) > 0)) L[0] += ' · ' + Array.from({ length: nlevels(m) }, (_, i) => rupee(am[i] || 0)).join(' / ');
-      return L.join('\n'); }
-    case 'move': return withAmt(m, ix(m).map((k, i) => `${i ? 'or ' : pre(m)}${LAB[k]} ${m.dir} ${m.pct}% from ${D(m.from)}${i === 0 && m.until ? ' until ' + D(m.until) : ''}`));
-    case 'w52': return withAmt(m, ix(m).map((k, i) => i ? `or ${LAB[k]} 52w high` : `${pre(m)}${LAB[k]} 52w high${rng(m)}`));
-    case 'newHigh': return withAmt(m, ix(m).map((k, i) => i ? `or ${LAB[k]} new high` : `${pre(m)}${LAB[k]} new high${rng(m)}`));
-    case 'fall': return withAmt(m, ix(m).map((k, i) => i ? `or ${LAB[k]} fall ${m.pct}%` : `${pre(m)}${LAB[k]} fall ${m.pct}%${m.close ? ' close' : ''}${m.repeat ? ' repeat' : ''}${rng(m)}`));
-    case 'rise': return withAmt(m, ix(m).map((k, i) => i ? `or ${LAB[k]} rise ${m.pct}%` : `${pre(m)}${LAB[k]} rise ${m.pct}%${m.repeat ? ' repeat' : ''}${rng(m)}`));
-    case 'aboveHigh': return withAmt(m, ix(m).map((k, i) => i ? `or ${LAB[k]} rise ${m.pct}% above high` : `${pre(m)}${LAB[k]} rise ${m.pct}% above high${m.repeat ? ' repeat' : ''}${rng(m)}`));
-    case 'remind': { const u = unlessText(m); return withAmt(m, [`${pre(m)}remind ${m.dates.filter(Boolean).map(D).join(', ')}${u ? ' unless ' + u : ''}`]); }
-    case 'deadline': return withAmt(m, [`${pre(m)}deadline ${D(m.date)}`]);
-    case 'goal': return withAmt(m, [`${pre(m)}move to debt from ${D(m.start)} by ${D(m.by)}`]);
-    case 'gblock': { const n = m.parts.length, amt = Number(m.amt) ? ' · ₹' + Number(m.amt).toLocaleString('en-IN') : '';
-      return [`GOAL ALERT: ${m.name.replace(/·/g, '-').trim()}${amt}`, ...m.parts.map((p, i) => `Part ${i + 1} of ${n}: ${D(p.from)} to ${D(p.to)}${Number(p.amt) > 0 ? ' · ' + rupee(p.amt) : ''}`), m.by ? `In debt by: ${D(m.by)}` : '', `Watch for: ${m.trig === 'new' ? "new high since the part's start" : '52-week high'}`, (m.idxs || []).join() !== GOAL_DEF.join() ? `Indices: ${ix(m).map(k => LAB[k]).join(', ')}` : '', m.how.trim() ? `How: ${m.how.trim()}` : ''].filter(Boolean).join('\n'); }
-    case 'raw': return String(m.text || '').trim();
-  }
-  return '';
+  if (m.old || (!m.dirty && m.orig != null)) return m.orig;
+  const n = m.parts.length, ix = IDX.map(x => x[0]).filter(k => m.idxs.includes(k));
+  return [
+    `GOAL ALERT: ${m.name.replace(/·/g, '-').trim()}${num(m.amt) ? ' · ' + rupee(m.amt) : ''}`,
+    `Trigger: ${trigLine(m)}`,
+    `Indices: ${ix.map(k => LAB[k]).join(', ')}`,
+    ...m.parts.map((p, i) => {
+      const lv = m.trig === 'level' ? ix.filter(k => num(p.levels[k]) > 0).map(k => `${LAB[k]} ${num(p.levels[k])}`) : [];
+      return `Part ${i + 1} of ${n}: ${p.to ? D(p.from) + ' to ' + D(p.to) : 'from ' + D(p.from)}${lv.length ? ' · levels ' + lv.join(', ') : ''}${num(p.amt) ? ' · ' + rupee(p.amt) : ''}`; }),
+    m.by ? `In debt by: ${D(m.by)}` : '',
+    m.rem.filter(Boolean).length ? `Remind: ${m.rem.filter(Boolean).sort().map(D).join(', ')}` : '',
+    m.how.trim() ? `How: ${m.how.trim()}` : '',
+  ].filter(Boolean).join('\n');
 }
-
-/* ---------- checks before the server's own check ---------- */
 function problems(m) {
-  if (m.type === 'updown') m = asKind(m);
-  const e = [], num = v => Number(String(v).replace(/[^\d.]/g, '')) > 0;
-  const need = (v, what) => { if (!v) e.push(what + ' is missing'); };
-  switch (m.type) {
-    case 'at': m.alts.forEach(a => { const lv = String(a.levels).split(/[,\s]+/).filter(Boolean); if (!lv.length || !lv.every(num)) e.push(`${LAB[a.idx]}: enter level(s) like 26358, 27400`); }); break;
-    case 'move': need(m.from, 'From date'); if (!(Number(m.pct) > 0)) e.push('Enter the %'); if (!m.idxs.length) e.push('Tick at least one index'); if (m.until && m.until < m.from) e.push('Until is before From'); break;
-    case 'newHigh': need(m.from, 'From date'); if (!m.idxs.length) e.push('Tick at least one index'); if (m.until && m.until < m.from) e.push('Until is before From'); break;
-    case 'w52': if (!m.idxs.length) e.push('Tick at least one index'); if (m.until && m.from && m.until < m.from) e.push('Until is before From'); break;
-    case 'fall': case 'rise': case 'aboveHigh': need(m.from, 'From date'); if (!(Number(m.pct) > 0)) e.push('Enter the %'); if (!m.idxs.length) e.push('Tick at least one index'); if (m.until && m.until < m.from) e.push('Until is before From'); break;
-    case 'remind': if (!m.dates.filter(Boolean).length) e.push('Add at least one date'); if (m.unlessRef && !S.cards.includes(m.unlessRef)) e.push('The alert it was linked to was deleted: pick another or "always send"'); break;
-    case 'deadline': need(m.date, 'Date'); break;
-    case 'goal': need(m.start, 'Start'); need(m.by, 'By'); break;
-    case 'gblock': need(m.name.trim(), 'Goal name'); if (!m.idxs.length) e.push('Tick at least one index'); if (!m.parts.length) e.push('Add at least one part');
-      m.parts.forEach((p, i) => { if (!p.from || !p.to) e.push(`Part ${i + 1}: both dates are needed`); else if (p.to < p.from) e.push(`Part ${i + 1}: end is before start`); if (i && p.from && m.parts[i - 1].to && p.from <= m.parts[i - 1].to) e.push(`Part ${i + 1} overlaps part ${i}`); });
-      if (m.by && m.parts.length && m.parts[m.parts.length - 1].to && m.by < m.parts[m.parts.length - 1].to) e.push('In debt by is before the last part ends'); break;
-    case 'raw': if (!String(m.text || '').trim()) e.push('Type the rule line'); break;
-  }
+  if (m.old) return m.bad ? ['This older line can\'t be read by the alert checker: delete it and add it again as an alert.'] : [];
+  const e = [];
+  if (!m.name.trim()) e.push('Give the alert a name');
+  if (!m.idxs.length) e.push('Tick at least one index');
+  if (isPct(m.trig) && !(num(m.pct) > 0)) e.push('Enter the %');
+  if (!m.parts.length) e.push('Add at least one part');
+  m.parts.forEach((p, i) => { const P = m.parts.length > 1 ? `Part ${i + 1}: ` : '';
+    if (!p.from) e.push(P + 'start date is missing'); else if (p.to && p.to < p.from) e.push(P + 'end is before the start');
+    if (m.trig === 'level' && !m.idxs.some(k => num(p.levels[k]) > 0)) e.push(P + 'enter the level for at least one ticked index'); });
+  const lastTo = m.parts.map(p => p.to).filter(Boolean).sort().pop();
+  if (m.by && lastTo && m.by < lastTo) e.push('"Done by" is before the last part ends');
   return e;
 }
-
-/* ---------- plain-English summary ---------- */
-const names = m => (m.idxs.length ? m.idxs : ['nifty 50']).map(k => LAB[k]).join(' or ');
-const amtTxt = m => { const v = Number(String(m.amt || '').replace(/[^\d.]/g, '')); return v > 0 ? ' · move ₹' + v.toLocaleString('en-IN') : ''; };
-function summary(m) { return summary0(m) + (!['gblock', 'raw', 'at'].includes(m.type) ? amtTxt(m) : m.type === 'at' && (m.amts || []).some(v => Number(v) > 0) ? ' · move ' + (m.amts || []).slice(0, nlevels(m)).map(v => rupee(v || 0)).join(' / ') : ''); }
-function summary0(m) {
-  if (m.type === 'updown') m = asKind(m);
-  const alts = (a, f) => a.map(f).join(' · or ');
-  switch (m.type) {
-    case 'at': return `Alert when ${alts(m.alts, a => `${LAB[a.idx]} reaches ${String(a.levels).split(/[,\s]+/).filter(Boolean).map(x => inr(x.replace(/[^\d.]/g, ''))).join(' / ')}`)}`;
-    case 'move': return `Alert when ${names(m)} is ${m.dir} ${m.pct || '…'}% from its ${D(m.from)} close${m.until ? ', until ' + D(m.until) : ''}`;
-    case 'w52': return `Alert on a 52-week high: ${names(m)}${rng(m)}`;
-    case 'newHigh': return `Alert when ${names(m)} closes above every close since ${D(m.from)}${m.until ? ', until ' + D(m.until) : ''}`;
-    case 'fall': return `Alert when ${names(m)} falls ${m.pct || '…'}% from its high${m.close ? ' (at the close)' : ''}${m.repeat ? ', and again on each further fall' : ''}${rng(m)}`;
-    case 'rise': return `Alert when ${names(m)} rises ${m.pct || '…'}% from its low${m.repeat ? ', and again on each further rise' : ''}${rng(m)}`;
-    case 'aboveHigh': return `Alert when ${names(m)} is ${m.pct || '…'}% above its earlier high${m.repeat ? ', and again on each further rise' : ''}${rng(m)}`;
-    case 'remind': { const ref = m.unlessRef && S.cards.includes(m.unlessRef) ? m.unlessRef : null, short = ref ? summary0(ref).replace(/^Alert when /, '').replace(/ from \d.*$/, '') : '';
-      return `Reminder on ${m.dates.filter(Boolean).map(D).join(', ') || '…'}${ref ? ` (skipped if the alert "${short}" has already fired)` : m.unless ? ` (skipped if a line containing "${m.unless}" has fired)` : ''}`; }
-    case 'deadline': return `Deadline ${D(m.date) || '…'}: reminders 7 days before and on the day`;
-    case 'goal': return `Goal money to debt from ${D(m.start)} by ${D(m.by)}`;
-    case 'gblock': return `${m.name || 'Goal'}${Number(m.amt) ? ' · ₹' + Number(m.amt).toLocaleString('en-IN') : ''}: ${m.parts.length} part${m.parts.length > 1 ? 's' : ''}${m.parts.some(p => Number(p.amt) > 0) ? ' (' + m.parts.map(p => rupee(p.amt || 0)).join(' + ') + ')' : ''}, watching ${names(m)} for ${m.trig === 'new' ? 'a new high' : 'a 52-week high'}${m.by ? ', in debt by ' + D(m.by) : ''}`;
-    case 'raw': return m.text || '…';
-  }
+const names = m => IDX.filter(x => m.idxs.includes(x[0])).map(x => x[1]).join(' or ') || '…';
+function summary(m) {
+  if (m.old) return 'Older format: ' + m.text.split('\n')[0] + (m.text.includes('\n') ? ' …' : '');
+  const parts = m.parts.map(p => `${short(p.from)}${p.to ? '–' + short(p.to) : ' onwards'}${num(p.amt) ? ' ' + lakh(p.amt) : ''}${m.trig === 'level' ? ' at ' + m.idxs.filter(k => num(p.levels[k]) > 0).map(k => LAB[k] + ' ' + inr(num(p.levels[k]))).join(' / ') : ''}`);
+  return `${m.name || 'New alert'}${num(m.amt) ? ' · ' + lakh(m.amt) : ''} — ${TL[m.trig]}${isPct(m.trig) ? ' (' + (m.pct || '…') + '%)' : ''} on ${names(m)} · ${m.parts.length > 1 ? m.parts.length + ' parts: ' : ''}${parts.join('; ')}${m.by ? ' · done by ' + dmy(m.by) : ''}`;
+}
+/* Goal Alert Plan written from the alerts */
+function planFromAlerts() {
+  return S.cards.filter(m => !m.old).map(m => {
+    const parts = m.parts.length > 1 ? ` in ${m.parts.length} parts (${m.parts.map(p => `${num(p.amt) ? lakh(p.amt) + ' ' : ''}${p.to ? short(p.from) + '–' + short(p.to) : 'from ' + short(p.from)}${m.trig === 'level' ? ' at ' + m.idxs.filter(k => num(p.levels[k]) > 0).map(k => LAB[k] + ' ' + inr(num(p.levels[k]))).join('/') : ''}`).join('; ')})` : m.trig === 'level' ? ` at ${m.idxs.filter(k => num(m.parts[0].levels[k]) > 0).map(k => LAB[k] + ' ' + inr(num(m.parts[0].levels[k]))).join('/')}` : '';
+    return `${m.name}: move ${num(m.amt) ? lakh(m.amt) : 'the money'}${parts} on ${m.trig === 'level' ? 'reaching the level' : trigWords(m)} (${names(m)})${m.by ? `; fully moved by ${dmy(m.by)}` : ''}.`;
+  }).join('\n');
 }
 
-const linkable = o => !['remind', 'deadline', 'gblock', 'raw'].includes(o.type);   // reminders can be skipped when one of these fires
-/* ---------- state ---------- */
-let S = null;          // { id, name, rule, plan, cards:[], live, deleted:[] }
-let openIdx = -1;
-
+/* ---------- state + server ---------- */
+let S = null, openIdx = -1, planTouched = false;
 async function call(path, opt = {}) {
   const k = getKey(); if (!k) { showKey(''); throw new Error('Enter the dashboard passcode above first.'); }
   const r = await fetch(API + path, { ...opt, headers: { 'x-abundance-key': k, 'Content-Type': 'application/json', ...(opt.headers || {}) } });
@@ -306,7 +234,6 @@ $('key').addEventListener('keydown', e => { if (e.key === 'Enter') $('keySave').
 if (!getKey()) showKey('');
 function toast(t) { const d = document.createElement('div'); d.className = 'toast'; d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 2600); }
 
-/* search */
 let st = null;
 $('q').addEventListener('input', () => { clearTimeout(st); const q = $('q').value.trim(); if (q.length < 2) { $('results').classList.add('hide'); return; } st = setTimeout(() => search(q), 300); });
 $('q').addEventListener('keydown', e => { if (e.key === 'ArrowDown') { const b = $('results').querySelector('button'); if (b) { e.preventDefault(); b.focus(); } } });
@@ -318,150 +245,101 @@ async function search(q) {
     box.querySelectorAll('button').forEach(b => b.onclick = () => { if (dirty() && !confirm('Discard unsaved changes for ' + S.name + '?')) return; box.classList.add('hide'); $('q').value = ''; load(b.dataset.id); });
   } catch (e) { box.innerHTML = `<div class="err" style="padding:10px 14px">${esc(e.message)}</div>`; }
 }
-
-/* load a client */
 async function load(id) {
   $('emptyMsg').textContent = 'Loading…'; $('emptyMsg').classList.remove('hide'); $('client').classList.add('hide');
   try {
     const j = await call('?id=' + encodeURIComponent(id));
-    S = { id: j.id, name: j.name, rule: j.rule, plan: j.plan, live: j.live || {}, cards: j.blocks.map(fromParsed), deleted: [] };
-    S.cards.filter(c => c.type === 'remind' && c.unless).forEach(c => { const hits = S.cards.filter(o => linkable(o) && o.orig && o.orig.split('\n')[0].toLowerCase().includes(c.unless.toLowerCase())); if (hits.length === 1) c.unlessRef = hits[0]; });
-    openIdx = -1; $('plan').value = S.plan; render();
-    $('emptyMsg').classList.add('hide'); $('client').classList.remove('hide');
+    S = { id: j.id, name: j.name, rule: j.rule, plan: j.plan, live: j.live || {}, cards: j.blocks.map(fromBlock), deleted: [] };
+    openIdx = -1; planTouched = false; $('plan').value = S.plan || ''; if (!S.plan && S.cards.length) $('plan').value = planFromAlerts();
+    render(); $('emptyMsg').classList.add('hide'); $('client').classList.remove('hide');
   } catch (e) { $('emptyMsg').innerHTML = `<span class="err">${esc(e.message)}</span>`; }
 }
 $('reload').onclick = () => { if (dirty() && !confirm('Discard unsaved changes?')) return; load(S.id); };
-
 const dirty = () => !!S && (S.cards.some(c => c.dirty || c.isNew) || S.deleted.length > 0 || $('plan').value.trim() !== String(S.plan || '').trim());
-function updateBar() { const d = dirty(); $('bar').classList.toggle('hide', !d); }
-$('plan').addEventListener('input', updateBar);
+const updateBar = () => $('bar').classList.toggle('hide', !dirty());
+$('plan').addEventListener('input', () => { planTouched = true; updateBar(); });
+$('planAuto').onclick = () => { $('plan').value = planFromAlerts(); planTouched = false; updateBar(); };
+/* the plan follows the alerts until you type in it yourself */
+const followPlan = () => { if (!planTouched && S.cards.some(c => c.dirty || c.isNew) || (!planTouched && S.deleted.length)) $('plan').value = planFromAlerts(); updateBar(); };
 window.addEventListener('beforeunload', e => { if (dirty()) { e.preventDefault(); e.returnValue = ''; } });
 
-/* ---------- render ---------- */
+/* ---------- list ---------- */
 function render() {
   $('cName').textContent = S.name;
   $('levels').innerHTML = IDX.filter(([k]) => S.live[k]).map(([k, l]) => `<span class="chip">${l} ${inr(Math.round(S.live[k]))}</span>`).join('') + '<span class="muted" style="align-self:center">latest levels</span>';
   const box = $('cards');
   box.innerHTML = S.cards.length ? '' : '<div class="panel muted">No alerts yet for this client. Use “+ Add alert”.</div>';
   S.cards.forEach((m, i) => {
-    const t = TYPES[m.type] || TYPES.raw, d = document.createElement('div');
-    d.className = `card ${t.cls} ${m.bad ? 'bad' : ''} ${m.isNew ? 'new' : m.dirty ? 'dirty' : ''} ${openIdx === i ? 'open' : ''}`;
-    const errs = problems(m);
+    const d = document.createElement('div'), open = openIdx === i;
+    d.className = `card ${m.old ? 'bad' : ''} ${m.isNew ? 'new' : m.dirty ? 'dirty' : ''} ${open ? 'open' : ''}`;
     d.innerHTML = `<div class="top"><div style="flex:1;min-width:0">
-        <div class="typ">${esc(t.name)}${m.tag ? ' · ' + esc(m.tag) : ''}${m.isNew ? ' · new' : m.dirty ? ' · edited' : ''}</div>
-        <div class="sum">${esc(summary(m))}</div>
-        ${m.bad ? `<div class="err">The alert checker can't read this. Fix it below.</div>` : ''}
+        <div class="sum">${esc(summary(m))}${m.isNew ? ' <span class="typ">· new</span>' : m.dirty ? ' <span class="typ">· edited</span>' : ''}</div>
         ${!m.dirty && !m.isNew && m.status.length ? `<ul class="status">${m.status.map(s => `<li class="${/alerted|sent /i.test(s) ? 'done' : ''}">${esc(s)}</li>`).join('')}</ul>` : ''}
-        <div class="err" data-live="1">${(m.dirty || m.isNew) ? errs.map(esc).join(' · ') : ''}</div>
-      </div><div class="acts">${openIdx === i ? '<button class="btn ghost sm" data-a="cancel" type="button">Cancel</button>' : ''}<button class="btn ghost sm" data-a="edit" type="button">${openIdx === i ? 'Done' : 'Edit'}</button><button class="btn red sm" data-a="del" type="button">Delete</button></div></div>`;
-    d.querySelector('[data-a=edit]').onclick = () => { if (openIdx !== i) snapshot(m); openIdx = openIdx === i ? -1 : i; render(); };
-    const cx = d.querySelector('[data-a=cancel]'); if (cx) cx.onclick = () => { if (m.isNew && !m._snap) { S.cards.splice(i, 1); } else restore(m); openIdx = -1; render(); };
-    d.querySelector('[data-a=del]').onclick = () => { if (!confirm('Delete this alert?' + (m.sent.length ? ' It has already alerted; deleting it stops any further alerts from it.' : ''))) return; if (!m.isNew) S.deleted.push(m); S.cards.splice(i, 1); openIdx = -1; render(); };
-    if (openIdx === i) d.appendChild(form(m));
+        <div class="err" data-live="1">${(m.dirty || m.isNew || m.old) ? problems(m).map(esc).join(' · ') : ''}</div>
+      </div><div class="acts">${open ? '<button class="btn ghost sm" data-a="cancel" type="button">Cancel</button>' : ''}${m.old ? '' : `<button class="btn ghost sm" data-a="edit" type="button">${open ? 'Done' : 'Edit'}</button>`}<button class="btn red sm" data-a="del" type="button">Delete</button></div></div>`;
+    const ed = d.querySelector('[data-a=edit]'); if (ed) ed.onclick = () => { if (!open) snapshot(m); openIdx = open ? -1 : i; render(); };
+    const cx = d.querySelector('[data-a=cancel]'); if (cx) cx.onclick = () => { if (m.isNew && !m._snap) S.cards.splice(i, 1); else restore(m); openIdx = -1; render(); followPlan(); };
+    d.querySelector('[data-a=del]').onclick = () => { if (!confirm('Delete this alert?' + (m.sent.length ? ' It has already alerted; deleting it stops any further alerts from it.' : ''))) return; if (!m.isNew) S.deleted.push(m); S.cards.splice(i, 1); openIdx = -1; render(); followPlan(); };
+    if (open) d.appendChild(form(m));
     box.appendChild(d);
   });
   updateBar();
 }
+function snapshot(m) { const { _snap, ...plain } = m; m._snap = JSON.parse(JSON.stringify(plain)); }
+function restore(m) { const sn = m._snap; if (!sn) return; Object.keys(m).forEach(k => delete m[k]); Object.assign(m, sn); }
+function refreshCard() {
+  const d = $('cards').children[openIdx]; if (!d) return; const m = S.cards[openIdx];
+  d.querySelector('.sum').innerHTML = esc(summary(m)) + (m.isNew ? ' <span class="typ">· new</span>' : ' <span class="typ">· edited</span>');
+  d.classList.add(m.isNew ? 'new' : 'dirty'); const st = d.querySelector('.status'); if (st) st.remove();
+  d.querySelector('[data-live]').textContent = problems(m).join(' · ');
+  followPlan();
+}
 
-/* Cancel: put a card back exactly as it was when Edit was clicked (same object, so links to it stay) */
-function snapshot(m) { const { unlessRef, _snap, ...plain } = m; m._snap = { data: JSON.parse(JSON.stringify(plain)), ref: unlessRef }; }
-function restore(m) { const sn = m._snap; if (!sn) return; Object.keys(m).forEach(k => delete m[k]); Object.assign(m, sn.data); if (sn.ref) m.unlessRef = sn.ref; }
-/* ---------- forms ---------- */
-const idxSel = (v, on) => { const s = document.createElement('select'); s.innerHTML = IDX.map(([k, l]) => `<option value="${k}"${k === v ? ' selected' : ''}>${l}</option>`).join(''); s.onchange = () => on(s.value); return s; };
+/* ---------- the one form ---------- */
 function fld(label, el, cls) { const l = document.createElement('label'); l.className = 'f ' + (cls || ''); l.innerHTML = esc(label); l.appendChild(el); return l; }
 function inp(type, val, on, attrs) { const i = document.createElement('input'); i.type = type; i.value = val == null ? '' : val; Object.assign(i, attrs || {}); i.addEventListener('input', () => on(i.value)); i.addEventListener('change', () => on(i.value)); return i; }
-function chk(label, val, on) { const l = document.createElement('label'); l.className = 'chk'; const c = document.createElement('input'); c.type = 'checkbox'; c.checked = !!val; c.onchange = () => on(c.checked); l.appendChild(c); l.append(label); return l; }
 function row(...els) { const r = document.createElement('div'); r.className = 'row'; els.forEach(e => e && r.appendChild(e)); return r; }
 function btn(text, cls, on) { const b = document.createElement('button'); b.type = 'button'; b.className = cls; b.textContent = text; b.onclick = on; return b; }
 function hint(t) { const d = document.createElement('div'); d.className = 'hint'; d.textContent = t; return d; }
-
 function form(m) {
   const f = document.createElement('div'); f.className = 'form';
   const ch = (fn, rerender) => v => { fn(v); m.dirty = true; if (rerender) render(); else refreshCard(); };
-  const tagF = () => fld('Label in the alert title (optional)', inp('text', m.tag, ch(v => m.tag = v.replace(/[\[\]]/g, '')), { placeholder: 'e.g. SWP: move ₹6L each' }), 'grow');
-  const amtF = () => fld('Amount to move ₹ (optional, shown in the alert)', inp('number', m.amt, ch(v => m.amt = v), { min: '0', step: '1000', placeholder: 'e.g. 150000' }));
-  const idxF = (label) => { const w = document.createElement('div'); w.className = 'idxs';
-    IDX.forEach(([k, l]) => { const lb = document.createElement('label'), c = document.createElement('input'); c.type = 'checkbox'; c.checked = m.idxs.includes(k); lb.className = c.checked ? 'on' : '';
-      c.onchange = () => { m.idxs = IDX.map(x => x[0]).filter(x => x === k ? c.checked : m.idxs.includes(x)); lb.className = c.checked ? 'on' : ''; m.dirty = true; refreshCard(); }; lb.append(c, l); w.appendChild(lb); });
-    const f = fld(label || 'Indices (tick one or more; whichever gets there first alerts)', w, 'grow'); return f; };
-  const repeatF = word => { const w = document.createElement('div'); w.append(chk(` alert again on each further ${word}`, m.repeat, ch(v => m.repeat = v))); w.append(hint(`Ticked: after an alert, it watches again from the new ${word === 'fall' ? 'high' : 'low'} reached since that alert, and alerts on each further ${m.pct || 'X'}% ${word} (at most once a day). Not ticked: it alerts only once.`)); return w; };
-  const dates = () => row(fld('From', inp('date', m.from, ch(v => m.from = v))), fld('Until (optional)', inp('date', m.until, ch(v => m.until = v))));
-  const alts = (withPct, withLevels) => { const w = document.createElement('div'); w.className = 'form'; w.style.cssText = 'border:0;padding:0;margin:0';
-    m.alts.forEach((a, i) => { const r = row(fld(i ? 'or (backup) index' : 'Index', idxSel(a.idx, ch(v => a.idx = v))),
-      withLevels ? fld('Level(s): part 1, part 2…', inp('text', a.levels, ch(v => a.levels = v), { placeholder: '26358, 27400' }), 'grow') : null,
-      withPct ? fld('%', inp('number', a.pct, ch(v => a.pct = v), { step: '0.1', min: '0' })) : null,
-      i ? btn('×', 'x', () => { m.alts.splice(i, 1); m.dirty = true; render(); }) : null); w.appendChild(r); });
-    w.appendChild(btn(withLevels ? '+ Add another index (with its own levels)' : '+ Backup index (whichever gets there first)', 'addrow', () => { m.alts.push(withLevels ? { idx: 'midcap 150', levels: '' } : withPct ? { idx: 'midcap 150', pct: m.alts[0].pct } : { idx: 'midcap 150' }); m.dirty = true; render(); }));
-    return w; };
-  switch (m.type) {
-    case 'at': { const pa = document.createElement('div'); pa.className = 'row';
-      for (let k = 0; k < nlevels(m); k++) pa.append(fld(`Part ${k + 1}: amount to move ₹ (optional)`, inp('number', (m.amts || [])[k] || '', ch(v => { m.amts = m.amts || []; m.amts[k] = v; }), { min: '0', step: '1000' })));
-      f.append(alts(false, true), hint('Each level is one part: part 1 alerts at the first level, part 2 at the second. With more than one index, a part alerts when ANY of them reaches its level for that part.'), pa, tagF()); break; }
-    case 'updown': {
-      const d = document.createElement('select'); d.innerHTML = '<option value="up">Up</option><option value="down">Down</option>'; d.value = m.dir;
-      d.onchange = () => { m.dir = d.value; if (m.dir === 'down' && (m.base === 'low' || m.base === 'prevHigh')) m.base = 'high'; if (m.dir === 'up' && m.base === 'high') m.base = 'low'; m.dirty = true; render(); };
-      const b = document.createElement('select');
-      b.innerHTML = m.dir === 'up' ? '<option value="close">its close on the From date</option><option value="low">its lowest close since the From date</option><option value="prevHigh">its highest close in the month before the From date</option>'
-        : '<option value="close">its close on the From date</option><option value="high">its highest close since the From date</option>';
-      b.value = m.base; b.onchange = () => { m.base = b.value; m.dirty = true; render(); };
-      f.append(idxF(), row(fld('Up or down', d), fld('%', inp('number', m.pct, ch(v => m.pct = v), { step: '0.1', min: '0' })), fld('Measured from', b, 'grow')), dates());
-      if (m.base === 'close') f.append(hint('Alerts once, when any ticked index is that % ' + (m.dir === 'up' ? 'above' : 'below') + ' its close on the From date.'));
-      else f.append(repeatF(m.dir === 'down' ? 'fall' : 'rise'));
-      if (m.base === 'high') f.append(chk(' only on the closing value (3:45 PM), not at 2:45 PM', m.close, ch(v => m.close = v)));
-      f.append(row(amtF(), tagF())); break; }
-    case 'move': { const s = document.createElement('select'); s.innerHTML = '<option value="up">up</option><option value="down">down</option>'; s.value = m.dir; s.onchange = ch(v => m.dir = s.value);
-      f.append(idxF(), row(fld('Direction', s), fld('%', inp('number', m.pct, ch(v => m.pct = v), { step: '0.1', min: '0' }))), dates(), hint('Measured from each index\'s closing level on the From date. Alerts once, on whichever index gets there first.'), row(amtF(), tagF())); break; }
-    case 'w52': f.append(idxF(), row(fld('From (optional)', inp('date', m.from, ch(v => m.from = v))), fld('Until (optional)', inp('date', m.until, ch(v => m.until = v)))), hint('Alerts once, when any ticked index closes above its highest close of the past 52 weeks.'), row(amtF(), tagF())); break;
-    case 'newHigh': f.append(idxF(), dates(), hint('Alerts once, when any ticked index closes above every close since the From date.'), row(amtF(), tagF())); break;
-    case 'fall': f.append(idxF(), row(fld('Fall %', inp('number', m.pct, ch(v => m.pct = v), { step: '0.1', min: '0' }))), dates(), hint('Measured from the highest close since the From date.'), chk(' only on the closing value (3:45 PM), not at 2:45 PM', m.close, ch(v => m.close = v)), repeatF('fall'), row(amtF(), tagF())); break;
-    case 'rise': case 'aboveHigh': f.append(idxF(), row(fld('Rise %', inp('number', m.pct, ch(v => m.pct = v), { step: '0.1', min: '0' }))), dates(), hint(m.type === 'rise' ? 'Measured from the lowest close since the From date.' : 'Measured from the highest close in the month before the From date.'), repeatF('rise'), row(amtF(), tagF())); break;
-    case 'remind': { const w = document.createElement('div'); w.className = 'row';
-      m.dates.forEach((d, i) => w.append(fld(`Date ${i + 1}`, inp('date', d, ch(v => m.dates[i] = v))), m.dates.length > 1 ? btn('×', 'x', () => { m.dates.splice(i, 1); m.dirty = true; render(); }) : ''));
-      const sel = document.createElement('select'), opts = S.cards.filter(o => o !== m && linkable(o));
-      sel.innerHTML = '<option value="">Always send this reminder</option>' + opts.map((o, j) => `<option value="${j}">Skip it if this alert has already fired: ${esc(summary(o)).slice(0, 110)}</option>`).join('') + (m.unless && !m.unlessRef ? `<option value="custom" selected>Skip it if a line containing "${esc(m.unless)}" has fired</option>` : '');
-      if (m.unlessRef) sel.value = String(opts.indexOf(m.unlessRef)); else if (!m.unless) sel.value = '';
-      sel.onchange = () => { if (sel.value === 'custom') return; m.unlessRef = sel.value === '' ? null : opts[+sel.value]; m.unless = ''; m.dirty = true; refreshCard(); };
-      sel.style.maxWidth = '100%';
-      f.append(w, btn('+ Another date', 'addrow', () => { m.dates.push(''); m.dirty = true; render(); }),
-        fld('Skip this reminder?', sel, 'grow'), hint('Use this when the reminder is only a fallback: e.g. "remind me on 12/11 to book ₹1.5L, unless the 1% fall alert already told me to".'), row(amtF(), tagF())); break; }
-    case 'deadline': f.append(row(fld('Deadline', inp('date', m.date, ch(v => m.date = v)))), hint('Reminders 7 days before and on the day.'), row(amtF(), tagF())); break;
-    case 'goal': f.append(row(fld('Start', inp('date', m.start, ch(v => m.start = v))), fld('By', inp('date', m.by, ch(v => m.by = v)))), row(amtF(), tagF())); break;
-    case 'gblock': {
-      const s = document.createElement('select'); s.innerHTML = '<option value="52w">52-week high</option><option value="new">New high since the part\'s start</option>'; s.value = m.trig; s.onchange = ch(() => m.trig = s.value);
-      f.append(row(fld('Goal name', inp('text', m.name, ch(v => m.name = v), { placeholder: 'e.g. House payment May 2027' }), 'grow'), fld('Amount ₹', inp('number', m.amt, ch(v => m.amt = v), { min: '0', step: '1000' }))));
-      const w = document.createElement('div'); w.className = 'form'; w.style.cssText = 'border:0;padding:0;margin:0';
-      m.parts.forEach((p, i) => w.append(row(fld(`Part ${i + 1} from`, inp('date', p.from, ch(v => p.from = v))), fld('to', inp('date', p.to, ch(v => p.to = v))), fld('Amount ₹ (optional)', inp('number', p.amt, ch(v => p.amt = v), { min: '0', step: '1000' })), m.parts.length > 1 ? btn('×', 'x', () => { m.parts.splice(i, 1); m.dirty = true; render(); }) : null)));
-      f.append(w, btn('+ Add a part', 'addrow', () => { const last = m.parts[m.parts.length - 1]; const nx = last && last.to ? new Date(Date.parse(last.to) + 864e5).toISOString().slice(0, 10) : ''; m.parts.push({ from: nx, to: '', amt: '' }); m.dirty = true; render(); }),
-        (() => { const t = m.parts.reduce((a, p) => a + (Number(p.amt) || 0), 0); return t ? hint(`Parts add up to ${rupee(t)}${Number(m.amt) && t !== Number(m.amt) ? ` · goal amount is ${rupee(m.amt)}` : ''}`) : ''; })(),
-        row(fld('In debt by', inp('date', m.by, ch(v => m.by = v))), fld('Watch for', s)),
-        idxF('Watch these indices (any one reaching the trigger alerts)'),
-        hint('Each part alerts once when any ticked index reaches the trigger; if none does, a reminder after the part ends. "In debt by" sends reminders 7 days before and on the day.'),
-        fld('How (optional note, not read by the checker)', inp('text', m.how, ch(v => m.how = v)), 'grow')); break; }
-    case 'raw': { const t = document.createElement('textarea'); t.value = m.text; t.oninput = () => { m.text = t.value; m.dirty = true; refreshCard(); }; f.append(fld('Rule line(s)', t, 'grow'), hint('Formats: "Nifty 50 at 26358, 27400" · "Nifty 50 up 1.5% from 11/11/2026" · "remind 12/11/2026" · "deadline 15/01/2027". Dates DD/MM/YYYY.')); break; }
-  }
+  /* name + amount */
+  f.append(row(fld('Alert name', inp('text', m.name, ch(v => m.name = v), { placeholder: 'e.g. House payment May 2027' }), 'grow'), fld('Amount ₹', inp('number', m.amt, ch(v => m.amt = v), { min: '0', step: '1000' }))));
+  /* trigger */
+  const t = document.createElement('select'); t.innerHTML = TRIG.map(([k, l]) => `<option value="${k}">${esc(l)}</option>`).join(''); t.value = m.trig;
+  t.onchange = () => { m.trig = t.value; m.dirty = true; render(); };
+  f.append(row(fld('Trigger', t, 'grow'), isPct(m.trig) ? fld('%', inp('number', m.pct, ch(v => m.pct = v), { step: '0.1', min: '0' })) : null));
+  /* indices */
+  const w = document.createElement('div'); w.className = 'idxs';
+  IDX.forEach(([k, l]) => { const lb = document.createElement('label'), c = document.createElement('input'); c.type = 'checkbox'; c.checked = m.idxs.includes(k); lb.className = c.checked ? 'on' : '';
+    c.onchange = () => { m.idxs = IDX.map(x => x[0]).filter(x => x === k ? c.checked : m.idxs.includes(x)); m.dirty = true; if (m.trig === 'level') render(); else { lb.className = c.checked ? 'on' : ''; refreshCard(); } }; lb.append(c, l); w.appendChild(lb); });
+  f.append(fld('Indices (any one reaching the trigger alerts)', w, 'grow'));
+  /* parts */
+  const pw = document.createElement('div'); pw.className = 'form'; pw.style.cssText = 'border:0;padding:0;margin:0;gap:6px';
+  m.parts.forEach((p, i) => {
+    const lv = m.trig === 'level' ? IDX.filter(x => m.idxs.includes(x[0])).map(([k, l]) => fld(l + ' level', inp('number', p.levels[k] || '', ch(v => { p.levels[k] = v; }), { min: '0', style: 'width:110px' }))) : [];
+    pw.append(row(fld(m.parts.length > 1 ? `Part ${i + 1} from` : 'From', inp('date', p.from, ch(v => p.from = v))), fld('To (optional)', inp('date', p.to, ch(v => p.to = v))),
+      fld('Amount ₹', inp('number', p.amt, ch(v => p.amt = v), { min: '0', step: '1000' })), ...lv, m.parts.length > 1 ? btn('×', 'x', () => { m.parts.splice(i, 1); m.dirty = true; render(); }) : null));
+  });
+  f.append(pw, btn('+ Add a part', 'addrow', () => { const last = m.parts[m.parts.length - 1]; m.parts.push({ from: last && last.to ? new Date(Date.parse(last.to) + 864e5).toISOString().slice(0, 10) : (last ? last.from : today()), to: '', amt: '', levels: {} }); m.dirty = true; render(); }));
+  const pt = m.parts.reduce((a, p) => a + num(p.amt), 0);
+  f.append(hint(`Each part alerts once on the trigger${m.parts.length > 1 ? ', within its own dates' : ''}. If it hasn't triggered by its end date, you get a reminder.${pt ? ` Parts add up to ${rupee(pt)}${num(m.amt) && pt !== num(m.amt) ? ` (alert amount ${rupee(m.amt)})` : ''}.` : ''}`));
+  /* done by + reminders */
+  const rw = document.createElement('div'); rw.className = 'row';
+  m.rem.forEach((d, i) => rw.append(fld(`Reminder ${i + 1}`, inp('date', d, ch(v => m.rem[i] = v))), btn('×', 'x', () => { m.rem.splice(i, 1); m.dirty = true; render(); })));
+  rw.append(btn('+ Reminder date', 'addrow', () => { m.rem.push(''); m.dirty = true; render(); }));
+  f.append(row(fld('Must be done by (optional)', inp('date', m.by, ch(v => m.by = v))), rw), hint('"Must be done by" sends reminders 7 days before and on the day. Extra reminder dates are optional.'));
   return f;
 }
-/* re-draw only the summary/errors of the open card while typing (keeps focus in the field) */
-function refreshCard() {
-  const d = $('cards').children[openIdx]; if (!d) return; const m = S.cards[openIdx];
-  d.querySelector('.sum').textContent = summary(m);
-  d.classList.add(m.isNew ? 'new' : 'dirty');
-  const typ = d.querySelector('.typ'); if (!/edited|new/.test(typ.textContent)) typ.textContent += m.isNew ? ' · new' : ' · edited';
-  const st = d.querySelector('.status'); if (st) st.remove();
-  const e = d.querySelector('[data-live]'); if (e) e.textContent = problems(m).join(' · ');
-  updateBar();
-}
 
-/* add */
-$('addBtn').onclick = () => { const t = $('types'); t.classList.toggle('hide'); t.innerHTML = Object.entries(TYPES).filter(([, v]) => !v.noAdd).map(([k, v]) => `<button type="button" data-t="${k}"><b>${esc(v.name)}</b><span>${esc(v.hint)}</span></button>`).join('');
-  t.querySelectorAll('button').forEach(b => b.onclick = () => { const m = Object.assign({ type: b.dataset.t, tag: '', amt: '', orig: null, status: [], sent: [], isNew: true, dirty: true }, blank(b.dataset.t)); S.cards.push(m); openIdx = S.cards.length - 1; t.classList.add('hide'); render(); $('cards').lastChild.scrollIntoView({ behavior: 'smooth', block: 'center' }); }); };
-
+$('addBtn').onclick = () => { S.cards.push(blankAlert()); openIdx = S.cards.length - 1; render(); followPlan(); $('cards').lastChild.scrollIntoView({ behavior: 'smooth', block: 'center' }); };
 $('discard').onclick = () => { if (confirm('Discard all unsaved changes?')) load(S.id); };
 
 /* ---------- review & save ---------- */
 $('review').onclick = async () => {
-  const errs = S.cards.map((m, i) => ({ i, e: (m.dirty || m.isNew || m.bad) ? problems(m) : [] })).filter(x => x.e.length);
-  if (errs.length) { openIdx = errs[0].i; render(); $('cards').children[openIdx].scrollIntoView({ behavior: 'smooth', block: 'center' }); toast('Fix the highlighted alert first'); return; }
+  const errs = S.cards.map((m, i) => ({ i, e: (m.dirty || m.isNew || m.old) ? problems(m) : [] })).filter(x => x.e.length);
+  if (errs.length) { openIdx = S.cards[errs[0].i].old ? -1 : errs[0].i; render(); $('cards').children[errs[0].i].scrollIntoView({ behavior: 'smooth', block: 'center' }); toast('Fix the highlighted alert first'); return; }
   const text = S.cards.map(toText).filter(Boolean).join('\n'), plan = $('plan').value.trim();
   $('review').disabled = true;
   try {
@@ -473,7 +351,7 @@ $('review').onclick = async () => {
 function modal(text, plan, refire) {
   const m = document.createElement('div'); m.className = 'modal';
   m.innerHTML = `<div class="box"><h3>Save ${esc(S.name)}'s alerts to Zoho CRM?</h3>
-    ${refire ? `<div class="warnbox"><b>Heads-up:</b> you changed or deleted ${refire > 1 ? refire + ' alerts that have' : 'an alert that has'} already been sent. A changed alert counts as new and can fire again: right if you've set a new target, but a small date or level correction may send it again.</div>` : ''}
+    ${refire ? `<div class="warnbox"><b>Heads-up:</b> you changed or deleted ${refire > 1 ? refire + ' alert parts that have' : 'an alert part that has'} already been sent. A changed part counts as new and can fire again: right if you've set a new target, but a small date correction may send it again.</div>` : ''}
     <div class="muted">This is what goes into the Goal Alerts box (checked by the alert checker before saving):</div>
     <pre class="text">${esc(text || '(empty: no alerts)')}</pre>
     ${plan !== String(S.plan || '').trim() ? `<div class="muted">Goal Alert Plan:</div><pre class="text">${esc(plan || '(empty)')}</pre>` : ''}
