@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fund Selector — Abundance</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&display=swap');
+  :root { --green:#005826; --brown:#934E32; --gold:#F9B738; --bg:#F0F8FF; --dark:#39293E; --line:#dfe6e2; --muted:#6b6470; --card:#ffffff; --pos:#0a7a3a; --neg:#a5361b; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--dark); font-family: Calibri, 'Segoe UI', Carlito, Arial, sans-serif; font-size:15px; }
+  h1,h2,h3,.tab,.btn,th { font-family: Montserrat, Calibri, sans-serif; }
+  header { background:var(--green); color:#fff; padding:14px 22px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  header h1 { margin:0; font-size:20px; font-weight:800; letter-spacing:.2px; }
+  header .tag { font-size:12px; opacity:.85; }
+  header a { color:#fff; font-size:13px; opacity:.9; }
+  main { max-width:1500px; margin:0 auto; padding:16px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin-bottom:14px; }
+  .roadmap { display:flex; gap:8px; flex-wrap:wrap; align-items:stretch; }
+  .phase { flex:1 1 170px; border:1px solid var(--line); border-radius:10px; padding:8px 10px; font-size:13px; background:#fafcfb; }
+  .phase b { font-family:Montserrat, sans-serif; font-size:12px; display:block; margin-bottom:2px; }
+  .phase.done { border-color:var(--green); background:#eaf5ee; }
+  .phase.next { border-color:var(--gold); background:#fff8e6; }
+  .phase .st { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; }
+  .phase.done .st { color:var(--green); } .phase.next .st { color:#a06d00; } .phase .st.todo { color:var(--muted); }
+  .topnav { display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
+  .tab { border:1px solid var(--line); background:#fff; color:var(--dark); padding:8px 14px; border-radius:8px; cursor:pointer; font-size:13px; font-weight:700; }
+  .tab.on { background:var(--dark); color:#fff; border-color:var(--dark); }
+  .tab:disabled { opacity:.45; cursor:not-allowed; }
+  .row { display:flex; gap:14px; flex-wrap:wrap; align-items:flex-end; }
+  label.f { display:flex; flex-direction:column; font-size:12px; color:var(--muted); gap:4px; font-weight:600; }
+  select, input[type=number] { font: inherit; font-size:14px; padding:6px 8px; border:1px solid #c9d3cd; border-radius:7px; background:#fff; color:var(--dark); }
+  .chips { display:flex; gap:6px; flex-wrap:wrap; }
+  .chip { border:1px solid #c9d3cd; background:#fff; border-radius:999px; padding:6px 12px; cursor:pointer; font-size:13px; font-family:Montserrat, sans-serif; font-weight:600; color:var(--dark); }
+  .chip.on { background:var(--green); color:#fff; border-color:var(--green); }
+  .btn { border:0; background:var(--green); color:#fff; padding:8px 14px; border-radius:8px; cursor:pointer; font-size:13px; font-weight:700; }
+  .btn.ghost { background:#fff; color:var(--green); border:1px solid var(--green); }
+  .status { font-size:13px; color:var(--muted); margin-top:8px; min-height:18px; }
+  .status.err { color:var(--neg); font-weight:700; }
+  .views { display:flex; gap:6px; flex-wrap:wrap; margin:4px 0 10px; }
+  .meta { font-size:12.5px; color:var(--muted); margin-bottom:8px; line-height:1.45; }
+  .tablewrap { overflow-x:auto; border:1px solid var(--line); border-radius:10px; }
+  table { border-collapse:collapse; width:100%; font-size:13.5px; }
+  th { background:var(--green); color:#fff; font-size:11px; text-transform:uppercase; letter-spacing:.4px; padding:9px 8px; text-align:right; white-space:nowrap; cursor:pointer; position:sticky; top:0; }
+  th:first-child, td:first-child { text-align:left; }
+  th .sub { display:block; font-size:9.5px; text-transform:none; letter-spacing:0; opacity:.85; font-weight:500; }
+  td { padding:7px 8px; border-top:1px solid #eef2ef; text-align:right; white-space:nowrap; vertical-align:top; }
+  tr.bench td { background:#fff8e6; font-weight:700; }
+  tr:hover td { background:#f3f8f5; }
+  tr.bench:hover td { background:#fff3d6; }
+  td .x { display:block; font-size:11.5px; font-weight:600; }
+  .pos { color:var(--pos); } .neg { color:var(--neg); } .dim { color:#9a94a0; }
+  .fname { font-weight:700; color:var(--dark); cursor:pointer; text-decoration: underline dotted #b8b0bd; white-space:normal; min-width:230px; display:inline-block; }
+  .fsub { font-size:11.5px; color:var(--muted); white-space:normal; }
+  .note { font-size:12.5px; color:var(--muted); line-height:1.5; }
+  .note li { margin-bottom:4px; }
+  details summary { cursor:pointer; font-family:Montserrat, sans-serif; font-weight:700; font-size:13px; color:var(--green); }
+  .modal-bg { position:fixed; inset:0; background:rgba(57,41,62,.45); display:none; align-items:flex-start; justify-content:center; padding:30px 12px; overflow:auto; z-index:50; }
+  .modal { background:#fff; border-radius:14px; max-width:980px; width:100%; padding:18px 20px; }
+  .modal h2 { margin:0 0 2px; font-size:18px; }
+  .modal .close { float:right; border:0; background:none; font-size:22px; cursor:pointer; color:var(--muted); }
+  .grid2 { display:grid; grid-template-columns: 1fr 1fr; gap:14px; }
+  @media (max-width:760px) { .grid2 { grid-template-columns:1fr; } }
+  .kv { display:grid; grid-template-columns: auto 1fr; gap:4px 12px; font-size:13.5px; }
+  .kv div:nth-child(odd) { color:var(--muted); }
+  .say { background:#f6f2e7; border-radius:10px; padding:10px 12px; font-size:14px; line-height:1.5; margin:10px 0; }
+  .spinner { display:inline-block; width:12px; height:12px; border:2px solid #c9d3cd; border-top-color:var(--green); border-radius:50%; animation:spin .8s linear infinite; vertical-align:-1px; margin-right:6px; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .hide { display:none !important; }
+  .pill { display:inline-block; font-size:11px; border-radius:6px; padding:1px 6px; background:#eef2ef; color:var(--muted); font-weight:700; margin-left:4px; }
+  .warn { color:#a06d00; }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Fund Selector</h1>
+    <div class="tag">Designing Portfolio. Delivering Peace. · Internal research tool</div>
+  </div>
+  <a href="index.html">← Dashboard</a>
+</header>
+<main>
+
+  <div class="card">
+    <div class="roadmap" id="roadmap"></div>
+  </div>
+
+  <div class="topnav">
+    <button class="tab on" data-page="lab">1 · Fund Lab</button>
+    <button class="tab" data-page="bench">Benchmarks &amp; data</button>
+    <button class="tab" data-page="method">How it works</button>
+    <button class="tab" disabled title="Phase 3">Portfolio X-ray (Phase 3)</button>
+    <button class="tab" disabled title="Phase 4">Build portfolio (Phase 4)</button>
+  </div>
+
+  <!-- ===================== FUND LAB ===================== -->
+  <section id="page-lab">
+    <div class="card">
+      <div class="row">
+        <label class="f">Category
+          <div class="chips" id="catChips"></div>
+        </label>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <label class="f">Plan
+          <select id="plan"><option value="Regular">Regular (growth)</option><option value="Direct">Direct (growth)</option></select>
+        </label>
+        <label class="f">Window for capture &amp; risk
+          <select id="win"><option value="36">3 years</option><option value="60" selected>5 years</option><option value="120">10 years</option></select>
+        </label>
+        <label class="f">Risk-free rate % a year (editable)
+          <input type="number" id="rf" value="6.5" step="0.1" min="0" max="15" style="width:110px">
+        </label>
+        <button class="btn" id="loadBtn">Analyse category</button>
+        <button class="btn ghost" id="csvBtn">Export CSV</button>
+      </div>
+      <div class="status" id="status"></div>
+    </div>
+
+    <div class="card hide" id="resultCard">
+      <div class="views" id="views">
+        <button class="tab on" data-view="ret">Returns vs index</button>
+        <button class="tab" data-view="cons">Consistency (rolling 3Y)</button>
+        <button class="tab" data-view="cap">Up / Down capture</button>
+        <button class="tab" data-view="risk">Risk</button>
+      </div>
+      <div class="meta" id="meta"></div>
+      <div class="tablewrap"><table id="tbl"></table></div>
+      <div class="note" id="foot" style="margin-top:8px"></div>
+    </div>
+  </section>
+
+  <!-- ===================== BENCHMARKS ===================== -->
+  <section id="page-bench" class="hide">
+    <div class="card">
+      <h3 style="margin:0 0 6px">Category → official benchmark (Tier 1)</h3>
+      <div class="meta">Every fund is compared with its category's Tier-1 benchmark, using NSE's Total Return Index (TRI: price plus reinvested dividends). The source for each mapping is linked.</div>
+      <div class="tablewrap"><table id="mapTbl"></table></div>
+    </div>
+    <div class="card">
+      <h3 style="margin:0 0 6px">Index returns (TRI)</h3>
+      <div class="meta" id="triMeta"></div>
+      <div class="tablewrap"><table id="triTbl"></table></div>
+    </div>
+  </section>
+
+  <!-- ===================== METHOD ===================== -->
+  <section id="page-method" class="hide">
+    <div class="card note" id="methodBox"></div>
+  </section>
+
+</main>
+
+<div class="modal-bg" id="modalBg"><div class="modal" id="modal"></div></div>
+
+<script>
+'use strict';
+const API_BASE = 'https://api.tigzig.com/mf/v1';
+const DAY = 86400000;
+// ---------- category definitions (matched against category_sub + category, lower-cased) ----------
+const CATEGORY_DEFS = {
+  large_cap: { includes: ['large cap'], excludes: ['large & mid', 'large and mid'] },
+  large_mid_cap: { includes: ['large & mid', 'large and mid'] },
+  mid_cap: { includes: ['mid cap'], excludes: ['large & mid', 'large and mid'] },
+  small_cap: { includes: ['small cap'] },
+  multi_cap: { includes: ['multi cap'] },
+  flexi_cap: { includes: ['flexi cap'] },
+  focused: { includes: ['focused'] },
+  value_contra: { includes: ['value fund', 'contra fund', 'value', 'contra'] },
+  dividend_yield: { includes: ['dividend yield'] },
+  elss: { includes: ['elss', 'tax sav'] },
+  sectoral_thematic: { includes: ['sectoral', 'thematic'], excludes: ['debt scheme'] },
+
+  overnight: { includes: ['overnight'] },
+  liquid: { includes: ['liquid'] },
+  ultra_short: { includes: ['ultra short'], excludes: ['ultra short to short'] },
+  low_duration: { includes: ['low duration', 'ultra short to short'] },
+  money_market: { includes: ['money market'] },
+  short_duration: { includes: ['short duration', 'short term'], excludes: ['ultra short', 'medium'] },
+  medium_duration: { includes: ['medium duration', 'medium term'], excludes: ['medium to long'] },
+  medium_long_duration: { includes: ['medium to long'] },
+  long_duration: { includes: ['long duration', 'long term'], excludes: ['medium to long', 'short'] },
+  dynamic_bond: { includes: ['dynamic bond', 'dynamic term'] },
+  corporate_bond: { includes: ['corporate bond'] },
+  credit_risk: { includes: ['credit risk'] },
+  banking_psu: { includes: ['banking and psu', 'banking & psu', 'banking psu'] },
+  gilt: { includes: ['gilt'], excludes: ['10 year', '10-year'] },
+  gilt_10y: { includes: ['10 year', '10-year'], requires: ['gilt'] },
+  floater: { includes: ['floater', 'floating rate', 'floating interest'] },
+
+  conservative_hybrid: { includes: ['conservative hybrid'] },
+  balanced_hybrid: { includes: ['balanced hybrid'] },
+  aggressive_hybrid: { includes: ['aggressive hybrid'] },
+  dynamic_asset: { includes: ['dynamic asset', 'balanced advantage'] },
+  multi_asset: { includes: ['multi asset'] },
+  arbitrage: { includes: ['arbitrage'] },
+  equity_savings: { includes: ['equity savings'] },
+
+  index_fund: { includes: ['index'] },
+  etf: { includes: ['etf'] },
+  fof_domestic: { includes: ['fund of funds', 'fof domestic'], excludes: ['overseas', 'international', 'global', 'nasdaq', 's&p', 'emerging', 'china', 'europe', 'us equity', 'us fund'] },
+  fof_overseas: { includes: ['fund of funds', 'fof overseas'], requires: ['overseas'] },
+  gold_silver: { includes: ['gold', 'silver'] },
+  solution_oriented: { includes: ['retirement', 'children'] },
+};
+
+const GROUPS = [
+  { label: 'Equity', items: [['large_cap','Large Cap'],['large_mid_cap','Large & Mid Cap'],['mid_cap','Mid Cap'],['small_cap','Small Cap'],['multi_cap','Multi Cap'],['flexi_cap','Flexi Cap'],['focused','Focused'],['value_contra','Value / Contra'],['dividend_yield','Dividend Yield'],['elss','ELSS'],['sectoral_thematic','Sectoral / Thematic']] },
+  { label: 'Debt', items: [['overnight','Overnight'],['liquid','Liquid'],['ultra_short','Ultra Short'],['low_duration','Low Duration'],['money_market','Money Market'],['short_duration','Short Duration'],['medium_duration','Medium Duration'],['medium_long_duration','Medium to Long'],['long_duration','Long Duration'],['dynamic_bond','Dynamic Bond'],['corporate_bond','Corporate Bond'],['credit_risk','Credit Risk'],['banking_psu','Banking & PSU'],['gilt','Gilt'],['gilt_10y','Gilt 10Y'],['floater','Floater']] },
+  { label: 'Hybrid', items: [['conservative_hybrid','Conservative'],['balanced_hybrid','Balanced'],['aggressive_hybrid','Aggressive'],['dynamic_asset','BAF / Dynamic'],['multi_asset','Multi Asset'],['arbitrage','Arbitrage'],['equity_savings','Equity Savings']] },
+  { label: 'Other', items: [['index_fund','Index Funds'],['fof_domestic','FoF Domestic'],['fof_overseas','FoF Overseas'],['gold_silver','Gold / Silver'],['solution_oriented','Retirement / Children']] },
+];
+const CAT_LABEL = {};
+GROUPS.forEach(g => g.items.forEach(([v, l]) => CAT_LABEL[v] = l));
+
+const CAT_ORDER = GROUPS.flatMap(g => g.items.map(([v]) => v));
+const MONTHS = ['january','february','march','april','may','june','july','august','september','october','november','december'];
+const MON3 = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function parseAumQuarter(s) {   // "September-2026" -> {y, m}
+  const m = /([a-z]+)[^0-9]*(\d{4})/i.exec(s || ''); if (!m) return null;
+  const mi = MONTHS.findIndex(x => x.startsWith(m[1].toLowerCase().slice(0, 3)));
+  return mi < 0 ? null : { y: +m[2], m: mi };
+}
+function aumQuarterKey(s) { const q = parseAumQuarter(s); return q ? q.y * 12 + q.m : 0; }
+function aumPeriodLabel(s) {
+  const q = parseAumQuarter(s); if (!q) return s || '';
+  const startM = (q.m + 10) % 12;
+  return `${MON3[startM]}–${MON3[q.m]} ${q.y} avg`;
+}
+
+const customKeyword = { value: '' };   // the screener's custom-keyword filter is not used here
+let masterData = null;
+// ---------- fetch helpers with CORS-proxy fallback ----------
+async function fetchVia(url, as) {
+  const attempts = [url, 'https://corsproxy.io/?url=' + encodeURIComponent(url), 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url)];
+  let lastErr;
+  for (const a of attempts) {
+    try {
+      const r = await fetch(a);
+      if (!r.ok) { lastErr = new Error('HTTP ' + r.status); continue; }
+      return as === 'json' ? await r.json() : await r.text();
+    } catch (e) { lastErr = e; }
+  }
+  throw lastErr || new Error('All fetch attempts failed');
+}
+
+// ---------- CSV ----------
+function parseCSVLine(line) {
+  const out = []; let cur = '', inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (inQ) { if (c === '"') { if (line[i + 1] === '"') { cur += '"'; i++; } else inQ = false; } else cur += c; }
+    else { if (c === '"') inQ = true; else if (c === ',') { out.push(cur); cur = ''; } else cur += c; }
+  }
+  out.push(cur); return out;
+}
+function parseCSV(text) {
+  const lines = text.split(/\r?\n/).filter(l => l.length > 0);
+  const header = parseCSVLine(lines[0]);
+  return lines.slice(1).map(l => { const v = parseCSVLine(l); const o = {}; header.forEach((h, j) => o[h] = v[j]); return o; });
+}
+async function ensureMasterData() {
+  if (masterData) return masterData;
+  setStatus('<div class="spinner"></div> Loading the full fund universe (~9 MB, one-time per session)…');
+  masterData = parseCSV(await fetchVia(`${API_BASE}/download?format=latest`, 'text'));
+  return masterData;
+}
+
+// ---------- row helpers ----------
+const isActive = r => ['True', 'true', '1'].includes(r.is_active);
+const normName = s => (s || '').toLowerCase().replace(/[-_]/g, ' ').replace(/\s+/g, ' ').trim();
+const rawCat = r => (r.category_sub || (r.category || '').replace(/^(Equity|Debt|Hybrid|Other) Scheme - /i, '') || '').trim();
+// AMCs file the same SEBI category under different wordings (e.g. "Balanced Advantage Fund/ Dynamic Asset Allocation"
+// vs "Dynamic Asset Allocation or Balanced Advantage"). Map every wording to one canonical name so tabs, peer groups
+// and quartile ranks treat them as one category.
+const CANON_LABEL = {
+  large_cap: 'Large Cap Fund', large_mid_cap: 'Large & Mid Cap Fund', mid_cap: 'Mid Cap Fund', small_cap: 'Small Cap Fund',
+  multi_cap: 'Multi Cap Fund', flexi_cap: 'Flexi Cap Fund', focused: 'Focused Fund', value_contra: 'Value / Contra Fund',
+  dividend_yield: 'Dividend Yield Fund', elss: 'ELSS (Tax Saver)', sectoral_thematic: 'Sectoral / Thematic',
+  overnight: 'Overnight Fund', liquid: 'Liquid Fund', ultra_short: 'Ultra Short Duration Fund', low_duration: 'Low Duration Fund',
+  money_market: 'Money Market Fund', short_duration: 'Short Duration Fund', medium_duration: 'Medium Duration Fund',
+  medium_long_duration: 'Medium to Long Duration Fund', long_duration: 'Long Duration Fund', dynamic_bond: 'Dynamic Bond Fund',
+  corporate_bond: 'Corporate Bond Fund', credit_risk: 'Credit Risk Fund', banking_psu: 'Banking & PSU Fund', gilt: 'Gilt Fund',
+  gilt_10y: 'Gilt Fund with 10 Year Constant Duration', floater: 'Floater Fund',
+  conservative_hybrid: 'Conservative Hybrid Fund', balanced_hybrid: 'Balanced Hybrid Fund', aggressive_hybrid: 'Aggressive Hybrid Fund',
+  dynamic_asset: 'Balanced Advantage / Dynamic Asset Allocation', multi_asset: 'Multi Asset Allocation Fund', arbitrage: 'Arbitrage Fund',
+  equity_savings: 'Equity Savings Fund', index_fund: 'Index Funds', etf: 'ETFs', fof_domestic: 'Fund of Funds (Domestic)',
+  fof_overseas: 'Fund of Funds (Overseas)', gold_silver: 'Gold / Silver', solution_oriented: 'Retirement / Children\'s Fund',
+};
+const _canonCache = new Map();
+const normCat = r => {
+  if (r.scheme_name && isGoldSilver(r)) return CANON_LABEL.gold_silver;
+  const raw = rawCat(r), ck = raw + '|' + (r.category || '');
+  if (_canonCache.has(ck)) return _canonCache.get(ck);
+  let out = raw;
+  for (const k of CAT_ORDER) { if (matchesCategory({ category_sub: raw, category: r.category || '', scheme_name: '' }, k)) { out = CANON_LABEL[k] || raw; break; } }
+  _canonCache.set(ck, out);
+  return out;
+};
+const planGroup = r => r.scheme_plan === 'Direct' ? 'Direct' : 'Regular';
+const peerKey = r => normCat(r).toLowerCase() + '|' + planGroup(r);
+
+// AMFI files Gold/Silver FoFs as "FoF Domestic" and ETFs as "Gold ETF"/"Silver ETF": match passive gold/silver schemes by name too
+// Exchange-traded funds (ETFs, BeES) are excluded from the screener everywhere; it covers mutual funds only
+function isETF(row) {
+  const hay = ((row.category_sub || '') + ' ' + (row.category || '')).toLowerCase(), n = (row.scheme_name || '').toLowerCase();
+  if (/fof|fund of fund/.test(hay) || /fund of fund|\bfof\b/.test(n)) return false;   // ETF fund-of-funds are mutual funds
+  return /\betfs?\b|exchange traded/.test(hay) || /\betf\b|exchange traded|\bbees\b/.test(n);
+}
+function isGoldSilver(row) {
+  const hay = ((row.category_sub || '') + ' ' + (row.category || '')).toLowerCase();
+  if (/gold|silver/.test(hay)) return true;
+  const n = (row.scheme_name || '').toLowerCase();
+  return /\b(gold|silver)\b/.test(n) && /fof|fund of fund|etf|exchange traded/.test(hay) && !/multi|overseas|international|global|world|mining/.test(n);
+}
+function matchesCategory(row, catVal) {
+  if (catVal === 'all_categories') return true;
+  if (catVal === 'custom') {
+    const kw = customKeyword.value.trim().toLowerCase();
+    if (!kw) return false;
+    return ((row.category_sub || '') + ' ' + (row.category || '') + ' ' + (row.scheme_name || '')).toLowerCase().includes(kw);
+  }
+  const def = CATEGORY_DEFS[catVal]; if (!def) return false;
+  if (catVal === 'gold_silver' && isGoldSilver(row)) return true;
+  if (catVal === 'fof_domestic' && isGoldSilver(row)) return false;   // gold/silver FoFs live under Gold / Silver
+  const hay = ((row.category_sub || '') + ' ' + (row.category || '')).toLowerCase();
+  if (!def.includes.some(s => hay.includes(s))) return false;
+  if (def.excludes && def.excludes.some(s => hay.includes(s))) return false;
+  if (def.requires && !def.requires.every(s => hay.includes(s))) return false;
+  return true;
+}
+
+
+// =====================================================================================
+// Build plan (shown at the top so the next phase is never forgotten)
+// =====================================================================================
+const PHASES = [
+  { n: 1, t: 'Data foundation & Fund Lab', d: 'Official TRI benchmarks, 10-year rolling, capture, risk', s: 'done' },
+  { n: 2, t: 'Fund scoring', d: 'Scores vs peers, style analysis, market phases, back-test', s: 'next' },
+  { n: 3, t: 'Portfolio X-ray', d: 'Look-through overlap, active share, client portfolio upload', s: 'todo' },
+  { n: 4, t: 'Build portfolio', d: 'Amount + your split → diversified shortlist → Portfolio Generator', s: 'todo' },
+  { n: 5, t: 'Strategy summary', d: 'Plain-language vetting strategy + monthly monitoring', s: 'todo' },
+];
+document.getElementById('roadmap').innerHTML = PHASES.map(p => `<div class="phase ${p.s}"><span class="st ${p.s}">${p.s === 'done' ? '✓ Built' : p.s === 'next' ? 'Next up' : 'Planned'}</span><b>Phase ${p.n} · ${p.t}</b>${p.d}</div>`).join('');
+
+// =====================================================================================
+// Benchmarks: category -> Tier-1 benchmark (TRI), with the source that states it
+// =====================================================================================
+const SOURCES = {
+  hsbc:  { label: 'HSBC MF "The Asset" factsheet, April 2026', url: 'https://www.assetmanagement.hsbc.co.in/assets/documents/mutual-funds/en/0ad32e13-42ac-49ca-8482-548c6cc735ac/the-asset-april-2026.pdf' },
+  amfi:  { label: 'AMFI Tier-1 list as reported by Business Standard, 31/03/2022', url: 'https://www.business-standard.com/amp/article/markets/amfi-lists-first-tier-benchmarks-for-mutual-fund-schemes-122033101156_1.html' },
+  kotak: { label: 'Kotak Contra Fund factsheet, Sep 2026 ("Tier 1: Nifty 500 TRI")', url: 'https://www.kotakmf.com/factsheet/sept_2026/kotak/INDIA-EQ-CONTRA.html' },
+  tata:  { label: 'Tata Dividend Yield Fund factsheet, 30/09/2026', url: 'https://www.tatamutualfund.com/system/files/2026-10/Tata%20Dividend%20Yield%20Fund_0.pdf' },
+};
+const PH1 = [
+  { key: 'large_cap',        bench: 'NIFTY 100',                  src: ['hsbc', 'amfi'] },
+  { key: 'large_mid_cap',    bench: 'NIFTY LARGEMIDCAP 250',      src: ['hsbc'] },
+  { key: 'mid_cap',          bench: 'NIFTY MIDCAP 150',           src: ['hsbc', 'amfi'] },
+  { key: 'small_cap',        bench: 'NIFTY SMALLCAP 250',         src: ['hsbc'] },
+  { key: 'multi_cap',        bench: 'NIFTY500 MULTICAP 50:25:25', src: ['hsbc'] },
+  { key: 'flexi_cap',        bench: 'NIFTY 500',                  src: ['hsbc'] },
+  { key: 'focused',          bench: 'NIFTY 500',                  src: ['hsbc'] },
+  { key: 'value_contra',     bench: 'NIFTY 500',                  src: ['hsbc', 'kotak'] },
+  { key: 'dividend_yield',   bench: 'NIFTY 500',                  src: ['tata'] },
+  { key: 'elss',             bench: 'NIFTY 500',                  src: ['hsbc'] },
+  { key: 'sectoral_thematic',bench: 'NIFTY 500',                  src: [], broad: true },
+];
+const PH1_BY = Object.fromEntries(PH1.map(c => [c.key, c]));
+const benchLabel = name => (TRI && TRI.idx[name] ? TRI.idx[name].label : name) + ' TRI';
+
+// =====================================================================================
+// Data
+// =====================================================================================
+let TRI = null;          // { fetched, idx: { NAME: { label, group, first_day, last_day, arr:[{t,nav}] } } }
+let M0 = null;           // the analysis date: last complete month-end
+const NAVS = {};         // scheme_code -> ascending [{t, nav}]
+let RESULT = null;       // last analysed category
+let view = 'ret', sortKey = null, sortDir = -1;
+const $ = id => document.getElementById(id);
+const setStatus = (h, err) => { const s = $('status'); s.innerHTML = h; s.classList.toggle('err', !!err); };
+
+function parseISO(d) { const [y, m, dd] = d.split('-').map(Number); return Date.UTC(y, m - 1, dd); }
+function idxOnOrBefore(arr, t) { let lo = 0, hi = arr.length - 1, ans = -1; while (lo <= hi) { const mid = (lo + hi) >> 1; if (arr[mid].t <= t) { ans = mid; lo = mid + 1; } else hi = mid - 1; } return ans; }
+function navOnOrBefore(arr, t, tol) { const i = idxOnOrBefore(arr, t); return (i >= 0 && t - arr[i].t <= tol * DAY) ? arr[i] : null; }
+const fmtDate = t => { const d = new Date(t); return `${String(d.getUTCDate()).padStart(2, '0')}/${String(d.getUTCMonth() + 1).padStart(2, '0')}/${d.getUTCFullYear()}`; };
+
+async function loadTRI() {
+  if (TRI) return TRI;
+  const r = await fetch('data/tri_monthly.json', { cache: 'no-cache' });
+  if (!r.ok) throw new Error('Index data file missing (HTTP ' + r.status + ')');
+  const j = await r.json();
+  TRI = { fetched: j.fetched, source: j.source, idx: {} };
+  for (const [k, v] of Object.entries(j.indices)) TRI.idx[k] = { ...v, arr: v.m.map(([d, x]) => ({ t: parseISO(d), nav: x })) };
+  // Analysis date = last COMPLETE month-end in the index data
+  const ld = new Date(parseISO(TRI.idx['NIFTY 500'].last_day)), now = new Date();
+  const complete = (now.getFullYear() * 12 + now.getMonth()) > (ld.getUTCFullYear() * 12 + ld.getUTCMonth());
+  M0 = complete ? Date.UTC(ld.getUTCFullYear(), ld.getUTCMonth() + 1, 0) : Date.UTC(ld.getUTCFullYear(), ld.getUTCMonth(), 0);
+  return TRI;
+}
+const me = k => { const d = new Date(M0); return Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1 - k, 0); };   // calendar month-end, k months before M0
+const valAt = (arr, k) => navOnOrBefore(arr, me(k), 7);                                                          // last value on/before that month-end, within 7 days
+
+// =====================================================================================
+// Metrics (all on month-end values; see "How it works")
+// =====================================================================================
+const mean = a => a.reduce((s, x) => s + x, 0) / a.length;
+const sdev = a => { const m = mean(a); return Math.sqrt(a.reduce((s, x) => s + (x - m) ** 2, 0) / (a.length - 1)); };
+const median = a => { const s = [...a].sort((x, y) => x - y), n = s.length; return n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2; };
+
+function cagr(arr, years) {
+  const e = valAt(arr, 0), s = valAt(arr, 12 * years);
+  if (!e || !s || s.nav <= 0) return null;
+  return (Math.pow(e.nav / s.nav, 1 / years) - 1) * 100;
+}
+function monthlyRet(arr, W, off = 0) {
+  const v = [];
+  for (let k = off + W; k >= off; k--) { const p = valAt(arr, k); if (!p) return null; v.push(p.nav); }
+  const r = []; for (let i = 1; i < v.length; i++) r.push(v[i] / v[i - 1] - 1);
+  return r;
+}
+// Morningstar method: geometric average of the fund's returns in months the benchmark rose (fell),
+// divided by the benchmark's geometric average in those same months, x 100.
+function captures(fr, br) {
+  const up = [], dn = [];
+  br.forEach((b, i) => { if (b > 0) up.push(i); else if (b < 0) dn.push(i); });
+  const g = (a, ix) => Math.pow(ix.reduce((p, i) => p * (1 + a[i]), 1), 1 / ix.length) - 1;
+  const o = { upCap: null, downCap: null, capRatio: null, nUp: up.length, nDn: dn.length };
+  if (up.length >= 3) o.upCap = g(fr, up) / g(br, up) * 100;
+  if (dn.length >= 3) o.downCap = g(fr, dn) / g(br, dn) * 100;
+  if (o.upCap != null && o.downCap != null && o.downCap > 0) o.capRatio = o.upCap / o.downCap;
+  return o;
+}
+function riskStats(fr, br, rfA) {
+  const n = fr.length, m = mean(fr), sd = sdev(fr), rfm = Math.pow(1 + rfA, 1 / 12) - 1;
+  const dd = Math.sqrt(fr.reduce((s, x) => s + Math.min(0, x - rfm) ** 2, 0) / n);   // downside deviation below the risk-free rate
+  const o = { sd: sd * Math.sqrt(12) * 100, sharpe: sd > 0 ? (m - rfm) / sd * Math.sqrt(12) : null,
+              sortino: dd > 0 ? ((m - rfm) * 12) / (dd * Math.sqrt(12)) : null, beta: null, alpha: null, te: null, ir: null };
+  if (br && br.length === n) {
+    const mb = mean(br); let cov = 0, vb = 0;
+    for (let i = 0; i < n; i++) { cov += (fr[i] - m) * (br[i] - mb); vb += (br[i] - mb) ** 2; }
+    if (vb > 0) { o.beta = cov / vb; o.alpha = ((m - rfm) - o.beta * (mb - rfm)) * 12 * 100; }
+    const act = fr.map((x, i) => x - br[i]), sa = sdev(act);
+    o.te = sa * Math.sqrt(12) * 100;
+    o.ir = sa > 0 ? (mean(act) * 12) / (sa * Math.sqrt(12)) : null;
+  }
+  return o;
+}
+function maxFall(arr, W) {
+  let peak = -Infinity, mdd = 0;
+  for (let k = W; k >= 0; k--) { const p = valAt(arr, k); if (!p) return null; if (p.nav > peak) peak = p.nav; mdd = Math.min(mdd, p.nav / peak - 1); }
+  return mdd * 100;
+}
+// Every 3-year window whose start lies within the last 10 years (up to 85 windows), month-end to month-end
+function rolling3(farr, barr) {
+  const out = [];
+  for (let k = 0; k <= 84; k++) {
+    const fe = valAt(farr, k), fs = valAt(farr, k + 36), be = valAt(barr, k), bs = valAt(barr, k + 36);
+    if (!fe || !fs || !be || !bs) break;
+    const f = Math.pow(fe.nav / fs.nav, 1 / 3) - 1, b = Math.pow(be.nav / bs.nav, 1 / 3) - 1;
+    out.push({ k, end: me(k), f: f * 100, b: b * 100, x: (f - b) * 100 });
+  }
+  if (out.length < 12) return null;
+  const xs = out.map(o => o.x);
+  return { n: out.length, from: me(out[out.length - 1].k + 36), beat: xs.filter(x => x > 0).length, hit: xs.filter(x => x > 0).length / out.length * 100,
+           med: median(xs), worst: Math.min(...xs), best: Math.max(...xs), series: out };
+}
+function calYears(arr) {
+  const y0 = new Date(M0).getUTCFullYear(), out = [];
+  const isDec = new Date(M0).getUTCMonth() === 11;
+  if (!isDec) { const s = navOnOrBefore(arr, Date.UTC(y0 - 1, 11, 31), 7), e = valAt(arr, 0); out.push({ y: y0 + ' YTD', r: s && e ? (e.nav / s.nav - 1) * 100 : null }); }
+  for (let y = isDec ? y0 : y0 - 1; y >= y0 - 10; y--) {
+    const s = navOnOrBefore(arr, Date.UTC(y - 1, 11, 31), 7), e = navOnOrBefore(arr, Date.UTC(y, 11, 31), 7);
+    out.push({ y: String(y), r: s && e ? (e.nav / s.nav - 1) * 100 : null });
+  }
+  return out;
+}
+function analyse(farr, barr, W, rfA) {
+  const o = { c1: cagr(farr, 1), c3: cagr(farr, 3), c5: cagr(farr, 5), c10: cagr(farr, 10) };
+  const fr = monthlyRet(farr, W), br = monthlyRet(barr, W);
+  Object.assign(o, fr && br ? { ...captures(fr, br), ...riskStats(fr, br, rfA) } : {});
+  o.mdd = maxFall(farr, W);
+  o.roll = rolling3(farr, barr);
+  return o;
+}
+
+// =====================================================================================
+// Fund universe + NAV history
+// =====================================================================================
+const planOk = (r, plan) => plan === 'Direct' ? r.scheme_plan === 'Direct' : (r.scheme_plan === 'Regular' || r.scheme_plan === 'Other');
+function chunk(a, n) { const o = []; for (let i = 0; i < a.length; i += n) o.push(a.slice(i, i + n)); return o; }
+async function fetchNavs(codes, onProg) {
+  const need = codes.filter(c => !NAVS[c]);
+  const batches = chunk(need, 50); let done = 0, idx = 0;
+  async function worker() {
+    while (idx < batches.length) {
+      const b = batches[idx++];
+      try {
+        const resp = await fetchVia(`${API_BASE}/nav?schemes=${b.join(',')}`, 'json');
+        for (const s of (resp.schemes || [resp])) {
+          if (!s || !s.scheme_code || !s.data) continue;
+          NAVS[String(s.scheme_code)] = s.data.map(p => ({ t: parseISO(p.date), nav: parseFloat(p.nav) })).filter(p => !isNaN(p.nav) && p.nav > 0).sort((a, b) => a.t - b.t);
+        }
+      } catch (e) { console.warn('NAV batch failed', e); }
+      done++; onProg && onProg(done, batches.length);
+    }
+  }
+  await Promise.all([worker(), worker(), worker(), worker()]);
+}
+
+async function runCategory() {
+  const catKey = document.querySelector('#catChips .chip.on')?.dataset.cat;
+  if (!catKey) { setStatus('Pick a category first.'); return; }
+  const plan = $('plan').value, W = +$('win').value, rfA = (parseFloat($('rf').value) || 0) / 100;
+  const cfg = PH1_BY[catKey];
+  try {
+    setStatus('<span class="spinner"></span>Loading index data…');
+    await loadTRI();
+    const bench = TRI.idx[cfg.bench];
+    if (!bench) throw new Error('Benchmark ' + cfg.bench + ' is missing from the index data file.');
+    setStatus('<span class="spinner"></span>Loading the fund universe (~9 MB, once per session)…');
+    const data = await ensureMasterData();
+    const canon = CANON_LABEL[catKey];
+    let rows = data.filter(r => isActive(r) && r.scheme_option === 'Growth' && planOk(r, plan) && !isETF(r) && normCat(r) === canon);
+    setStatus(`<span class="spinner"></span>Fetching full NAV history for ${rows.length} funds…`);
+    await fetchNavs(rows.map(r => r.scheme_code), (d, t) => setStatus(`<span class="spinner"></span>Fetching NAV history… ${d} / ${t} batches`));
+
+    const out = [];
+    for (const r of rows) {
+      const arr = NAVS[r.scheme_code];
+      if (!arr || !arr.length) { out.push({ r, noNav: true }); continue; }
+      const a = analyse(arr, bench.arr, W, rfA);
+      const aum = parseFloat(r.aaum_cr_quarterly_avg);
+      out.push({ r, code: r.scheme_code, name: r.scheme_name, amc: r.amc, aum: isNaN(aum) ? null : aum, aumQ: r.aaum_quarter,
+                 since: arr[0].t, age: (M0 - arr[0].t) / (365.25 * DAY), lastNav: arr[arr.length - 1], ...a });
+    }
+    // Hide duplicate share classes that carry identical NAVs (e.g. legacy "Plan B / Plan C" of the same scheme)
+    const seen = new Map(); let dupes = 0;
+    const key = o => { const a = NAVS[o.code], p0 = a && valAt(a, 0), p12 = a && valAt(a, 12); return p0 && p12 ? `${o.amc}|${p0.nav.toFixed(4)}|${p12.nav.toFixed(4)}` : null; };
+    const funds = [];
+    for (const o of out.filter(o => !o.noNav).sort((a, b) => (b.aum || 0) - (a.aum || 0))) {
+      const k = key(o); if (k && seen.has(k)) { dupes++; continue; } if (k) seen.set(k, o.name); funds.push(o);
+    }
+    const b = analyse(bench.arr, bench.arr, W, rfA);
+    RESULT = { catKey, cfg, plan, W, rfA, bench: { name: cfg.bench, label: benchLabel(cfg.bench), ...b, calY: calYears(bench.arr) }, funds,
+               noNav: out.filter(o => o.noNav).map(o => o.r.scheme_name), dupes };
+    sortKey = null;
+    render();
+    setStatus(`Analysed ${funds.length} funds against ${benchLabel(cfg.bench)}.`);
+  } catch (e) {
+    console.error(e);
+    setStatus('Could not complete: ' + e.message + '. Nothing has been estimated; please retry.', true);
+  }
+}
+
+// =====================================================================================
+// Rendering
+// =====================================================================================
+const isNum = v => typeof v === 'number' && isFinite(v);
+const f1 = v => isNum(v) ? v.toFixed(1) : '—';
+const f2 = v => isNum(v) ? v.toFixed(2) : '—';
+const pct = v => isNum(v) ? v.toFixed(1) + '%' : '—';
+const pts = v => isNum(v) ? (v >= 0 ? '+' : '') + v.toFixed(1) : '—';
+const cls = (v, good = 'pos') => !isNum(v) ? 'dim' : v > 0 ? good : v < 0 ? (good === 'pos' ? 'neg' : 'pos') : '';
+const crore = v => isNum(v) ? '₹' + Math.round(v).toLocaleString('en-IN') : '—';
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const winLabel = W => W === 36 ? '3 years' : W === 60 ? '5 years' : '10 years';
+
+function columns(v, W) {
+  const b = RESULT.bench;
+  const ret = (k, yrs) => ({ k, label: `${yrs}Y return`, sub: 'a year · lead vs index', cell: o => {
+      const bv = b[k], x = isNum(o[k]) && isNum(bv) ? o[k] - bv : null;
+      return `${pct(o[k])}<span class="x ${cls(x)}">${isNum(x) ? pts(x) + ' pts' : ''}</span>`; }, sortVal: o => isNum(o[k]) && isNum(b[k]) ? o[k] - b[k] : null, bcell: () => pct(b[k]) });
+  if (v === 'ret') return [ret('c1', 1), ret('c3', 3), ret('c5', 5), ret('c10', 10)];
+  if (v === 'cons') return [
+    { k: 'n', label: '3Y periods', sub: 'month-ends tested', cell: o => o.roll ? `${o.roll.n}<span class="x dim">since ${fmtDate(o.roll.from).slice(3)}</span>` : '—', sortVal: o => o.roll ? o.roll.n : null },
+    { k: 'hit', label: 'Beat index', sub: '% of 3Y periods', cell: o => o.roll ? `<span class="${o.roll.hit >= 50 ? 'pos' : 'neg'}">${o.roll.hit.toFixed(0)}%</span><span class="x dim">${o.roll.beat} of ${o.roll.n}</span>` : '—', sortVal: o => o.roll ? o.roll.hit : null },
+    { k: 'med', label: 'Typical lead', sub: 'median, pts a year', cell: o => o.roll ? `<span class="${cls(o.roll.med)}">${pts(o.roll.med)}</span>` : '—', sortVal: o => o.roll ? o.roll.med : null },
+    { k: 'worst', label: 'Worst lead', sub: 'pts a year', cell: o => o.roll ? `<span class="${cls(o.roll.worst)}">${pts(o.roll.worst)}</span>` : '—', sortVal: o => o.roll ? o.roll.worst : null },
+    { k: 'best', label: 'Best lead', sub: 'pts a year', cell: o => o.roll ? `<span class="${cls(o.roll.best)}">${pts(o.roll.best)}</span>` : '—', sortVal: o => o.roll ? o.roll.best : null },
+  ];
+  if (v === 'cap') return [
+    { k: 'upCap', label: 'Up capture', sub: 'index = 100', cell: o => f1(o.upCap), sortVal: o => o.upCap, bcell: () => '100' },
+    { k: 'downCap', label: 'Down capture', sub: 'index = 100; lower is better', cell: o => isNum(o.downCap) ? `<span class="${o.downCap < 100 ? 'pos' : 'neg'}">${o.downCap.toFixed(1)}</span>` : '—', sortVal: o => isNum(o.downCap) ? -o.downCap : null, bcell: () => '100' },
+    { k: 'capRatio', label: 'Capture ratio', sub: 'up ÷ down; above 1 is good', cell: o => isNum(o.capRatio) ? `<span class="${o.capRatio >= 1 ? 'pos' : 'neg'}">${o.capRatio.toFixed(2)}</span>` : '—', sortVal: o => o.capRatio, bcell: () => '1.00' },
+    { k: 'beta', label: 'Beta', sub: '1 = moves with index', cell: o => f2(o.beta), sortVal: o => o.beta, bcell: () => '1.00' },
+    { k: 'nUp', label: 'Months', sub: 'index up / down', cell: o => isNum(o.nUp) ? `${o.nUp} / ${o.nDn}` : '—', sortVal: o => o.nUp, bcell: () => isNum(b.nUp) ? `${b.nUp} / ${b.nDn}` : '—' },
+  ];
+  return [
+    { k: 'sd', label: 'Volatility', sub: 'a year', cell: o => pct(o.sd), sortVal: o => isNum(o.sd) ? -o.sd : null, bcell: () => pct(b.sd) },
+    { k: 'mdd', label: 'Max fall', sub: 'month-end, in window', cell: o => pct(o.mdd), sortVal: o => o.mdd, bcell: () => pct(b.mdd) },
+    { k: 'sortino', label: 'Sortino', sub: 'return per unit of downside', cell: o => f2(o.sortino), sortVal: o => o.sortino, bcell: () => f2(b.sortino) },
+    { k: 'sharpe', label: 'Sharpe', sub: 'return per unit of risk', cell: o => f2(o.sharpe), sortVal: o => o.sharpe, bcell: () => f2(b.sharpe) },
+    { k: 'ir', label: 'Info ratio', sub: 'lead ÷ tracking error', cell: o => `<span class="${cls(o.ir)}">${f2(o.ir)}</span>`, sortVal: o => o.ir },
+    { k: 'alpha', label: 'Alpha', sub: '% a year (Jensen)', cell: o => `<span class="${cls(o.alpha)}">${pts(o.alpha)}</span>`, sortVal: o => o.alpha },
+    { k: 'te', label: 'Tracking error', sub: '% a year', cell: o => pct(o.te), sortVal: o => o.te },
+  ];
+}
+
+function render() {
+  if (!RESULT) return;
+  $('resultCard').classList.remove('hide');
+  const { cfg, bench, W, plan } = RESULT;
+  const cols = columns(view, W);
+  let funds = [...RESULT.funds];
+  if (sortKey) {
+    const c = cols.find(c => c.k === sortKey);
+    if (c) funds.sort((a, b) => { const x = c.sortVal(a), y = c.sortVal(b); if (!isNum(x) && !isNum(y)) return 0; if (!isNum(x)) return 1; if (!isNum(y)) return -1; return (y - x) * (sortDir === -1 ? 1 : -1); });
+  } else funds.sort((a, b) => (b.aum || 0) - (a.aum || 0));
+  const head = `<tr><th data-k="">Fund<span class="sub">click a name for detail</span></th><th data-k="__aum">AUM ₹ Cr<span class="sub">quarterly avg</span></th>${cols.map(c => `<th data-k="${c.k}" title="Click to sort">${c.label}${sortKey === c.k ? (sortDir === -1 ? ' ▼' : ' ▲') : ''}<span class="sub">${c.sub}</span></th>`).join('')}</tr>`;
+  const brow = `<tr class="bench"><td>${esc(bench.label)}<div class="fsub">Category benchmark${cfg.broad ? ' — broad market, not each fund\'s own sector index' : ''}</div></td><td>—</td>${cols.map(c => `<td>${c.bcell ? c.bcell() : '—'}</td>`).join('')}</tr>`;
+  const body = funds.map(o => `<tr><td><span class="fname" data-code="${o.code}">${esc(o.name)}</span><div class="fsub">${o.age < 3 ? '<span class="warn">Under 3 years old · </span>' : ''}since ${fmtDate(o.since)}</div></td><td>${crore(o.aum)}</td>${cols.map(c => `<td>${c.cell(o)}</td>`).join('')}</tr>`).join('');
+  $('tbl').innerHTML = `<thead>${head}</thead><tbody>${brow}${body}</tbody>`;
+  const aumQ = funds.find(o => o.aumQ)?.aumQ;
+  $('meta').innerHTML = `<b>${esc(CANON_LABEL[RESULT.catKey])}</b> · ${plan} plans · ${funds.length} funds · benchmark <b>${esc(bench.label)}</b>` +
+    ` · all figures to month-end <b>${fmtDate(M0)}</b>` +
+    (view === 'cap' || view === 'risk' ? ` · window: ${winLabel(W)} (${fmtDate(me(W))} – ${fmtDate(M0)})` : '') +
+    (view === 'cons' ? ' · every 3-year period starting in the last 10 years, month by month' : '') +
+    (aumQ ? ` · AUM: ${aumPeriodLabel(aumQ)}` : '');
+  const notes = [];
+  if (plan === 'Regular') notes.push('Regular-plan returns are after the higher expense ratio; the index has no costs, so Regular funds start roughly 0.5–1.5 pts a year behind. Compare funds with each other, not just with the index.');
+  if (cfg.broad) notes.push('Sectoral/thematic funds each have their own sector benchmark; here they are compared with the Nifty 500 TRI only as a broad-market reference.');
+  if (RESULT.dupes) notes.push(`${RESULT.dupes} duplicate share class(es) with identical NAVs hidden (largest AUM kept).`);
+  if (RESULT.noNav.length) notes.push(`No NAV history returned for: ${RESULT.noNav.map(esc).join(', ')}.`);
+  notes.push('“—” means not enough history for that measure; nothing is estimated.');
+  $('foot').innerHTML = notes.map(n => '• ' + n).join('<br>');
+}
+
+$('views').addEventListener('click', e => { const b = e.target.closest('[data-view]'); if (!b) return; view = b.dataset.view; sortKey = null; $('views').querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === b)); render(); });
+$('tbl').addEventListener('click', e => {
+  const n = e.target.closest('.fname'); if (n) { openDetail(n.dataset.code); return; }
+  const th = e.target.closest('th[data-k]'); if (!th || !th.dataset.k || th.dataset.k === '__aum') return;
+  if (sortKey === th.dataset.k) sortDir = -sortDir; else { sortKey = th.dataset.k; sortDir = -1; }
+  render();
+});
+
+function openDetail(code) {
+  const o = RESULT.funds.find(f => f.code === code); if (!o) return;
+  const b = RESULT.bench, arr = NAVS[code], cy = calYears(arr);
+  const bcy = Object.fromEntries(b.calY.map(x => [x.y, x.r]));
+  const R = o.roll;
+  let chart = '<div class="note">Not enough history for 3-year periods.</div>';
+  if (R) {
+    const s = [...R.series].reverse(), w = 640, h = 150, pad = 24, mx = Math.max(...s.map(p => Math.abs(p.x)), 1);
+    const bw = (w - pad * 2) / s.length, y0 = h / 2;
+    chart = `<svg viewBox="0 0 ${w} ${h}" width="100%" style="max-width:${w}px;background:#fafcfb;border-radius:8px">
+      <line x1="${pad}" x2="${w - pad}" y1="${y0}" y2="${y0}" stroke="#bbb"/>
+      ${s.map((p, i) => { const hh = Math.abs(p.x) / mx * (h / 2 - 12); return `<rect x="${(pad + i * bw).toFixed(1)}" y="${(p.x >= 0 ? y0 - hh : y0).toFixed(1)}" width="${Math.max(1, bw - 1).toFixed(1)}" height="${hh.toFixed(1)}" fill="${p.x >= 0 ? '#005826' : '#934E32'}"><title>3Y to ${fmtDate(p.end)}: fund ${p.f.toFixed(1)}% vs index ${p.b.toFixed(1)}% (${pts(p.x)} pts)</title></rect>`; }).join('')}
+      <text x="${pad}" y="12" font-size="10" fill="#6b6470">+${mx.toFixed(1)} pts</text><text x="${pad}" y="${h - 3}" font-size="10" fill="#6b6470">−${mx.toFixed(1)} pts</text>
+      <text x="${w - pad}" y="${h - 3}" font-size="10" fill="#6b6470" text-anchor="end">newest →</text></svg>`;
+  }
+  const say = [];
+  if (R) say.push(`Across <b>${R.n}</b> rolling 3-year periods (starting ${fmtDate(R.from)}), the fund beat ${esc(b.label)} in <b>${R.beat}</b> (${R.hit.toFixed(0)}%). Its typical lead was <b>${pts(R.med)} pts</b> a year; worst ${pts(R.worst)}, best ${pts(R.best)}.`);
+  if (isNum(o.downCap) && isNum(o.upCap)) say.push(`Over the last ${winLabel(RESULT.W)}, in months the index fell the fund took <b>${o.downCap.toFixed(0)}%</b> of the fall; in months it rose the fund captured <b>${o.upCap.toFixed(0)}%</b> of the rise (capture ratio ${o.capRatio.toFixed(2)}).`);
+  $('modal').innerHTML = `<button class="close" onclick="document.getElementById('modalBg').style.display='none'">×</button>
+    <h2>${esc(o.name)}</h2><div class="meta">${esc(CANON_LABEL[RESULT.catKey])} · ${RESULT.plan} plan · benchmark ${esc(b.label)} · data to ${fmtDate(M0)} · latest NAV ${o.lastNav.nav} on ${fmtDate(o.lastNav.t)}</div>
+    ${say.length ? `<div class="say">${say.join('<br>')}</div>` : ''}
+    <h3 style="font-size:14px;margin:12px 0 6px">Lead over the index in every 3-year period</h3>${chart}
+    <div class="grid2" style="margin-top:12px">
+      <div><h3 style="font-size:14px;margin:0 0 6px">Calendar years</h3>
+        <div class="tablewrap"><table><thead><tr><th>Year</th><th>Fund</th><th>Index</th><th>Lead</th></tr></thead><tbody>
+        ${cy.map(x => { const bi = bcy[x.y], l = isNum(x.r) && isNum(bi) ? x.r - bi : null; return `<tr><td>${x.y}</td><td>${pct(x.r)}</td><td>${pct(bi)}</td><td class="${cls(l)}">${pts(l)}</td></tr>`; }).join('')}
+        </tbody></table></div></div>
+      <div><h3 style="font-size:14px;margin:0 0 6px">Key numbers (${winLabel(RESULT.W)} window)</h3>
+        <div class="kv">
+          <div>AUM</div><div>${crore(o.aum)} Cr${o.aumQ ? ' (' + esc(aumPeriodLabel(o.aumQ)) + ')' : ''}</div>
+          <div>Up / Down capture</div><div>${f1(o.upCap)} / ${f1(o.downCap)}</div>
+          <div>Beta · Alpha</div><div>${f2(o.beta)} · ${pts(o.alpha)} % a year</div>
+          <div>Volatility · Max fall</div><div>${pct(o.sd)} · ${pct(o.mdd)} (index ${pct(b.mdd)})</div>
+          <div>Sortino · Sharpe</div><div>${f2(o.sortino)} · ${f2(o.sharpe)}</div>
+          <div>Info ratio · Tracking error</div><div>${f2(o.ir)} · ${pct(o.te)}</div>
+          <div>Fund since</div><div>${fmtDate(o.since)} (${o.age.toFixed(1)} yrs)</div>
+        </div></div>
+    </div>`;
+  $('modalBg').style.display = 'flex';
+}
+$('modalBg').addEventListener('click', e => { if (e.target.id === 'modalBg') e.target.style.display = 'none'; });
+
+// CSV of the current category, all measures
+$('csvBtn').addEventListener('click', () => {
+  if (!RESULT) { setStatus('Analyse a category first.'); return; }
+  const b = RESULT.bench;
+  const H = ['Fund', 'Scheme code', 'AUM Cr', 'Since', '1Y %', '3Y %', '5Y %', '10Y %', '1Y lead', '3Y lead', '5Y lead', '10Y lead', '3Y periods', 'Beat index %', 'Median lead', 'Worst lead', 'Best lead', 'Up capture', 'Down capture', 'Capture ratio', 'Beta', 'Alpha %', 'Volatility %', 'Max fall %', 'Sortino', 'Sharpe', 'Info ratio', 'Tracking error %'];
+  const n = v => isNum(v) ? v.toFixed(3) : '';
+  const lead = (o, k) => isNum(o[k]) && isNum(b[k]) ? n(o[k] - b[k]) : '';
+  const line = o => [o.name, o.code || '', n(o.aum), o.since ? fmtDate(o.since) : '', n(o.c1), n(o.c3), n(o.c5), n(o.c10), lead(o, 'c1'), lead(o, 'c3'), lead(o, 'c5'), lead(o, 'c10'),
+    o.roll ? o.roll.n : '', o.roll ? n(o.roll.hit) : '', o.roll ? n(o.roll.med) : '', o.roll ? n(o.roll.worst) : '', o.roll ? n(o.roll.best) : '',
+    n(o.upCap), n(o.downCap), n(o.capRatio), n(o.beta), n(o.alpha), n(o.sd), n(o.mdd), n(o.sortino), n(o.sharpe), n(o.ir), n(o.te)];
+  const rows = [H, line({ ...b, name: b.label + ' (benchmark)' }), ...RESULT.funds.map(line)];
+  const csv = rows.map(r => r.map(v => /[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : v).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv' }));
+  a.download = `Fund Lab - ${CANON_LABEL[RESULT.catKey]} - ${RESULT.plan} - ${fmtDate(M0).replace(/\//g, '-')}.csv`;
+  a.click();
+});
+
+// =====================================================================================
+// Benchmarks page + method page
+// =====================================================================================
+async function renderBench() {
+  try { await loadTRI(); } catch (e) { $('triMeta').innerHTML = '<span class="neg">' + esc(e.message) + '</span>'; return; }
+  $('mapTbl').innerHTML = `<thead><tr><th>Category</th><th>Benchmark (TRI)</th><th>Source</th></tr></thead><tbody>${PH1.map(c => `<tr><td>${esc(CANON_LABEL[c.key])}</td><td>${esc(benchLabel(c.bench))}${c.broad ? ' <span class="pill">broad reference</span>' : ''}</td><td style="white-space:normal">${c.src.length ? c.src.map(s => `<a href="${SOURCES[s].url}" target="_blank" rel="noopener">${esc(SOURCES[s].label)}</a>`).join('<br>') : 'Each sectoral/thematic fund has its own benchmark (to be mapped fund by fund later).'}</td></tr>`).join('')}</tbody>`;
+  const grp = { broad: 'Broad market', style: 'Style / factor', sector: 'Sector / theme' };
+  const list = Object.entries(TRI.idx).sort((a, b) => Object.keys(grp).indexOf(a[1].group) - Object.keys(grp).indexOf(b[1].group));
+  $('triMeta').innerHTML = `Source: NSE Indices Ltd (niftyindices.com), Total Return Index. Refreshed automatically every weekday evening; last refresh <b>${esc(TRI.fetched.split('-').reverse().join('/'))}</b>. Returns are to month-end <b>${fmtDate(M0)}</b>, a year compounded. Values before an index's launch are NSE's back-calculated history.`;
+  $('triTbl').innerHTML = `<thead><tr><th>Index</th><th>Group</th><th>1Y</th><th>3Y</th><th>5Y</th><th>10Y</th><th>15Y</th><th>Data from</th></tr></thead><tbody>${list.map(([k, v]) => `<tr><td>${esc(v.label)}</td><td>${grp[v.group] || v.group}</td>${[1, 3, 5, 10, 15].map(y => `<td>${pct(cagr(v.arr, y))}</td>`).join('')}<td>${fmtDate(parseISO(v.first_day))}</td></tr>`).join('')}</tbody>`;
+}
+
+$('methodBox').innerHTML = `
+<h3 style="margin-top:0;color:var(--dark)">How the Fund Lab measures each fund</h3>
+<ul>
+<li><b>Benchmark:</b> each category's official Tier-1 index as a <b>Total Return Index (TRI)</b>, which includes dividends, from NSE Indices. Sources are on the “Benchmarks &amp; data” page.</li>
+<li><b>Fund data:</b> daily NAVs from AMFI via the tigzig API. Growth option only; ETFs and index funds are excluded.</li>
+<li><b>Common date:</b> every figure is measured to the last complete month-end, so fund and index cover exactly the same period. Each value is the last NAV or index level on or before the month-end, within 7 days.</li>
+<li><b>Returns:</b> compounded a year (CAGR). “Lead” = fund return minus index return, in percentage points.</li>
+<li><b>Consistency:</b> every 3-year period ending at each month-end, for all start dates in the last 10 years (up to 85 periods). Shows the share of periods the fund beat the index, plus its typical (median), worst and best lead.</li>
+<li><b>Up / Down capture (Morningstar method):</b> in the months the index rose, the fund's geometric average monthly return ÷ the index's, × 100. The same for months it fell. Down capture below 100 means the fund fell less. Capture ratio = up ÷ down; above 1 is favourable.</li>
+<li><b>Risk:</b> volatility = standard deviation of monthly returns, annualised. Max fall = deepest month-end drop in the window. Sortino uses downside deviation below the risk-free rate. Sharpe uses total volatility. Beta and Jensen's alpha come from monthly returns versus the index. Information ratio = average lead ÷ tracking error.</li>
+<li><b>No estimates:</b> if a fund is too young for a measure, it shows “—”. Duplicate share classes with identical NAVs are hidden.</li>
+<li><b>Coming next (Phase 2):</b> scoring each fund against its peers, style analysis (value, growth, quality, momentum), behaviour in different market phases, and a back-test of whether the scores pick better funds. The style rule by default is that <b>no single style dominates</b> a portfolio.</li>
+</ul>`;
+
+// =====================================================================================
+// Wiring
+// =====================================================================================
+$('catChips').innerHTML = PH1.map(c => `<button class="chip" data-cat="${c.key}">${esc(CAT_LABEL[c.key])}</button>`).join('');
+$('catChips').addEventListener('click', e => { const b = e.target.closest('.chip'); if (!b) return; $('catChips').querySelectorAll('.chip').forEach(x => x.classList.toggle('on', x === b)); });
+$('loadBtn').addEventListener('click', runCategory);
+document.querySelector('.topnav').addEventListener('click', e => {
+  const b = e.target.closest('[data-page]'); if (!b) return;
+  document.querySelectorAll('.topnav .tab').forEach(x => x.classList.toggle('on', x === b));
+  ['lab', 'bench', 'method'].forEach(p => $('page-' + p).classList.toggle('hide', p !== b.dataset.page));
+  if (b.dataset.page === 'bench') renderBench();
+});
+loadTRI().then(() => setStatus(`Index data ready (to ${fmtDate(M0)}). Pick a category and press “Analyse category”.`)).catch(e => setStatus('Index data could not load: ' + e.message, true));
+
+// For validation in the browser console
+window.FS = { analyse, captures, riskStats, rolling3, cagr, monthlyRet, calYears, valAt, me, loadTRI, get TRI() { return TRI; }, get M0() { return M0; }, NAVS, get RESULT() { return RESULT; }, ensureMasterData, fetchNavs, normCat };
+</script>
+</body>
+</html>
