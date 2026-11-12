@@ -815,7 +815,7 @@ function columns(v, R) {
     cell: o => o.ph && o.ph[k] ? cell(o.ph[k].lead, pts, ud(o.ph[k].lead)) + `<span class="fund-meta">beat in ${o.ph[k].beat.toFixed(0)}%</span>` : na, sort: o => o.ph && o.ph[k] ? o.ph[k].lead : null,
     y: () => y.ph ? `${y.ph.months[k]} <span class="fund-meta">months</span>` : na }));
   return [
-    { k: 'score', label: 'Score', sub: '0–100 vs peers', cell: o => isNum(o.score) ? `<b>${o.score.toFixed(0)}</b><span class="scorebar"><i style="width:${o.score.toFixed(0)}%"></i></span>` : `<span class="na" title="Needs 5 years of history and at least 4 scored peers">not scored</span>`, sort: o => o.score },
+    { k: 'score', label: 'Track-record score', sub: '0–100 vs peers', cell: o => isNum(o.score) ? `<b>${o.score.toFixed(0)}</b><span class="scorebar"><i style="width:${o.score.toFixed(0)}%"></i></span>` : `<span class="na" title="Needs 5 years of history and at least 4 scored peers">not scored</span>`, sort: o => o.score },
     ...SCORE_PARTS.map((p, i) => ({ k: p.k, label: p.label, sub: 'percentile', grp: i === 0, tip: p.tip, cell: o => cell(o[p.k], v => v.toFixed(0)), sort: o => o[p.k] })),
     { k: 'scoreN', label: 'Peers scored', sub: 'with 5Y+ history', cell: o => isNum(o.scoreN) ? String(o.scoreN) : na, sort: o => o.scoreN },
   ];
@@ -827,7 +827,7 @@ const INTRO = {
   risk: '<b>How to read:</b> “Deviation from yardstick” (tracking error) is how far the fund\'s returns wander from the index: the size of the manager\'s bets. “Reward for deviating” (information ratio) is the average lead ÷ that deviation: did those bets pay? Positive is good; above 0.5 is strong.',
   style: '<b>What the fund is doing differently.</b> <b>Holdings</b> (portfolio as on the holdings date): active share = how different the stocks are from the index (0 = copy, 100 = nothing in common), cash, and market-cap mix. <b>Style tilt</b> (from 3 years of returns): how much more (+) or less (−) the fund behaves like the Value, Quality, Momentum and Low-volatility indices than its own index does. Tilts of 10 pts or more are highlighted. These style indices overlap a lot, so read tilts, not absolute levels. Drift = how much the style mix changed versus the 3 years before. Open a fund for its sector and stock bets.',
   phase: '<b>How to read:</b> over the last 10 years, the fund\'s average lead over its yardstick (pts a year) in each kind of month. Value-led / Momentum-led and Large-led / Small-led are decided by NSE\'s own indices, the same months for every fund. The yardstick row shows how many months fell in each phase. Funds that lead in different phases complement each other in a portfolio.',
-  score: '<b>Score</b> = the fund\'s average percentile against peers in its category (same plan) on three parts: Consistency, Risk-adjusted return and Downside protection, each built from two measures (hover the headings). 100 = best in category. Only funds with 5+ years of history are scored. Check the Back-test tab for how well this score has picked funds in the past.',
+  score: '<b>Score</b> = the fund\'s average percentile against peers in its category (same plan) on three parts: Consistency, Risk-adjusted return and Downside protection, each built from two measures (hover the headings). 100 = best in category. Only funds with 5+ years of history are scored. <b>Important:</b> this describes the track record. In the back-test (Back-test tab) neither this score nor past returns predicted which funds would beat their index over the next 3 years, so use it to understand a fund, not as a forecast.',
 };
 function sortFunds(list, cols) {
   const fixed = { __name: o => o.name.toLowerCase(), __aum: o => o.aum, __cat: o => o.cat };
@@ -987,18 +987,27 @@ async function runBacktest() {
         for (const f of R.funds) {
           const arr = NAVS[f.code], e = navOnOrBefore(arr, fwdEnd, 7), s = valAt(arr, 0);
           if (!e || !s) continue;
-          const o = { hist: histMonths(arr), ...analyse(arr, yard, W, rfA) };
+          const o = { arr, hist: histMonths(arr), ...analyse(arr, yard, W, rfA) };
           const c3 = cagr(arr, 3), b3 = cagr(yard, 3); o.past3 = isNum(c3) && isNum(b3) ? c3 - b3 : null;
           o.fwd = (Math.pow(e.nav / s.nav, 1 / 3) - Math.pow(yE.nav / yS.nav, 1 / 3)) * 100;
           list.push(o);
         }
         scoreGroup(list, W);
+        // forward risk over the next 36 months (same funds), to test whether downside behaviour persists
+        const keepM0 = M0; M0 = fwdEnd; const ybr = monthlyRet(yard, 36);
+        for (const o of list) { const fr = monthlyRet(o.arr, 36); if (fr && ybr) { const c = captures(fr, ybr), rs = riskStats(fr, ybr, rfA); o.fDown = c.downCap; o.fSd = rs.sd; o.fMdd = maxFall(o.arr, 36); } }
+        M0 = keepM0;
         const scored = list.filter(o => isNum(o.score));
         if (scored.length < 8) continue;
         const smp = { yr, c, n: scored.length };
         for (const p of preds) { const pr = scored.filter(o => isNum(p.f(o))); smp[p.k] = spearman(pr.map(p.f), pr.map(o => o.fwd));
           const srt = [...pr].sort((a, b) => p.f(b) - p.f(a)), q = Math.floor(srt.length / 4);
           if (q >= 2) { const top = srt.slice(0, q), bot = srt.slice(-q); smp[p.k + '_spread'] = mean(top.map(o => o.fwd)) - mean(bot.map(o => o.fwd)); smp[p.k + '_topBeat'] = top.filter(o => o.fwd > 0).length / top.length * 100; smp[p.k + '_botBeat'] = bot.filter(o => o.fwd > 0).length / bot.length * 100; } }
+        const rk = scored.filter(o => isNum(o.fDown) && isNum(o.downCap));
+        smp.rDown = spearman(rk.map(o => -o.downCap), rk.map(o => -o.fDown));
+        smp.rSd = spearman(rk.map(o => -o.sd), rk.map(o => -o.fSd));
+        smp.rScoreDown = spearman(rk.map(o => o.score), rk.map(o => -o.fDown));
+        smp.rDownMdd = spearman(rk.map(o => o.sDown), rk.map(o => o.fMdd));
         samples.push(smp); (perCat[c] = perCat[c] || []).push(smp);
       }
     }
@@ -1013,10 +1022,13 @@ async function runBacktest() {
     'A correlation near 0 means no predictive power, 0.1–0.2 weak, above 0.3 meaningful. With 10–40 funds per test, single results are noisy: look at the average and how often it is positive.';
   $('btOut').innerHTML = `<div class="note" style="margin-top:0">${verdict}</div>
     <div class="tablewrap"><table id="btTbl"><thead><tr><th class="l">Picking funds by…</th><th>Avg rank correlation<span class="sub">with next-3Y lead</span></th><th>Positive in<span class="sub">tests</span></th><th>Top ¼ − bottom ¼<span class="sub">next-3Y lead, pts a year</span></th><th>Top ¼ beat index<span class="sub">share, next 3Y</span></th><th>Bottom ¼ beat index<span class="sub">share, next 3Y</span></th></tr></thead><tbody>${rowsHtml}</tbody></table></div>
+    <h3 style="margin:16px 0 8px;font-size:13px;color:var(--primary);text-transform:uppercase">Does past downside behaviour carry into the next 3 years?</h3>
+    <div class="tablewrap"><table id="btRisk"><thead><tr><th class="l">Past measure → next-3-year measure</th><th>Avg rank correlation</th><th>Positive in<span class="sub">tests</span></th></tr></thead><tbody>
+    ${[['rDown', 'Down capture → down capture (fell less before → fell less after)'], ['rSd', 'Volatility → volatility'], ['rDownMdd', 'Downside part of score → max fall'], ['rScoreDown', 'Overall score → down capture']].map(([k, l]) => `<tr><td class="l">${l}</td><td>${f2(avg(samples, k))}</td><td>${pos(samples, k)}</td></tr>`).join('')}</tbody></table></div>
     <h3 style="margin:16px 0 8px;font-size:13px;color:var(--primary);text-transform:uppercase">By category</h3>
     <div class="tablewrap"><table id="btCat"><thead><tr><th class="l">Category</th><th>Tests</th><th>Funds per test</th><th>Score: correlation</th><th>Score: top ¼ − bottom ¼</th><th>Past 3Y: correlation</th><th>Past 3Y: top ¼ − bottom ¼</th></tr></thead><tbody>${catRows}</tbody></table></div>
     <div class="meta" style="margin-top:8px">Limits: only funds that still exist today are included (funds that closed or merged are missing, which flatters averages); categories are today's SEBI categories applied to earlier years; ${RESULTS[cats[0]].plan} plans; window ${winLabel(W)}; the forward lead is fund minus its category index over the 3 years after each test date.</div>`;
-  makeSortable($('btTbl')); makeSortable($('btCat'));
+  makeSortable($('btTbl')); makeSortable($('btCat')); makeSortable($('btRisk'));
   $('btStatus').textContent = `Done: ${samples.length} tests.`;
   window.__BT = { samples, perCat };
 }
