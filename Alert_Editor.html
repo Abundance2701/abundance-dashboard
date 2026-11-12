@@ -283,7 +283,7 @@ function render() {
     if (open) d.appendChild(form(m));
     box.appendChild(d);
   });
-  updateBar();
+  followPlan();
 }
 function snapshot(m) { const { _snap, ...plain } = m; m._snap = JSON.parse(JSON.stringify(plain)); }
 function restore(m) { const sn = m._snap; if (!sn) return; Object.keys(m).forEach(k => delete m[k]); Object.assign(m, sn); }
