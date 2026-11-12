@@ -67,9 +67,11 @@ function status(cid, R, keys, L, H, T) {
     else (R.alts || [{ idx: R.idx }]).forEach(a => { const cs = R.type === 'w52' ? closes(a.idx, D.addDays(T, -364)) : closes(a.idx, R.from); if (!cs.length) return; const hi = Math.max(...cs); out.push(`${lab(a.idx)}: needs a close above ${fmt(hi)}${away(a.idx, hi)}`); });
   } else if (['fall', 'rise', 'aboveHigh'].includes(R.type)) {
     sent.forEach(s => out.push(`Alerted ${dmy(s.d)}`));
-    if (!sent.length || R.repeat) { const lf = sent.length ? sent[sent.length - 1].d : null, since = (R.repeat && lf) || R.from, cs = closes(R.idx, since);
-      if (cs.length && R.type === 'fall') { const hi = Math.max(...cs, now(R.idx) || 0), lvl = hi * (1 - R.pct / 100); out.push(`Needs ${lab(R.idx)} ≤ ${fmt(lvl)} (${R.pct}% below its high of ${fmt(hi)} since ${dmy(since)})${away(R.idx, lvl, true)}`); }
-      if (cs.length && R.type === 'rise') { const lo = Math.min(...cs), lvl = lo * (1 + R.pct / 100); out.push(`Needs ${lab(R.idx)} ≥ ${fmt(lvl)} (${R.pct}% above its low of ${fmt(lo)} since ${dmy(since)})${away(R.idx, lvl)}`); } }
+    if (!sent.length || R.repeat) { const lf = sent.length ? sent[sent.length - 1].d : null, since = (R.repeat && lf) || R.from;
+      (R.alts || [{ idx: R.idx, pct: R.pct }]).forEach(A => { const cs = closes(A.idx, since), pct = A.pct != null ? A.pct : R.pct; if (!cs.length) return;
+        if (R.type === 'fall') { const hi = Math.max(...cs, now(A.idx) || 0), lvl = hi * (1 - pct / 100); out.push(`${lab(A.idx)}: needs ≤ ${fmt(lvl)} (${pct}% below its high of ${fmt(hi)} since ${dmy(since)})${away(A.idx, lvl, true)}`); }
+        if (R.type === 'rise') { const lo = Math.min(...cs), lvl = lo * (1 + pct / 100); out.push(`${lab(A.idx)}: needs ≥ ${fmt(lvl)} (${pct}% above its low of ${fmt(lo)} since ${dmy(since)})${away(A.idx, lvl)}`); }
+        if (R.type === 'aboveHigh') { const cs2 = (H[A.idx] || []).filter(r => r[0] >= D.addDays(R.from, -30) && r[0] <= (lf || D.addDays(R.from, -1))).map(r => r[1]); if (!cs2.length) return; const hi = Math.max(...cs2), lvl = hi * (1 + pct / 100); out.push(`${lab(A.idx)}: needs ≥ ${fmt(lvl)} (${pct}% above its earlier high of ${fmt(hi)})${away(A.idx, lvl)}`); } }); }
   } else if (R.type === 'remind') {
     R.dates.forEach(d => { const s = sent.find(x => x.k === '-' + d); out.push(s ? `${dmy(d)}: sent ${dmy(s.d)}` : T > D.addDays(d, 10) ? `${dmy(d)}: passed` : `${dmy(d)}: coming up${R.unless ? ` (skipped if "${R.unless}" alerts first)` : ''}`); });
   } else if (R.type === 'gblock') {

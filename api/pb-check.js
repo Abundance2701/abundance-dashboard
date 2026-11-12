@@ -30,7 +30,9 @@
      Nifty 50 fall 2% [close] [repeat] from <date> [until <date>]     fall from the highest close since <date>
      Nifty 500 rise 10% [repeat] from <date> [until <date>]           rise from the lowest close since <date>
      Nifty 50 rise 3% above high [repeat] from <date> [until <date>]  3% above the high of the month before <date>
+     or Midcap 150 fall 2%  (or rise / new high …)                    backup index for the line above: whichever index meets it first
      remind 12/11/2026[, 26/02/2027 ...] [unless <words>]             a reminder; skipped if a line containing <words> already alerted
+     … · ₹1,50,000 at the end of any line                            amount to move, shown in the alert title (not part of its memory key)
      deadline 15/01/2027                                              reminders 7 days before and on the day
    "close" = judged on the closing level only (3:45 PM run); "repeat" = may alert again (after a fresh move, at most once a day).
    TIMING (12/11/2026): every market trigger is judged near the close, not intraday: at the 2:45/2:50 PM runs the live
@@ -64,6 +66,7 @@ const quarters = (from, by) => {   // the window split into equal parts of about
 const iso = s => { const m = String(s).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); return m ? `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}` : null; };
 const fmt = v => Number(v).toLocaleString('en-IN', { maximumFractionDigits: 2 });
 const esc = s => String(s || '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const amtLabel = a => { const v = +String(a == null ? '' : a).replace(/[^\d.]/g, ''); return !v ? '' : v >= 1e7 ? ` (₹${(v / 1e7).toFixed(2)} Cr)` : v >= 1e5 ? ` (₹${(v / 1e5).toFixed(2)} L)` : ` (₹${fmt(v)})`; };
 const hash = s => crypto.createHash('sha1').update(s.toLowerCase().replace(/\s+/g, ' ').trim()).digest('hex').slice(0, 8);
 
 /* ---------- reading a rule ---------- */
@@ -72,7 +75,12 @@ function parseRule(text) {
   const out = [], bad = [];
   let lastAt = null, G = null;   /* G = the goal block being read */
   for (const raw of String(text || '').split(/\r?\n/)) {
-    const line = raw.trim().replace(/\s+/g, ' '); if (!line) continue;
+    let line = raw.trim().replace(/\s+/g, ' '); if (!line) continue;
+    /* optional amount at the end of a line: "… · ₹1,50,000" (shown in the alert title; not part of the alert's memory key) */
+    let lineAmt = null; const am = !/^goal alert:/i.test(line) && line.match(/\s*·\s*(?:₹|rs\.?)\s*([\d,]+(?:\.\d+)?)\s*$/i);
+    if (am) { lineAmt = +am[1].replace(/,/g, ''); line = line.slice(0, am.index).trim(); }
+    const n0 = out.length, la0 = lastAt;
+    try {
     let gm;
     if ((gm = line.match(/^goal alert:\s*(.+)$/i))) { const [nm, ...rest] = gm[1].split('·').map(x => x.trim()); G = { type: 'gblock', name: nm || 'Goal', amt: rest.join(' · '), parts: [], by: null, trig: '52w', src: line }; out.push(G); lastAt = null; continue; }
     if ((gm = line.match(/^part\s+(\d+)\s+of\s+(\d+)\s*:\s*(\d{1,2}\/\d{1,2}\/\d{4})\s+to\s+(\d{1,2}\/\d{1,2}\/\d{4})$/i))) {
@@ -102,13 +110,18 @@ function parseRule(text) {
       if (m[1]) { if (!lastAt || lastAt.type !== 'w52') { bad.push(line); continue; } lastAt.alts.push({ idx: m[2] }); lastAt.src += '\n' + line; continue; }
       lastAt = { type: 'w52', alts: [{ idx: m[2] }], from, until, tag, src: line }; out.push(lastAt); continue;
     }
-    if (m === null && /^or /.test(l) && lastAt && (lastAt.type === 'move' || lastAt.type === 'w52')) { bad.push(line); continue; }
-    lastAt = null;
-    if ((m = l.match(new RegExp('^' + IDXRE + ' new high')))) { if (!from) { bad.push(line); continue; } out.push({ type: 'newHigh', idx: m[1], from, until, src: line, tag }); continue; }
-    if ((m = l.match(new RegExp('^' + IDXRE + ' (fall|rise) ([\\d.]+) ?%( above high)?')))) {
+    if ((m = l.match(new RegExp('^(or )?' + IDXRE + ' new high')))) {
+      if (m[1]) { if (!lastAt || lastAt.type !== 'newHigh') { bad.push(line); continue; } lastAt.alts.push({ idx: m[2] }); lastAt.src += '\n' + line; continue; }
       if (!from) { bad.push(line); continue; }
-      out.push({ type: m[2] === 'fall' ? 'fall' : m[4] ? 'aboveHigh' : 'rise', idx: m[1], pct: +m[3], from, until, close: /\bclose\b/.test(l), repeat: /\brepeat\b/.test(l), src: line, tag }); continue;
+      lastAt = { type: 'newHigh', idx: m[2], alts: [{ idx: m[2] }], from, until, src: line, tag }; out.push(lastAt); continue; }
+    if ((m = l.match(new RegExp('^(or )?' + IDXRE + ' (fall|rise) ([\\d.]+) ?%( above high)?')))) {
+      const type = m[3] === 'fall' ? 'fall' : m[5] ? 'aboveHigh' : 'rise';
+      if (m[1]) { if (!lastAt || lastAt.type !== type) { bad.push(line); continue; } lastAt.alts.push({ idx: m[2], pct: +m[4] }); lastAt.src += '\n' + line; continue; }
+      if (!from) { bad.push(line); continue; }
+      lastAt = { type, idx: m[2], pct: +m[4], alts: [{ idx: m[2], pct: +m[4] }], from, until, close: /\bclose\b/.test(l), repeat: /\brepeat\b/.test(l), src: line, tag }; out.push(lastAt); continue;
     }
+    if (/^or /.test(l) && lastAt) { bad.push(line); continue; }
+    lastAt = null;
     if ((m = l.match(/^remind ([\d/,\s]+?)( unless (.+))?$/))) {
       const ds = m[1].split(',').map(x => iso(x.trim())); if (!ds.length || ds.some(x => !x)) { bad.push(line); continue; }
       out.push({ type: 'remind', dates: ds, unless: m[3] ? m[3].trim() : null, src: line, tag }); continue;
@@ -116,6 +129,7 @@ function parseRule(text) {
     if ((m = l.match(/^move to debt from (\d{1,2}\/\d{1,2}\/\d{4}) by (\d{1,2}\/\d{1,2}\/\d{4})$/))) { const f = iso(m[1]), b = iso(m[2]); if (!f || !b) { bad.push(line); continue; } out.push({ type: 'goal', start: f, by: b, src: line, tag }); continue; }
     if ((m = l.match(/^deadline (\d{1,2}\/\d{1,2}\/\d{4})$/))) { const d = iso(m[1]); out.push({ type: 'remind', dates: [addDays(d, -7), d], deadline: d, src: line, tag }); continue; }
     bad.push(line);
+    } finally { if (lineAmt) { const t = out.length > n0 ? out[out.length - 1] : la0; if (t && t.amt == null && t.type !== 'gblock') t.amt = lineAmt; } }
   }
   out.forEach(x => { x.id = hash(x.src); });
   return { lines: out, bad };
@@ -247,7 +261,7 @@ module.exports = async (req, res) => {
       badLines++; due.push({ c, k, title: `${name}: check this profit-booking rule line`, hit: `This line in Goal Alerts could not be read, so it is not being watched: "${b}". Fix it in Zoho CRM. Valid examples: "Nifty 50 at 26358, 27400" · "or Midcap 150 at 23650" · "Nifty 50 up 9% from 05/11/2026" · "Nifty 50 52w high from 05/11/2026 until 04/02/2027" · "move to debt from 05/11/2026 by 31/08/2027" · "Nifty 50 fall 2% from 13/11/2026 until 15/01/2027" · "Nifty 500 rise 10% repeat from 05/11/2026" · "remind 12/11/2026" · "deadline 15/01/2027". Dates as DD/MM/YYYY.` });
     }
     for (const R of lines) {
-      const nm = R.tag ? `${name} · ${R.tag}` : name;
+      const nm = (R.tag ? `${name} · ${R.tag}` : name) + (R.amt ? amtLabel(R.amt) : '');
       if (R.from && T < R.from) continue;
       if (R.until && T > R.until) continue;
       const base = `${c.id}/${R.id}`;
@@ -273,7 +287,7 @@ module.exports = async (req, res) => {
       }
       if (R.type === 'gblock') {                         // goal block: per part a 52-week-high alert, else a reminder on its last day; then the deadline
         const GI = ['nifty 50', 'midcap 150', 'smallcap 250'], win = d => T >= d && T <= addDays(d, 10);
-        const amtS = (() => { const v = +String(R.amt).replace(/[^\d.]/g, ''); return !v ? '' : v >= 1e7 ? ` (₹${(v / 1e7).toFixed(2)} Cr)` : v >= 1e5 ? ` (₹${(v / 1e5).toFixed(2)} L)` : ` (₹${fmt(v)})`; })();
+        const amtS = amtLabel(R.amt);
         const who = `${name} · ${R.name}${amtS}`, gk = `${c.id}/g${hash(R.name)}`;
         R.parts.forEach((P, i) => {
           const pk = `${gk}-${hash(P.from + P.to)}`, kw = `${pk}-w52`, ke = `${pk}-end`, of = `part ${P.no} of ${P.of}`, isLast = !!R.by && P.to >= addDays(R.by, -7); let hitNow = false;   /* a part ending in the last 7 days: the In debt by alerts cover it */
@@ -328,24 +342,27 @@ module.exports = async (req, res) => {
       const k = base, lf = last(k);
       if (lf && !R.repeat) continue;
       if (lf === T) continue;
-      const now = L[R.idx]; if (!ok(now)) continue;
-      const lab = LABEL[R.idx];
-      if (R.type === 'newHigh') {
-        const cs = closes(R.idx, R.from); const hi = cs.length ? Math.max(...cs) : null;
-        if (hi && now > hi) due.push({ c, fp: !!R.tag, k, title: `${nm}: ${lab} at a new high`, hit: `${lab} ${AT(now)}, above every close since ${dmy(R.from)} (best ${fmt(hi)}).` });
-      } else if (R.type === 'fall') {
-        if (R.close && !closedForDay) continue;
-        const since = (R.repeat && lf) || R.from, cs = closes(R.idx, since); cs.push(now);
-        const hi = Math.max(...cs);
-        if (now <= hi * (1 - R.pct / 100)) due.push({ c, fp: !!R.tag, k, title: `${nm}: ${lab} down ${R.pct}% from its high`, hit: `${lab} ${AT(now)}, ${((1 - now / hi) * 100).toFixed(1)}% below its high of ${fmt(hi)} since ${dmy(since)}.` });
-      } else if (R.type === 'rise') {
-        const since = lf || R.from, cs = closes(R.idx, since); if (!cs.length) continue;
-        const lo = Math.min(...cs);
-        if (now >= lo * (1 + R.pct / 100)) due.push({ c, fp: !!R.tag, k, title: `${nm}: ${lab} up ${R.pct}% from its low`, hit: `${lab} ${AT(now)}, up ${((now / lo - 1) * 100).toFixed(1)}% from its low of ${fmt(lo)} since ${dmy(since)}.` });
-      } else if (R.type === 'aboveHigh') {
-        const cs = closes(R.idx, addDays(R.from, -30), lf || addDays(R.from, -1)); if (!cs.length) continue;
-        const hi = Math.max(...cs);
-        if (now >= hi * (1 + R.pct / 100)) due.push({ c, fp: !!R.tag, k, title: `${nm}: ${lab} ${R.pct}% above its earlier high`, hit: `${lab} ${AT(now)}, ${((now / hi - 1) * 100).toFixed(1)}% above its earlier high of ${fmt(hi)}.` });
+      for (const A of (R.alts || [{ idx: R.idx, pct: R.pct }])) {           // first index (or backup) that meets it
+        const now = L[A.idx]; if (!ok(now)) continue;
+        const lab = LABEL[A.idx], pct = A.pct != null ? A.pct : R.pct, n0 = due.length;
+        if (R.type === 'newHigh') {
+          const cs = closes(A.idx, R.from); const hi = cs.length ? Math.max(...cs) : null;
+          if (hi && now > hi) due.push({ c, fp: !!R.tag, k, title: `${nm}: ${lab} at a new high`, hit: `${lab} ${AT(now)}, above every close since ${dmy(R.from)} (best ${fmt(hi)}).` });
+        } else if (R.type === 'fall') {
+          if (R.close && !closedForDay) break;
+          const since = (R.repeat && lf) || R.from, cs = closes(A.idx, since); cs.push(now);
+          const hi = Math.max(...cs);
+          if (now <= hi * (1 - pct / 100)) due.push({ c, fp: !!R.tag, k, title: `${nm}: ${lab} down ${pct}% from its high`, hit: `${lab} ${AT(now)}, ${((1 - now / hi) * 100).toFixed(1)}% below its high of ${fmt(hi)} since ${dmy(since)}.` });
+        } else if (R.type === 'rise') {
+          const since = lf || R.from, cs = closes(A.idx, since); if (!cs.length) continue;
+          const lo = Math.min(...cs);
+          if (now >= lo * (1 + pct / 100)) due.push({ c, fp: !!R.tag, k, title: `${nm}: ${lab} up ${pct}% from its low`, hit: `${lab} ${AT(now)}, up ${((now / lo - 1) * 100).toFixed(1)}% from its low of ${fmt(lo)} since ${dmy(since)}.` });
+        } else if (R.type === 'aboveHigh') {
+          const cs = closes(A.idx, addDays(R.from, -30), lf || addDays(R.from, -1)); if (!cs.length) continue;
+          const hi = Math.max(...cs);
+          if (now >= hi * (1 + pct / 100)) due.push({ c, fp: !!R.tag, k, title: `${nm}: ${lab} ${pct}% above its earlier high`, hit: `${lab} ${AT(now)}, ${((now / hi - 1) * 100).toFixed(1)}% above its earlier high of ${fmt(hi)}.` });
+        }
+        if (due.length > n0) break;
       }
     }
   }
