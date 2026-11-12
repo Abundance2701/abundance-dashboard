@@ -18,6 +18,10 @@ import json, os, sys, time, datetime as dt, urllib.request, http.cookiejar
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, 'data', 'tri_monthly.json')
 STATUS = os.path.join(ROOT, 'data', 'tri_status.json')
+DAILY = os.path.join(ROOT, 'data', 'tri_daily.json')
+# Category benchmarks also stored DAILY, so trailing returns can run to the latest date (not just month-end)
+DAILY_SET = ['NIFTY 50', 'NIFTY 100', 'NIFTY 500', 'NIFTY LARGEMIDCAP 250', 'NIFTY MIDCAP 150',
+             'NIFTY SMALLCAP 250', 'NIFTY500 MULTICAP 50:25:25']
 BASE = 'https://www.niftyindices.com'
 URL = BASE + '/Backpage/getTotalReturnIndexString'
 START = '01-Jan-2005'
@@ -101,12 +105,23 @@ def main():
         'indices': dict(old.get('indices', {})),
     }
     status = {'run': dt.datetime.utcnow().isoformat(timespec='seconds') + 'Z', 'ok': 0, 'failed': 0, 'detail': {}}
+    try:
+        daily = json.load(open(DAILY))
+    except Exception:
+        daily = {'indices': {}}
+    daily.update({'source': data['source'], 'fetched': today.isoformat(),
+                  'format': 'per index: base date + day gaps (t, delta-encoded) + TRI values (v)'})
     op = opener()
     for name, group in INDICES.items():
         try:
             rows, echo = fetch(op, name, end)
             data['indices'][name] = {'label': echo, 'group': group, 'first_day': rows[0][0].isoformat(),
                                      'last_day': rows[-1][0].isoformat(), 'm': month_end(rows)}
+            if name in DAILY_SET:
+                base = rows[0][0]; prev = base; t = []
+                for d, _ in rows:
+                    t.append((d - prev).days); prev = d
+                daily['indices'][name] = {'base': base.isoformat(), 't': t, 'v': [round(v, 2) for _, v in rows]}
             status['ok'] += 1
             status['detail'][name] = 'ok %d days %s..%s' % (len(rows), rows[0][0], rows[-1][0])
         except Exception as e:
@@ -115,6 +130,7 @@ def main():
         time.sleep(1.0)
     if status['ok']:
         json.dump(data, open(OUT, 'w'), separators=(',', ':'))
+        json.dump(daily, open(DAILY, 'w'), separators=(',', ':'))
     json.dump(status, open(STATUS, 'w'), indent=1)
     print(json.dumps(status, indent=1))
 
