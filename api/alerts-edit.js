@@ -54,9 +54,10 @@ function status(cid, R, keys, L, H, T) {
     const n = Math.max(...R.alts.map(a => a.levels.length));
     for (let i = 0; i < n; i++) {
       const s = sent.find(x => x.k === `-p${i + 1}`);
-      if (s) out.push(`Part ${i + 1}: alerted ${dmy(s.d)}`);
+      const pa = R.amts && R.amts[i] ? ` · ₹${Number(R.amts[i]).toLocaleString('en-IN')}` : '';
+      if (s) out.push(`Part ${i + 1}${pa}: alerted ${dmy(s.d)}`);
       else { const a = R.alts.filter(a => a.levels[i]).map(a => ({ a, gap: now(a.idx) ? a.levels[i] / now(a.idx) : 9 })).sort((x, y) => x.gap - y.gap)[0];
-        out.push(`Part ${i + 1}: waiting for ${lab(a.a.idx)} at ${fmt(a.a.levels[i])}${away(a.a.idx, a.a.levels[i])}`); }
+        out.push(`Part ${i + 1}${pa}: waiting for ${lab(a.a.idx)} at ${fmt(a.a.levels[i])}${away(a.a.idx, a.a.levels[i])}`); }
     }
   } else if (R.type === 'move') {
     const s = sent[0]; if (s) out.push(`Alerted ${dmy(s.d)}`);
@@ -79,7 +80,7 @@ function status(cid, R, keys, L, H, T) {
       let st = hit ? `alerted ${dmy(hit.d)}` : end ? `ended without a trigger, reminder sent ${dmy(end.d)}` : T < p.from ? 'not started' : T > p.to ? 'ended' : 'watching';
       if (!hit && T >= p.from && T <= p.to) { const best = ['nifty 50', 'midcap 150', 'smallcap 250'].map(k => { const cs = R.trig === 'new' ? closes(k, p.from) : closes(k, D.addDays(T, -364)); if (!cs.length || !now(k)) return null; const hi = Math.max(...cs); return { k, hi, gap: hi / now(k) }; }).filter(Boolean).sort((a, b) => a.gap - b.gap)[0];
         if (best) st += `: needs ${lab(best.k)} above ${fmt(best.hi)}${away(best.k, best.hi)}`; else if (R.trig === 'new') st += ' (from the day after it starts)'; }
-      out.push(`Part ${p.no} of ${p.of} (${dmy(p.from)}–${dmy(p.to)}): ${st}`); });
+      out.push(`Part ${p.no} of ${p.of}${p.amt ? ' · ₹' + Number(p.amt).toLocaleString('en-IN') : ''} (${dmy(p.from)}–${dmy(p.to)}): ${st}`); });
     if (R.by) { const bs = sent.filter(x => x.k.startsWith(`-by${hash(R.by)}`)); out.push(`In debt by ${dmy(R.by)}: ${bs.length ? 'reminders sent ' + bs.map(x => dmy(x.d)).join(', ') : 'reminders 7 days before and on the day'}`); }
   } else if (R.type === 'goal') sent.forEach(s => out.push(`Alerted ${dmy(s.d)}`));
   return { lines: out, sent: sent.map(s => s.d) };

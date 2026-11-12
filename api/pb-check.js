@@ -77,14 +77,15 @@ function parseRule(text) {
   for (const raw of String(text || '').split(/\r?\n/)) {
     let line = raw.trim().replace(/\s+/g, ' '); if (!line) continue;
     /* optional amount at the end of a line: "… · ₹1,50,000" (shown in the alert title; not part of the alert's memory key) */
-    let lineAmt = null; const am = !/^goal alert:/i.test(line) && line.match(/\s*·\s*(?:₹|rs\.?)\s*([\d,]+(?:\.\d+)?)\s*$/i);
-    if (am) { lineAmt = +am[1].replace(/,/g, ''); line = line.slice(0, am.index).trim(); }
+    /* one amount, or one per part for level lines: "… · ₹1,50,000 / ₹2,00,000"; a goal's Part line can end "· ₹5,57,000" */
+    let lineAmt = null, lineAmts = null; const am = !/^goal alert:/i.test(line) && line.match(/\s*·\s*((?:(?:₹|rs\.?)\s*[\d,]+(?:\.\d+)?\s*\/?\s*)+)$/i);
+    if (am) { lineAmts = [...am[1].matchAll(/(?:₹|rs\.?)\s*([\d,]+(?:\.\d+)?)/gi)].map(x => +x[1].replace(/,/g, '')); lineAmt = lineAmts.length === 1 ? lineAmts[0] : null; line = line.slice(0, am.index).trim(); }
     const n0 = out.length, la0 = lastAt;
     try {
     let gm;
     if ((gm = line.match(/^goal alert:\s*(.+)$/i))) { const [nm, ...rest] = gm[1].split('·').map(x => x.trim()); G = { type: 'gblock', name: nm || 'Goal', amt: rest.join(' · '), parts: [], by: null, trig: '52w', src: line }; out.push(G); lastAt = null; continue; }
     if ((gm = line.match(/^part\s+(\d+)\s+of\s+(\d+)\s*:\s*(\d{1,2}\/\d{1,2}\/\d{4})\s+to\s+(\d{1,2}\/\d{1,2}\/\d{4})$/i))) {
-      const a = iso(gm[3]), b = iso(gm[4]); if (!G || !a || !b || b < a) { bad.push(line); continue; } G.parts.push({ no: +gm[1], of: +gm[2], from: a, to: b }); G.src += '\n' + line; continue; }
+      const a = iso(gm[3]), b = iso(gm[4]); if (!G || !a || !b || b < a) { bad.push(line); continue; } G.parts.push({ no: +gm[1], of: +gm[2], from: a, to: b, amt: lineAmt || null }); G.src += '\n' + line; lineAmt = lineAmts = null; continue; }
     if ((gm = line.match(/^in debt by\s*:\s*(\d{1,2}\/\d{1,2}\/\d{4})$/i))) { const d = iso(gm[1]); if (!G || !d) { bad.push(line); continue; } G.by = d; G.src += '\n' + line; continue; }
     if ((gm = line.match(/^watch for\s*:\s*(.+)$/i))) { if (!G) { bad.push(line); continue; } G.trig = /new high/i.test(gm[1]) && !/52/.test(gm[1]) ? 'new' : '52w'; G.src += '\n' + line; continue; }
     if (/^how\s*:/i.test(line)) { if (!G) bad.push(line); continue; }
@@ -129,7 +130,7 @@ function parseRule(text) {
     if ((m = l.match(/^move to debt from (\d{1,2}\/\d{1,2}\/\d{4}) by (\d{1,2}\/\d{1,2}\/\d{4})$/))) { const f = iso(m[1]), b = iso(m[2]); if (!f || !b) { bad.push(line); continue; } out.push({ type: 'goal', start: f, by: b, src: line, tag }); continue; }
     if ((m = l.match(/^deadline (\d{1,2}\/\d{1,2}\/\d{4})$/))) { const d = iso(m[1]); out.push({ type: 'remind', dates: [addDays(d, -7), d], deadline: d, src: line, tag }); continue; }
     bad.push(line);
-    } finally { if (lineAmt) { const t = out.length > n0 ? out[out.length - 1] : la0; if (t && t.amt == null && t.type !== 'gblock') t.amt = lineAmt; } }
+    } finally { if (lineAmt || lineAmts) { const t = out.length > n0 ? out[out.length - 1] : la0; if (t && t.type !== 'gblock') { if (lineAmts && lineAmts.length > 1) { if (!t.amts) t.amts = lineAmts; } else if (t.amt == null) t.amt = lineAmt; } } }
   }
   out.forEach(x => { x.id = hash(x.src); });
   return { lines: out, bad };
@@ -271,7 +272,7 @@ module.exports = async (req, res) => {
         for (let i = 0; i < n; i++) {
           const k = `${base}-p${i + 1}`; if (last(k)) continue;
           const a = R.alts.find(a => a.levels[i] && ok(L[a.idx]) && L[a.idx] >= a.levels[i]);
-          if (a) due.push({ c, fp: !!R.tag, k, title: `${nm}: ${LABEL[a.idx]} at ${fmt(a.levels[i])}, book part ${i + 1} of ${n}`, hit: `${LABEL[a.idx]} ${AT(L[a.idx])}, at or above the level of ${fmt(a.levels[i])}.` });
+          if (a) due.push({ c, fp: !!R.tag, k, title: `${nm}: ${LABEL[a.idx]} at ${fmt(a.levels[i])}, book part ${i + 1} of ${n}${R.amts && R.amts[i] ? amtLabel(R.amts[i]) : ''}`, hit: `${LABEL[a.idx]} ${AT(L[a.idx])}, at or above the level of ${fmt(a.levels[i])}.` });
         }
         continue;
       }
@@ -290,7 +291,7 @@ module.exports = async (req, res) => {
         const amtS = amtLabel(R.amt);
         const who = `${name} · ${R.name}${amtS}`, gk = `${c.id}/g${hash(R.name)}`;
         R.parts.forEach((P, i) => {
-          const pk = `${gk}-${hash(P.from + P.to)}`, kw = `${pk}-w52`, ke = `${pk}-end`, of = `part ${P.no} of ${P.of}`, isLast = !!R.by && P.to >= addDays(R.by, -7); let hitNow = false;   /* a part ending in the last 7 days: the In debt by alerts cover it */
+          const pk = `${gk}-${hash(P.from + P.to)}`, kw = `${pk}-w52`, ke = `${pk}-end`, of = `part ${P.no} of ${P.of}${P.amt ? amtLabel(P.amt) : ''}`, isLast = !!R.by && P.to >= addDays(R.by, -7); let hitNow = false;   /* a part ending in the last 7 days: the In debt by alerts cover it */
           const nh = R.trig === 'new', what = nh ? `new high since ${dmy(P.from)}` : '52-week high';
           if (marketNow && !last(kw) && T >= P.from && T <= P.to) for (const ix of GI) {
             const now = L[ix], cs = nh ? closes(ix, P.from) : closes(ix, addDays(T, -364)); if (!ok(now) || cs.length < (nh ? 1 : 150)) continue; const hi = Math.max(...cs);
