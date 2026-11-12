@@ -49,10 +49,10 @@ const N = require('./_nsemcp');
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
 const TO = 'service@abundanceindia.com';
 const FIELD = 'Goal_Alerts';   /* Contacts → "Goal Alerts" (large text, 32,000 characters): every alert rule, profit booking and goals */
-const IDX = { 'nifty 50': ['NIFTY 50', '^NSEI'], 'nifty 500': ['NIFTY 500', '^CRSLDX'], 'midcap 150': ['NIFTY MIDCAP 150', 'NIFTYMIDCAP150.NS'], 'smallcap 250': ['NIFTY SMALLCAP 250', 'NIFTYSMLCAP250.NS'] };
+const IDX = { 'nifty 50': ['NIFTY 50', '^NSEI'], 'nifty 500': ['NIFTY 500', '^CRSLDX'], 'midcap 150': ['NIFTY MIDCAP 150', 'NIFTYMIDCAP150.NS'], 'smallcap 250': ['NIFTY SMALLCAP 250', 'NIFTYSMLCAP250.NS'], 'multicap 50:25:25': ['NIFTY500 MULTICAP 50:25:25', null] };   /* Multicap: no Yahoo symbol, NSE only */
 /* NSE's official MCP names: [live name, end-of-day history name] */
-const NSEMCP = { 'nifty 50': ['NIFTY 50', 'Nifty 50'], 'nifty 500': ['NIFTY 500', 'Nifty 500'], 'midcap 150': ['NIFTY MIDCAP 150', 'Nifty Midcap 150'], 'smallcap 250': ['NIFTY SMLCAP 250', 'Nifty Smallcap 250'] };
-const LABEL = { 'nifty 50': 'Nifty 50', 'nifty 500': 'Nifty 500', 'midcap 150': 'Midcap 150', 'smallcap 250': 'Smallcap 250' };
+const NSEMCP = { 'nifty 50': ['NIFTY 50', 'Nifty 50'], 'nifty 500': ['NIFTY 500', 'Nifty 500'], 'midcap 150': ['NIFTY MIDCAP 150', 'Nifty Midcap 150'], 'smallcap 250': ['NIFTY SMLCAP 250', 'Nifty Smallcap 250'], 'multicap 50:25:25': ['NIFTY500 MULTICAP', 'Nifty500 Multicap 50:25:25'] };
+const LABEL = { 'nifty 50': 'Nifty 50', 'nifty 500': 'Nifty 500', 'midcap 150': 'Midcap 150', 'smallcap 250': 'Smallcap 250', 'multicap 50:25:25': 'Multicap 50:25:25' };
 const istNow = () => new Date(Date.now() + 5.5 * 3600e3);
 const today = () => istNow().toISOString().slice(0, 10);
 const addDays = (d, n) => new Date(Date.parse(d + 'T00:00:00Z') + n * 864e5).toISOString().slice(0, 10);
@@ -70,7 +70,7 @@ const amtLabel = a => { const v = +String(a == null ? '' : a).replace(/[^\d.]/g,
 const hash = s => crypto.createHash('sha1').update(s.toLowerCase().replace(/\s+/g, ' ').trim()).digest('hex').slice(0, 8);
 
 /* ---------- reading a rule ---------- */
-const IDXRE = '(nifty 50|nifty 500|midcap 150|smallcap 250)';
+const IDXRE = '(nifty 50|nifty 500|midcap 150|smallcap 250|multicap 50:25:25)';   /* Multicap 50:25:25 = Nifty500 Multicap 50:25:25 (50% large, 25% mid, 25% small) */
 function parseRule(text) {
   const out = [], bad = [];
   let lastAt = null, G = null;   /* G = the goal block being read */
@@ -91,7 +91,7 @@ function parseRule(text) {
     if (/^how\s*:/i.test(line)) { if (!G) bad.push(line); continue; }
     G = null;
     const tm = line.match(/^\[fp:?\s*([^\]]*)\]\s*/i), tag = tm ? (tm[1].trim() || 'Goal') : null;   // [FP …] = goal alert from the planning tool
-    const l = line.slice(tm ? tm[0].length : 0).toLowerCase().replace(/\bnifty(?! ?50\b| ?500\b)/g, 'nifty 50').replace(/\b(up|down) by\b/g, '$1').replace(/\bmidcap(?! 150)/g, 'midcap 150').replace(/\bsmallcap(?! 250)/g, 'smallcap 250');
+    const l = line.slice(tm ? tm[0].length : 0).toLowerCase().replace(/\bnifty(?! ?50\b| ?500\b)/g, 'nifty 50').replace(/\b(up|down) by\b/g, '$1').replace(/\bmidcap(?! 150)/g, 'midcap 150').replace(/\bsmallcap(?! 250)/g, 'smallcap 250').replace(/\b(?:nifty ?500 )?multicap(?: 50:25:25)?\b/g, 'multicap 50:25:25');
     const dates = k => { const m = l.match(new RegExp(k + ' (\\d{1,2}/\\d{1,2}/\\d{4})')); return m ? iso(m[1]) : null; };
     const from = dates('from'), until = dates('until');
     let m;
@@ -206,7 +206,7 @@ async function closesFor(k, T, src) {
   try { nse = await mcpHistory(k); } catch (e) { err = e.message; }
   const lastWeekday = (() => { const d = new Date(T + 'T00:00:00Z'); do d.setUTCDate(d.getUTCDate() - 1); while ([0, 6].includes(d.getUTCDay())); return d.toISOString().slice(0, 10); })();
   if (nse && nse[nse.length - 1][0] >= lastWeekday) { src[k] = 'NSE'; return nse; }
-  let y = null; try { y = await history(IDX[k][1]); } catch (e) { if (!nse) throw new Error('nse: ' + err + '; ' + e.message); }
+  let y = null; try { if (!IDX[k][1]) throw new Error('no Yahoo symbol'); y = await history(IDX[k][1]); } catch (e) { if (!nse) throw new Error('nse: ' + err + '; ' + e.message); }
   if (!nse) { src[k] = 'Yahoo (NSE failed: ' + err + ')'; return y; }
   const last = nse[nse.length - 1][0], add = [];
   let prev = nse[nse.length - 1][1];

@@ -141,7 +141,7 @@ const API = (location.protocol === 'file:' ? 'https://abundance-dashboard-beta.v
 const KEY = 'pg_mailkey', getKey = () => { try { return localStorage.getItem(KEY) || ''; } catch (e) { return ''; } }, setKey = v => { try { v ? localStorage.setItem(KEY, v) : localStorage.removeItem(KEY); } catch (e) {} };
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const IDX = [['nifty 50', 'Nifty 50'], ['nifty 500', 'Nifty 500'], ['midcap 150', 'Midcap 150'], ['smallcap 250', 'Smallcap 250']];
+const IDX = [['nifty 50', 'Nifty 50'], ['nifty 500', 'Nifty 500'], ['multicap 50:25:25', 'Multicap 50:25:25'], ['midcap 150', 'Midcap 150'], ['smallcap 250', 'Smallcap 250']];
 const LAB = Object.fromEntries(IDX);
 const dmy = iso => iso ? iso.split('-').reverse().join('/') : '';
 const inr = v => Number(v).toLocaleString('en-IN', { maximumFractionDigits: 2 });

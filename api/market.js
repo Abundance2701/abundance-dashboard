@@ -8,6 +8,8 @@ const IDX = [
   // name, Yahoo symbol, NSE index name
   ['Nifty 50', '^NSEI', 'NIFTY 50'],
   ['Nifty 500', '^CRSLDX', 'NIFTY 500'],
+  // no Yahoo symbol: history and (if the NSE website fails) the live level come from NSE's official MCP
+  ['Multicap 50:25:25', null, 'NIFTY500 MULTICAP 50:25:25', { eod: 'Nifty500 Multicap 50:25:25', live: 'NIFTY500 MULTICAP' }],
   ['Sensex', '^BSESN', null],
   ['Bank Nifty', '^NSEBANK', 'NIFTY BANK'],
   ['Nifty Midcap 150', 'NIFTYMIDCAP150.NS', 'NIFTY MIDCAP 150'],
@@ -70,6 +72,15 @@ function perf(rows, level) {
   return { '1W': ret(at(7)), '1M': ret(at(30)), '3M': ret(at(91)), '6M': ret(at(182)), YTD: ret(ytdBase), '1Y': ret(at(365)) };
 }
 
+const N = require('./_nsemcp');
+/* daily closes from NSE's official end-of-day data (about 2 years), in the same shape as yahoo() */
+async function nseEod(name) {
+  const rows = []; let end = 'today';
+  for (let i = 0; i < 2; i++) { const j = await N.call('eod', 'get_index_history', { indexName: name, months: 12, endDate: end }); (j.data || []).forEach(r => { if (r.date && +r.close > 0) rows.push([r.date, +r.close]); }); if (!j.next_end_date) break; end = j.next_end_date; }
+  const seen = {}; const out = rows.filter(r => !seen[r[0]] && (seen[r[0]] = 1)).sort((a, b) => a[0] < b[0] ? -1 : 1);
+  if (out.length < 30) throw new Error(name + ': only ' + out.length + ' days');
+  return { rows: out, time: null };
+}
 async function nse() {
   const h = await fetch('https://www.nseindia.com/', { headers: { 'User-Agent': UA, Accept: 'text/html', 'Accept-Language': 'en-US,en;q=0.9' }, signal: AbortSignal.timeout(6000) });
   const set = typeof h.headers.getSetCookie === 'function' ? h.headers.getSetCookie() : [h.headers.get('set-cookie') || ''];
@@ -88,13 +99,17 @@ const nseDate = t => { const m = String(t || '').match(/(\d{1,2})-([A-Za-z]{3})-
 
 module.exports = async (req, res) => {
   const notes = [];
-  const [ys, ns, mt] = await Promise.all([Promise.allSettled(IDX.map(([, s]) => yahoo(s))), nse().catch(e => ({ err: [String(e.message || e)] })), metals(notes).catch(e => (notes.push('metals: ' + e.message), []))]);
+  const [ys, ns, mt] = await Promise.all([Promise.allSettled(IDX.map(([, s, , x]) => s ? yahoo(s) : nseEod(x.eod))), nse().catch(e => ({ err: [String(e.message || e)] })), metals(notes).catch(e => (notes.push('metals: ' + e.message), []))]);
   (ns.err || []).forEach(e => notes.push(e));
   const nmap = {};
   ((ns.all && ns.all.data) || []).forEach(x => { nmap[String(x.index || x.indexSymbol).toUpperCase()] = x; });
   const indices = [];
+  /* NSE-only indices missing from the website feed: live level from NSE's official MCP */
+  const needMcp = IDX.filter(([, , nn, x]) => x && x.live && !nmap[nn]);
+  if (needMcp.length) { try { const j = await N.call('live', 'cm_get_live_indices', { group: '', nameFilter: 'MULTICAP' }); Object.values(j.indices || {}).forEach(g => (g || []).forEach(x => { const e = needMcp.find(([, , , xx]) => xx.live === String(x.indexName).toUpperCase()); if (e) nmap[e[2]] = { last: x.last, previousClose: x.previousClose }; })); } catch (e) { notes.push('nse-mcp live: ' + e.message); } }
   IDX.forEach(([name, sym, nseName], i) => {
     const y = ys[i].status === 'fulfilled' ? ys[i].value : null;
+    if (!y && ys[i].status === 'rejected' && !sym) notes.push(name + ' history: ' + (ys[i].reason && ys[i].reason.message));
     if (!y && !nmap[nseName]) { notes.push(name + ': no data'); return; }
     const n = nseName && nmap[nseName];
     let rows = y ? y.rows.slice() : [];
@@ -102,11 +117,11 @@ module.exports = async (req, res) => {
     if (n && isFinite(+n.last)) {
       level = +n.last; prev = +n.previousClose; src = 'NSE';
       // put NSE's live level in place of Yahoo's latest bar so returns use the same number
-      const nd = nseDate(ns.all.timestamp) || new Date(Date.now() + 5.5 * 3600e3).toISOString().slice(0, 10);
+      const nd = nseDate(ns.all && ns.all.timestamp) || new Date(Date.now() + 5.5 * 3600e3).toISOString().slice(0, 10);
       if (rows.length) { if (rows[rows.length - 1][0] === nd) rows[rows.length - 1][1] = level; else if (rows[rows.length - 1][0] < nd) rows.push([nd, level]); }
     } else { level = rows[rows.length - 1][1]; prev = rows.length > 1 ? rows[rows.length - 2][1] : null; src = 'Yahoo'; }
     const chg = prev ? level - prev : null;
-    indices.push({ name, asOf: src === 'NSE' ? (ns.all.timestamp || null) : (y && y.time ? new Date(y.time).toISOString() : null), level: r2(level), chg: r2(chg), chgPct: prev ? r2(chg / prev * 100) : null, date: rows.length ? rows[rows.length - 1][0] : null,
+    indices.push({ name, asOf: src === 'NSE' ? ((ns.all && ns.all.timestamp) || null) : (y && y.time ? new Date(y.time).toISOString() : null), level: r2(level), chg: r2(chg), chgPct: prev ? r2(chg / prev * 100) : null, date: rows.length ? rows[rows.length - 1][0] : null,
       perf: rows.length > 30 ? perf(rows, level) : {}, spark: rows.slice(-22).map(r => r2(r[1])), src, _rows: rows });
   });
   indices.push(...mt);
