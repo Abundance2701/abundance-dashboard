@@ -1,12 +1,131 @@
 {
- "updated": "2026-11-12T10:21:28Z",
+ "updated": "2026-11-12T18:24:08Z",
  "items": [
+  {
+   "src": "SEBI",
+   "title": "Niveshak Shivir to be held on November 17, 2026 at New Delhi",
+   "url": "https://www.sebi.gov.in/media-and-notifications/press-releases/nov-2026/niveshak-shivir-to-be-held-on-november-17-2026-at-new-delhi_105731.html",
+   "date": "2026-11-12",
+   "important": false
+  },
+  {
+   "src": "RBI",
+   "title": "Final redemption under Sovereign Gold Bond (SGB) Scheme - Redemption Price for final redemption of SGB 2018-19 Series-III due on November 13, 2026",
+   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63964",
+   "date": "2026-11-12",
+   "important": true
+  },
   {
    "src": "RBI",
    "title": "RBI releases data on ECB / FCCB / RDB for September 2026",
    "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63961",
    "date": "2026-11-12",
    "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of further issues of securities",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77413.pdf",
+   "date": "2026-11-12",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Face Value Split and Change in ISIN - BN Agrochem Limited (BNAGROCHEM)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77412.pdf",
+   "date": "2026-11-12",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Launch of H-SIF Hybrid Long-Short Fund (SIF) on NSE MF Invest Platform",
+   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77411.pdf",
+   "date": "2026-11-12",
+   "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Algo Provider Empanelment for Providing Algorithmic Trading Solutions",
+   "url": "https://nsearchives.nseindia.com/content/circulars/INVG77410.pdf",
+   "date": "2026-11-12",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Launch of DSP Fixed Maturity Plan (FMP) - Series 280 - 90 Days on NSE MF Invest Platform",
+   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77409.pdf",
+   "date": "2026-11-12",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of privately placed securities on the debt market segment of the Exchange",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77408.pdf",
+   "date": "2026-11-12",
+   "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of privately placed securities on capital market segment",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77407.pdf",
+   "date": "2026-11-12",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Suspension of partly paid-up equity shares of Party Cruisers Limited",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77406.pdf",
+   "date": "2026-11-12",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Applicability of Additional Surveillance Measure under IBC",
+   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77405.zip",
+   "date": "2026-11-12",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Applicability of Short-Term Additional Surveillance Measure (ST-ASM)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77404.zip",
+   "date": "2026-11-12",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Applicability of Additional Surveillance Measure (ASM)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77403.zip",
+   "date": "2026-11-12",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Trading of Rights Entitlements pursuant to Rights Issue of Indian Emulsifiers Limited",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77402.pdf",
+   "date": "2026-11-12",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Applicability of Enhanced Surveillance Measure (ESM)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77401.zip",
+   "date": "2026-11-12",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "List of Securities Moving to Stage II of Graded Surveillance Measure (GSM)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77400.pdf",
+   "date": "2026-11-12",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Suspension of trading in Non-Convertible Securities (Privately Placed)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77393.pdf",
+   "date": "2026-11-12",
+   "important": false
   },
   {
    "src": "SEBI",
@@ -28,111 +147,6 @@
    "url": "https://www.rbi.org.in/scripts/NotificationUser.aspx?Id=13752&Mode=0",
    "date": "2026-11-11",
    "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Commodity Derivatives Settlement Calendar (Compulsory Delivery) & GST details reporting calendar for December 2026",
-   "url": "https://nsearchives.nseindia.com/content/circulars/COM77399.zip",
-   "date": "2026-11-11",
-   "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "DIVIDEND: Adjustment of Futures and Options contracts in the security ONGC",
-   "url": "https://nsearchives.nseindia.com/content/circulars/FAOP77398.pdf",
-   "date": "2026-11-11",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of privately placed securities on capital market segment",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77397.pdf",
-   "date": "2026-11-11",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of privately placed securities on the debt market segment of the Exchange",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77396.pdf",
-   "date": "2026-11-11",
-   "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of further issues of securities",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77395.pdf",
-   "date": "2026-11-11",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Applicability of Short-Term Additional Surveillance Measure (ST-ASM)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77390.zip",
-   "date": "2026-11-11",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Applicability of Additional Surveillance Measure (ASM)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77389.zip",
-   "date": "2026-11-11",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "List of Securities Moving to Stage II of Graded Surveillance Measure (GSM)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77388.pdf",
-   "date": "2026-11-11",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "List of Securities Moving to Stage IV of Graded Surveillance Measure (GSM)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77387.pdf",
-   "date": "2026-11-11",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Applicability of Enhanced Surveillance Measure (ESM)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77386.zip",
-   "date": "2026-11-11",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Trading of Rights Entitlements pursuant to Rights Issue of Suvidhaa Infoserve Limited",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77385.pdf",
-   "date": "2026-11-11",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Availability of quant Silver ETF FOF on NSE MF Invest Platform",
-   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77383.pdf",
-   "date": "2026-11-11",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of Equity Shares of Essen Speciality Films Limited on Capital Market Segment (Main Board) pursuant to migration from SME Emerge platform",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77382.zip",
-   "date": "2026-11-11",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Availability of Axis Nifty EV & New Age Automotive Index Fund on NSE MF Invest Platform",
-   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77381.pdf",
-   "date": "2026-11-11",
-   "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "EGR - Multiple Settlements Scheduled on November 11, 2026",
-   "url": "https://nsearchives.nseindia.com/content/circulars/EGR77380.pdf",
-   "date": "2026-11-11",
-   "important": false
   },
   {
    "src": "SEBI",
@@ -257,19 +271,19 @@
  "counts": {
   "https://www.sebi.gov.in/sebirss.xml": [
    30,
-   9
+   10
   ],
   "https://rbi.org.in/pressreleases_rss.xml": [
    10,
-   2
+   3
   ],
   "https://rbi.org.in/notifications_rss.xml": [
    10,
    10
   ],
   "https://nsearchives.nseindia.com/content/RSS/Circulars.xml": [
-   19,
-   16
+   15,
+   15
   ]
  },
  "errors": []
