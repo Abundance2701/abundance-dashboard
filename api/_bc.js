@@ -31,13 +31,33 @@ async function bc(path, opts = {}) {
   const next = ((r.headers.get('link') || '').match(/<([^>]+)>;\s*rel="next"/) || [])[1] || null;
   return { data: r.status === 204 ? null : await r.json(), next };
 }
-async function all(path) {
+async function all(path, pages = 20) {
   const out = []; let url = path;
-  for (let i = 0; url && i < 20; i++) { const { data, next } = await bc(url); out.push(...(data || [])); url = next; }
+  for (let i = 0; url && i < pages; i++) { const { data, next } = await bc(url); out.push(...(data || [])); url = next; }
   return out;
 }
 /* every to-do in the alert list, open and completed */
-const alertTodos = async () => [...await all(`/buckets/${PROJECT}/todolists/${LIST}/todos.json`), ...await all(`/buckets/${PROJECT}/todolists/${LIST}/todos.json?completed=true`)];
+const alertTodos = async () => [...await all(`/buckets/${PROJECT}/todolists/${LIST}/todos.json`, 200), ...await all(`/buckets/${PROJECT}/todolists/${LIST}/todos.json?completed=true`, 200)];
+
+/* Alert memory: a document in Investments → Docs & Files listing every alert already sent ("pb-key: …" lines).
+   Kept apart from the to-dos so moving, archiving or deleting an alert to-do never makes it fire again.
+   Written only when something new is sent, so it doesn't fill the activity feed. */
+const MEMO_TITLE = 'Alert memory (automatic, please leave as is)';
+async function memoryDoc() {
+  const { data: p } = await bc(`/projects/${PROJECT}.json`);
+  const v = (p.dock || []).find(d => d.name === 'vault'); if (!v) throw new Error('Docs & Files not found');
+  const docs = await all(`/buckets/${PROJECT}/vaults/${v.id}/documents.json`, 50);
+  const d = docs.find(x => (x.title || '') === MEMO_TITLE);
+  if (!d) return { vault: v.id, id: null, content: '' };
+  const { data: full } = await bc(`/buckets/${PROJECT}/documents/${d.id}.json`);
+  return { vault: v.id, id: d.id, content: String(full.content || '') };
+}
+async function saveMemory(m, keyLines) {
+  const content = '<div>The dashboard uses this list to remember which goal and profit-booking alerts it has already sent, so none is sent twice. Please don\'t edit or delete it.</div><pre>' + keyLines.join('\n') + '</pre>';
+  if (m.id) return bc(`/buckets/${PROJECT}/documents/${m.id}.json`, { method: 'PUT', body: JSON.stringify({ title: MEMO_TITLE, content }) });
+  const r = await bc(`/buckets/${PROJECT}/vaults/${m.vault}/documents.json`, { method: 'POST', body: JSON.stringify({ title: MEMO_TITLE, content, status: 'active', subscriptions: [] }) });
+  m.id = r.data && r.data.id; return r;
+}
 const createTodo = (content, description, due_on) => bc(`/buckets/${PROJECT}/todolists/${LIST}/todos.json`, {
   method: 'POST', body: JSON.stringify({ content, description, due_on, assignee_ids: [HARITHA], notify: true }) }).then(x => x.data);
 /* the rules live in a message on the Notes board titled "Profit booking alert rules", inside a code block */
@@ -51,4 +71,4 @@ async function rules() {
   const s = txt.indexOf('['), e = txt.lastIndexOf(']');
   return JSON.parse(txt.slice(s, e + 1));
 }
-module.exports = { env, UA, redirectUri, token, bc, alertTodos, createTodo, rules, ACCOUNT, PROJECT, LIST };
+module.exports = { env, UA, redirectUri, token, bc, alertTodos, createTodo, rules, memoryDoc, saveMemory, ACCOUNT, PROJECT, LIST };

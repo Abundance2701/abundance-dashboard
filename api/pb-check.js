@@ -1,6 +1,7 @@
 /* GET /api/pb-check  → checks every client's profit-booking rule against the live market and, when a
    line of the rule is newly met, creates a Basecamp to-do for Haritha in "Profit booking clients" and
-   emails service@abundanceindia.com. Called every 15 minutes in market hours by .github/workflows/pb-check.yml.
+   emails service@abundanceindia.com. Called every 15 minutes 08:00–16:45 IST Mon–Fri by cron-job.org ("Abundance alerts", time zone Asia/Kolkata),
+   with a twice-a-day backup run from .github/workflows/pb-check.yml. Problems are emailed (api/pb-check finish()).
 
    Rules live in Zoho CRM → Contacts, two fields: "Goal Alerts" (api Goal_Alerts, one trigger per line; replaced "PB Rule" on 06/11/2026) and "PB Plan" (note).
    Line formats (dates DD/MM/YYYY; index = Nifty 50 | Nifty 500 | Midcap 150 | Smallcap 250):
@@ -203,12 +204,16 @@ module.exports = async (req, res) => {
   const dry = !!(req.query && req.query.dry);
   const T = today(), ist = istNow(), mins = ist.getUTCHours() * 60 + ist.getUTCMinutes(), wd = ist.getUTCDay();
   const closedForDay = wd === 0 || wd === 6 || mins >= 15 * 60 + 31;
-  const notes = []; let fired = 0, sent = 0, badLines = 0;
-  let contacts, todos;
+  const notes = [], problems = []; let fired = 0, sent = 0, badLines = 0;
+  const marketHours = wd >= 1 && wd <= 5 && mins >= 9 * 60 + 20 && mins <= 15 * 60 + 30;
+  let contacts, todos, memo = null;
   try { [contacts, todos] = await Promise.all([zohoContacts(), B.alertTodos()]); }
-  catch (e) { return Z.reply(res, 200, { ok: false, error: e.message }); }
-  const keys = {};                                       // "<contact>/<line>" → [dates alerted]
-  todos.forEach(t => { for (const m of String(t.description || '').matchAll(/pb-key:\s*([\w\-]+\/[\w\-]+)\/(\d{4}-\d{2}-\d{2})/g)) (keys[m[1]] = keys[m[1]] || []).push(m[2]); });
+  catch (e) { problems.push({ type: 'read', text: 'Could not read the alert rules from Zoho CRM or the alert to-dos from Basecamp: ' + e.message + '. No alerts can be checked until this is fixed.' }); return finish(res, { dry, problems, notes, keys: {}, memo, T, mins }); }
+  try { memo = await B.memoryDoc(); } catch (e) { notes.push('memory: ' + e.message); problems.push({ type: 'memory', text: 'Could not read the "Alert memory" document in Basecamp (Investments → Docs & Files): ' + e.message + '. Alerts still work from the to-do list, but a to-do that was moved or deleted could alert again.' }); }
+  const keys = {};                                       // "<contact>/<line>" → [dates alerted]; from the alert to-dos AND the memory document
+  const addKeys = txt => { for (const m of String(txt || '').matchAll(/pb-key:\s*([\w\-]+\/[\w\-]+)\/(\d{4}-\d{2}-\d{2})/g)) { const a = (keys[m[1]] = keys[m[1]] || []); if (!a.includes(m[2])) a.push(m[2]); } };
+  todos.forEach(t => addKeys(t.description)); if (memo) addKeys(memo.content);
+  const known = new Set(Object.entries(keys).flatMap(([k, ds]) => ds.map(d => k + '/' + d)));
   const last = k => (keys[k] || []).sort().slice(-1)[0] || null;
 
   let L = {}, liveSrc = 'NSE MCP';
@@ -216,6 +221,9 @@ module.exports = async (req, res) => {
   const H = {};
   const histSrc = {};
   await Promise.all(Object.keys(IDX).map(async k => { try { H[k] = (await closesFor(k, T, histSrc)).filter(r => r[0] < T); } catch (e) { notes.push(k + ' history: ' + e.message); } }));
+  const missLive = Object.keys(IDX).filter(k => !(L[k] > 0)), missHist = Object.keys(IDX).filter(k => !(H[k] && H[k].length > 150));
+  if (missLive.length && marketHours) problems.push({ type: 'live', text: 'No live market level for ' + missLive.map(k => LABEL[k]).join(', ') + ' (' + notes.filter(n => /live/.test(n)).join('; ') + '). Alerts that depend on these indices are not being checked right now.' });
+  if (missHist.length) problems.push({ type: 'history', text: 'No closing-price history for ' + missHist.map(k => LABEL[k]).join(', ') + ' (' + notes.filter(n => /history/.test(n)).join('; ') + '). Alerts that need past closes for these indices are not being checked right now.' });
   const closes = (idx, a, b) => (H[idx] || []).filter(r => r[0] >= a && (!b || r[0] <= b)).map(r => r[1]);
   const ok = v => v != null && isFinite(v) && v > 0;
 
@@ -250,7 +258,7 @@ module.exports = async (req, res) => {
         continue;
       }
       if (R.type === 'gblock') {                         // goal block: per part a 52-week-high alert, else a reminder on its last day; then the deadline
-        const GI = ['nifty 50', 'midcap 150', 'smallcap 250'], win = d => T >= d && T <= addDays(d, 5);
+        const GI = ['nifty 50', 'midcap 150', 'smallcap 250'], win = d => T >= d && T <= addDays(d, 10);
         const amtS = (() => { const v = +String(R.amt).replace(/[^\d.]/g, ''); return !v ? '' : v >= 1e7 ? ` (₹${(v / 1e7).toFixed(2)} Cr)` : v >= 1e5 ? ` (₹${(v / 1e5).toFixed(2)} L)` : ` (₹${fmt(v)})`; })();
         const who = `${name} · ${R.name}${amtS}`, gk = `${c.id}/g${hash(R.name)}`;
         R.parts.forEach((P, i) => {
@@ -266,7 +274,7 @@ module.exports = async (req, res) => {
         continue;
       }
       if (R.type === 'goal') {                           // goal money: quarterly 52-week-high alerts, quarter-end fallback, deadline
-        const GI = ['nifty 50', 'midcap 150', 'smallcap 250'], win = d => T >= d && T <= addDays(d, 5);
+        const GI = ['nifty 50', 'midcap 150', 'smallcap 250'], win = d => T >= d && T <= addDays(d, 10);
         if (R.by <= R.start) { const k = `${base}-now`; if (!last(k) && win(R.start)) due.push({ c, fp: true, k, title: `${nm}: move to debt now`, hit: `The goal's deadline to be in debt (${dmy(R.by)}) has been reached.` }); continue; }
         const Q = quarters(R.start, R.by);
         Q.forEach(([qs, qe], i) => {
@@ -282,7 +290,7 @@ module.exports = async (req, res) => {
       }
       if (R.type === 'remind') {
         R.dates.forEach(d => {
-          const k = `${base}-${d}`; if (last(k) || T < d || T > addDays(d, 5)) return;
+          const k = `${base}-${d}`; if (last(k) || T < d || T > addDays(d, 10)) return;
           if (R.unless) { const fired = lines.some(o => o !== R && o.src.toLowerCase().includes(R.unless.toLowerCase()) && Object.keys(keys).some(x => x.startsWith(`${c.id}/${o.id}`))); if (fired) return; }
           const dl = R.deadline ? (d === R.deadline ? `Deadline today (${dmy(d)})` : `Deadline in 7 days (${dmy(R.deadline)})`) : `Reminder for ${dmy(d)}`;
           const qEnd = R.tag && R.unless && !R.deadline;   /* goal quarter-end line from the planning tool */
@@ -327,28 +335,66 @@ module.exports = async (req, res) => {
   if (req.query && req.query.test) {                 // one clearly marked test alert, no memory key
     due.length = 0; due.push({ c: { id: 'test', PB_Plan: 'This is a test of the profit-booking alerts. Please mark this to-do complete.' }, k: 'test/test', title: 'TEST: profit-booking alert check', hit: 'Test only. Nothing to do.' });
   }
+  const newKeys = [];
   for (const { c, k, title, hit, fp } of due) {
     fired++;
     if (dry) continue;
     const plan = c.PB_Plan ? esc(c.PB_Plan).replace(/\n/g, '<br>') : '';
     const body = `<div><strong>${fp ? 'Trigger reached, review moving this goal money to debt.' : 'Trigger reached, review for profit booking.'}</strong></div><div>${esc(hit)}</div>${plan ? `<div><br>Plan: ${plan}</div>` : ''}${fp ? '<div><br>Amount is from the plan date: check the current value, and include any SIP money built up for this goal.</div>' : ''}<div><br>Check exit load and short-term tax on units held under a year before redeeming.</div>${k === 'test/test' ? '' : `<div><br>pb-key: ${k}/${T}</div>`}`;
     let todo;
-    try { todo = await B.createTodo(title, body, T); } catch (e) { notes.push('basecamp: ' + e.message); continue; }   // no to-do → no email, so the memory stays consistent
-    try {
-      const ACC = Z.env('ZOHO_MAIL_ACCOUNT_ID'), FROM = Z.env('FROM_ADDRESS'), tok = await Z.accessToken();
-      const html = `<div style="font-family:Calibri,Arial,sans-serif;font-size:15px;color:#39293E">
+    try { todo = await B.createTodo(title, body, T); } catch (e) { notes.push('basecamp: ' + e.message); problems.push({ type: 'basecamp', text: `Could not create the Basecamp to-do for an alert that is due ("${title}"): ${e.message}. It will be tried again on the next run.` }); continue; }   // no to-do → no email; tried again next run
+    if (k !== 'test/test') newKeys.push(`${k}/${T}`);
+    const html = `<div style="font-family:Calibri,Arial,sans-serif;font-size:15px;color:#39293E">
         <p style="font-size:17px;color:#005826"><b>${esc(title)}</b></p><p><b>${fp ? 'Trigger reached, review moving this goal money to debt.' : 'Trigger reached, review for profit booking.'}</b><br>${esc(hit)}</p>
         ${plan ? `<p>Plan: ${plan}</p>` : ''}${fp ? '<p>Amount is from the plan date: check the current value, and include any SIP money built up for this goal.</p>' : ''}<p>Check exit load and short-term tax on units held under a year before redeeming.</p>
         <p><a href="${todo.app_url}">Open the Basecamp to-do</a> · <a href="https://abundance-dashboard-beta.vercel.app/Market_Pulse.html">Market Pulse</a></p>
         <p style="color:#6f6875;font-size:12px">Sent automatically by the Abundance dashboard from the Goal Alerts field in Zoho CRM. Internal reminder, not investment advice.</p></div>`;
-      const r = await fetch(`${Z.urls().mail}/api/accounts/${ACC}/messages`, { method: 'POST', headers: { Authorization: `Zoho-oauthtoken ${tok}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fromAddress: FROM, toAddress: TO, subject: (fp ? 'Goal alert · ' : 'Profit booking alert · ') + title, content: html, mailFormat: 'html', askReceipt: 'no' }) });
-      if (r.ok) sent++; else notes.push('mail ' + r.status);
-    } catch (e) { notes.push('mail: ' + e.message); }
+    try { await mail((fp ? 'Goal alert · ' : 'Profit booking alert · ') + title, html); sent++; }
+    catch (e) { notes.push('mail: ' + e.message); problems.push({ type: 'mail', text: `The alert "${title}" was added to Basecamp but the email could not be sent: ${e.message}.` }); }
   }
   res.setHeader('Cache-Control', 'no-store');
-  return Z.reply(res, 200, { ok: true, dry, clients: contacts.length, due: fired, unreadableLines: badLines, emailed: sent, live: L, sources: { live: liveSrc, history: histSrc }, notes });
+  return finish(res, { dry, problems, notes, keys, memo, known, newKeys, T, mins, out: { clients: contacts.length, due: fired, unreadableLines: badLines, emailed: sent, live: L, sources: { live: liveSrc, history: histSrc } } });
 };
 
+/* Send one email to the office inbox through Zoho Mail. Throws on failure. */
+async function mail(subject, html) {
+  const ACC = Z.env('ZOHO_MAIL_ACCOUNT_ID'), FROM = Z.env('FROM_ADDRESS'), tok = await Z.accessToken();
+  const r = await fetch(`${Z.urls().mail}/api/accounts/${ACC}/messages`, { method: 'POST', headers: { Authorization: `Zoho-oauthtoken ${tok}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ fromAddress: FROM, toAddress: TO, subject, content: html, mailFormat: 'html', askReceipt: 'no' }) });
+  if (!r.ok) throw new Error('Zoho Mail ' + r.status);
+}
+
+/* End of a run: save the alert memory, email any problem once a day (every 2 hours if memory can't be read),
+   and answer. The reply is HTTP 500 only when a problem could not be reported by email, so cron-job.org's
+   own failure email is the last line of defence; a problem that WAS emailed answers 200 so cron-job.org
+   doesn't switch the job off during a long outage. */
+async function finish(res, { dry, problems, notes, keys, memo, known, newKeys = [], T, mins, out = {} }) {
+  let unreported = 0;
+  const sysKeys = [];
+  if (problems.length && !dry) {
+    const types = [...new Set(problems.map(p => p.type))];
+    const todo = types.filter(t => !(keys[`sys/${t}`] || []).includes(T));
+    const ok = memo ? todo.length > 0 : todo.length > 0 && mins % 120 < 15;   // no memory to note it in: at most every 2 hours
+    if (ok) {
+      const html = `<div style="font-family:Calibri,Arial,sans-serif;font-size:15px;color:#39293E"><p style="font-size:17px;color:#934E32"><b>The goal and profit-booking alert check ran into a problem</b></p>
+        <ul>${problems.filter(p => todo.includes(p.type)).map(p => `<li>${esc(p.text)}</li>`).join('')}</ul>
+        <p>Alerts that depend on this may be late or missed until it is fixed. Each problem is emailed at most once a day; the check keeps retrying every 15 minutes. Ask Claude to look into it.</p>
+        <p style="color:#6f6875;font-size:12px">Sent automatically by the Abundance dashboard (api/pb-check).</p></div>`;
+      try { await mail('Alert system problem · ' + todo.join(', '), html); todo.forEach(t => sysKeys.push(`sys/${t}/${T}`)); }
+      catch (e) { unreported = todo.length; notes.push('problem mail: ' + e.message); }
+    }
+  }
+  if (!dry && memo) {
+    const add = [...newKeys, ...sysKeys];
+    if (!memo.id || add.length) {                     // first run creates the document with everything known so far
+      const all = [...new Set([...(known || []), ...add])].sort();
+      try { await B.saveMemory(memo, all.map(k => 'pb-key: ' + k)); } catch (e) { notes.push('memory save: ' + e.message); }
+    }
+  }
+  const code = unreported ? 500 : 200;
+  return Z.reply(res, code, { ok: !problems.length, dry, ...out, problems: [...new Set(problems.map(p => p.type))], notes });
+}
+
+module.exports.config = { maxDuration: 60 };
 module.exports.parseRule = parseRule;
 module.exports.quarters = quarters;

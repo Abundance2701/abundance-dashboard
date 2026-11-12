@@ -1,12 +1,17 @@
 name: Profit-booking alerts
-# Manual run only. The regular schedule moved to cron-job.org on 06/11/2026 ("Abundance alerts":
-# every 15 min 08:00–16:45 IST Mon–Fri, 09:10 IST Sat–Sun) because GitHub's scheduler ran hours late or
-# skipped runs. Use "Run workflow" here to check the alert rules at once. All logic and secrets live in
-# Vercel (api/pb-check); the reply holds counts only, never client names.
+# The main schedule is cron-job.org ("Abundance alerts": every 15 min 08:00–16:45 IST Mon–Fri, job time zone
+# Asia/Kolkata). This workflow is a BACKUP: it runs the same check twice on weekdays (about 10:37 and 14:37 IST;
+# GitHub may run it late) so alerts still go out, if late, when cron-job.org stops or is misconfigured.
+# Alerts are never sent twice (api/pb-check remembers what it sent). The job fails (and GitHub emails the repo
+# owner) when the check answers with an error. "Run workflow" runs it at once. The reply holds counts only.
 on:
+  schedule:
+    - cron: '7 5,9 * * 1-5'
   workflow_dispatch:
 jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - run: curl -s -m 60 "https://abundance-dashboard-beta.vercel.app/api/pb-check" ; echo
+      - run: |
+          code=$(curl -s -m 90 -o out.json -w '%{http_code}' "https://abundance-dashboard-beta.vercel.app/api/pb-check?backup=1&t=$(date +%s)"); cat out.json; echo
+          [ "$code" = "200" ] || { echo "pb-check answered HTTP $code"; exit 1; }
