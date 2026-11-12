@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#005826">
+<title>Goal Alerts Editor · Abundance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+<!-- Goal Alerts Editor: edit a client's alert rules (Zoho CRM → Contacts → "Goal Alerts" + "Goal Alert Plan")
+     as simple cards with date pickers. The server (api/alerts-edit.js) reads every line with the same reader as the
+     alert checker (api/pb-check.js), refuses anything it can't read, and warns when an edit lets an earlier alert fire
+     again. Passcode = the dashboard tools' passcode (shared with Portfolio Generator, localStorage pg_mailkey). -->
+<style>
+:root{--g:#005826;--g2:#00401c;--gl:#eef5f0;--br:#934E32;--gold:#F9B738;--ink:#39293E;--mut:#6f6875;--line:#e2e8e4;--bg:#f6f2e7;--warn:#fff4dc;--red:#a3361f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 Calibri,'Segoe UI',Carlito,system-ui,sans-serif}
+h1,h2,h3,.btn,.chip,.typ{font-family:Montserrat,system-ui,sans-serif}
+header{background:var(--g);color:#fff;padding:14px 18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+header h1{margin:0;font-size:19px;font-weight:800;letter-spacing:.2px}
+header .tag{font-size:12px;opacity:.85}
+header .sp{flex:1}
+.wrap{max-width:900px;margin:0 auto;padding:18px 14px 120px}
+.btn{border:0;border-radius:9px;padding:9px 14px;font-weight:700;font-size:13px;cursor:pointer;background:var(--g);color:#fff}
+.btn.ghost{background:#fff;color:var(--g);border:1.5px solid var(--g)}
+.btn.gold{background:var(--gold);color:var(--ink)}
+.btn.red{background:#fff;color:var(--red);border:1.5px solid #e6c2b8}
+.btn.sm{padding:6px 10px;font-size:12px;border-radius:8px}
+.btn:disabled{opacity:.5;cursor:default}
+header .btn.ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.6)}
+.panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+.search{position:relative}
+.search input{width:100%;font-size:16px;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;outline:none}
+.search input:focus{border-color:var(--g)}
+.results{position:absolute;left:0;right:0;top:100%;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 28px rgba(0,0,0,.12);z-index:5;max-height:330px;overflow:auto;margin-top:4px}
+.results button{display:flex;width:100%;text-align:left;border:0;background:#fff;padding:10px 14px;font:inherit;cursor:pointer;gap:8px;align-items:center}
+.results button:hover,.results button:focus{background:var(--gl);outline:none}
+.results .pill{font-size:11px;background:var(--gl);color:var(--g);padding:2px 8px;border-radius:20px;font-weight:700;margin-left:auto;white-space:nowrap}
+.client{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.client h2{margin:0;font-size:20px;color:var(--g)}
+.levels{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.chip{font-size:11.5px;background:var(--gl);color:var(--g2);padding:4px 9px;border-radius:20px;font-weight:600}
+.muted{color:var(--mut);font-size:13px}
+.card{background:#fff;border:1px solid var(--line);border-left:5px solid var(--g);border-radius:12px;padding:12px 14px;margin-bottom:10px}
+.card.goal{border-left-color:var(--br)}
+.card.time{border-left-color:var(--gold)}
+.card.bad{border-left-color:var(--red);background:#fff8f6}
+.card.new,.card.dirty{box-shadow:0 0 0 2px var(--gold)}
+.card .top{display:flex;gap:8px;align-items:flex-start}
+.typ{font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--mut)}
+.sum{font-size:15px;margin:2px 0 6px;font-weight:600}
+.status{margin:0;padding:0;list-style:none;font-size:13px;color:var(--mut)}
+.status li{padding:1px 0}
+.status li.done{color:var(--g)}
+.status li.done::before{content:'✓ ';font-weight:700}
+.card .acts{margin-left:auto;display:flex;gap:6px;flex-shrink:0}
+.form{margin-top:10px;border-top:1px dashed var(--line);padding-top:10px;display:grid;gap:10px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
+label.f{display:flex;flex-direction:column;font-size:12px;color:var(--mut);gap:3px;font-weight:600}
+label.f.grow{flex:1;min-width:160px}
+input,select,textarea{font:inherit;font-size:15px;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--g)}
+input[type=number]{width:110px}
+input[type=date]{min-width:150px}
+textarea{width:100%;min-height:70px;resize:vertical}
+.chk{display:flex;gap:6px;align-items:center;font-size:13px}
+.hint{font-size:12px;color:var(--mut)}
+.err{color:var(--red);font-size:13px;font-weight:600}
+.x{border:0;background:none;color:var(--red);font-size:18px;cursor:pointer;padding:4px 6px;line-height:1}
+.addrow{border:1.5px dashed var(--line);background:#fff;color:var(--g);border-radius:8px;padding:6px 10px;font-weight:700;cursor:pointer;font-size:12px;font-family:Montserrat,sans-serif}
+.types{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-top:10px}
+.types button{text-align:left;border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:10px;cursor:pointer;font:inherit}
+.types button:hover{border-color:var(--g);background:var(--gl)}
+.types b{display:block;font-family:Montserrat,sans-serif;font-size:13px;color:var(--g)}
+.types span{font-size:12px;color:var(--mut)}
+.bar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);padding:10px 14px;display:flex;justify-content:center;gap:10px;align-items:center;box-shadow:0 -6px 20px rgba(0,0,0,.06);z-index:4}
+.bar .msg{font-size:13px;color:var(--mut)}
+.modal{position:fixed;inset:0;background:rgba(30,20,35,.45);display:flex;align-items:center;justify-content:center;padding:16px;z-index:10}
+.modal .box{background:#fff;border-radius:14px;max-width:640px;width:100%;max-height:90vh;overflow:auto;padding:18px}
+.modal h3{margin:0 0 10px;color:var(--g)}
+pre.text{background:#f6f8f7;border:1px solid var(--line);border-radius:8px;padding:10px;white-space:pre-wrap;font-size:12.5px;max-height:260px;overflow:auto}
+.warnbox{background:var(--warn);border:1px solid #f1d38a;border-radius:10px;padding:10px 12px;font-size:13.5px;margin:10px 0}
+.empty{text-align:center;color:var(--mut);padding:28px 10px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:76px;background:var(--g);color:#fff;padding:10px 16px;border-radius:10px;font-weight:600;z-index:20}
+.hide{display:none!important}
+@media (max-width:560px){.card .top{flex-direction:column}.card .acts{margin-left:0}input[type=date]{min-width:0;width:100%}label.f{flex:1}}
+</style>
+</head>
+<body>
+<header>
+  <div><h1>Goal Alerts Editor</h1><div class="tag">Designing Portfolio. Delivering Peace.</div></div>
+  <div class="sp"></div>
+  <button class="btn ghost sm" id="keyBtn" type="button">Passcode</button>
+</header>
+<div class="wrap">
+  <div class="panel hide" id="keyPanel">
+    <label class="f" for="key" style="font-size:13px">Dashboard passcode <span class="hint" style="font-weight:400">(same as Portfolio Generator; remembered on this computer)</span></label>
+    <div class="row"><input id="key" type="password" autocomplete="off" style="flex:1"><button class="btn" id="keySave" type="button">Use passcode</button></div>
+    <div class="err" id="keyErr"></div>
+  </div>
+  <div class="panel">
+    <div class="search">
+      <input id="q" type="search" placeholder="Search a client by name…" autocomplete="off" aria-label="Search a client">
+      <div class="results hide" id="results" role="listbox"></div>
+    </div>
+    <div class="hint" style="margin-top:6px">Alerts are checked at 2:45 PM (near the close, before the 3 PM cut-off) and 3:45 PM (closing values) on weekdays; dated reminders go out at 8:15 AM.</div>
+  </div>
+
+  <div id="client" class="hide">
+    <div class="panel">
+      <div class="client"><h2 id="cName"></h2><span class="sp"></span><button class="btn ghost sm" id="reload" type="button">Reload</button></div>
+      <div class="levels" id="levels"></div>
+    </div>
+    <div id="cards"></div>
+    <div class="panel" id="addPanel">
+      <button class="btn gold" id="addBtn" type="button">+ Add alert</button>
+      <div class="types hide" id="types"></div>
+    </div>
+    <div class="panel">
+      <label class="f" for="plan" style="font-size:13px">Goal Alert Plan <span class="hint" style="font-weight:400">(note copied into every alert email for this client)</span></label>
+      <textarea id="plan" placeholder="e.g. Move ₹6L each from equity to debt by 18/12 for the SWP."></textarea>
+    </div>
+  </div>
+  <div class="empty" id="emptyMsg">Search a client to see and edit their alerts.</div>
+</div>
+
+<div class="bar hide" id="bar"><span class="msg" id="barMsg">Unsaved changes</span><button class="btn ghost sm" id="discard" type="button">Discard</button><button class="btn" id="review" type="button">Review &amp; save</button></div>
+
+<script>
+'use strict';
+const API = (location.protocol === 'file:' ? 'https://abundance-dashboard-beta.vercel.app' : '') + '/api/alerts-edit';
+const KEY = 'pg_mailkey', getKey = () => { try { return localStorage.getItem(KEY) || ''; } catch (e) { return ''; } }, setKey = v => { try { v ? localStorage.setItem(KEY, v) : localStorage.removeItem(KEY); } catch (e) {} };
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const IDX = [['nifty 50', 'Nifty 50'], ['nifty 500', 'Nifty 500'], ['midcap 150', 'Midcap 150'], ['smallcap 250', 'Smallcap 250']];
+const LAB = Object.fromEntries(IDX);
+const dmy = iso => iso ? iso.split('-').reverse().join('/') : '';
+const inr = v => Number(v).toLocaleString('en-IN', { maximumFractionDigits: 2 });
+const today = () => new Date(Date.now() + 5.5 * 3600e3).toISOString().slice(0, 10);
+
+/* ---------- alert types: label, card colour, blank model, summary, form, text ---------- */
+const TYPES = {
+  at: { name: 'Index reaches a level', hint: 'Book profit in parts at set index levels', cls: '' },
+  move: { name: 'Index up / down % from a date', hint: 'e.g. 1.5% up from a day\'s close', cls: '' },
+  gblock: { name: 'Goal: move to debt in parts', hint: 'Watch windows + an in-debt-by date', cls: 'goal' },
+  w52: { name: '52-week high', hint: 'Above the past year\'s highest close', cls: '' },
+  newHigh: { name: 'New high since a date', hint: 'Above every close since a date', cls: '' },
+  fall: { name: 'Fall % from the high', hint: 'Trailing fall from the highest close', cls: '' },
+  rise: { name: 'Rise % from the low', hint: 'Rise from the lowest close', cls: '' },
+  aboveHigh: { name: 'Rise % above an earlier high', hint: 'Above the high of the month before', cls: '' },
+  remind: { name: 'Reminder on date(s)', hint: 'One or more dates', cls: 'time' },
+  deadline: { name: 'Deadline', hint: 'Reminders 7 days before and on the day', cls: 'time' },
+  goal: { name: 'Goal (older format)', hint: '', cls: 'goal', noAdd: true },
+  raw: { name: 'Text line', hint: 'Type a rule line by hand (advanced)', cls: '' },
+};
+const blank = t => ({
+  at: { alts: [{ idx: 'nifty 50', levels: '' }] },
+  move: { dir: 'up', alts: [{ idx: 'nifty 50', pct: '' }], from: today(), until: '' },
+  gblock: { name: '', amt: '', parts: [{ from: today(), to: '' }], by: '', trig: '52w', how: '' },
+  w52: { alts: [{ idx: 'nifty 50' }], from: today(), until: '' },
+  newHigh: { idx: 'nifty 50', from: today(), until: '' },
+  fall: { idx: 'nifty 50', pct: '', from: today(), until: '', close: true, repeat: false },
+  rise: { idx: 'nifty 50', pct: '', from: today(), until: '', repeat: false },
+  aboveHigh: { idx: 'nifty 50', pct: '', from: today(), until: '', repeat: false },
+  remind: { dates: [''], unless: '' },
+  deadline: { date: '' },
+  goal: { start: '', by: '' },
+  raw: { text: '' },
+}[t]);
+
+/* model from the server's parsed line (R = api/pb-check parseRule output) */
+function fromParsed(b) {
+  if (!b.R) return { type: 'raw', tag: '', text: b.text, orig: b.text, bad: b.bad, status: [], sent: [] };
+  const R = b.R, m = { type: R.type, tag: R.tag || '', orig: b.text, status: b.status || [], sent: b.sent || [] };
+  if (R.type === 'at') m.alts = R.alts.map(a => ({ idx: a.idx, levels: a.levels.join(', ') }));
+  else if (R.type === 'move') { m.dir = R.alts[0].dir; m.alts = R.alts.map(a => ({ idx: a.idx, pct: a.pct, dir: a.dir })); m.from = R.from; m.until = R.until || ''; }
+  else if (R.type === 'w52') { m.alts = R.alts.map(a => ({ idx: a.idx })); m.from = R.from || ''; m.until = R.until || ''; }
+  else if (['newHigh', 'fall', 'rise', 'aboveHigh'].includes(R.type)) Object.assign(m, { idx: R.idx, pct: R.pct, from: R.from, until: R.until || '', close: !!R.close, repeat: !!R.repeat });
+  else if (R.type === 'remind' && R.deadline) { m.type = 'deadline'; m.date = R.deadline; }
+  else if (R.type === 'remind') { m.dates = R.dates.slice(); m.unless = R.unless || ''; }
+  else if (R.type === 'gblock') { const how = (b.text.split('\n').find(l => /^how\s*:/i.test(l)) || '').replace(/^how\s*:\s*/i, ''); Object.assign(m, { name: R.name, amt: String(R.amt || '').replace(/[^\d.]/g, ''), parts: R.parts.map(p => ({ from: p.from, to: p.to })), by: R.by || '', trig: R.trig, how }); }
+  else if (R.type === 'goal') { m.start = R.start; m.by = R.by; }
+  return m;
+}
+
+/* ---------- model → text lines (the exact formats api/pb-check.js reads) ---------- */
+const D = iso => dmy(iso);
+const pre = m => m.tag ? `[FP ${m.tag}] ` : '';
+const rng = m => `${m.from ? ' from ' + D(m.from) : ''}${m.until ? ' until ' + D(m.until) : ''}`;
+function toText(m) {
+  if (!m.dirty && m.orig != null) return m.orig;
+  switch (m.type) {
+    case 'at': return m.alts.map((a, i) => `${i ? 'or ' : pre(m)}${LAB[a.idx]} at ${String(a.levels).split(/[,\s]+/).filter(Boolean).map(x => x.replace(/[^\d.]/g, '')).join(', ')}`).join('\n');
+    case 'move': return m.alts.map((a, i) => `${i ? 'or ' : pre(m)}${LAB[a.idx]} ${m.dir} ${a.pct}% from ${D(m.from)}${i === 0 && m.until ? ' until ' + D(m.until) : ''}`).join('\n');
+    case 'w52': return m.alts.map((a, i) => i ? `or ${LAB[a.idx]} 52w high` : `${pre(m)}${LAB[a.idx]} 52w high${rng(m)}`).join('\n');
+    case 'newHigh': return `${pre(m)}${LAB[m.idx]} new high${rng(m)}`;
+    case 'fall': return `${pre(m)}${LAB[m.idx]} fall ${m.pct}%${m.close ? ' close' : ''}${m.repeat ? ' repeat' : ''}${rng(m)}`;
+    case 'rise': return `${pre(m)}${LAB[m.idx]} rise ${m.pct}%${m.repeat ? ' repeat' : ''}${rng(m)}`;
+    case 'aboveHigh': return `${pre(m)}${LAB[m.idx]} rise ${m.pct}% above high${m.repeat ? ' repeat' : ''}${rng(m)}`;
+    case 'remind': return `${pre(m)}remind ${m.dates.filter(Boolean).map(D).join(', ')}${m.unless.trim() ? ' unless ' + m.unless.trim() : ''}`;
+    case 'deadline': return `${pre(m)}deadline ${D(m.date)}`;
+    case 'goal': return `${pre(m)}move to debt from ${D(m.start)} by ${D(m.by)}`;
+    case 'gblock': { const n = m.parts.length, amt = Number(m.amt) ? ' · ₹' + Number(m.amt).toLocaleString('en-IN') : '';
+      return [`GOAL ALERT: ${m.name.replace(/·/g, '-').trim()}${amt}`, ...m.parts.map((p, i) => `Part ${i + 1} of ${n}: ${D(p.from)} to ${D(p.to)}`), m.by ? `In debt by: ${D(m.by)}` : '', `Watch for: ${m.trig === 'new' ? "new high since the part's start" : '52-week high'}`, m.how.trim() ? `How: ${m.how.trim()}` : ''].filter(Boolean).join('\n'); }
+    case 'raw': return String(m.text || '').trim();
+  }
+  return '';
+}
+
+/* ---------- checks before the server's own check ---------- */
+function problems(m) {
+  const e = [], num = v => Number(String(v).replace(/[^\d.]/g, '')) > 0;
+  const need = (v, what) => { if (!v) e.push(what + ' is missing'); };
+  switch (m.type) {
+    case 'at': m.alts.forEach(a => { const lv = String(a.levels).split(/[,\s]+/).filter(Boolean); if (!lv.length || !lv.every(num)) e.push(`${LAB[a.idx]}: enter level(s) like 26358, 27400`); }); break;
+    case 'move': need(m.from, 'From date'); m.alts.forEach(a => { if (!(Number(a.pct) > 0)) e.push(`${LAB[a.idx]}: enter the %`); }); if (m.until && m.until < m.from) e.push('Until is before From'); break;
+    case 'newHigh': need(m.from, 'From date'); if (m.until && m.until < m.from) e.push('Until is before From'); break;
+    case 'w52': if (m.until && m.from && m.until < m.from) e.push('Until is before From'); break;
+    case 'fall': case 'rise': case 'aboveHigh': need(m.from, 'From date'); if (!(Number(m.pct) > 0)) e.push('Enter the %'); if (m.until && m.until < m.from) e.push('Until is before From'); break;
+    case 'remind': if (!m.dates.filter(Boolean).length) e.push('Add at least one date'); break;
+    case 'deadline': need(m.date, 'Date'); break;
+    case 'goal': need(m.start, 'Start'); need(m.by, 'By'); break;
+    case 'gblock': need(m.name.trim(), 'Goal name'); if (!m.parts.length) e.push('Add at least one part');
+      m.parts.forEach((p, i) => { if (!p.from || !p.to) e.push(`Part ${i + 1}: both dates are needed`); else if (p.to < p.from) e.push(`Part ${i + 1}: end is before start`); if (i && p.from && m.parts[i - 1].to && p.from <= m.parts[i - 1].to) e.push(`Part ${i + 1} overlaps part ${i}`); });
+      if (m.by && m.parts.length && m.parts[m.parts.length - 1].to && m.by < m.parts[m.parts.length - 1].to) e.push('In debt by is before the last part ends'); break;
+    case 'raw': if (!String(m.text || '').trim()) e.push('Type the rule line'); break;
+  }
+  return e;
+}
+
+/* ---------- plain-English summary ---------- */
+function summary(m) {
+  const alts = (a, f) => a.map(f).join(' · or ');
+  switch (m.type) {
+    case 'at': return `Alert when ${alts(m.alts, a => `${LAB[a.idx]} reaches ${String(a.levels).split(/[,\s]+/).filter(Boolean).map(x => inr(x.replace(/[^\d.]/g, ''))).join(' / ')}`)}`;
+    case 'move': return `Alert when ${alts(m.alts, a => `${LAB[a.idx]} is ${m.dir} ${a.pct}%`)} from the ${D(m.from)} close${m.until ? ', until ' + D(m.until) : ''}`;
+    case 'w52': return `Alert on a 52-week high: ${m.alts.map(a => LAB[a.idx]).join(' or ')}${rng(m)}`;
+    case 'newHigh': return `Alert when ${LAB[m.idx]} closes above every close since ${D(m.from)}${m.until ? ', until ' + D(m.until) : ''}`;
+    case 'fall': return `Alert when ${LAB[m.idx]} falls ${m.pct}% from its high${m.close ? ' (at the close)' : ''}${m.repeat ? ', repeating' : ''}${rng(m)}`;
+    case 'rise': return `Alert when ${LAB[m.idx]} rises ${m.pct}% from its low${m.repeat ? ', repeating' : ''}${rng(m)}`;
+    case 'aboveHigh': return `Alert when ${LAB[m.idx]} is ${m.pct}% above its earlier high${m.repeat ? ', repeating' : ''}${rng(m)}`;
+    case 'remind': return `Reminder on ${m.dates.filter(Boolean).map(D).join(', ') || '…'}${m.unless ? ` (skipped if "${m.unless}" alerts first)` : ''}`;
+    case 'deadline': return `Deadline ${D(m.date) || '…'}: reminders 7 days before and on the day`;
+    case 'goal': return `Goal money to debt from ${D(m.start)} by ${D(m.by)}`;
+    case 'gblock': return `${m.name || 'Goal'}${Number(m.amt) ? ' · ₹' + Number(m.amt).toLocaleString('en-IN') : ''}: ${m.parts.length} part${m.parts.length > 1 ? 's' : ''}, watching for ${m.trig === 'new' ? 'a new high' : 'a 52-week high'}${m.by ? ', in debt by ' + D(m.by) : ''}`;
+    case 'raw': return m.text || '…';
+  }
+}
+
+/* ---------- state ---------- */
+let S = null;          // { id, name, rule, plan, cards:[], live, deleted:[] }
+let openIdx = -1;
+
+async function call(path, opt = {}) {
+  const k = getKey(); if (!k) { showKey(''); throw new Error('Enter the dashboard passcode above first.'); }
+  const r = await fetch(API + path, { ...opt, headers: { 'x-abundance-key': k, 'Content-Type': 'application/json', ...(opt.headers || {}) } });
+  const j = await r.json().catch(() => ({}));
+  if (r.status === 401) { setKey(''); showKey('That passcode did not match. Try again.'); throw new Error('Passcode did not match.'); }
+  if (!r.ok) throw Object.assign(new Error(j.error || ('Error ' + r.status)), { status: r.status });
+  return j;
+}
+function showKey(msg) { $('keyPanel').classList.remove('hide'); $('keyErr').textContent = msg || ''; $('key').focus(); }
+$('keyBtn').onclick = () => { $('key').value = ''; showKey(''); };
+$('keySave').onclick = () => { const v = $('key').value.trim(); if (!v) return; setKey(v); $('keyPanel').classList.add('hide'); const q = $('q').value.trim(); if (q.length >= 2) search(q); else if (S) load(S.id); };
+$('key').addEventListener('keydown', e => { if (e.key === 'Enter') $('keySave').click(); });
+if (!getKey()) showKey('');
+function toast(t) { const d = document.createElement('div'); d.className = 'toast'; d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 2600); }
+
+/* search */
+let st = null;
+$('q').addEventListener('input', () => { clearTimeout(st); const q = $('q').value.trim(); if (q.length < 2) { $('results').classList.add('hide'); return; } st = setTimeout(() => search(q), 300); });
+$('q').addEventListener('keydown', e => { if (e.key === 'ArrowDown') { const b = $('results').querySelector('button'); if (b) { e.preventDefault(); b.focus(); } } });
+document.addEventListener('click', e => { if (!e.target.closest('.search')) $('results').classList.add('hide'); });
+async function search(q) {
+  const box = $('results'); box.innerHTML = '<div class="muted" style="padding:10px 14px">Searching…</div>'; box.classList.remove('hide');
+  try { const j = await call('?q=' + encodeURIComponent(q));
+    box.innerHTML = j.contacts.length ? j.contacts.map(c => `<button type="button" data-id="${esc(c.id)}">${esc(c.name)}${c.has ? '<span class="pill">has alerts</span>' : ''}</button>`).join('') : '<div class="muted" style="padding:10px 14px">No client found.</div>';
+    box.querySelectorAll('button').forEach(b => b.onclick = () => { if (dirty() && !confirm('Discard unsaved changes for ' + S.name + '?')) return; box.classList.add('hide'); $('q').value = ''; load(b.dataset.id); });
+  } catch (e) { box.innerHTML = `<div class="err" style="padding:10px 14px">${esc(e.message)}</div>`; }
+}
+
+/* load a client */
+async function load(id) {
+  $('emptyMsg').textContent = 'Loading…'; $('emptyMsg').classList.remove('hide'); $('client').classList.add('hide');
+  try {
+    const j = await call('?id=' + encodeURIComponent(id));
+    S = { id: j.id, name: j.name, rule: j.rule, plan: j.plan, live: j.live || {}, cards: j.blocks.map(fromParsed), deleted: [] };
+    openIdx = -1; $('plan').value = S.plan; render();
+    $('emptyMsg').classList.add('hide'); $('client').classList.remove('hide');
+  } catch (e) { $('emptyMsg').innerHTML = `<span class="err">${esc(e.message)}</span>`; }
+}
+$('reload').onclick = () => { if (dirty() && !confirm('Discard unsaved changes?')) return; load(S.id); };
+
+const dirty = () => !!S && (S.cards.some(c => c.dirty || c.isNew) || S.deleted.length > 0 || $('plan').value.trim() !== String(S.plan || '').trim());
+function updateBar() { const d = dirty(); $('bar').classList.toggle('hide', !d); }
+$('plan').addEventListener('input', updateBar);
+window.addEventListener('beforeunload', e => { if (dirty()) { e.preventDefault(); e.returnValue = ''; } });
+
+/* ---------- render ---------- */
+function render() {
+  $('cName').textContent = S.name;
+  $('levels').innerHTML = IDX.filter(([k]) => S.live[k]).map(([k, l]) => `<span class="chip">${l} ${inr(Math.round(S.live[k]))}</span>`).join('') + '<span class="muted" style="align-self:center">latest levels</span>';
+  const box = $('cards');
+  box.innerHTML = S.cards.length ? '' : '<div class="panel muted">No alerts yet for this client. Use “+ Add alert”.</div>';
+  S.cards.forEach((m, i) => {
+    const t = TYPES[m.type] || TYPES.raw, d = document.createElement('div');
+    d.className = `card ${t.cls} ${m.bad ? 'bad' : ''} ${m.isNew ? 'new' : m.dirty ? 'dirty' : ''}`;
+    const errs = problems(m);
+    d.innerHTML = `<div class="top"><div style="flex:1;min-width:0">
+        <div class="typ">${esc(t.name)}${m.tag ? ' · ' + esc(m.tag) : ''}${m.isNew ? ' · new' : m.dirty ? ' · edited' : ''}</div>
+        <div class="sum">${esc(summary(m))}</div>
+        ${m.bad ? `<div class="err">The alert checker can't read this. Fix it below.</div>` : ''}
+        ${!m.dirty && !m.isNew && m.status.length ? `<ul class="status">${m.status.map(s => `<li class="${/alerted|sent /i.test(s) ? 'done' : ''}">${esc(s)}</li>`).join('')}</ul>` : ''}
+        <div class="err" data-live="1">${(m.dirty || m.isNew) ? errs.map(esc).join(' · ') : ''}</div>
+      </div><div class="acts"><button class="btn ghost sm" data-a="edit" type="button">${openIdx === i ? 'Done' : 'Edit'}</button><button class="btn red sm" data-a="del" type="button">Delete</button></div></div>`;
+    d.querySelector('[data-a=edit]').onclick = () => { openIdx = openIdx === i ? -1 : i; render(); };
+    d.querySelector('[data-a=del]').onclick = () => { if (!confirm('Delete this alert?' + (m.sent.length ? ' It has already alerted; deleting it stops any further alerts from it.' : ''))) return; if (!m.isNew) S.deleted.push(m); S.cards.splice(i, 1); openIdx = -1; render(); };
+    if (openIdx === i) d.appendChild(form(m));
+    box.appendChild(d);
+  });
+  updateBar();
+}
+
+/* ---------- forms ---------- */
+const idxSel = (v, on) => { const s = document.createElement('select'); s.innerHTML = IDX.map(([k, l]) => `<option value="${k}"${k === v ? ' selected' : ''}>${l}</option>`).join(''); s.onchange = () => on(s.value); return s; };
+function fld(label, el, cls) { const l = document.createElement('label'); l.className = 'f ' + (cls || ''); l.innerHTML = esc(label); l.appendChild(el); return l; }
+function inp(type, val, on, attrs) { const i = document.createElement('input'); i.type = type; i.value = val == null ? '' : val; Object.assign(i, attrs || {}); i.addEventListener('input', () => on(i.value)); i.addEventListener('change', () => on(i.value)); return i; }
+function chk(label, val, on) { const l = document.createElement('label'); l.className = 'chk'; const c = document.createElement('input'); c.type = 'checkbox'; c.checked = !!val; c.onchange = () => on(c.checked); l.appendChild(c); l.append(label); return l; }
+function row(...els) { const r = document.createElement('div'); r.className = 'row'; els.forEach(e => e && r.appendChild(e)); return r; }
+function btn(text, cls, on) { const b = document.createElement('button'); b.type = 'button'; b.className = cls; b.textContent = text; b.onclick = on; return b; }
+function hint(t) { const d = document.createElement('div'); d.className = 'hint'; d.textContent = t; return d; }
+
+function form(m) {
+  const f = document.createElement('div'); f.className = 'form';
+  const ch = (fn, rerender) => v => { fn(v); m.dirty = true; if (rerender) render(); else refreshCard(); };
+  const tagF = () => fld('Label in the alert title (optional)', inp('text', m.tag, ch(v => m.tag = v.replace(/[\[\]]/g, '')), { placeholder: 'e.g. SWP: move ₹6L each' }), 'grow');
+  const dates = () => row(fld('From', inp('date', m.from, ch(v => m.from = v))), fld('Until (optional)', inp('date', m.until, ch(v => m.until = v))));
+  const alts = (withPct, withLevels) => { const w = document.createElement('div'); w.className = 'form'; w.style.cssText = 'border:0;padding:0;margin:0';
+    m.alts.forEach((a, i) => { const r = row(fld(i ? 'or (backup) index' : 'Index', idxSel(a.idx, ch(v => a.idx = v))),
+      withLevels ? fld('Level(s): part 1, part 2…', inp('text', a.levels, ch(v => a.levels = v), { placeholder: '26358, 27400' }), 'grow') : null,
+      withPct ? fld('%', inp('number', a.pct, ch(v => a.pct = v), { step: '0.1', min: '0' })) : null,
+      i ? btn('×', 'x', () => { m.alts.splice(i, 1); m.dirty = true; render(); }) : null); w.appendChild(r); });
+    w.appendChild(btn('+ Backup index (whichever gets there first)', 'addrow', () => { m.alts.push(withLevels ? { idx: 'midcap 150', levels: '' } : withPct ? { idx: 'midcap 150', pct: m.alts[0].pct } : { idx: 'midcap 150' }); m.dirty = true; render(); }));
+    return w; };
+  switch (m.type) {
+    case 'at': f.append(alts(false, true), hint('Each level is one part: part 1 alerts at the first level, part 2 at the second. Judged near the close (2:45 PM) and at the close (3:45 PM).'), tagF()); break;
+    case 'move': { const s = document.createElement('select'); s.innerHTML = '<option value="up">up</option><option value="down">down</option>'; s.value = m.dir; s.onchange = ch(v => m.dir = s.value);
+      f.append(row(fld('Direction', s)), alts(true, false), dates(), hint('Measured from the closing level on the From date. Alerts once.'), tagF()); break; }
+    case 'w52': f.append(alts(false, false), row(fld('From (optional)', inp('date', m.from, ch(v => m.from = v))), fld('Until (optional)', inp('date', m.until, ch(v => m.until = v)))), hint('Alerts once, when the index closes above its highest close of the past 52 weeks.'), tagF()); break;
+    case 'newHigh': f.append(row(fld('Index', idxSel(m.idx, ch(v => m.idx = v)))), dates(), tagF()); break;
+    case 'fall': f.append(row(fld('Index', idxSel(m.idx, ch(v => m.idx = v))), fld('Fall %', inp('number', m.pct, ch(v => m.pct = v), { step: '0.1', min: '0' }))), dates(), row(chk(' only at the close (3:45 PM)', m.close, ch(v => m.close = v)), chk(' repeat after each fresh fall', m.repeat, ch(v => m.repeat = v))), tagF()); break;
+    case 'rise': case 'aboveHigh': f.append(row(fld('Index', idxSel(m.idx, ch(v => m.idx = v))), fld('Rise %', inp('number', m.pct, ch(v => m.pct = v), { step: '0.1', min: '0' }))), dates(), row(chk(' repeat after each fresh rise', m.repeat, ch(v => m.repeat = v))), tagF()); break;
+    case 'remind': { const w = document.createElement('div'); w.className = 'row';
+      m.dates.forEach((d, i) => w.append(fld(`Date ${i + 1}`, inp('date', d, ch(v => m.dates[i] = v))), m.dates.length > 1 ? btn('×', 'x', () => { m.dates.splice(i, 1); m.dirty = true; render(); }) : ''));
+      f.append(w, btn('+ Another date', 'addrow', () => { m.dates.push(''); m.dirty = true; render(); }),
+        fld('Skip if this alert fires first (optional: words from another line, e.g. "fall 1%")', inp('text', m.unless, ch(v => m.unless = v)), 'grow'), tagF()); break; }
+    case 'deadline': f.append(row(fld('Deadline', inp('date', m.date, ch(v => m.date = v)))), hint('Reminders 7 days before and on the day.'), tagF()); break;
+    case 'goal': f.append(row(fld('Start', inp('date', m.start, ch(v => m.start = v))), fld('By', inp('date', m.by, ch(v => m.by = v)))), tagF()); break;
+    case 'gblock': {
+      const s = document.createElement('select'); s.innerHTML = '<option value="52w">52-week high</option><option value="new">New high since the part\'s start</option>'; s.value = m.trig; s.onchange = ch(() => m.trig = s.value);
+      f.append(row(fld('Goal name', inp('text', m.name, ch(v => m.name = v), { placeholder: 'e.g. House payment May 2027' }), 'grow'), fld('Amount ₹', inp('number', m.amt, ch(v => m.amt = v), { min: '0', step: '1000' }))));
+      const w = document.createElement('div'); w.className = 'form'; w.style.cssText = 'border:0;padding:0;margin:0';
+      m.parts.forEach((p, i) => w.append(row(fld(`Part ${i + 1} from`, inp('date', p.from, ch(v => p.from = v))), fld('to', inp('date', p.to, ch(v => p.to = v))), m.parts.length > 1 ? btn('×', 'x', () => { m.parts.splice(i, 1); m.dirty = true; render(); }) : null)));
+      f.append(w, btn('+ Add a part', 'addrow', () => { const last = m.parts[m.parts.length - 1]; const nx = last && last.to ? new Date(Date.parse(last.to) + 864e5).toISOString().slice(0, 10) : ''; m.parts.push({ from: nx, to: '' }); m.dirty = true; render(); }),
+        row(fld('In debt by', inp('date', m.by, ch(v => m.by = v))), fld('Watch for', s)),
+        hint('Each part alerts once when Nifty 50, Midcap 150 or Smallcap 250 reaches the trigger; if none, a reminder after the part ends. "In debt by" sends reminders 7 days before and on the day.'),
+        fld('How (optional note, not read by the checker)', inp('text', m.how, ch(v => m.how = v)), 'grow')); break; }
+    case 'raw': { const t = document.createElement('textarea'); t.value = m.text; t.oninput = () => { m.text = t.value; m.dirty = true; refreshCard(); }; f.append(fld('Rule line(s)', t, 'grow'), hint('Formats: "Nifty 50 at 26358, 27400" · "Nifty 50 up 1.5% from 11/11/2026" · "remind 12/11/2026" · "deadline 15/01/2027". Dates DD/MM/YYYY.')); break; }
+  }
+  return f;
+}
+/* re-draw only the summary/errors of the open card while typing (keeps focus in the field) */
+function refreshCard() {
+  const d = $('cards').children[openIdx]; if (!d) return; const m = S.cards[openIdx];
+  d.querySelector('.sum').textContent = summary(m);
+  d.classList.add(m.isNew ? 'new' : 'dirty');
+  const typ = d.querySelector('.typ'); if (!/edited|new/.test(typ.textContent)) typ.textContent += m.isNew ? ' · new' : ' · edited';
+  const st = d.querySelector('.status'); if (st) st.remove();
+  const e = d.querySelector('[data-live]'); if (e) e.textContent = problems(m).join(' · ');
+  updateBar();
+}
+
+/* add */
+$('addBtn').onclick = () => { const t = $('types'); t.classList.toggle('hide'); t.innerHTML = Object.entries(TYPES).filter(([, v]) => !v.noAdd).map(([k, v]) => `<button type="button" data-t="${k}"><b>${esc(v.name)}</b><span>${esc(v.hint)}</span></button>`).join('');
+  t.querySelectorAll('button').forEach(b => b.onclick = () => { const m = Object.assign({ type: b.dataset.t, tag: '', orig: null, status: [], sent: [], isNew: true, dirty: true }, blank(b.dataset.t)); S.cards.push(m); openIdx = S.cards.length - 1; t.classList.add('hide'); render(); $('cards').lastChild.scrollIntoView({ behavior: 'smooth', block: 'center' }); }); };
+
+$('discard').onclick = () => { if (confirm('Discard all unsaved changes?')) load(S.id); };
+
+/* ---------- review & save ---------- */
+$('review').onclick = async () => {
+  const errs = S.cards.map((m, i) => ({ i, e: (m.dirty || m.isNew || m.bad) ? problems(m) : [] })).filter(x => x.e.length);
+  if (errs.length) { openIdx = errs[0].i; render(); $('cards').children[openIdx].scrollIntoView({ behavior: 'smooth', block: 'center' }); toast('Fix the highlighted alert first'); return; }
+  const text = S.cards.map(toText).filter(Boolean).join('\n'), plan = $('plan').value.trim();
+  $('review').disabled = true;
+  try {
+    const p = await call('', { method: 'POST', body: JSON.stringify({ id: S.id, before: S.rule, beforePlan: S.plan, rule: text, plan, preview: true }) });
+    if (p.unchanged) { toast('Nothing changed'); return; }
+    modal(text, plan, p.refire);
+  } catch (e) { alert(e.message); } finally { $('review').disabled = false; }
+};
+function modal(text, plan, refire) {
+  const m = document.createElement('div'); m.className = 'modal';
+  m.innerHTML = `<div class="box"><h3>Save ${esc(S.name)}'s alerts to Zoho CRM?</h3>
+    ${refire ? `<div class="warnbox"><b>Heads-up:</b> you changed or deleted ${refire > 1 ? refire + ' alerts that have' : 'an alert that has'} already been sent. A changed alert counts as new and can fire again: right if you've set a new target, but a small date or level correction may send it again.</div>` : ''}
+    <div class="muted">This is what goes into the Goal Alerts box (checked by the alert checker before saving):</div>
+    <pre class="text">${esc(text || '(empty: no alerts)')}</pre>
+    ${plan !== String(S.plan || '').trim() ? `<div class="muted">Goal Alert Plan:</div><pre class="text">${esc(plan || '(empty)')}</pre>` : ''}
+    <div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn ghost" type="button" data-a="no">Back</button><button class="btn" type="button" data-a="yes">Save to CRM</button></div></div>`;
+  document.body.appendChild(m);
+  m.querySelector('[data-a=no]').onclick = () => m.remove();
+  m.querySelector('[data-a=yes]').onclick = async e => { e.target.disabled = true; e.target.textContent = 'Saving…';
+    try { await call('', { method: 'POST', body: JSON.stringify({ id: S.id, before: S.rule, beforePlan: S.plan, rule: text, plan }) }); m.remove(); toast('Saved to CRM'); load(S.id); }
+    catch (err) { e.target.disabled = false; e.target.textContent = 'Save to CRM'; alert(err.message); } };
+}
+</script>
+</body>
+</html>

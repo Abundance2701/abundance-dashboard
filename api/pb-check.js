@@ -421,3 +421,6 @@ async function finish(res, { dry, problems, notes, keys, memo, known, newKeys = 
 module.exports.config = { maxDuration: 60 };
 module.exports.parseRule = parseRule;
 module.exports.quarters = quarters;
+/* used by api/alerts-edit.js (the Alert Editor) to show each alert's status with the same data and keys */
+module.exports.hash = hash;
+module.exports.data = { mcpLive, nse, closesFor, IDX, LABEL, today, addDays };
