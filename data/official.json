@@ -1,6 +1,41 @@
 {
- "updated": "2026-11-12T18:24:08Z",
+ "updated": "2026-11-13T10:02:00Z",
  "items": [
+  {
+   "src": "RBI",
+   "title": "Scheduled Banks’ Statement of Position in India as on October 31, 2026",
+   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63971",
+   "date": "2026-11-13",
+   "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Mock trading on Saturday, November 14, 2026 - No new version release",
+   "url": "https://nsearchives.nseindia.com/content/circulars/SLBS77419.pdf",
+   "date": "2026-11-13",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Mock trading on Saturday, November, 14, 2026 - No new version release",
+   "url": "https://nsearchives.nseindia.com/content/circulars/EGR77417.pdf",
+   "date": "2026-11-13",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Mock session on Saturday, November 14, 2026 - No new version release",
+   "url": "https://nsearchives.nseindia.com/content/circulars/COM77416.pdf",
+   "date": "2026-11-13",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Mock trading on Saturday, November 14, 2026 - New version of NEAT 3.5.5",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CD77414.pdf",
+   "date": "2026-11-13",
+   "important": false
+  },
   {
    "src": "SEBI",
    "title": "Niveshak Shivir to be held on November 17, 2026 at New Delhi",
@@ -16,130 +51,11 @@
    "important": true
   },
   {
-   "src": "RBI",
-   "title": "RBI releases data on ECB / FCCB / RDB for September 2026",
-   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63961",
-   "date": "2026-11-12",
-   "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of further issues of securities",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77413.pdf",
-   "date": "2026-11-12",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Face Value Split and Change in ISIN - BN Agrochem Limited (BNAGROCHEM)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77412.pdf",
-   "date": "2026-11-12",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Launch of H-SIF Hybrid Long-Short Fund (SIF) on NSE MF Invest Platform",
-   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77411.pdf",
-   "date": "2026-11-12",
-   "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Algo Provider Empanelment for Providing Algorithmic Trading Solutions",
-   "url": "https://nsearchives.nseindia.com/content/circulars/INVG77410.pdf",
-   "date": "2026-11-12",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Launch of DSP Fixed Maturity Plan (FMP) - Series 280 - 90 Days on NSE MF Invest Platform",
-   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77409.pdf",
-   "date": "2026-11-12",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of privately placed securities on the debt market segment of the Exchange",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77408.pdf",
-   "date": "2026-11-12",
-   "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of privately placed securities on capital market segment",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77407.pdf",
-   "date": "2026-11-12",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Suspension of partly paid-up equity shares of Party Cruisers Limited",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77406.pdf",
-   "date": "2026-11-12",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Applicability of Additional Surveillance Measure under IBC",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77405.zip",
-   "date": "2026-11-12",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Applicability of Short-Term Additional Surveillance Measure (ST-ASM)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77404.zip",
-   "date": "2026-11-12",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Applicability of Additional Surveillance Measure (ASM)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77403.zip",
-   "date": "2026-11-12",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Trading of Rights Entitlements pursuant to Rights Issue of Indian Emulsifiers Limited",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77402.pdf",
-   "date": "2026-11-12",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Applicability of Enhanced Surveillance Measure (ESM)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77401.zip",
-   "date": "2026-11-12",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "List of Securities Moving to Stage II of Graded Surveillance Measure (GSM)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77400.pdf",
-   "date": "2026-11-12",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Suspension of trading in Non-Convertible Securities (Privately Placed)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77393.pdf",
-   "date": "2026-11-12",
-   "important": false
-  },
-  {
    "src": "SEBI",
    "title": "Reporting requirement under Foreign Account Tax Compliance Act (FATCA) and Common Reporting Standard (CRS) revised through Income-Tax Act, 2025 read with Income-Tax Rules, 2026",
    "url": "https://www.sebi.gov.in/legal/circulars/nov-2026/reporting-requirement-under-foreign-account-tax-compliance-act-fatca-and-common-reporting-standard-crs-revised-through-income-tax-act-2025-read-with-income-tax-rules-2026_105705.html",
    "date": "2026-11-11",
    "important": true
-  },
-  {
-   "src": "RBI",
-   "title": "Conversion/Switch of Government of India Securities",
-   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63958",
-   "date": "2026-11-11",
-   "important": false
   },
   {
    "src": "RBI",
@@ -275,15 +191,15 @@
   ],
   "https://rbi.org.in/pressreleases_rss.xml": [
    10,
-   3
+   2
   ],
   "https://rbi.org.in/notifications_rss.xml": [
    10,
    10
   ],
   "https://nsearchives.nseindia.com/content/RSS/Circulars.xml": [
-   15,
-   15
+   6,
+   6
   ]
  },
  "errors": []
