@@ -177,3 +177,6 @@ Core 5 categories, Regular plans.
   - Size leader each month = the best of Nifty 100 / Midcap 150 / Smallcap 250.
   - Style leader = the best of Value 50 / Quality 50 / Momentum 50 / Low Vol 30.
   - There is no NSE growth-style index, so growth-led months cannot be tagged.
+
+### Style-shift column removed — 13/11/2026
+"Style steady?" compared each fund's factor mix with its mix 3 years earlier. The indices themselves "shifted" just as much: Midcap 150 by 32 pts and Smallcap 250 by 35 pts (fund medians 39 and 28). So the column mostly measured market and model noise, not the fund, and it was removed.
