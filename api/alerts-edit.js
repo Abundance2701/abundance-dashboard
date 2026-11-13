@@ -144,6 +144,28 @@ module.exports = async (req, res) => {
     }
     if (req.method === 'POST') {
       const b = await Z.jsonBody(req), id = String(b.id || '');
+      /* Copy one alert to other clients: { copy: { block, planLine }, ids: [...] }. Each client gets its own copy
+         (its own alerts and memory). A client that already has an alert with the same name is skipped. */
+      if (b.copy) {
+        const block = norm(b.copy.block), planLine = String(b.copy.planLine || '').trim(), ids = (Array.isArray(b.ids) ? b.ids : []).map(String).filter(x => /^\d{6,25}$/.test(x)).slice(0, 20);
+        const p0 = parseRule(block); if (!ids.length) return Z.reply(res, 400, { error: 'Pick at least one client.' });
+        if (p0.bad.length || p0.lines.length !== 1 || p0.lines[0].type !== 'gblock') return Z.reply(res, 400, { error: 'This alert can\'t be copied: save it first and fix any errors.' });
+        const name = p0.lines[0].name.toLowerCase(), out = [];
+        for (const cid of ids) {
+          try {
+            const c = ((await crm(`Contacts/${cid}?fields=Full_Name,Goal_Alerts,PB_Plan`)).data || [])[0]; if (!c) { out.push({ id: cid, status: 'not found' }); continue; }
+            const cur = norm(c.Goal_Alerts);
+            if (parseRule(cur).lines.some(l => l.type === 'gblock' && l.name.toLowerCase() === name)) { out.push({ id: cid, name: c.Full_Name, status: 'skipped: already has an alert with this name' }); continue; }
+            const after = norm(cur + '\n' + block);
+            if (parseRule(after).bad.length) { out.push({ id: cid, name: c.Full_Name, status: 'skipped: their existing alerts have an unreadable line; open them in the editor first' }); continue; }
+            if (after.length > MAX) { out.push({ id: cid, name: c.Full_Name, status: 'skipped: their Goal Alerts box is full' }); continue; }
+            const plan = String(c.PB_Plan || '').trim(), newPlan = planLine && !plan.includes(planLine) ? (plan ? plan + '\n' : '') + planLine : plan;
+            const w = await crm('Contacts', { method: 'PUT', body: JSON.stringify({ data: [{ id: cid, Goal_Alerts: after, PB_Plan: newPlan.slice(0, 2000) || null }], trigger: [] }) });
+            const st = w.data && w.data[0]; out.push({ id: cid, name: c.Full_Name, status: st && st.code === 'SUCCESS' ? 'added' : 'not saved' + (st && st.message ? ': ' + st.message : '') });
+          } catch (e) { out.push({ id: cid, status: 'not saved: ' + e.message }); }
+        }
+        return Z.reply(res, 200, { ok: true, results: out });
+      }
       if (!/^\d{6,25}$/.test(id)) return Z.reply(res, 400, { error: 'Pick a client first.' });
       const cur = ((await crm(`Contacts/${id}?fields=Full_Name,Goal_Alerts,PB_Plan`)).data || [])[0];
       if (!cur) return Z.reply(res, 404, { error: 'That contact is no longer in CRM.' });

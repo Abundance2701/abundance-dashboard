@@ -210,11 +210,12 @@ function summary(m) {
   return `${m.name || 'New alert'}${num(m.amt) ? ' · ' + lakh(m.amt) : ''} — ${TL[m.trig]}${isPct(m.trig) ? ' (' + (m.pct || '…') + '%)' : ''} on ${names(m)} · ${m.parts.length > 1 ? m.parts.length + ' parts: ' : ''}${parts.join('; ')}${m.by ? ' · done by ' + dmy(m.by) : ''}`;
 }
 /* Goal Alert Plan written from the alerts */
-function planFromAlerts() {
-  return S.cards.filter(m => !m.old).map(m => {
+function planFromAlerts() { return S.cards.filter(m => !m.old).map(planLine).join('\n'); }
+function planLine(m) {
+  return (m => {
     const parts = m.parts.length > 1 ? ` in ${m.parts.length} parts (${m.parts.map(p => `${num(p.amt) ? lakh(p.amt) + ' ' : ''}${p.to ? short(p.from) + '–' + short(p.to) : 'from ' + short(p.from)}${m.trig === 'level' ? ' at ' + m.idxs.filter(k => num(p.levels[k]) > 0).map(k => LAB[k] + ' ' + inr(num(p.levels[k]))).join('/') : ''}`).join('; ')})` : m.trig === 'level' ? ` at ${m.idxs.filter(k => num(m.parts[0].levels[k]) > 0).map(k => LAB[k] + ' ' + inr(num(m.parts[0].levels[k]))).join('/')}` : '';
     return `${m.name}: move ${num(m.amt) ? lakh(m.amt) : 'the money'}${parts} on ${m.trig === 'level' ? 'reaching the level' : trigWords(m)} (${names(m)})${m.by ? `; fully moved by ${dmy(m.by)}` : ''}.`;
-  }).join('\n');
+  })(m);
 }
 
 /* ---------- state + server ---------- */
@@ -276,8 +277,9 @@ function render() {
         <div class="sum">${esc(summary(m))}${m.isNew ? ' <span class="typ">· new</span>' : m.dirty ? ' <span class="typ">· edited</span>' : ''}</div>
         ${!m.dirty && !m.isNew && m.status.length ? `<ul class="status">${m.status.map(s => `<li class="${/alerted|sent /i.test(s) ? 'done' : ''}">${esc(s)}</li>`).join('')}</ul>` : ''}
         <div class="err" data-live="1">${(m.dirty || m.isNew || m.old) ? problems(m).map(esc).join(' · ') : ''}</div>
-      </div><div class="acts">${open ? '<button class="btn ghost sm" data-a="cancel" type="button">Cancel</button>' : ''}${m.old ? '' : `<button class="btn ghost sm" data-a="edit" type="button">${open ? 'Done' : 'Edit'}</button>`}<button class="btn red sm" data-a="del" type="button">Delete</button></div></div>`;
+      </div><div class="acts">${open ? '<button class="btn ghost sm" data-a="cancel" type="button">Cancel</button>' : ''}${!m.old && !open && !m.dirty && !m.isNew ? '<button class="btn ghost sm" data-a="copy" type="button" title="Add the same alert to other clients">Copy to…</button>' : ''}${m.old ? '' : `<button class="btn ghost sm" data-a="edit" type="button">${open ? 'Done' : 'Edit'}</button>`}<button class="btn red sm" data-a="del" type="button">Delete</button></div></div>`;
     const ed = d.querySelector('[data-a=edit]'); if (ed) ed.onclick = () => { if (!open) snapshot(m); openIdx = open ? -1 : i; render(); };
+    const cp = d.querySelector('[data-a=copy]'); if (cp) cp.onclick = () => copyModal(m);
     const cx = d.querySelector('[data-a=cancel]'); if (cx) cx.onclick = () => { if (m.isNew && !m._snap) S.cards.splice(i, 1); else restore(m); openIdx = -1; render(); followPlan(); };
     d.querySelector('[data-a=del]').onclick = () => { if (!confirm('Delete this alert?' + (m.sent.length ? ' It has already alerted; deleting it stops any further alerts from it.' : ''))) return; if (!m.isNew) S.deleted.push(m); S.cards.splice(i, 1); openIdx = -1; render(); followPlan(); };
     if (open) d.appendChild(form(m));
@@ -335,6 +337,36 @@ function form(m) {
 
 $('addBtn').onclick = () => { S.cards.push(blankAlert()); openIdx = S.cards.length - 1; render(); followPlan(); $('cards').lastChild.scrollIntoView({ behavior: 'smooth', block: 'center' }); };
 $('discard').onclick = () => { if (confirm('Discard all unsaved changes?')) load(S.id); };
+
+/* ---------- copy one alert to other clients (e.g. both members of a family) ---------- */
+function copyModal(m) {
+  const picked = new Map(), box = document.createElement('div'); box.className = 'modal';
+  box.innerHTML = `<div class="box"><h3>Copy this alert to other clients</h3>
+    <div class="muted" style="margin-bottom:8px">${esc(summary(m))}</div>
+    <div class="search"><input type="search" placeholder="Search a client by name…" autocomplete="off" data-q><div class="results hide" data-r></div></div>
+    <div class="idxs" data-sel style="margin:10px 0"></div>
+    <label class="chk"><input type="checkbox" data-plan checked> also add this alert's line to their Goal Alert Plan</label>
+    <div class="hint" style="margin-top:6px">Each client gets their own copy: it alerts them separately and can be changed on its own later. A client who already has an alert with this name is skipped.</div>
+    <div data-out style="margin-top:8px"></div>
+    <div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn ghost" type="button" data-a="close">Close</button><button class="btn" type="button" data-a="go" disabled>Copy</button></div></div>`;
+  document.body.appendChild(box);
+  const q = box.querySelector('[data-q]'), r = box.querySelector('[data-r]'), sel = box.querySelector('[data-sel]'), go = box.querySelector('[data-a=go]'), out = box.querySelector('[data-out]');
+  const drawSel = () => { sel.innerHTML = ''; picked.forEach((n, id) => { const l = document.createElement('label'); l.className = 'on'; l.innerHTML = `${esc(n)} <span style="cursor:pointer;color:var(--red);font-weight:700">×</span>`; l.querySelector('span').onclick = () => { picked.delete(id); drawSel(); }; sel.appendChild(l); }); go.disabled = !picked.size; };
+  let t = null;
+  q.addEventListener('input', () => { clearTimeout(t); const v = q.value.trim(); if (v.length < 2) { r.classList.add('hide'); return; } t = setTimeout(async () => {
+    r.innerHTML = '<div class="muted" style="padding:10px 14px">Searching…</div>'; r.classList.remove('hide');
+    try { const j = await call('?q=' + encodeURIComponent(v)); const list = j.contacts.filter(c => c.id !== S.id);
+      r.innerHTML = list.length ? list.map(c => `<button type="button" data-id="${esc(c.id)}" data-n="${esc(c.name)}">${esc(c.name)}${picked.has(c.id) ? '<span class="pill">added</span>' : ''}</button>`).join('') : '<div class="muted" style="padding:10px 14px">No client found.</div>';
+      r.querySelectorAll('button').forEach(b => b.onclick = () => { picked.set(b.dataset.id, b.dataset.n); drawSel(); r.classList.add('hide'); q.value = ''; q.focus(); });
+    } catch (e) { r.innerHTML = `<div class="err" style="padding:10px 14px">${esc(e.message)}</div>`; } }, 300); });
+  box.querySelector('[data-a=close]').onclick = () => box.remove();
+  go.onclick = async () => { go.disabled = true; go.textContent = 'Copying…';
+    try { const j = await call('', { method: 'POST', body: JSON.stringify({ id: S.id, copy: { block: toText(m), planLine: box.querySelector('[data-plan]').checked ? planLine(m) : '' }, ids: [...picked.keys()] }) });
+      out.innerHTML = j.results.map(x => `<div class="${x.status === 'added' ? '' : 'err'}" style="font-size:13.5px">${x.status === 'added' ? '✓' : '•'} ${esc(x.name || x.id)}: ${esc(x.status)}</div>`).join('');
+      picked.clear(); drawSel(); go.textContent = 'Copy';
+    } catch (e) { out.innerHTML = `<div class="err">${esc(e.message)}</div>`; go.disabled = false; go.textContent = 'Copy'; } };
+  q.focus();
+}
 
 /* ---------- review & save ---------- */
 $('review').onclick = async () => {
