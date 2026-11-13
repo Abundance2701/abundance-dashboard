@@ -122,7 +122,7 @@
   .capbar i{display:block; height:100%;}
   .asbar{display:block; width:70px; height:5px; background:#e6ece8; border-radius:3px; margin:3px 0 0 auto; overflow:hidden;} .asbar i{display:block; height:100%; background:var(--secondary);}
   .lean{display:inline-block; font-size:11.5px; padding:2px 8px; border-radius:999px; margin:1px 2px; font-weight:700; background:#eef2ef; color:var(--muted); white-space:nowrap;}
-  .lean.plus{background:#e3f2e8; color:#0a6e33;} .lean.minus{background:#f8e5df; color:#934E32;}
+  .lean.plus{background:#e8eef6; color:#2b4c6f;} .lean.minus{background:#f1eef3; color:#5b4a63;}
   .note{font-size:13px;}
   .tiles{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin:10px 0 14px;}
   .tile{background:#f6f9f7; border:1px solid var(--line); border-radius:10px; padding:10px 12px;}
@@ -694,7 +694,7 @@ function bets(hf, benchName) {
 }
 // Peer score: percentile rank inside the category (same plan). Funds need at least 5 years of history.
 const SCORE_PARTS = [
-  { k: 'sCons', label: 'Beats index often', tip: 'Share of 3-year races won against the index, and the usual margin.', m: [o => o.roll ? o.roll.hit : null, o => o.roll ? o.roll.med : null] },
+  { k: 'sCons', label: 'Beats index often', tip: 'Share of 3-year periods that beat the index, and the typical lead.', m: [o => o.roll ? o.roll.hit : null, o => o.roll ? o.roll.med : null] },
   { k: 'sRadj', label: 'Earns well for its risk', tip: 'Sortino ratio and information ratio over the chosen window.', m: [o => o.sortino, o => o.ir] },
   { k: 'sDown', label: 'Falls less', tip: 'Down capture (lower is better) and maximum fall (shallower is better) over the chosen window.', m: [o => isNum(o.downCap) ? -o.downCap : null, o => o.mdd] },
 ];
@@ -860,16 +860,16 @@ function columns(v, R) {
     return cols;
   }
   if (v === 'cons') return [
-    { k: 'hit', label: 'Won', sub: 'of the 3-year races', cell: o => o.roll ? `<b class="${o.roll.hit >= 50 ? 'up' : 'down'}">${o.roll.hit.toFixed(0)}%</b><span class="fund-meta">${o.roll.beat} of ${o.roll.n}</span>` : na, sort: o => o.roll && o.roll.hit },
-    { k: 'med', label: 'Usual margin', sub: 'pts a year', cell: o => o.roll ? cell(o.roll.med, pts, ud(o.roll.med)) : na, sort: o => o.roll && o.roll.med },
-    { k: 'worst', label: 'Worst race', sub: 'pts a year · ended', cell: o => o.roll ? cell(o.roll.worst, pts, ud(o.roll.worst)) + `<span class="fund-meta">${fmtDate(o.roll.worstEnd).slice(3)}</span>` : na, sort: o => o.roll && o.roll.worst },
-    { k: 'best', label: 'Best race', sub: 'pts a year · ended', cell: o => o.roll ? cell(o.roll.best, pts, ud(o.roll.best)) + `<span class="fund-meta">${fmtDate(o.roll.bestEnd).slice(3)}</span>` : na, sort: o => o.roll && o.roll.best },
-    { k: 'n', label: 'Races', sub: 'since', cell: o => o.roll ? `${o.roll.n}<span class="fund-meta">${fmtDate(o.roll.from).slice(3)}</span>` : na, sort: o => o.roll && o.roll.n },
+    { k: 'hit', label: 'Beat index', sub: '% of 3-year periods', cell: o => o.roll ? `<b class="${o.roll.hit >= 50 ? 'up' : 'down'}">${o.roll.hit.toFixed(0)}%</b><span class="fund-meta">${o.roll.beat} of ${o.roll.n}</span>` : na, sort: o => o.roll && o.roll.hit },
+    { k: 'med', label: 'Typical lead', sub: 'median, pts a year', cell: o => o.roll ? cell(o.roll.med, pts, ud(o.roll.med)) : na, sort: o => o.roll && o.roll.med },
+    { k: 'worst', label: 'Worst 3-year lead', sub: 'pts a year · period ended', cell: o => o.roll ? cell(o.roll.worst, pts, ud(o.roll.worst)) + `<span class="fund-meta">${fmtDate(o.roll.worstEnd).slice(3)}</span>` : na, sort: o => o.roll && o.roll.worst },
+    { k: 'best', label: 'Best 3-year lead', sub: 'pts a year · period ended', cell: o => o.roll ? cell(o.roll.best, pts, ud(o.roll.best)) + `<span class="fund-meta">${fmtDate(o.roll.bestEnd).slice(3)}</span>` : na, sort: o => o.roll && o.roll.best },
+    { k: 'n', label: '3-year periods', sub: 'tested · from', cell: o => o.roll ? `${o.roll.n}<span class="fund-meta">${fmtDate(o.roll.from).slice(3)}</span>` : na, sort: o => o.roll && o.roll.n },
   ];
   if (v === 'cap') return [
-    { k: 'downCap', label: 'Index falls ₹100', sub: 'fund fell (down capture)', asc: true, cell: o => isNum(o.downCap) ? `<b class="${o.downCap < 100 ? 'up' : 'down'}">₹${o.downCap.toFixed(0)}</b>` : na, sort: o => o.downCap, y: () => '₹100' },
-    { k: 'upCap', label: 'Index rises ₹100', sub: 'fund rose (up capture)', cell: o => isNum(o.upCap) ? `<b class="${o.upCap >= 100 ? 'up' : ''}">₹${o.upCap.toFixed(0)}</b>` : na, sort: o => o.upCap, y: () => '₹100' },
-    { k: 'capRatio', label: 'Gain ÷ pain', sub: 'capture ratio, above 1 good', cell: o => cell(o.capRatio, f2, isNum(o.capRatio) ? (o.capRatio >= 1 ? 'up' : 'down') : ''), sort: o => o.capRatio, y: () => '1.00' },
+    { k: 'upCap', label: 'Up capture', sub: 'index rises ₹100 → fund rises ₹…', cell: o => isNum(o.upCap) ? `<b class="${o.upCap >= 100 ? 'up' : ''}">${o.upCap.toFixed(0)}</b>` : na, sort: o => o.upCap, y: () => '100' },
+    { k: 'downCap', label: 'Down capture', sub: 'index falls ₹100 → fund falls ₹… (lower is better)', asc: true, cell: o => isNum(o.downCap) ? `<b class="${o.downCap < 100 ? 'up' : 'down'}">${o.downCap.toFixed(0)}</b>` : na, sort: o => o.downCap, y: () => '100' },
+    { k: 'capRatio', label: 'Capture ratio', sub: 'up ÷ down, above 1 is good', cell: o => cell(o.capRatio, f2, isNum(o.capRatio) ? (o.capRatio >= 1 ? 'up' : 'down') : ''), sort: o => o.capRatio, y: () => '1.00' },
     { k: 'beta', label: 'Beta', sub: '1 = moves with index', cell: o => cell(o.beta, f2), sort: o => o.beta, y: () => '1.00' },
   ];
   if (v === 'risk') return [
@@ -878,16 +878,15 @@ function columns(v, R) {
     { k: 'sortino', label: 'Sortino', sub: 'higher is better', cell: o => cell(o.sortino, f2), sort: o => o.sortino, y: () => cell(y.sortino, f2) },
     { k: 'sharpe', label: 'Sharpe', sub: 'higher is better', cell: o => cell(o.sharpe, f2), sort: o => o.sharpe, y: () => cell(y.sharpe, f2) },
     { k: 'alpha', label: 'Alpha', sub: '% a year', cell: o => cell(o.alpha, pts, ud(o.alpha)), sort: o => o.alpha },
-    { k: 'te', label: 'Strays from index', sub: 'tracking error, % a year', grp: true, asc: true, cell: o => cell(o.te, f1), sort: o => o.te },
-    { k: 'avgLead', label: 'Earned by straying', sub: 'average lead, pts a year', cell: o => cell(o.avgLead, pts, ud(o.avgLead)), sort: o => o.avgLead },
-    { k: 'ir', label: 'Earned per unit strayed', sub: 'information ratio', cell: o => cell(o.ir, f2, ud(o.ir)), sort: o => o.ir },
+    { k: 'te', label: 'Tracking error', sub: 'how differently it moves, % a year', grp: true, asc: true, cell: o => cell(o.te, f1), sort: o => o.te },
+    { k: 'avgLead', label: 'Average lead', sub: 'extra return vs index, pts a year', cell: o => cell(o.avgLead, pts, ud(o.avgLead)), sort: o => o.avgLead },
+    { k: 'ir', label: 'Information ratio', sub: 'average lead ÷ tracking error', cell: o => cell(o.ir, f2, ud(o.ir)), sort: o => o.ir },
   ];
   if (v === 'style') return [
     { k: 'as', label: 'Different from index', sub: 'active share', cell: o => o.bets && isNum(o.bets.activeShare) ? `<b>${o.bets.activeShare.toFixed(0)}%</b><span class="asbar"><i style="width:${o.bets.activeShare.toFixed(0)}%"></i></span>` : na, sort: o => o.bets && o.bets.activeShare, y: () => '0%' },
     { k: 'capmix', label: 'Company size', sub: 'large · mid · small', l: true, grp: true, cell: o => o.bets ? capBar(o.bets.capF) + `<span class="fund-meta">${capTxt(o.bets.capF)}</span>` : na, sort: o => o.bets ? (o.bets.capF.M || 0) + (o.bets.capF.S || 0) : null, y: () => y.capB ? capBar(y.capB) + `<span class="fund-meta">${capTxt(y.capB)}</span>` : na },
     { k: 'cash', label: 'Cash / other', sub: '% of fund', cell: o => o.bets ? cell(o.bets.cash, f1) : na, sort: o => o.bets && o.bets.cash },
-    { k: 'lean', label: 'Style lean', sub: 'vs index, from returns', l: true, grp: true, cell: o => leanChips(o, y), sort: o => { const t = tiltsOf(o, y); return t ? Math.max(...t.map(x => Math.abs(x[1]))) : null; } },
-    { k: 'drift', label: 'Style steady?', sub: 'vs 3 years before', asc: true, cell: o => steady(o.drift), sort: o => o.drift },
+    { k: 'lean', label: 'Factor lean', sub: 'value · quality · momentum · low-vol only', l: true, grp: true, cell: o => leanChips(o, y), sort: o => { const t = tiltsOf(o, y); return t ? Math.max(...t.map(x => Math.abs(x[1]))) : null; } },
   ];
   if (v === 'phase') return PHASE_DEFS.map(([k, lab, d], i) => ({ k: 'ph' + k, label: lab, sub: 'pts a year', grp: i === 2 || i === 5, tip: d, heat: o => o.ph && o.ph[k] ? o.ph[k].lead : null,
     cell: o => o.ph && o.ph[k] ? `<b>${pts(o.ph[k].lead)}</b>` : na, sort: o => o.ph && o.ph[k] ? o.ph[k].lead : null, y: () => y.ph ? `${y.ph.months[k]} months` : na }));
@@ -900,11 +899,11 @@ function columns(v, R) {
 const INTRO = {
   ret: 'Returns to the latest NAV. The <b>Lead</b> columns = fund return − index return, in % points.',
   quart: 'Each calendar year the category\'s funds are ranked and split into 4 equal groups: <b>Q1</b> = top 25% … <b>Q4</b> = bottom 25%. The index row shows the index\'s return that year.',
-  cons: 'Picture <b>85 three-year races</b> against the index, a new one starting every month for 10 years. <b>Won</b> = races won · <b>Usual margin</b> = typical gap · <b>Worst / Best</b> = its worst and best race.',
-  cap: 'When the index falls ₹100, how much did the fund fall? When it rises ₹100, how much did the fund rise? <b>Fall less, rise more = good.</b>',
-  risk: 'Like mileage: <b>Strays from index</b> = how far the fund drives away from the index · <b>Earned by straying</b> = the extra return that produced · <b>Per unit strayed</b> = earned ÷ strayed.',
-  style: 'How the portfolio differs from its index (holdings as on <b>' + '__ASOF__' + '</b>). Different from index: 0% = a copy of the index, 100% = nothing in common.',
-  phase: 'How the fund did against its index in different kinds of months over 10 years. <span class="up">Green</span> = did better, <span class="down">red</span> = did worse.',
+  cons: 'Every 3-year period ending at a month-end over the last 10 years (up to 85). <b>Lead</b> = fund\'s yearly return − index\'s. <b>Beat index</b> = share of periods with a positive lead · <b>Typical lead</b> = the middle value · <b>Worst / Best</b> = the weakest and strongest period.',
+  cap: '<b>Up capture 95</b> = when the index rose ₹100, the fund rose ₹95. <b>Down capture 80</b> = when the index fell ₹100, the fund fell ₹80. Green = better than the index.',
+  risk: '<b>Tracking error</b> = how differently the fund moves from its index · <b>Average lead</b> = the extra return it earned · <b>Information ratio</b> = lead ÷ tracking error, like mileage: extra return per unit of difference.',
+  style: 'Holdings as on <b>__ASOF__</b>. <b>Different from index</b> (active share): 0% = a copy of the index, 100% = nothing in common. <b>Factor lean</b>: does the fund behave more (▲) or less (▼) like NSE\'s Value, Quality, Momentum or Low-volatility index than its own index does? Only leans of 15+ pts are shown. <b>Growth and GARP are not measured</b> (no NSE index), so “close to index” does not rule them out.',
+  phase: 'Each of the last 120 months is tagged by what led the market that month. Each cell = the fund\'s average lead over its index in those months, pts a year. <b>Example:</b> +4.3 under “Large caps led” = in months when the Nifty 100 beat the Midcap 150 and Smallcap 250, this fund beat its index by 4.3 pts a year. <span class="up">Green</span> = did better, <span class="down">red</span> = worse. The index row shows how many months of each kind there were.',
   score: '<b>Score</b> = rank among category peers (100 = best) on three things: <b>beats the index often</b> · <b>earns well for its risk</b> · <b>falls less</b>. It describes the past; the back-test shows it does not forecast.',
 };
 function sortFunds(list, cols) {
@@ -934,7 +933,7 @@ function render() {
   let when;
   if (view === 'ret') when = `to <b>${fmtDate(R.D0)}</b>`;
   else if (view === 'quart') when = `calendar years; ${new Date(M0).getUTCFullYear()} is to <b>${fmtDate(M0)}</b>`;
-  else if (view === 'cons') when = `races ending up to <b>${fmtDate(M0)}</b>`;
+  else if (view === 'cons') when = `3-year periods ending up to <b>${fmtDate(M0)}</b>`;
   else if (view === 'style') when = `holdings <b>${HOLD && HOLD.asof ? esc(HOLD.asof) : '—'}</b> · style from <b>${fmtDate(me(36))} – ${fmtDate(M0)}</b>`;
   else if (view === 'phase') when = `<b>${fmtDate(me(120))} – ${fmtDate(M0)}</b>`;
   else when = `last ${winLabel(R.W)}, <b>${fmtDate(me(R.W))} – ${fmtDate(M0)}</b>`;
@@ -983,17 +982,17 @@ function openDetail(code) {
   const y = R.yRow, arr = NAVS[code], RR = o.roll, b = o.bets;
   // tiles
   const T = [];
-  if (RR) T.push(tile('Beat the index', `${RR.hit.toFixed(0)}%`, `of ${RR.n} three-year races`, RR.hit >= 50 ? 'good' : 'bad'));
-  if (RR) T.push(tile('Usual margin', `${pts(RR.med)}`, 'pts a year vs index', RR.med >= 0 ? 'good' : 'bad'));
-  if (isNum(o.downCap)) T.push(tile('Index falls ₹100', `₹${o.downCap.toFixed(0)}`, 'the fund fell', o.downCap < 100 ? 'good' : 'bad'));
-  if (isNum(o.upCap)) T.push(tile('Index rises ₹100', `₹${o.upCap.toFixed(0)}`, 'the fund rose', o.upCap >= 100 ? 'good' : ''));
+  if (RR) T.push(tile('Beat index', `${RR.hit.toFixed(0)}%`, `of ${RR.n} three-year periods`, RR.hit >= 50 ? 'good' : 'bad'));
+  if (RR) T.push(tile('Typical lead', `${pts(RR.med)}`, 'pts a year vs index', RR.med >= 0 ? 'good' : 'bad'));
+  if (isNum(o.downCap)) T.push(tile('Down capture', `${o.downCap.toFixed(0)}`, `index falls ₹100 → fund fell ₹${o.downCap.toFixed(0)}`, o.downCap < 100 ? 'good' : 'bad'));
+  if (isNum(o.upCap)) T.push(tile('Up capture', `${o.upCap.toFixed(0)}`, `index rises ₹100 → fund rose ₹${o.upCap.toFixed(0)}`, o.upCap >= 100 ? 'good' : ''));
   if (isNum(o.score)) T.push(tile('Peer score', `${o.score.toFixed(0)}`, `out of 100 · ${o.scoreN} peers`));
   if (b && isNum(b.activeShare)) T.push(tile('Different from index', `${b.activeShare.toFixed(0)}%`, 'of the portfolio'));
   // 3-year race chart
   let chart = '<div class="meta">Not enough history.</div>';
   if (RR) { const s = [...RR.series].reverse(), w = 640, h = 130, pad = 24, mx = Math.max(...s.map(p => Math.abs(p.x)), 1), bw = (w - pad * 2) / s.length, y0 = h / 2;
-    chart = `<svg viewBox="0 0 ${w} ${h}" width="100%" style="background:#fafcfb;border-radius:8px"><line x1="${pad}" x2="${w - pad}" y1="${y0}" y2="${y0}" stroke="#bbb"/>${s.map((p, i) => { const hh = Math.abs(p.x) / mx * (h / 2 - 12); return `<rect x="${(pad + i * bw).toFixed(1)}" y="${(p.x >= 0 ? y0 - hh : y0).toFixed(1)}" width="${Math.max(1, bw - 1).toFixed(1)}" height="${hh.toFixed(1)}" fill="${p.x >= 0 ? '#178A3E' : '#c96a52'}"><title>3 years to ${fmtDate(p.end)}: fund ${p.f.toFixed(1)}% vs index ${p.b.toFixed(1)}% a year (${pts(p.x)})</title></rect>`; }).join('')}<text x="${pad}" y="11" font-size="10" fill="#6b6470">won by ${mx.toFixed(1)}</text><text x="${pad}" y="${h - 3}" font-size="10" fill="#6b6470">lost by ${mx.toFixed(1)}</text><text x="${w - pad}" y="${h - 3}" font-size="10" fill="#6b6470" text-anchor="end">newest →</text></svg>
-      <div class="meta" style="margin:4px 0 0">Worst race ${pts(RR.worst)} (ended ${fmtDate(RR.worstEnd).slice(3)}) · best ${pts(RR.best)} (ended ${fmtDate(RR.bestEnd).slice(3)}) · pts a year</div>`; }
+    chart = `<svg viewBox="0 0 ${w} ${h}" width="100%" style="background:#fafcfb;border-radius:8px"><line x1="${pad}" x2="${w - pad}" y1="${y0}" y2="${y0}" stroke="#bbb"/>${s.map((p, i) => { const hh = Math.abs(p.x) / mx * (h / 2 - 12); return `<rect x="${(pad + i * bw).toFixed(1)}" y="${(p.x >= 0 ? y0 - hh : y0).toFixed(1)}" width="${Math.max(1, bw - 1).toFixed(1)}" height="${hh.toFixed(1)}" fill="${p.x >= 0 ? '#178A3E' : '#c96a52'}"><title>3 years to ${fmtDate(p.end)}: fund ${p.f.toFixed(1)}% vs index ${p.b.toFixed(1)}% a year (${pts(p.x)})</title></rect>`; }).join('')}<text x="${pad}" y="11" font-size="10" fill="#6b6470">+${mx.toFixed(1)}</text><text x="${pad}" y="${h - 3}" font-size="10" fill="#6b6470">−${mx.toFixed(1)}</text><text x="${w - pad}" y="${h - 3}" font-size="10" fill="#6b6470" text-anchor="end">newest →</text></svg>
+      <div class="meta" style="margin:4px 0 0">Worst 3-year lead ${pts(RR.worst)} (ended ${fmtDate(RR.worstEnd).slice(3)}) · best ${pts(RR.best)} (ended ${fmtDate(RR.bestEnd).slice(3)}) · pts a year</div>`; }
   // calendar years with quartile
   const ycy = Object.fromEntries((y.calY || []).map(x => [x.y, x.r]));
   const calRows = (R.yLabels || []).map(lab => { const z = o.yq && o.yq[lab], bi = ycy[lab], l = z && isNum(z.ret) && isNum(bi) ? z.ret - bi : null;
@@ -1006,7 +1005,7 @@ function openDetail(code) {
         <div class="cbrow"><span>Index</span>${capBar(b.capB, 240)}<span class="fund-meta">${capTxt(b.capB)}</span></div>
         <div class="legend" style="margin:6px 0 0">${CAPC.map(([, l, c]) => `<span><i class="sw" style="background:${c}"></i>${l}</span>`).join('')}${isNum(b.cash) && b.cash >= 1 ? `<span>· ${b.cash.toFixed(1)}% cash/other</span>` : ''}</div></div>` : '';
     const t = tiltsOf(o, y);
-    const styleBlock = t ? `<div class="card2"><div class="ct">Style lean <span class="ctsub">vs index · from 3 years of returns · only leans of ${STY_T}+ pts are reliable</span></div>${divBars(t.filter(x => Math.abs(x[1]) >= STY_T))}${t.every(x => Math.abs(x[1]) < STY_T) ? '<div class="meta" style="margin:0">Close to the index: no reliable lean.</div>' : ''}</div>` : '';
+    const styleBlock = t ? `<div class="card2"><div class="ct">Factor lean <span class="ctsub">vs index · value, quality, momentum, low-vol only (growth/GARP not measured) · leans of ${STY_T}+ pts</span></div>${divBars(t.filter(x => Math.abs(x[1]) >= STY_T))}${t.every(x => Math.abs(x[1]) < STY_T) ? '<div class="meta" style="margin:0">Close to the index: no reliable lean.</div>' : ''}</div>` : '';
     const sec = b && b.sectors ? [...b.sectors.filter(s => s[1] >= 1).slice(0, 4), ...b.sectors.filter(s => s[1] <= -1).slice(-4).reverse()].sort((p, q) => q[1] - p[1]).map(s => [s[0], s[1]]) : [];
     const secBlock = b && b.sectors ? `<div class="card2"><div class="ct">Sector bets <span class="ctsub">pts of the portfolio vs index</span></div>${divBars(sec)}</div>` : '';
     const stockList = (arr2, more) => arr2.length ? `<table class="mini plain"><tbody>${arr2.map(s => `<tr><td class="l">${esc(s.name)}</td><td><b class="${more ? 'up' : 'down'}">${s.f.toFixed(1)}%</b></td><td class="na">index ${s.b.toFixed(1)}%</td></tr>`).join('')}</tbody></table>` : na;
@@ -1021,15 +1020,15 @@ function openDetail(code) {
     ${VALIDATION_FLAGS[code] ? `<div class="say warn">⚠ ${esc(VALIDATION_FLAGS[code])}</div>` : ''}
     <div class="tiles">${T.join('')}</div>
     <div class="grid2">
-      <div class="card2"><div class="ct">Every 3-year race vs the index <span class="ctsub">green = won</span></div>${chart}</div>
+      <div class="card2"><div class="ct">Lead in every 3-year period <span class="ctsub">green = beat the index</span></div>${chart}</div>
       <div class="card2"><div class="ct">Calendar years <span class="ctsub">click a heading to sort</span></div><div class="tablewrap"><table class="mini" id="calTbl"><thead><tr><th class="l">Year</th><th>Fund</th><th>Index</th><th>Lead</th><th class="c">Quartile</th></tr></thead><tbody>${calRows}</tbody></table></div></div>
     </div>
     ${diff}
     <h3>Key numbers <span class="ctsub">last ${winLabel(R.W)}</span></h3>
     <div class="tiles small">${[
       tile('Volatility', pct(o.sd), `index ${pct(y.sd)}`), tile('Max fall', pct(o.mdd), `index ${pct(y.mdd)}`), tile('Sortino', f2(o.sortino), `index ${f2(y.sortino)}`),
-      tile('Beta', f2(o.beta), '1 = moves with index'), tile('Alpha', pts(o.alpha), '% a year'), tile('Strays from index', pct(o.te), 'tracking error'),
-      tile('Earned by straying', pts(o.avgLead), 'pts a year'), tile('Per unit strayed', f2(o.ir), 'information ratio'), tile('AUM', crore(o.aum) + ' Cr', o.aumQ ? esc(aumPeriodLabel(o.aumQ)) : '')].join('')}</div>`;
+      tile('Beta', f2(o.beta), '1 = moves with index'), tile('Alpha', pts(o.alpha), '% a year'), tile('Tracking error', pct(o.te), 'how differently it moves'),
+      tile('Average lead', pts(o.avgLead), 'pts a year vs index'), tile('Information ratio', f2(o.ir), 'lead ÷ tracking error'), tile('AUM', crore(o.aum) + ' Cr', o.aumQ ? esc(aumPeriodLabel(o.aumQ)) : '')].join('')}</div>`;
   makeSortable($('calTbl'));
   $('modalBg').style.display = 'flex'; $('modalBg').scrollTop = 0;
 }
@@ -1144,18 +1143,18 @@ async function renderBench() {
 $('methodBox').innerHTML = `<h3>How it works, simply</h3>
 <div class="grid2">
 <div class="card2"><div class="ct">The yardstick</div>Equity funds are compared with their official index, with dividends included. Debt, hybrid and other funds have no free index data, so they are compared with the <b>middle fund</b> of their category.</div>
-<div class="card2"><div class="ct">3-year races</div>Start a race against the index every month for 10 years: up to 85 races. <b>Won</b> = races won. <b>Usual margin</b> = the typical gap. It shows steadiness, not one lucky stretch.</div>
-<div class="card2"><div class="ct">₹100 test</div>When the index fell ₹100, how much did the fund fall? When it rose ₹100, how much did it rise? Fall less and rise more = good.</div>
-<div class="card2"><div class="ct">Straying</div><b>Strays from index</b> = how differently the fund moves. <b>Earned by straying</b> = the extra return that brought. <b>Per unit strayed</b> = earned ÷ strayed, like mileage.</div>
+<div class="card2"><div class="ct">Consistency (3-year periods)</div>Every 3-year period ending at a month-end over 10 years (up to 85). <b>Beat index</b> = share of periods the fund won. <b>Typical lead</b> = its usual margin. It shows steadiness, not one lucky stretch.</div>
+<div class="card2"><div class="ct">Up / down capture</div>Index rose ₹100, fund rose ₹X = <b>up capture</b>. Index fell ₹100, fund fell ₹Y = <b>down capture</b>. Fall less and rise more = good. Capture ratio = up ÷ down.</div>
+<div class="card2"><div class="ct">Tracking error &amp; information ratio</div><b>Tracking error</b> = how differently the fund's returns move from the index. <b>Average lead</b> = the extra return earned. <b>Information ratio</b> = lead ÷ tracking error, like mileage. Not the same as active share, which compares holdings.</div>
 <div class="card2"><div class="ct">Bets (holdings)</div>From each AMC's monthly portfolio, compared with the index's own portfolio on the same date: how different it is, company size, sectors and stocks it holds more or less of.</div>
-<div class="card2"><div class="ct">Style lean (returns)</div>How much the fund behaves like the Value, Quality, Momentum or Low-volatility indices compared with its own index, from 3 years of monthly returns.</div>
+<div class="card2"><div class="ct">Factor lean (returns)</div>How much more or less the fund behaves like NSE's Value, Quality, Momentum or Low-volatility index than its own index does, from 3 years of monthly returns. Growth and GARP have no NSE index, so they are not measured.</div>
 <div class="card2"><div class="ct">Market phases</div>Each of the last 120 months is tagged: did the index rise or fall; which size led (large, mid, small); which style led (value, quality, momentum, low-vol). Then: how did the fund do in each kind of month? NSE has no "growth" style index, so growth can't be tagged; momentum is the nearest relative but not the same.</div>
 <div class="card2"><div class="ct">Score</div>Rank among category peers (100 = best) on three things: beats the index often · earns well for its risk · falls less. Needs 5 years of history.</div>
 <div class="card2"><div class="ct">Time-machine test</div>Go back to each October from 2014 to 2023, pick using only what was known then, and see what happened over the next 3 years. Result: no number picked future winners; falling less did tend to repeat.</div>
 </div>
 <h3>How accurate is this?</h3>
 <div class="grid2">
-<div class="card2"><div class="ct">Very accurate</div>Returns, index returns, 3-year races, capture and risk: checked against AMFI's official figures (1-year index returns identical; funds within 0.01 pts on average). Holdings bets: taken straight from AMC monthly disclosures, so they are as of the last month-end loaded (shown on screen).</div>
+<div class="card2"><div class="ct">Very accurate</div>Returns, index returns, 3-year periods, capture and risk: checked against AMFI's official figures (1-year index returns identical; funds within 0.01 pts on average). Holdings bets: taken straight from AMC monthly disclosures, so they are as of the last month-end loaded (shown on screen).</div>
 <div class="card2"><div class="ct">Approximate</div>Style lean: the style indices overlap heavily, so it is an estimate. Tested: when the 3-year window moves by a year, leans typically shift 2–7 pts, and for 1 fund in 5 by 12–14 pts, so only leans of 15+ pts are shown as real. A returns-based "size mix" was dropped: it was off from actual holdings by about 10 pts on average.</div>
 </div>
 <div class="meta" style="margin-top:10px">Missing data shows “—”; nothing is estimated. Full checks: VALIDATION.md in the dashboard repository.</div>`;
