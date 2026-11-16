@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-16T10:11:30Z",
+ "updated": "2026-11-16T20:33:18Z",
  "items": [
   {
    "src": "RBI",
@@ -17,17 +17,108 @@
   },
   {
    "src": "NSE",
-   "title": "Market making compliance file dissemination - Update",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77439.pdf",
-   "date": "2026-11-14",
+   "title": "Listing of further issues of securities",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77455.pdf",
+   "date": "2026-11-16",
    "important": false
   },
   {
-   "src": "RBI",
-   "title": "Developments in India’s Balance of Payments for the Month of September 2026",
-   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63974",
-   "date": "2026-11-13",
+   "src": "NSE",
+   "title": "Listing of Equity Shares of J.K.Shah Commerce Education Limited pursuant to the Scheme of Arrangement",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77453.zip",
+   "date": "2026-11-16",
    "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of privately placed securities on the debt market segment of the Exchange",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77452.pdf",
+   "date": "2026-11-16",
+   "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Introduction of API Facility in NMASS-Margins-SLB",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CMPT77451.zip",
+   "date": "2026-11-16",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Reminder for submission of Internal Audit Report for the half year ended September 30, 2026",
+   "url": "https://nsearchives.nseindia.com/content/circulars/INSP77450.pdf",
+   "date": "2026-11-16",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of privately placed securities on capital market segment",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77449.pdf",
+   "date": "2026-11-16",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Applicability of Short-Term Additional Surveillance Measure (ST-ASM)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77448.zip",
+   "date": "2026-11-16",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Applicability of Additional Surveillance Measure (ASM)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77447.zip",
+   "date": "2026-11-16",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Change in name and symbol of Shukra Pharmaceuticals Limited",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77446.pdf",
+   "date": "2026-11-16",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Applicability of Enhanced Surveillance Measure (ESM)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77445.zip",
+   "date": "2026-11-16",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Launch of Infinity Equity Long-Short Fund NFO under Specialized Investment Fund (SIF) on NSE MF Invest Platform",
+   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77444.pdf",
+   "date": "2026-11-16",
+   "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Change in minimum investment amount for Lumpsum under Axis Silver Fund of Fund of Axis Mutual Fund on NSE MF Invest platform",
+   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77443.zip",
+   "date": "2026-11-16",
+   "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Availability of Motilal Oswal Multi Asset - Omni Fund of on NSE MF Invest Platform",
+   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77442.pdf",
+   "date": "2026-11-16",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Revision in minimum application amount for SIP & STP under certain schemes of Dyna SIF and Introduction of SWP in DynaSIF Equity Long Short Fund of 360 One Mutual Fund on NSE MF Invest platform",
+   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77441.pdf",
+   "date": "2026-11-16",
+   "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Launch of Kotak Nifty Pharma Index Fund NFO on NSE MF Invest Platform",
+   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77440.pdf",
+   "date": "2026-11-16",
+   "important": true
   },
   {
    "src": "RBI",
@@ -107,15 +198,15 @@
   ],
   "https://rbi.org.in/pressreleases_rss.xml": [
    10,
-   3
+   2
   ],
   "https://rbi.org.in/notifications_rss.xml": [
    10,
    10
   ],
   "https://nsearchives.nseindia.com/content/RSS/Circulars.xml": [
-   1,
-   1
+   16,
+   15
   ]
  },
  "errors": []
