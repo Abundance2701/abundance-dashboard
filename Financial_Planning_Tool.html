@@ -155,6 +155,7 @@ input.efin{width:110px;text-align:right;border:1px solid var(--line);border-radi
 div.epfbox{display:flex;flex-direction:column;gap:6px;margin:6px 0}div.epfbox .er{display:flex;flex-wrap:wrap;align-items:center;gap:6px 18px}div.epfbox .er label{display:flex;align-items:center;gap:6px;font-size:13.5px}div.epfbox .hint{margin:0}
 div.epfc{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;margin:12px 0 4px;padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:#fff}div.epfc label{display:flex;align-items:center;gap:6px;font-size:13.5px}div.epfc .hint{flex-basis:100%;margin:0}
 div.rtw{display:flex;flex-direction:column;gap:4px}select.rts{width:118px;min-height:0;border:1px solid var(--line);border-radius:5px;padding:3px 22px 3px 6px;font-size:13px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23005826' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right 7px center;-webkit-appearance:none;appearance:none;cursor:pointer}
+.actx{outline:none;border-radius:4px;padding:1px 3px;margin:-1px -3px;cursor:text}.actx:hover{background:#fff8e1}.actx:focus{background:#fff;box-shadow:0 0 0 1.5px var(--gold)}
 input.rt{width:64px;text-align:right;border:1px solid var(--line);border-radius:5px;padding:3px 5px}input.rt::placeholder{color:#a3aab0}
 .strip{display:flex;flex-wrap:wrap;gap:6px}
 table.adj input{width:80px;border:1px solid var(--line);border-radius:5px;padding:3px 5px}table.adj select{max-width:90px}
@@ -1141,9 +1142,11 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
     const inflows = A.inflows.map(x => ({ ...x, used: x.amt - x.left }));
     /* SIPs go to goals top to bottom: Section 4's order, or the order dragged in Section 5 (st.g5order) */
     const o5 = st.g5order || [], base = FP.goalOrder(st, goals.filter(g => !g.due && g.gapFV > 1 && !g.noSip)), at = g => { const i = o5.indexOf(g.name); return i < 0 ? 1e6 + base.indexOf(g) : i; };
-    const future = (o5.length ? base.slice().sort((x, y) => at(x) - at(y)) : base).map(g => { const nd = FP.need(g.gapFV, g.n, g.r, undefined, g.k), raw = step ? nd.step : nd.sip; return { ...g, reqRaw: raw, req: FP.rSip(raw) }; });
+    /* st.sipDelay (job-loss scenario): SIPs start that many months later; a goal due before they restart can't get a SIP */
+    const D = +st.sipDelay || 0, late = D ? base.filter(g => g.n - D <= 0) : [];
+    const future = (o5.length ? base.slice().sort((x, y) => at(x) - at(y)) : base).filter(g => !late.includes(g)).map(g => { const nd = FP.need(g.gapFV, g.n - D, g.r, undefined, Math.max((g.k ?? g.n) - D, 1)), raw = step ? nd.step : nd.sip; return { ...g, reqRaw: raw, req: FP.rSip(raw) }; });
     let left = avail; future.forEach(g => { g.alloc = Math.min(g.req, Math.max(left, 0)); left -= g.alloc; g.short = g.req - g.alloc; g.ach = g.req ? g.alloc / g.req : 1; });
-    const nowGap = goals.filter(g => g.due && g.gap > 1);
+    const nowGap = goals.filter(g => (g.due || late.includes(g)) && g.gap > 1);
     /* Share of each goal reached: investments (Section 4) + later money + the SIP that fits */
     goals.forEach(g => { const f = future.find(x => x.name === g.name), share = g.due ? 0 : f ? f.ach : 0;   /* the SIP's share of what is still to build */
       g.sipAlloc = f ? f.alloc : 0; g.funded = g.fullPV ? Math.min((g.got + g.later + g.cont + g.gap0 * share) / g.fullPV, 1) : 1; });
@@ -1168,8 +1171,8 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
       ${S.nowGap.length ? `<div class="callout"><b>${FP.short(S.nowShort)} is needed now and isn't covered by existing investments.</b> A SIP can't build this in time; use the bonus or surplus, or move the goal:<ul style="margin:6px 0 0;padding-left:18px">${S.nowGap.map(g => `<li>${FP.esc(g.name)}: ${FP.short(g.gap)}</li>`).join('')}</ul></div>` : ''}
       <div><h3>SIP for each goal</h3><div class="chartbox" style="height:${Math.max(140, F.length * 30 + 40)}px"><canvas id="sipBar" role="img" aria-label="SIP allocated and shortfall per goal"></canvas></div>
         ${FP.legend(['SIP allocated', 'Monthly shortfall'], null, ['#1E7A46', '#A3502F'])}</div>
-      <div><div class="secbar"><h3>How your monthly investment is shared <span class="chip${S.step ? '' : ' muted'}">${S.step ? `Step-up SIP @ ${sp} p.a.` : 'Flat SIP'}</span></h3><button class="addgoal noprint" data-addgoal>+ Add goal</button></div><p class="hint">The monthly SIP goes to goals from the top of this list down: a goal gets its SIP only after every goal above it is fully funded.<span class="noprint"> ${st.g5order ? 'You have reordered it here (<button class="link" id="g5reset">follow Section 4 again</button>).' : 'It starts in Section 4\'s order; drag ⠿ to change who gets the SIP first.'}</span> SIPs are rounded up to the next ₹1,000 and the amount you can invest down to the nearest ₹1,000, so every total adds up. A ${S.step ? `step-up SIP rises ${sp} every 12 months` : 'flat SIP stays the same every month'}.</p>
-      <div class="tbl"><table id="sipTbl"><thead><tr><th class="noprint" data-nosort title="Drag rows to reorder"></th><th data-nosort>Goal</th><th data-nosort>Priority</th><th data-nosort>Due</th><th class="n" data-nosort data-h="Still to build by due date" title="Part Section 4 could not cover, grown to the due date">Yet to build by due date</th><th data-nosort>Invest in</th><th class="n" data-nosort data-h="SIP needed">${S.step ? 'Step-up SIP needed' : 'SIP needed'}</th><th class="n" data-nosort data-h="SIP allocated">SIP allocated</th><th class="n" data-nosort>Shortfall</th><th class="n" data-nosort>On track</th></tr></thead><tbody>
+      <div><div class="secbar"><h3>How your monthly investment is shared <span class="chip${S.step ? '' : ' muted'}">${S.step ? `Step-up SIP @ ${sp} p.a.` : 'Flat SIP'}</span></h3><button class="addgoal noprint" data-addgoal>+ Add goal</button></div><p class="hint">The monthly SIP goes to goals from the top of this list down: a goal gets its SIP only after every goal above it is fully funded.<span class="noprint"> ${st.g5order ? 'You have reordered it here (<button class="link" id="g5reset">follow Section 4 again</button>).' : 'It starts in Section 4\'s order.'} Click a column heading to sort (that becomes the order), then drag ⠿ to fine-tune.</span> SIPs are rounded up to the next ₹1,000 and the amount you can invest down to the nearest ₹1,000, so every total adds up. A ${S.step ? `step-up SIP rises ${sp} every 12 months` : 'flat SIP stays the same every month'}.</p>
+      <div class="tbl"><table id="sipTbl"><thead><tr><th class="noprint" data-nosort title="Drag rows to reorder"></th><th>Goal</th><th>Priority</th><th>Due</th><th class="n" data-h="Still to build by due date" title="Part Section 4 could not cover, grown to the due date">Yet to build by due date</th><th>Invest in</th><th class="n" data-h="SIP needed">${S.step ? 'Step-up SIP needed' : 'SIP needed'}</th><th class="n" data-h="SIP allocated">SIP allocated</th><th class="n">Shortfall</th><th class="n">On track</th></tr></thead><tbody>
         ${F.map(g => `<tr data-g="${FP.esc(g.name)}"><td class="noprint drag" draggable="true" title="Drag to reorder. Shift+click to pick several.">⠿</td><td>${FP.goalBtn(g)}</td><td data-sort="${PR[g.pri]}"><span class="chip ${g.pri === 'High' ? '' : g.pri === 'Medium' ? 'warn' : 'muted'}">${g.pri}</span></td><td>${MON[g.mon - 1]} ${g.year}<span class="note">${g.n} months${g.k < g.n ? `; SIP for the first ${g.k} (till retirement), then it grows untouched` : ''}</span></td>
           <td class="n">${FP.inr(g.gapFV)}</td><td>${g.bk}${g.bk === 'Retirement mix' ? '' : ' MFs'} · ${FP.pct(g.r, 0)}</td><td class="n">${FP.inr(g.req)}</td><td class="n"><b>${FP.inr(g.alloc)}</b></td>
           <td class="n" style="${g.short > 1 ? 'color:var(--brown);font-weight:700' : ''}">${g.short > 1 ? FP.inr(g.short) : '—'}</td><td class="n">${FP.pct(g.ach, 0)}</td></tr>`).join('') || '<tr><td colspan="10">Every future goal is already covered by existing investments.</td></tr>'}
@@ -1178,8 +1181,9 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
         <p class="hint">${S.step ? `SIP amounts are for year 1; a step-up SIP rises ${sp} a year. ` : ''}"Yet to build by due date" is the part Section 4 couldn't cover, grown to the due date. "On track" is the share of that amount the allocated SIP will reach.</p></div>`;
       el.querySelectorAll('[data-sm]').forEach(b => b.onclick = () => FP.set(s => s.sipMode = b.dataset.sm));
       el.querySelector('#sipAvail').onchange = e => FP.set(s => s.sipAvail = FP.num(e.target.value));
-      /* rows are in the order SIPs are given out, so the table isn't sortable by column; dragging changes that order */
+      /* rows are in the order SIPs are given out: sorting by a column, or dragging ⠿, sets that order */
       const sT = el.querySelector('#sipTbl'); FP.clearSort?.(sT);
+      sT._onSort = rows => { const names = rows.map(r => r.dataset.g).filter(Boolean); FP.clearSort(sT); FP.set(s => { s.g5order = names; }); };
       FP.dragRows(sT, 'tr[data-g]', r => r.dataset.g, names => FP.set(s => s.g5order = names));
       el.querySelector('#g5reset')?.addEventListener('click', () => FP.set(s => { delete s.g5order; }));
       el.querySelector('#sipHow').onclick = () => FP.openSurplus();
@@ -1540,7 +1544,7 @@ Corpus = PV(((1+${+rv.r.toFixed(4)}%)/(1+${+rv.infl.toFixed(4)}%))^(1/12)-1, ${r
   /* Money kept for spending = what isn't available to invest (never less than actual spending) */
   const keepOf = S => Math.max(S.cf.inc - S.avail, S.cf.spend);
   const target = S => FP.rSip(keepOf(S) + S.req);
-  const sum = S => ({ gap: S.short, t: target(S), sip: S.req, avail: S.avail, now: S.nowShort, ok: S.goals.filter(g => g.funded > .995).length, n: S.goals.length });
+  const sum = S => { const G = S.goals.filter(g => g.name !== FP.JOBG); return { gap: S.short, t: target(S), sip: S.req, avail: S.avail, now: S.nowShort, ok: G.filter(g => g.funded > .995).length, n: G.length }; };
 
   FP.scenApply = (d, st, sc) => {
     const G = sc.goals || {}, ro = G.Retirement || {};
@@ -1551,8 +1555,18 @@ Corpus = PV(((1+${+rv.r.toFixed(4)}%)/(1+${+rv.infl.toFixed(4)}%))^(1/12)-1, ${r
     const goals = { ...(st.goals || {}) }; if (ro.pri) goals.Retirement = { ...(goals.Retirement || {}), pri: ro.pri };
     const ss = { ...st, sipMode: sc.sipMode || st.sipMode, fund, goals, inflows: [...(st.inflows || []), ...(sc.inflows || [])].filter(x => +x.amt > 0) };   /* plan's own money-coming-later plus the scenario's */
     if (sc.avail != null) ss.sipAvail = sc.avail;
+    /* Job loss (sc.job = { who: 'Self' | 'Spouse', months }): for those months the household lives on the other income and savings,
+       and SIPs pause. The money spent is a goal due now (paid from investments; the emergency fund is effectively used and refilled),
+       and every goal's SIP starts that many months later, so it has less time to build. */
+    const J = FP.jobLoss(d, st, sc);
+    if (J) { dd.goals = [...dd.goals, { row: 0, grp: 'Scenario', name: JOBG, pri: 'High', amt: J.total, year: null, note: '', type: 'general' }]; ss.sipDelay = J.months; ss.order = [JOBG, ...(st.order || [])]; }
     return [dd, ss];
   };
+  const JOBG = 'Living costs while out of work'; FP.JOBG = JOBG;
+  FP.jobLoss = (d, st, sc) => { const j = sc?.job; if (!j || !(+j.months > 0) || !j.who) return null;
+    const pm = x => x.y > 0 ? x.y / 12 : x.m, cf = FP.calc.cf(d, st).t, lost = d.inflows.filter(x => x.label.includes(`(${j.who})`)).reduce((t, x) => t + pm(x), 0);
+    const need = Math.max(cf.spend - (cf.inc - lost), 0), first = (j.who === 'Self' ? d.self : d.spouse)?.first || j.who;
+    return { who: j.who, first, months: +j.months, lost, need, total: need * +j.months }; };
   FP.scenRun = (d, st, sc) => run(...(sc ? FP.scenApply(d, st, sc) : [d, st]));
   /* for the client PDF: the same 'what changes' list and totals as the comparison table */
   FP.scenNotes = (d, st, sc) => notes(d, st, sc, FP.calc.goals(d, st).filter(g => g.on)); FP.scenSum = S => sum(S);
@@ -1567,6 +1581,7 @@ Corpus = PV(((1+${+rv.r.toFixed(4)}%)/(1+${+rv.infl.toFixed(4)}%))^(1/12)-1, ${r
     const low = d.goals.filter(g => g.pri === 'Low' && g.year && g.type !== 'emergency');
     if (low.length) out.push({ id: 'p2', name: 'Move low-priority goals', goals: Object.fromEntries(low.map(g => [g.name, { year: g.year + 2, amt: Math.round(g.amt * .8) }])), inflows: [], note: 'Low-priority goals 2 years later and 20% smaller.' });
     if (R) out.push({ id: 'p3', name: 'Retire 2 years later', goals: { Retirement: { year: R.ry + 2 } }, inflows: [], note: '' });
+    if (d.inflows.some(x => x.label.includes('(Self)'))) out.push({ id: 'p5', name: `If ${d.self?.first || 'you'} lose${d.self?.first ? 's' : ''} the job for 6 months`, job: { who: 'Self', months: 6 }, goals: {}, inflows: [], note: '' });
     const src = sources(d, st).filter(x => x[2] === 'kept aside');
     if (src.length) out.push({ id: 'p4', name: 'Sell kept-aside assets', goals: {}, inflows: src.map(([l, v]) => ({ src: l, amt: v, month: 3, year: y0 + 3, to: 'pool' })), note: "Assumes each is sold in 3 years for today's value. Change the year and expected price." });
     return out;
@@ -1577,6 +1592,8 @@ Corpus = PV(((1+${+rv.r.toFixed(4)}%)/(1+${+rv.infl.toFixed(4)}%))^(1/12)-1, ${r
     const out = [], per = {}, P = Object.fromEntries(plan.map(g => [g.name, g]));
     if (sc.sipMode && sc.sipMode !== (st.sipMode === 'flat' ? 'flat' : 'step')) out.push(sc.sipMode === 'flat' ? 'Flat SIP' : `Step-up SIP (${FP.pct(FP.rate('stepUp'), 1)} a year)`);
     if (sc.avail != null) out.push(`Can invest ${FP.inr(sc.avail)} a month`);
+    const J = FP.jobLoss(d, st, sc);
+    if (J) out.push(`${J.first} out of work for ${J.months} month${J.months > 1 ? 's' : ''}: SIPs pause, and ${FP.short(J.total)} of living costs (${FP.inr(J.need)} a month beyond other income) comes from savings and investments`);
     Object.entries(sc.goals || {}).forEach(([n, o]) => {
       const g = P[n]; if (!g) return; const p = [], a0 = n === 'Retirement' ? d.other.retireMonthly : g.amt;
       if (o.pri && o.pri !== g.pri) p.push(`priority ${g.pri} → ${o.pri}`);
@@ -1716,6 +1733,9 @@ Need in year y      = household × (1 + inflation)^y + premiums + EMIs of loans 
               <div class="row3"><label>Scenario name<input id="se_name" type="text" value="${FP.esc(dr.name)}"></label>
                 <label>SIP type${sel('id="se_sipMode"', [['', `Same as plan (${st.sipMode === 'flat' ? 'flat' : 'step-up'})`], ['step', `Step-up (${sp} a year)`], ['flat', 'Flat']], dr.sipMode || '')}</label>
                 <label>Can invest per month<input id="se_avail" type="text" inputmode="decimal" class="money" ${dr.avail != null ? `data-raw="${dr.avail}" value="${FP.inrx(dr.avail)}"` : ''} placeholder="Same as plan: ${FP.inrx(S.avail)}"></label></div>
+              <div class="row3" style="margin-top:10px"><label>If a job is lost${sel('id="se_jobWho"', [['', 'No job loss'], ...(d.self ? [['Self', `${d.self.first || 'Self'} loses the job`]] : []), ...(d.spouse ? [['Spouse', `${d.spouse.first || 'Spouse'} loses the job`]] : [])], dr.job?.who || '')}</label>
+                <label>Months without income<input id="se_jobM" type="number" min="1" max="60" value="${dr.job?.months ?? 6}"></label>
+                <span class="hint" style="align-self:end" id="se_jobTxt"></span></div>
               <label style="margin-top:10px">Notes for this scenario<textarea id="se_note" rows="2" placeholder="e.g. Client open to selling the plot in 2029">${FP.esc(dr.note || '')}</textarea></label>
               <h3>Goals</h3><p class="hint" style="margin:0 0 8px">Changes apply only to this scenario. Gold cells differ from the plan; ↺ resets a goal. "Fund with": Lumpsum only = existing investments, no new SIP; SIP only = no existing investments; Leave unfunded = not planned. Fund % plans only part of the goal.</p>
               <div class="tbl"><table class="bulk" id="seG"><thead><tr><th>Goal</th><th>Priority</th><th class="n">Today's cost</th><th>Year</th><th>Fund with</th><th class="n">Fund %</th><th class="n">Funded</th><th class="n">SIP / month</th><th data-nosort></th></tr></thead><tbody>${plan.map(gRow).join('')}</tbody></table></div>
@@ -1731,6 +1751,9 @@ Need in year y      = household × (1 + inflation)^y + premiums + EMIs of loans 
           $('#seI').querySelectorAll('[data-xi]').forEach(b => b.onclick = () => { dr.inflows.splice(+b.dataset.xi, 1); show(); });
           $('#seAddI').onclick = () => { const s0 = srcs[0]; dr.inflows.push({ src: s0 ? s0[0] : '', amt: s0 ? s0[1] : 0, month: 3, year: y0 + 1, to: 'pool' }); show(); };
           ['name', 'note', 'sipMode', 'avail'].forEach(k => $('#se_' + k).addEventListener('change', e => { const x = e.target; dr[k] = k === 'avail' ? (x.value.trim() === '' ? undefined : FP.num(x.value)) : x.value || undefined; if (k === 'avail' && dr.avail == null) delete dr.avail; calc(); }));
+          const jobTxt = () => { const J = FP.jobLoss(d, st, dr); $('#se_jobTxt').textContent = J ? `${FP.inr(J.need)} a month beyond other income × ${J.months} = ${FP.short(J.total)} from savings; SIPs pause for ${J.months} months.` : ''; };
+          const jobUpd = () => { const w = $('#se_jobWho').value, m = +$('#se_jobM').value || 0; if (w && m > 0) dr.job = { who: w, months: m }; else delete dr.job; jobTxt(); calc(); };
+          $('#se_jobWho').addEventListener('change', jobUpd); $('#se_jobM').addEventListener('change', jobUpd); jobTxt();
           $('#seX').onclick = $('#seCancel').onclick = FP.closeModal;
           $('#seSave').onclick = () => FP.set(s => { const L = clone(list), i = L.findIndex(x => x.id === dr.id); dr.name = (dr.name || '').trim() || 'Scenario'; if (i < 0) L.push(dr); else L[i] = dr; s.scen = L; s.scSel = dr.id; FP.closeModal(); });
           $('#seDel')?.addEventListener('click', e => { if (!e.target.dataset.sure) { e.target.dataset.sure = 1; e.target.textContent = 'Click again to delete'; return; } FP.set(s => { s.scen = list.filter(x => x.id !== dr.id); }); FP.closeModal(); });
@@ -1973,6 +1996,8 @@ Move              = target − today; every change is shown (under ₹1,000 coun
     /* who does each step: Abundance (SIPs, switches, rebalancing, insurance, the yearly review) or You (money, goals, nominations, Will); changeable per step */
     const BY = { SIP: 'Abundance', Investments: 'Abundance', Protection: 'Abundance', Review: 'Abundance', Data: 'Abundance' }, SET = st.act?.by || {};
     out.forEach(x => { x.by = SET[x.id] || x.by || BY[x.area] || 'You'; });
+    /* wording you typed over a step (st.act.text) replaces the tool's; the tool's wording stays in x.auto to go back to */
+    const TX = st.act?.text || {}; out.forEach(x => { if (TX[x.id] != null) { x.auto = x.text; x.text = TX[x.id]; x.edited = true; } });
     return out;
   };
 
@@ -1984,7 +2009,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
       <div class="kpis">${FP.kpi('Steps', `${L.filter(x => !x.internal).length}`, `${L.filter(x => done[x.id] && !x.internal).length} done`, 1)}${WHEN.slice(0, 3).map(w => FP.kpi(w, String(L.filter(x => x.when === w && !x.internal).length), 'steps')).join('')}</div>
       ${WHEN.map(w => { const R = L.filter(x => x.when === w); return R.length ? `<div><h3>${w}</h3><div class="tbl"><table class="acts"><thead><tr><th class="w1" data-nosort>Done</th><th data-nosort>What to do</th><th class="w1" data-nosort>By</th><th class="w1" data-nosort>Area</th><th class="w1 noprint" data-nosort></th></tr></thead><tbody>
         ${R.map(x => `<tr class="${done[x.id] ? 'done' : ''}${x.internal ? ' noprint' : ''}" data-k="${FP.esc(x.id)}"><td class="c"><input type="checkbox" data-done="${FP.esc(x.id)}" ${done[x.id] ? 'checked' : ''} aria-label="Done"></td>
-          <td>${FP.esc(x.text)}${x.internal ? '<span class="note">Internal, not printed</span>' : ''}</td><td><select class="rts" data-by="${FP.esc(x.id)}" aria-label="Who does this">${['Abundance', 'You'].map(b => `<option${x.by === b ? ' selected' : ''}>${b}</option>`).join('')}</select></td><td style="white-space:nowrap">${x.area}${x.sec && secNo(x.sec) && x.sec !== 'action' ? `<span class="note noprint"><a href="#${x.sec}">Section&nbsp;${secNo(x.sec)}</a></span>` : ''}</td>
+          <td><div class="actx" contenteditable="true" spellcheck="false" data-ed="${FP.esc(x.id)}" title="Click to edit this step">${FP.esc(x.text)}</div>${x.edited ? `<span class="note noprint">Edited · <button class="link" data-unedit="${FP.esc(x.id)}">use the tool's wording</button> (it updates when the numbers change)</span>` : ''}${x.internal ? '<span class="note">Internal, not printed</span>' : ''}</td><td><select class="rts" data-by="${FP.esc(x.id)}" aria-label="Who does this">${['Abundance', 'You'].map(b => `<option${x.by === b ? ' selected' : ''}>${b}</option>`).join('')}</select></td><td style="white-space:nowrap">${x.area}${x.sec && secNo(x.sec) && x.sec !== 'action' ? `<span class="note noprint"><a href="#${x.sec}">Section&nbsp;${secNo(x.sec)}</a></span>` : ''}</td>
           <td class="noprint"><button class="link" data-hide="${FP.esc(x.id)}" title="${x.custom ? 'Delete step' : 'Hide step'}" style="text-decoration:none">✕</button></td></tr>`).join('')}</tbody></table></div></div>` : ''; }).join('')}
       <div class="noprint" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
         <select id="acWhen">${WHEN.map(w => `<option>${w}</option>`).join('')}</select><select id="acBy" aria-label="Who does this"><option>You</option><option>Abundance</option></select>
@@ -1998,6 +2023,10 @@ Move              = target − today; every change is shown (under ₹1,000 coun
       el.querySelectorAll('[data-done]').forEach(c => c.onchange = () => upd(x => { x.done = { ...x.done, [c.dataset.done]: c.checked }; }));
       el.querySelectorAll('[data-hide]').forEach(b => b.onclick = () => upd(x => { const id = b.dataset.hide; if (x.custom.some(c => c.id === id)) x.custom = x.custom.filter(c => c.id !== id); else x.hide = { ...x.hide, [id]: true }; }));
       el.querySelector('#acAdd').onclick = () => { const t = el.querySelector('#acText').value.trim(); if (!t) return el.querySelector('#acText').focus(); upd(x => { x.custom = [...x.custom, { id: 'c' + Date.now(), when: el.querySelector('#acWhen').value, by: el.querySelector('#acBy').value, text: t }]; }); };
+      el.querySelectorAll('[data-ed]').forEach(c => { c.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); c.blur(); } });
+        c.addEventListener('blur', () => { const id = c.dataset.ed, t = c.innerText.replace(/\s+/g, ' ').trim(), it = all.find(x => x.id === id), auto = it?.auto ?? it?.text;
+          if (t === (it?.text || '')) return; upd(x => { x.text = { ...(x.text || {}) }; if (!t || t === auto) delete x.text[id]; else x.text[id] = t; }); }); });
+      el.querySelectorAll('[data-unedit]').forEach(b => b.onclick = () => upd(x => { x.text = { ...(x.text || {}) }; delete x.text[b.dataset.unedit]; }));
       el.querySelectorAll('[data-by]').forEach(c => c.onchange = () => upd(x => { x.by = { ...(x.by || {}), [c.dataset.by]: c.value }; }));
       el.querySelector('#acText').onkeydown = e => { if (e.key === 'Enter') el.querySelector('#acAdd').click(); };
       el.querySelector('#acShow')?.addEventListener('click', () => upd(x => { x.hide = {}; }));
@@ -2151,6 +2180,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
     }
     body._sorting = true;
     blocks.forEach(b => { if (b.head) body.appendChild(b.head); b.rows.forEach(r => body.appendChild(r)); }); tail.forEach(r => body.appendChild(r));
+    if (s && tb._onSort) { const rows = [...body.rows]; setTimeout(() => tb._onSort(rows), 0); }   /* a table whose order means something (Section 5) keeps the sorted order */
     [...(tb.tHead?.rows[0]?.cells || [])].forEach((th, i) => { const on = s && s.c === i; if (on) th.setAttribute('aria-sort', s.d > 0 ? 'ascending' : 'descending'); else th.removeAttribute('aria-sort'); const si = th.querySelector('.si'); if (si) si.textContent = on ? (s.d > 0 ? '▲' : '▼') : '⇅'; });
   };
 
@@ -3011,7 +3041,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
       `<thead><tr><th>Goal</th><th>Due</th><th class="n">To build by due date</th><th>Invested in</th><th class="n">SIP needed</th><th class="n">SIP allocated</th><th class="n">Shortfall</th></tr></thead>`, rows,
       tail, 175 + (covered.length ? 45 : 0) + (Sx.nowGap.length ? 20 : 0), 'stepup');
   };
-  FP.cp.sipPages = c => [...sipPage(c), ...growthPage(c)];
+  FP.cp.sipPages = c => [...sipPage(c)];
 })();
 </script>
 <script data-src="cp-p6.js">/* Client PDF, "What if?" — scenarios ticked in Section 6, compared with the plan. Skipped when none are ticked.
