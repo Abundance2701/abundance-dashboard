@@ -336,9 +336,12 @@ const $ = (s, r = document) => r.querySelector(s);
 FP.alSort = (rows, st) => { const o = st.alOrd || []; if (!o.length) return rows; const pos = a => { const i = o.indexOf(a.label); return i < 0 ? 1e6 : i; }; return rows.map((a, i) => [a, i]).sort((x, y) => pos(x[0]) - pos(y[0]) || x[1] - y[1]).map(x => x[0]); };
 FP.gname = x => { const n = typeof x === 'string' ? x : x?.name; return (FP.glabel || {})[n] || n; };
 FP.esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-/* Display amounts: calculated figures round UP (₹10,000+ to the next ₹1,000, smaller to the next ₹100). FP.inrx = exact, for data entry and checks */
+/* Display amounts: whole-rupee figures show exactly; other calculated figures round UP (₹10,000+ to the next ₹500, smaller to the next ₹100). FP.inrx = exact, for data entry and checks */
 FP.inrx = v => { const r = Math.round(+v || 0); return (r < 0 ? '−' : '') + '₹' + Math.abs(r).toLocaleString('en-IN'); };
-FP.up = v => { const a = Math.abs(+v || 0); if (a < 0.5) return 0; const s = a >= 1e4 ? 1e3 : 100; return Math.sign(v) * Math.ceil(a / s - 1e-9) * s; };
+FP.up = v => { const a = Math.abs(+v || 0); if (a < 0.5) return 0; if (Math.abs(a - Math.round(a)) < 1e-6) return Math.sign(v) * Math.round(a);   /* already whole rupees (data, or rounded in the calculation): shown as is, so totals add up */
+  const s = a >= 1e4 ? 500 : 100; return Math.sign(v) * Math.ceil(a / s - 1e-9) * s; };
+/* A SIP amount, rounded up once in the calculation: ₹10,000+ to the next ₹500, smaller to the next ₹100. Totals are sums of these. */
+FP.rSip = v => { const a = +v || 0; if (a < 0.5) return 0; const s = a >= 1e4 ? 500 : 100; return Math.ceil(a / s - 1e-9) * s; };
 FP.inr = v => FP.inrx(FP.up(v));
 FP.short = v => { const a = Math.abs(v || 0), s = v < 0 ? '−' : ''; if (a >= 1e7) return s + '₹' + (a / 1e7).toFixed(2) + '\u00a0Cr'; if (a >= 1e5) return s + '₹' + (a / 1e5).toFixed(2) + '\u00a0L';   /* non-breaking space: the number and L/Cr never split across lines */ return s + '₹' + Math.round(a).toLocaleString('en-IN'); };
 /* Number from a cell: accepts ₹, commas and simple sums like +10000+20000*2 or =50000/2 */
@@ -557,7 +560,9 @@ FP.boot = () => {
     if (t.closest('#drawer')) { e.preventDefault(); const td = t.closest('td'), tr = td?.parentElement, nx = tr?.nextElementSibling && FP.cellAt?.(tr.nextElementSibling, FP.colOf(td)); const id = nx?.querySelector('input,select')?.id; t.blur(); if (id) setTimeout(() => document.getElementById(id)?.focus(), 30); return; }
     if (t.closest('section.sec')) { e.preventDefault(); t.blur(); }
   });
-  addEventListener('keydown', e => { if (e.key !== 'Escape') return; if (!$('#modal').hidden) FP.closeModal?.(); else if (!$('#drawer').hidden) FP.closeDrawer(); });
+  /* Esc: in a cell (input, list, text) of a pop-up, leave the cell; with no cell active, close the pop-up */
+  FP.inCell = () => { const t = document.activeElement; return t && t !== document.body && t.matches?.('input:not([type=checkbox]):not([type=radio]):not([type=file]),select,textarea,[contenteditable="true"]') ? t : null; };
+  addEventListener('keydown', e => { if (e.key !== 'Escape') return; const c = FP.inCell(); if (c && c.closest('#drawer,#modal')) { e.preventDefault(); c.blur(); return; } if (!$('#modal').hidden) FP.closeModal?.(); else if (!$('#drawer').hidden) FP.closeDrawer(); });
   FP.base = FP.SAMPLE; FP.key = 'sample'; FP.load(); FP.render();
   $('#notes').oninput = e => { FP.st.notes = e.target.innerHTML; FP.save(); };
   document.querySelectorAll('.ntool button').forEach(b => { b.onmousedown = e => e.preventDefault(); b.onclick = () => { $('#notes').focus(); document.execCommand('styleWithCSS', false, true); document.execCommand(b.dataset.cmd, false, b.dataset.val || null); FP.st.notes = $('#notes').innerHTML; FP.save(); }; });
@@ -1074,11 +1079,13 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
 (() => {
   FP.calc.sip = (d, st) => {
     const A = FP.calc.alloc(d, st), { goals } = A, cf = FP.calc.cf(d, st).t, step = st.sipMode !== 'flat';
-    const availCalc = cf.sav + Math.max(cf.surplus, 0), avail = st.sipAvail ?? availCalc;
+    const availCalc = Math.floor(cf.sav + Math.max(cf.surplus, 0)), avail = Math.floor(st.sipAvail ?? availCalc);
     /* Money coming in later is applied in Section 4 (today's money), so here only the SIP is worked out */
     goals.forEach(g => { g.gap0 = g.gap; g.gapFV0 = g.gapFV; });
     const inflows = A.inflows.map(x => ({ ...x, used: x.amt - x.left }));
-    const future = FP.goalOrder(st, goals.filter(g => !g.due && g.gapFV > 1 && !g.noSip)).map(g => { const nd = FP.need(g.gapFV, g.n, g.r, undefined, g.k); return { ...g, req: step ? nd.step : nd.sip }; });
+    /* SIPs go to goals top to bottom: Section 4's order, or the order dragged in Section 5 (st.g5order) */
+    const o5 = st.g5order || [], base = FP.goalOrder(st, goals.filter(g => !g.due && g.gapFV > 1 && !g.noSip)), at = g => { const i = o5.indexOf(g.name); return i < 0 ? 1e6 + base.indexOf(g) : i; };
+    const future = (o5.length ? base.slice().sort((x, y) => at(x) - at(y)) : base).map(g => { const nd = FP.need(g.gapFV, g.n, g.r, undefined, g.k), raw = step ? nd.step : nd.sip; return { ...g, reqRaw: raw, req: FP.rSip(raw) }; });
     let left = avail; future.forEach(g => { g.alloc = Math.min(g.req, Math.max(left, 0)); left -= g.alloc; g.short = g.req - g.alloc; g.ach = g.req ? g.alloc / g.req : 1; });
     const nowGap = goals.filter(g => g.due && g.gap > 1);
     /* Share of each goal reached: investments (Section 4) + later money + the SIP that fits */
@@ -1090,7 +1097,7 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
 
   FP.sec.sip = {
     render(el, d, st) {
-      const S = FP.calc.sip(d, st), o5 = st.g5order || [], F = o5.length ? S.future.slice().sort((a, b) => ((o5.indexOf(a.name) + 1) || 1e6) - ((o5.indexOf(b.name) + 1) || 1e6)) : S.future, PR = { High: 0, Medium: 1, Low: 2 }, MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const S = FP.calc.sip(d, st), F = S.future, PR = { High: 0, Medium: 1, Low: 2 }, MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
       const sp = FP.pct(FP.rate('stepUp'), 1);
       el.innerHTML = `
       <div class="noprint" style="display:flex;flex-wrap:wrap;gap:12px 24px;align-items:end">
@@ -1105,7 +1112,7 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
       ${S.nowGap.length ? `<div class="callout"><b>${FP.short(S.nowShort)} is needed now and isn't covered by existing investments.</b> A SIP can't build this in time; use the bonus or surplus, or move the goal:<ul style="margin:6px 0 0;padding-left:18px">${S.nowGap.map(g => `<li>${FP.esc(g.name)}: ${FP.short(g.gap)}</li>`).join('')}</ul></div>` : ''}
       <div><h3>SIP for each goal</h3><div class="chartbox" style="height:${Math.max(140, F.length * 30 + 40)}px"><canvas id="sipBar" role="img" aria-label="SIP allocated and shortfall per goal"></canvas></div>
         ${FP.legend(['SIP allocated', 'Monthly shortfall'], null, ['#1E7A46', '#A3502F'])}</div>
-      <div><div class="secbar"><h3>How your monthly investment is shared <span class="chip${S.step ? '' : ' muted'}">${S.step ? `Step-up SIP @ ${sp} p.a.` : 'Flat SIP'}</span></h3><button class="addgoal noprint" data-addgoal>+ Add goal</button></div><p class="hint">Money goes to goals in the same order as Section 4.<span class="noprint"> The list below follows that order${st.g5order ? ' until you reorder it here (<button class="link" id="g5reset">follow Section 4 again</button>)' : '; drag ⠿ to show it differently'}.</span> A ${S.step ? `step-up SIP rises ${sp} every 12 months` : 'flat SIP stays the same every month'}.</p>
+      <div><div class="secbar"><h3>How your monthly investment is shared <span class="chip${S.step ? '' : ' muted'}">${S.step ? `Step-up SIP @ ${sp} p.a.` : 'Flat SIP'}</span></h3><button class="addgoal noprint" data-addgoal>+ Add goal</button></div><p class="hint">The monthly SIP goes to goals from the top of this list down: a goal gets its SIP only after every goal above it is fully funded.<span class="noprint"> ${st.g5order ? 'You have reordered it here (<button class="link" id="g5reset">follow Section 4 again</button>).' : 'It starts in Section 4\'s order; drag ⠿ to change who gets the SIP first.'}</span> SIP amounts are rounded up to the next ₹500 (₹100 below ₹10,000), so the totals add up exactly. A ${S.step ? `step-up SIP rises ${sp} every 12 months` : 'flat SIP stays the same every month'}.</p>
       <div class="tbl"><table><thead><tr><th class="noprint" data-nosort title="Drag rows to reorder"></th><th>Goal</th><th>Priority</th><th>Due</th><th class="n" data-h="Still to build by due date" title="Part Section 4 could not cover, grown to the due date">Yet to build by due date</th><th>Invest in</th><th class="n" data-h="SIP needed">${S.step ? 'Step-up SIP needed' : 'SIP needed'}</th><th class="n" data-h="SIP allocated">SIP allocated</th><th class="n">Shortfall</th><th class="n">On track</th></tr></thead><tbody>
         ${F.map(g => `<tr data-g="${FP.esc(g.name)}"><td class="noprint drag" draggable="true" title="Drag to reorder. Shift+click to pick several.">⠿</td><td>${FP.goalBtn(g)}</td><td data-sort="${PR[g.pri]}"><span class="chip ${g.pri === 'High' ? '' : g.pri === 'Medium' ? 'warn' : 'muted'}">${g.pri}</span></td><td>${MON[g.mon - 1]} ${g.year}<span class="note">${g.n} months${g.k < g.n ? `; SIP for the first ${g.k} (till retirement), then it grows untouched` : ''}</span></td>
           <td class="n">${FP.inr(g.gapFV)}</td><td>${g.bk}${g.bk === 'Retirement mix' ? '' : ' MFs'} · ${FP.pct(g.r, 0)}</td><td class="n">${FP.inr(g.req)}</td><td class="n"><b>${FP.inr(g.alloc)}</b></td>
@@ -1269,13 +1276,14 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
 
   /* Goal: grow the investment one month at a time */
   const simGoal = (v, md) => {
-    const i = Math.pow(1 + v.r / 100, 1 / 12) - 1; let bal = md === 'lump' ? v.amt : 0, cost = v.cost; const rows = [];
+    const i = Math.pow(1 + v.r / 100, 1 / 12) - 1, L = md === 'lump' ? v.amt : (v.lump || 0); let bal = L, cost = v.cost, sips = 0; const rows = [];
     for (let m = 0; m < v.n; m++) {
       const y = Math.floor(m / 12), sip = m >= (v.k ?? v.n) ? 0 : md === 'sip' ? v.amt : md === 'step' ? v.amt * Math.pow(1 + v.g / 100, y) : 0;
       const row = rows[y] = rows[y] || { y: y + 1, sip, open: bal, inv: 0, gr: 0 };
       bal += sip; row.inv += sip; const g = bal * i; bal += g; row.gr += g; row.close = bal; cost *= Math.pow(1 + v.infl / 100, 1 / 12);
     }
-    return { bal, rows, cost };
+    const lumpFV = L * Math.pow(1 + i, v.n);
+    return { bal, rows, cost, lumpFV, sipFV: bal - lumpFV };
   };
   /* Retirement: withdraw at the start of each month, expense rising with inflation, rest of corpus grows */
   const simRet = v => {
@@ -1293,23 +1301,29 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
     if (!goals.length) { box.innerHTML = '<p class="hint">No future goals to check.</p>'; return; }
     if (!goals.find(g => g.name === gname)) { gname = goals[0].name; ov = {}; }
     const g = goals.find(x => x.name === gname), R = goals.find(x => x.ret);
-    const toolAmt = { sip: g.sip, step: g.step, lump: g.lump }[mode];
-    const v = { cost: g.amt, infl: g.infl * 100, n: g.n, k: g.k ?? g.n, r: g.r * 100, g: FP.rate('stepUp') * 100, amt: toolAmt, ...ov };
+    /* SIP checks start from what Section 4 already set aside for the goal (today's value), so the SIP only builds the rest */
+    const S = FP.calc.sip(FP.d, FP.st), al = S.goals.find(x => x.name === g.name), fu = S.future.find(x => x.name === g.name);
+    const lumpDef = mode === 'lump' || !al ? 0 : al.got + al.later, nd = fu ? FP.need(fu.gapFV, g.n, g.r, undefined, g.k) : null;
+    const toolAmt = mode === 'lump' ? g.lump : al ? (nd ? nd[mode] : 0) : g[mode], planAmt = fu && FP.st.sipMode !== 'flat' === (mode === 'step') ? fu.req : null;
+    const v = { cost: g.amt, infl: g.infl * 100, n: g.n, k: g.k ?? g.n, r: g.r * 100, g: FP.rate('stepUp') * 100, amt: toolAmt, lump: lumpDef, ...ov };
     const isFixed = g.ret || g.members; // target is a corpus, not today's cost × inflation
     box.innerHTML = `<p class="hint">These checks grow the money one month at a time, the way a bank statement would, instead of using PMT/PV. If the tool's formulas are right, the result lands on the goal. Change any input to test your own numbers; the plan itself is not affected.</p>
       <h3 style="margin-top:14px">Goal check</h3>
       <div class="vf"><label for="vfGoal">Goal<select id="vfGoal">${goals.map(x => `<option value="${FP.esc(x.name)}"${x.name === gname ? ' selected' : ''}>${FP.esc(FP.gname(x.name))}</option>`).join('')}</select></label>
         <label>Method<span class="segbtn">${[['sip', 'SIP'], ['step', 'Step-up SIP'], ['lump', 'Lumpsum']].map(([k, l]) => `<button data-md="${k}" aria-pressed="${k === mode}">${l}</button>`).join('')}</span></label></div>
-      <div class="vf">${isFixed ? '' : fld('vf_cost', "Today's cost", v.cost, 1) + fld('vf_infl', 'Inflation %', v.infl)}${fld('vf_n', 'Months', v.n)}${fld('vf_r', 'Return % a year', v.r)}${mode === 'step' ? fld('vf_g', 'Step-up % a year', v.g) : ''}${fld('vf_amt', mode === 'lump' ? 'Lumpsum invested today' : mode === 'step' ? 'First-year SIP / month' : 'SIP / month', v.amt, 1)}</div>
+      <div class="vf">${isFixed ? '' : fld('vf_cost', "Today's cost", v.cost, 1) + fld('vf_infl', 'Inflation %', v.infl)}${fld('vf_n', 'Months', v.n)}${fld('vf_r', 'Return % a year', v.r)}${mode === 'step' ? fld('vf_g', 'Step-up % a year', v.g) : ''}${mode !== 'lump' ? fld('vf_lump', 'Lumpsum already allocated (today)', v.lump, 1) : ''}${fld('vf_amt', mode === 'lump' ? 'Lumpsum invested today' : mode === 'step' ? 'First-year SIP / month' : 'SIP / month', v.amt, 1)}</div>
       <div id="vfOut"></div>
       ${R ? `<h3 style="margin-top:22px">Retirement corpus check</h3><p class="hint">Starts with the corpus, takes out each month's expense at the start of the month, raises the expense with inflation every month, and grows what's left.</p>
         <div class="vf">${fld('vr_corpus', 'Corpus at retirement', rov.corpus ?? R.fv, 1)}${fld('vr_need', 'Monthly need at retirement', rov.need ?? R.ret.mAt, 1)}${fld('vr_infl', 'Inflation %', rov.infl ?? FP.rate('infl') * 100)}${fld('vr_r', 'Return % after retirement', rov.r ?? FP.rate('rPost') * 100)}${fld('vr_N', 'Months in retirement', rov.N ?? R.ret.N)}</div><div id="vrOut"></div>` : ''}`;
     const out = () => {
       const vv = { ...v, ...ov }, s = simGoal(vv, mode), want = isFixed ? g.fv : s.cost, i = `(1+${+vv.r.toFixed(4)}%)^(1/12)-1`;
-      $('#vfOut').innerHTML = `<p>After ${vv.n} months the investment grows to <b>${FP.inrx(s.bal)}</b>. The goal needs <b>${FP.inrx(want)}</b>${isFixed ? '' : ` (today's cost grown month by month at ${+vv.infl.toFixed(2)}%)`}. ${verdict(s.bal, want)}</p>
+      const L = mode === 'lump' ? 0 : +vv.lump || 0;
+      $('#vfOut').innerHTML = `${L > 0 ? `<p class="hint">Lumpsum already allocated = what Section 4 set aside for this goal (investments and money coming later), at today's value. It is assumed to grow at this goal's return, ${+vv.r.toFixed(2)}% a year.</p>` : ''}
+        <p>${L > 0 ? `The lumpsum ${FP.inrx(L)} grows to <b>${FP.inrx(s.lumpFV)}</b> and the SIPs grow to <b>${FP.inrx(s.sipFV)}</b>: together ` : `After ${vv.n} months the investment grows to `}<b>${FP.inrx(s.bal)}</b>${L > 0 ? ` after ${vv.n} months` : ''}. The goal needs <b>${FP.inrx(want)}</b>${isFixed ? '' : ` (today's cost grown month by month at ${+vv.infl.toFixed(2)}%)`}. ${verdict(s.bal, want)}</p>
+        ${planAmt != null && ov.amt == null && ov.lump == null && Math.abs(planAmt - toolAmt) >= 1 ? `<p class="hint">The plan shows <b>${FP.inrx(planAmt)}</b> a month for this goal: the ${FP.inrx(toolAmt)} above, rounded up to the next ${toolAmt >= 1e4 ? '₹500' : '₹100'}, so it ends slightly above the goal.</p>` : ''}
         <div class="xl">Same check in Excel:
 Future cost   = ${isFixed ? FP.inrx(want).replace(/[₹,]/g, '') + '  (taken from the tool)' : `${Math.round(vv.cost)}*(1+${+vv.infl.toFixed(4)}%)^(${vv.n}/12)`}
-SIP           = ${vv.k < vv.n ? `PMT(${i}, ${vv.k}, 0, -${Math.round(want)}/(1+${i})^(${vv.n}-${vv.k}), 1)   SIP stops at retirement after ${vv.k} months` : `PMT(${i}, ${vv.n}, 0, -${Math.round(want)}, 1)`}
+SIP           = ${vv.k < vv.n ? `PMT(${i}, ${vv.k}, ${Math.round(L)}, -${Math.round(want)}/(1+${i})^(${vv.n}-${vv.k}), 1)   SIP stops at retirement after ${vv.k} months` : `PMT(${i}, ${vv.n}, ${Math.round(L)}, -${Math.round(want)}, 1)`}${L > 0 ? '   (3rd value = lumpsum already allocated)' : ''}
 Lumpsum today = PV(${i}, ${vv.n}, 0, -${Math.round(want)})
 Step-up SIP   = no single Excel function; build the table below in Excel and Goal Seek the first-year SIP</div>
         <div class="tbl scrolly"><table><thead><tr><th>Year</th><th class="n">SIP / month</th><th class="n">Opening</th><th class="n">Invested</th><th class="n">Growth</th><th class="n">Closing</th></tr></thead><tbody>
@@ -1464,7 +1478,7 @@ Corpus = PV(((1+${+rv.r.toFixed(4)}%)/(1+${+rv.infl.toFixed(4)}%))^(1/12)-1, ${r
   const run = (d, st) => { const k = FP.st; FP.st = st; try { return { S: FP.calc.sip(d, st), R: FP.calc.retire(d) }; } finally { FP.st = k; } };
   /* Money kept for spending = what isn't available to invest (never less than actual spending) */
   const keepOf = S => Math.max(S.cf.inc - S.avail, S.cf.spend);
-  const target = S => keepOf(S) + S.req;
+  const target = S => Math.round(keepOf(S) + S.req);
   const sum = S => ({ gap: S.short, t: target(S), sip: S.req, avail: S.avail, now: S.nowShort, ok: S.goals.filter(g => g.funded > .995).length, n: S.goals.length });
 
   FP.scenApply = (d, st, sc) => {
@@ -2269,7 +2283,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
 <script data-src="cp-art.js">/* Client PDF illustrations: ink line art on a soft gold wash, one consistent style for every page.
    FP.art.il(key, size) draws one; FP.art.goalKey(goal) picks the right one for a goal. */
 (() => {
-  const INK = '#39293E', B = '#934E32', P = '#fffdf8';
+  const INK = '#39293E', B = '#934E32', P = '#F0F8FF';
   const blobs = ['M58 10C84 8 108 26 108 54C109 84 86 108 58 106C30 105 9 86 11 58C12 30 32 12 58 10Z', 'M62 12C90 14 106 36 104 62C102 90 78 108 52 104C26 100 10 80 13 54C16 28 36 10 62 12Z', 'M56 13C80 9 104 30 106 58C107 86 84 104 58 107C32 109 12 88 12 60C12 34 30 16 56 13Z'];
   const S = (d, w = 2.6) => `<g fill="none" stroke="${INK}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round">${d}</g>`;
   const I = {
@@ -2329,10 +2343,10 @@ Move              = target − today; every change is shown (under ₹1,000 coun
 #cpView .cpbar .sp{flex:1}#cpView .cpbar .hint{color:#d8d0dc;margin:0}
 #cpPages{display:flex;flex-direction:column;align-items:center;gap:18px;padding:22px 0 60px}
 #cpPages.zoom .cpg{zoom:.78}
-.cpg{width:794px;height:1123px;flex:none;background:#fffdf8;position:relative;overflow:hidden;padding:44px 56px 64px;color:var(--dark);font:15px/1.45 var(--fb);box-shadow:0 6px 24px rgba(0,0,0,.25)}
+.cpg{width:794px;height:1123px;flex:none;background:#F0F8FF;position:relative;overflow:hidden;padding:44px 56px 64px;color:var(--dark);font:15px/1.45 var(--fb);box-shadow:0 6px 24px rgba(0,0,0,.25)}
 .cpg h1,.cpg h2,.cpg h3{font-family:var(--fh);color:var(--dark);margin:0;text-wrap:balance}
-.cpg .top{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:1.5px solid #e4dccb;padding-bottom:12px}
-.cpg .wm{font:800 17px var(--fh);color:#e0cfc5;letter-spacing:.06em}.cpg .wm small{display:block;font:600 9.5px var(--fh);color:var(--brown);letter-spacing:.02em;margin-top:2px}
+.cpg .top{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:1.5px solid #cfdde9;padding-bottom:12px}
+.cpg .wm{font:800 17px var(--fh);color:#cbb3a6;letter-spacing:.06em}.cpg .wm small{display:block;font:600 9.5px var(--fh);color:var(--brown);letter-spacing:.02em;margin-top:2px}
 .cpg .who{text-align:right;font-size:12.5px;color:#6d6470}.cpg .who b{display:block;font:700 13px var(--fh);color:var(--dark)}
 .cpg.fit1 .ct td{padding-top:4px;padding-bottom:4px}.cpg.fit1 h3.st{margin-top:12px!important}.cpg.fit1 .kp{margin-bottom:12px}.cpg.fit1 .lead{margin-bottom:10px}.cpg.fit1 .phd svg{margin:4px 0}.cpg.fit1 p.unit{margin-top:6px!important}
 .cpg.fit2 .ct{font-size:12.5px}.cpg.fit2 .eyebrow{margin-top:14px}.cpg.fit2 .ct th{padding:5px 6px}
@@ -2340,12 +2354,12 @@ Move              = target − today; every change is shown (under ₹1,000 coun
 .cpg .eyebrow{font:700 11.5px var(--fh);letter-spacing:.14em;text-transform:uppercase;color:var(--brown);margin-top:28px}
 .cpg h1.t{font-size:28px;font-weight:700;color:var(--green);margin-top:6px}
 .cpg .lead{font-size:16px;color:#6d6470;margin:6px 0 18px;max-width:600px}
-.cpg .foot{position:absolute;left:56px;right:56px;bottom:24px;display:flex;justify-content:space-between;font-size:11px;color:#6d6470;border-top:1px solid #e4dccb;padding-top:8px}
+.cpg .foot{position:absolute;left:56px;right:56px;bottom:24px;display:flex;justify-content:space-between;font-size:11px;color:#6d6470;border-top:1px solid #cfdde9;padding-top:8px}
 .cpg .foot b{font:600 11px var(--fh);color:var(--green)}
 .cpg svg.il{display:block;flex:none}
-.cpg .note{background:#f6f2e7;border-left:5px solid var(--brown);border-radius:0 12px 12px 0;padding:12px 18px;font-size:14.5px}
+.cpg .note{background:#e4eef7;border-left:5px solid var(--brown);border-radius:0 12px 12px 0;padding:12px 18px;font-size:14.5px}
 /* cover */
-.cpg.cpcover{padding:0;background:#fffdf8}
+.cpg.cpcover{padding:0;background:#F0F8FF}
 .cv-l{position:absolute;left:64px;top:84px;right:64px}
 .cv-chip{display:inline-block;background:var(--gold);color:var(--dark);font:700 12px var(--fh);letter-spacing:.06em;padding:5px 12px;border-radius:4px}
 .cv-t1{font:500 54px/1 var(--fh);color:var(--brown);letter-spacing:.04em;margin-top:44px}
@@ -2355,38 +2369,38 @@ Move              = target − today; every change is shown (under ₹1,000 coun
 .cv-art{position:absolute;right:0;bottom:0}
 .cv-wm{position:absolute;left:64px;bottom:56px;font:800 22px var(--fh);color:var(--green);letter-spacing:.08em}.cv-wm small{display:block;font:600 10.5px var(--fh);color:var(--brown);letter-spacing:.02em;margin-top:3px}
 /* contents */
-.toc{margin-top:8px}.toc .r{display:grid;grid-template-columns:62px 1fr auto;gap:8px 14px;align-items:baseline;padding:16px 0;border-bottom:1px dashed #e4dccb}
+.toc{margin-top:8px}.toc .r{display:grid;grid-template-columns:62px 1fr auto;gap:8px 14px;align-items:baseline;padding:16px 0;border-bottom:1px dashed #cfdde9}
 .toc .n{font:800 30px var(--fh);color:var(--gold);line-height:1}.toc h3{font-size:18px;font-weight:700}.toc .s{font-size:14.5px;color:#6d6470;margin-top:3px}.toc .pg{font:700 15px var(--fh);color:var(--green)}
 .toc .r.soon h3,.toc .r.soon .n{opacity:.45}
 /* why */
-.why-hero{display:grid;grid-template-columns:170px 1fr;gap:26px;align-items:center;background:#f6f2e7;border-radius:16px;padding:22px 26px}
+.why-hero{display:grid;grid-template-columns:170px 1fr;gap:26px;align-items:center;background:#e4eef7;border-radius:16px;padding:22px 26px}
 .why-hero h2{font-size:20px;color:var(--green);margin-bottom:8px}.why-hero p{margin:0;font-size:16px}
-.ben{margin-top:22px;display:flex;flex-direction:column}.ben .r{display:grid;grid-template-columns:58px 1fr;gap:14px;align-items:center;padding:12px 0;border-bottom:1px dashed #e4dccb}.ben .r:last-child{border-bottom:0}
+.ben{margin-top:22px;display:flex;flex-direction:column}.ben .r{display:grid;grid-template-columns:58px 1fr;gap:14px;align-items:center;padding:12px 0;border-bottom:1px dashed #cfdde9}.ben .r:last-child{border-bottom:0}
 .ben h3{font-size:16.5px;font-weight:700}.ben p{margin:2px 0 0;font-size:15px;color:#4d4552}
 /* questions */
 .qs{display:flex;flex-direction:column;gap:16px;margin-top:4px}
-.q{display:grid;grid-template-columns:128px 1fr;gap:22px;align-items:center;border:1.5px solid #e4dccb;border-radius:16px;padding:18px 22px;background:#fff}
+.q{display:grid;grid-template-columns:128px 1fr;gap:22px;align-items:center;border:1.5px solid #cfdde9;border-radius:16px;padding:18px 22px;background:#fff}
 .q .k{font:700 11.5px var(--fh);letter-spacing:.14em;text-transform:uppercase;color:var(--brown)}
 .q h2{font-size:22px;color:var(--green);margin:4px 0 6px}.q p{margin:0;font-size:15.5px}
-.q .in{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px}.q .in span{font:600 12px var(--fh);background:#e9f3ec;color:var(--green);border-radius:12px;padding:4px 10px}.q .in span.soon{background:#f1ece4;color:#8b7f8e}
+.q .in{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px}.q .in span{font:600 12px var(--fh);background:#e9f3ec;color:var(--green);border-radius:12px;padding:4px 10px}.q .in span.soon{background:#e6eef5;color:#8b7f8e}
 .unit{margin-top:18px;font-size:14px;color:#6d6470;text-align:center}
 /* about */
 .ppl{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.pcard{border:1.5px solid #e4dccb;border-radius:16px;background:#fff;padding:18px 20px}
+.pcard{border:1.5px solid #cfdde9;border-radius:16px;background:#fff;padding:18px 20px}
 .pcard .hd{display:flex;gap:14px;align-items:center;margin-bottom:10px}
-.av{width:52px;height:52px;border-radius:50%;background:var(--gold);color:var(--dark);font:700 18px var(--fh);display:grid;place-items:center;flex:none}.av.k{background:#f1e6cc;width:42px;height:42px;font-size:15px}
+.av{width:52px;height:52px;border-radius:50%;background:var(--gold);color:var(--dark);font:700 18px var(--fh);display:grid;place-items:center;flex:none}.av.k{background:#dbe9f4;width:42px;height:42px;font-size:15px}
 .pcard h3{font-size:17px;font-weight:700;line-height:1.2}.pcard .rel{font-size:13.5px;color:#6d6470}
 .pcard dl{display:grid;grid-template-columns:100px 1fr;gap:6px 10px;margin:0;font-size:14.5px}.pcard dt{color:#6d6470}.pcard dd{margin:0;overflow-wrap:anywhere}
 .fam{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
-.fcard{display:flex;gap:12px;align-items:center;border:1.5px solid #e4dccb;border-radius:14px;padding:12px 16px;background:#fff}.fcard b{font:700 15px var(--fh);display:block}.fcard span{font-size:14px;color:#6d6470}
+.fcard{display:flex;gap:12px;align-items:center;border:1.5px solid #cfdde9;border-radius:14px;padding:12px 16px;background:#fff}.fcard b{font:700 15px var(--fh);display:block}.fcard span{font-size:14px;color:#6d6470}
 .sub{font:700 15px var(--fh);color:var(--dark);margin:22px 0 4px}
 .addr{margin-top:18px;font-size:14.5px;color:#4d4552}
 /* assumptions */
 .as{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.acard{border:1.5px solid #e4dccb;border-radius:16px;background:#fff;padding:16px 18px;display:grid;grid-template-columns:64px 1fr;gap:14px;align-items:start}
+.acard{border:1.5px solid #cfdde9;border-radius:16px;background:#fff;padding:16px 18px;display:grid;grid-template-columns:64px 1fr;gap:14px;align-items:start}
 .acard.w{grid-column:1/-1}
 .acard h3{font-size:16px;font-weight:700;margin-bottom:4px}.bl{margin:2px 0 0;padding-left:18px;font-size:14.5px}.bl li{margin:3px 0}.acard p{margin:0;font-size:14.5px;color:#4d4552}
-.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.chips span{font:600 12.5px var(--fh);background:#f6f2e7;border-radius:12px;padding:4px 10px}.chips b{color:var(--green)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.chips span{font:600 12.5px var(--fh);background:#e4eef7;border-radius:12px;padding:4px 10px}.chips b{color:var(--green)}
 .tl{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;margin-top:10px;border-radius:12px;overflow:hidden}
 .tl div{padding:10px 12px;font-size:13.5px;line-height:1.35}.tl div b{display:block;font:700 18px var(--fh)}
 .tl .d{background:#e3eef6}.tl .h{background:#fbefd2}.tl .e{background:#e2f0e6}.tl .d b{color:#2F6E96}.tl .h b{color:#9a6a00}.tl .e b{color:var(--green)}
@@ -2418,7 +2432,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
   /* ---------- Part 1: Introduction ---------- */
   /* Cover art: geometric tiles in the brand colours */
   const coverArt = () => {
-    const s = 86, C = { g: '#005826', b: '#934E32', y: '#F9B738', c: '#f1e6cc', d: '#39293E', l: '#7FA98B', w: '#fffdf8' };
+    const s = 86, C = { g: '#005826', b: '#934E32', y: '#F9B738', c: '#dbe9f4', d: '#39293E', l: '#7FA98B', w: '#F0F8FF' };
     const shape = (k, f, r) => { const t = `transform="rotate(${r || 0} ${s / 2} ${s / 2})"`;
       return k === 'q' ? `<path d="M0 0H${s}A${s} ${s} 0 0 1 0 ${s}Z" fill="${C[f]}" ${t}/>` : k === 'h' ? `<path d="M0 ${s}A${s / 2} ${s / 2} 0 0 1 ${s} ${s}Z" fill="${C[f]}" ${t}/>` : k === 'c' ? `<circle cx="${s / 2}" cy="${s / 2}" r="${s / 2 - 6}" fill="${C[f]}"/>`
         : k === 'o' ? `<circle cx="${s / 2}" cy="${s / 2}" r="${s / 2 - 14}" fill="none" stroke="${C[f]}" stroke-width="12"/>` : k === 'd' ? [0, 1, 2].flatMap(i => [0, 1, 2].map(j => `<circle cx="${16 + i * 27}" cy="${16 + j * 27}" r="7" fill="${C[f]}"/>`)).join('') : k === 'l' ? `<path d="M0 0L${s} ${s}V0Z" fill="${C[f]}" ${t}/>` : ''; };
@@ -2489,7 +2503,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
   FP.cp.open = () => { FP.closeDrawer?.(); FP.closeModal?.(); view.hidden = false; draw(); view.scrollTop = 0; document.body.style.overflow = 'hidden'; };
   const close = () => { view.hidden = true; document.body.style.overflow = ''; };
   $('#cpBtn').onclick = FP.cp.open; $('#cpX').onclick = close;
-  addEventListener('keydown', e => { if (e.key === 'Escape' && !view.hidden) close(); }, true);
+  addEventListener('keydown', e => { if (e.key !== 'Escape' || view.hidden) return; const c = FP.inCell?.(); if (c && view.contains(c)) { e.preventDefault(); e.stopImmediatePropagation(); c.blur(); return; } close(); }, true);
 
   FP.cp.download = async () => {
     const btn = $('#cpDl'); btn.disabled = true; const msg = $('#cpMsg'), keep = msg.textContent, done = () => { $('#cpPages').classList.add('zoom'); msg.textContent = keep; btn.disabled = false; };
@@ -2510,7 +2524,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
       const { jsPDF } = window.jspdf, pdf = new jsPDF({ unit: 'mm', format: 'a4', compress: true }), pgs = [...document.querySelectorAll('#cpPages .cpg')];
       for (const [i, pg] of pgs.entries()) {
         msg.textContent = `Making page ${i + 1} of ${pgs.length}…`;
-        const cv = await html2canvas(pg, { scale: 2, backgroundColor: '#fffdf8', logging: false, useCORS: true });
+        const cv = await html2canvas(pg, { scale: 2, backgroundColor: '#F0F8FF', logging: false, useCORS: true });
         if (i) pdf.addPage(); pdf.addImage(cv.toDataURL('image/jpeg', .9), 'JPEG', 0, 0, 210, 297, undefined, 'FAST');
       }
       $('#cpPages').classList.add('zoom');
@@ -2530,19 +2544,19 @@ Move              = target − today; every change is shown (under ₹1,000 coun
 (() => {
   const E = FP.esc, S = FP.short, pc0 = x => FP.pct(x, 0);
   document.head.insertAdjacentHTML('beforeend', `<style>
-.kp{display:grid;gap:12px;margin-bottom:20px}.kp>div{border:1.5px solid #e4dccb;border-radius:14px;background:#fff;padding:12px 16px}
+.kp{display:grid;gap:12px;margin-bottom:20px}.kp>div{border:1.5px solid #cfdde9;border-radius:14px;background:#fff;padding:12px 16px}
 .kp span{white-space:nowrap;display:block;font:600 11px var(--fh);letter-spacing:.1em;text-transform:uppercase;color:#6d6470}.kp b{display:block;font:700 24px var(--fh);color:var(--dark);margin-top:4px}
 .kp small{font-size:13px;color:#6d6470}.kp .hero{background:var(--green);border-color:var(--green)}.kp .hero span,.kp .hero small{color:#cfe6d9}.kp .hero b{color:#fff}
 .cpg h3.st{font-size:16px;font-weight:700;margin:4px 0 10px}
 .sbar{display:flex;height:24px;border-radius:12px;overflow:hidden;gap:2px}.sbar div{height:100%}
 .lg{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px 16px;margin-top:10px;font-size:13.5px}.lg div{display:grid;grid-template-columns:12px 1fr;gap:0 7px;align-items:baseline}
 .lg i{width:11px;height:11px;border-radius:3px;display:block}.lg b{font:700 13.5px var(--fh)}.lg small{grid-column:2;color:#6d6470;font-size:12.5px}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}.box{border:1.5px solid #e4dccb;border-radius:14px;background:#fff;padding:14px 16px}
-.box .ln{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px dashed #e4dccb;font-size:14px}.box .ln:last-child{border-bottom:0}.box .ln b{font:700 14px var(--fh);white-space:nowrap}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}.box{border:1.5px solid #cfdde9;border-radius:14px;background:#fff;padding:14px 16px}
+.box .ln{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px dashed #cfdde9;font-size:14px}.box .ln:last-child{border-bottom:0}.box .ln b{font:700 14px var(--fh);white-space:nowrap}
 .box .ln small{display:block;color:#6d6470;font-size:12.5px}
 .hcs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
-.hc{border:1.5px solid #e4dccb;border-radius:14px;background:#fff;padding:12px 14px;border-top:5px solid var(--t)}
-.hc .sc{display:flex;gap:3px;height:6px;margin:2px 0 8px}.hc .sc span{flex:1;border-radius:3px;background:#e6e0d4}.hc .sc span.on{background:var(--t)}
+.hc{border:1.5px solid #cfdde9;border-radius:14px;background:#fff;padding:12px 14px;border-top:5px solid var(--t)}
+.hc .sc{display:flex;gap:3px;height:6px;margin:2px 0 8px}.hc .sc span{flex:1;border-radius:3px;background:#d6e2ec}.hc .sc span.on{background:var(--t)}
 .hc .hh{white-space:nowrap;display:flex;justify-content:space-between;align-items:center;gap:8px;font:700 13px var(--fh)}.hc i{font:700 10.5px var(--fh);font-style:normal;color:var(--t);background:var(--tt);border-radius:10px;padding:2px 8px;white-space:nowrap}
 .hc>b{display:block;font:700 23px var(--fh);color:var(--t);margin:6px 0 2px}.hc p{margin:0;font-size:13.5px;line-height:1.35}.hc small{display:block;margin-top:6px;font-size:12px;color:#6d6470}
 .top5 .r{display:grid;grid-template-columns:170px 1fr 86px;gap:10px;align-items:center;font-size:13.5px;padding:2px 0}.top5 .r i{display:block;height:12px;border-radius:6px;background:#A3502F}.top5 .r b{font:700 13px var(--fh);text-align:right}
@@ -2565,7 +2579,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
     return FP.cp.page(c, 'today', 'Net Worth Analysis', 'What you own vs what you owe.',
       kp([['Your assets', S(n.total), 'What you own'], ['Your liabilities', S(n.liabs), 'What you owe'], ['Your net worth', S(n.net), 'Assets minus liabilities', 1]], 3)
       + `<h3 class="st">What you own</h3>${bar(segs)}<div class="lg">${segs.map(s => `<div><i style="background:${s.c}"></i><span><b>${s.k}</b> ${S(s.v)} · ${pc0(s.p)}</span><small>${s.sub}</small></div>`).join('')}</div>
-      <div class="two"><div class="box"><h3 class="st">Financial assets vs lifestyle assets</h3>${bar([{ p: n.invest / tot, c: '#005826' }, { p: n.personal / tot, c: '#c9bfae' }])}
+      <div class="two"><div class="box"><h3 class="st">Financial assets vs lifestyle assets</h3>${bar([{ p: n.invest / tot, c: '#005826' }, { p: n.personal / tot, c: '#aebfcd' }])}
         <div class="ln"><span>Financial assets<small>Investments that can fund your goals</small></span><b>${S(n.invest)} · ${pc0(n.invest / tot)}</b></div>
         <div class="ln"><span>Lifestyle assets<small>${E(pers.join(', ') || 'Home, jewellery, vehicle')}: not used for goals</small></span><b>${S(n.personal)} · ${pc0(n.personal / tot)}</b></div></div>
       <div class="box"><h3 class="st">What you owe</h3>${owe.map(l => { const ls = loanFor(l.label); return `<div class="ln"><span>${E(l.label)}${ls.map(x => `<small>EMI ${FP.inr(x.emi)} · ends ${x.closeYear || '—'}</small>`).join('')}</span><b>${S(l.m)}</b></div>`; }).join('') || '<p style="margin:0">Nothing. You are debt-free.</p>'}</div></div>
@@ -2605,33 +2619,33 @@ Move              = target − today; every change is shown (under ₹1,000 coun
   const PC = { High: ['#005826', '#e9f3ec'], Medium: ['#9a6a00', '#fdf1d8'], Low: ['#934E32', '#f3e9e3'] };
   document.head.insertAdjacentHTML('beforeend', `<style>
 .tline{position:relative;height:430px;margin:6px 0 4px}
-.tline .ax{position:absolute;left:0;right:0;top:215px;height:4px;border-radius:2px;background:#e4dccb}
-.tline .tk{position:absolute;top:207px;width:20px;height:20px;margin-left:-10px;border-radius:50%;background:var(--gold);border:4px solid #fffdf8;box-shadow:0 0 0 2px var(--gold)}
-.tline .st2{position:absolute;width:2px;margin-left:-1px;background:#d9cfbd}
-.tline .bx{position:absolute;width:164px;border:1.5px solid #e4dccb;border-radius:12px;background:#fff;padding:8px 10px}
+.tline .ax{position:absolute;left:0;right:0;top:215px;height:4px;border-radius:2px;background:#cfdde9}
+.tline .tk{position:absolute;top:207px;width:20px;height:20px;margin-left:-10px;border-radius:50%;background:var(--gold);border:4px solid #F0F8FF;box-shadow:0 0 0 2px var(--gold)}
+.tline .st2{position:absolute;width:2px;margin-left:-1px;background:#c3d3e0}
+.tline .bx{position:absolute;width:164px;border:1.5px solid #cfdde9;border-radius:12px;background:#fff;padding:8px 10px}
 .tline .bx h4{font:800 15px var(--fh);color:var(--green);margin:0 0 4px}
 .tline .bx .g{display:grid;grid-template-columns:26px 1fr;gap:6px;align-items:center;font-size:12.5px;line-height:1.2;padding:2px 0}
-.tline .more{position:absolute;right:-12px;font-size:12px;color:#c9bfae}
+.tline .more{position:absolute;right:-12px;font-size:12px;color:#aebfcd}
 .tline .yr{position:absolute;top:232px;font:600 11px var(--fh);color:#8b7f8e;transform:translateX(-50%)}
 .gl{display:flex;gap:16px;justify-content:center;margin-top:6px;font-size:13px;color:#6d6470}.gl i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
 .ex{display:grid;grid-template-columns:72px 1fr;gap:16px;align-items:center;margin-top:16px}
 .gc{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
-.gcard{border:1.5px solid #e4dccb;border-radius:14px;background:#fff;padding:10px 14px;display:flex;flex-direction:column}.gcard .f{margin-top:auto!important}
+.gcard{border:1.5px solid #cfdde9;border-radius:14px;background:#fff;padding:10px 14px;display:flex;flex-direction:column}.gcard .f{margin-top:auto!important}
 .gcard .h{display:grid;grid-template-columns:44px 1fr;gap:10px;align-items:center}
 .gcard h3{font-size:14.5px;font-weight:700;line-height:1.2}.gcard .m{font-size:12.5px;color:#6d6470;margin-top:2px}
 .pri{font:700 9.5px var(--fh);letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:9px;margin-right:5px}
-.gcard .f{display:grid;grid-template-columns:1fr 1fr;margin-top:8px;border-radius:10px;background:#f6f2e7}
-.gcard .f div{padding:6px 8px}.gcard .f div+div{border-left:1px solid #e4dccb}
+.gcard .f{display:grid;grid-template-columns:1fr 1fr;margin-top:8px;border-radius:10px;background:#e4eef7}
+.gcard .f div{padding:6px 8px}.gcard .f div+div{border-left:1px solid #cfdde9}
 .gcard .f small{display:block;font-size:11.5px;color:#6d6470}.gcard .f b{font:700 14.5px var(--fh)}.gcard .f div+div b{color:var(--green)}
 .gcard .nt{font-size:12px;color:#6d6470;margin:4px 0 8px}
 .gp2{font:700 12px var(--fh);letter-spacing:.1em;text-transform:uppercase;color:var(--dark);margin:14px 0 8px;display:flex;align-items:center;gap:8px}.gp2 i{width:10px;height:10px;border-radius:50%}
 .gk3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
-.gk{border:1.5px solid #e4dccb;border-radius:14px;background:#fff;padding:9px 12px;display:flex;flex-direction:column}.gk.wide{grid-column:1/-1}
+.gk{border:1.5px solid #cfdde9;border-radius:14px;background:#fff;padding:9px 12px;display:flex;flex-direction:column}.gk.wide{grid-column:1/-1}
 .gk .h{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;margin-bottom:6px;min-height:46px}.gk.wide .h{min-height:0}.gk h3{font-size:13px;font-weight:700;line-height:1.2}.gk .m{font-size:11.5px;color:#6d6470;margin-top:2px}
-.gk .f2,.gk .f3{display:grid;border-radius:10px;background:#f6f2e7}.gk .f2{grid-template-columns:1fr 1fr}.gk .f3{grid-template-columns:1fr 1fr 1fr}
-.gk .f2>div,.gk .f3>div{padding:5px 9px}.gk .f2>div+div,.gk .f3>div+div{border-left:1px solid #e4dccb}
+.gk .f2,.gk .f3{display:grid;border-radius:10px;background:#e4eef7}.gk .f2{grid-template-columns:1fr 1fr}.gk .f3{grid-template-columns:1fr 1fr 1fr}
+.gk .f2>div,.gk .f3>div{padding:5px 9px}.gk .f2>div+div,.gk .f3>div+div{border-left:1px solid #cfdde9}
 .gk small{display:block;font-size:11px;color:#6d6470}.gk b{font:700 14px var(--fh)}.gk .g b{color:var(--green)}.gk .u{font-size:11px;font-weight:600}.gk .cr{margin-top:6px;border-radius:8px;background:#e9f3ec;padding:5px 9px;font-size:12px;color:var(--green)}.gk .cr b{font-size:14.5px;color:var(--green)}
-.nt2{font-size:11.5px;line-height:1.3;color:#6d6470;margin-top:5px;min-height:15px;outline:none;border-radius:4px}.nt2:empty::before{content:'+ Add a note';color:#c2b8a8}
+.nt2{font-size:11.5px;line-height:1.3;color:#6d6470;margin-top:5px;min-height:15px;outline:none;border-radius:4px}.nt2:empty::before{content:'+ Add a note';color:#a9b9c6}
 #cpPages:not(.zoom) .nt2:empty::before,.cap .nt2:empty{content:none}#cpPages.zoom .nt2:hover,#cpPages.zoom .nt2:focus{background:#fff8e1;box-shadow:0 0 0 1px var(--gold)}
 </style>`);
 
@@ -2713,15 +2727,15 @@ Move              = target − today; every change is shown (under ₹1,000 coun
   const E = FP.esc, S = v => Math.abs(v) >= 1e5 ? FP.short(v) : FP.inr(v), il = (...a) => FP.art.il(...a);
   const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   document.head.insertAdjacentHTML('beforeend', `<style>
-.ct{width:100%;border-collapse:separate;border-spacing:0;font-size:13.5px;background:#fff;border:1.5px solid #e4dccb;border-radius:14px;overflow:hidden}
-.ct th,.ct th.n{font:700 10.5px/1.3 var(--fh);letter-spacing:.03em;text-transform:uppercase;color:#6d6470;text-align:center;vertical-align:middle;white-space:normal;padding:8px 6px;background:#f6f2e7}
-.ct td{padding:7px 10px;border-top:1px solid #e9e1d1;vertical-align:middle}.ct th+th,.ct td+td{border-left:1px solid #e9e1d1}.ct .n{text-align:right;white-space:nowrap}.ct td b{font-weight:400}
+.ct{width:100%;border-collapse:separate;border-spacing:0;font-size:13.5px;background:#fff;border:1.5px solid #cfdde9;border-radius:14px;overflow:hidden}
+.ct th,.ct th.n{font:700 10.5px/1.3 var(--fh);letter-spacing:.03em;text-transform:uppercase;color:#6d6470;text-align:center;vertical-align:middle;white-space:normal;padding:8px 6px;background:#e4eef7}
+.ct td{padding:7px 10px;border-top:1px solid #dae6f0;vertical-align:middle}.ct th+th,.ct td+td{border-left:1px solid #dae6f0}.ct .n{text-align:right;white-space:nowrap}.ct td b{font-weight:400}
 .ct td small{display:block;font-size:13.5px;color:#8b7f8e;line-height:1.3}.ct .gn{display:flex;align-items:center;gap:8px;white-space:nowrap}.ct td.dt{white-space:nowrap}
-.ct tr.grp td{background:#fbf8f1;font:700 11px var(--fh);letter-spacing:.08em;text-transform:uppercase;padding:6px 10px}.ct tr.grp i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px}
-.ct tr.tot td{background:#f6f2e7;font:700 13px var(--fh);border-top:1.5px solid #e4dccb}.ct .ok{color:var(--green);font-weight:400}.ct .gap{color:var(--brown)}
+.ct tr.grp td{background:#eaf3fa;font:700 11px var(--fh);letter-spacing:.08em;text-transform:uppercase;padding:6px 10px}.ct tr.grp i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px}
+.ct tr.tot td{background:#e4eef7;font:700 13px var(--fh);border-top:1.5px solid #cfdde9}.ct .ok{color:var(--green);font-weight:400}.ct .gap{color:var(--brown)}
 .ct.gt{table-layout:auto;font-size:13.5px}.ct td{white-space:normal}.ct .gn{white-space:nowrap}.ct .gn svg{flex:none}.ct.gt td{padding:5px 8px}.ct.gt .gn svg{width:22px;height:22px}.ct.gt td small{font-size:13.5px}.ct .gn+small{font-size:11.5px!important}
 .ct tr.now td{background:#fbf1ec}.ct tr.nowh td{background:#f3e9e3;color:var(--brown)}
-.uh{font-size:13.5px}.uh .sep{color:#c9bfae;margin:0 6px}.uv>div{display:flex;align-items:baseline;font-size:13.5px;padding:1px 0}.uv .ld{flex:1;border-bottom:1.5px dotted #c9bfae;margin:0 6px;min-width:12px}
+.uh{font-size:13.5px}.uh .sep{color:#aebfcd;margin:0 6px}.uv>div{display:flex;align-items:baseline;font-size:13.5px;padding:1px 0}.uv .ld{flex:1;border-bottom:1.5px dotted #aebfcd;margin:0 6px;min-width:12px}
 </style>`);
   /* Plain names for investments */
   const src = l => /mutual fund.*equity/i.test(l) ? 'Equity MFs' : /mutual fund.*debt/i.test(l) ? 'Debt MFs' : /\bepf\b/i.test(l) ? 'EPF' : /\bppf\b/i.test(l) ? 'PPF' : /\bnps\b/i.test(l) ? 'NPS' : /endowment/i.test(l) ? 'Endowment plan' : /ulip/i.test(l) ? 'ULIP'
@@ -2754,7 +2768,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
       `<table class="ct"><thead><tr><th>Investment</th><th class="n">Value today</th><th>Set aside for</th><th class="n">Left over</th></tr></thead><tbody>
       ${used.length ? `<tr class="grp"><td colspan="4"><i style="background:#005826"></i>Used for your goals</td></tr>${uRows}
       <tr class="tot"><td>Total used for goals</td><td class="n">${S(sum(used, val))}</td><td><div class="uv"><div><span>Set aside for goals</span><i class="ld"></i><span>${S(sum(used, setA))}</span></div></div></td><td class="n">${uL > 1 ? S(uL) : '—'}</td></tr>` : ''}
-      ${kept.length ? `<tr class="grp"><td colspan="4"><i style="background:#c9bfae"></i>Kept aside, not used for goals</td></tr>${kRows}
+      ${kept.length ? `<tr class="grp"><td colspan="4"><i style="background:#aebfcd"></i>Kept aside, not used for goals</td></tr>${kRows}
       <tr class="tot"><td ${grey}>Total kept aside</td><td class="n" ${grey}>${S(sum(kept, val))}</td><td></td><td></td></tr>` : ''}
       </tbody></table>
       ${inf.length ? `<h3 class="st" style="margin-top:22px">Money coming in later</h3><table class="ct"><thead><tr><th>Source</th><th>When</th><th class="n">Amount</th><th>Set aside for</th></tr></thead><tbody>
@@ -2839,10 +2853,10 @@ Move              = target − today; every change is shown (under ₹1,000 coun
 (() => {
   document.head.insertAdjacentHTML('beforeend', `<style>
 .ct.sc{table-layout:fixed}.ct.sc td{text-align:center}.ct.sc td:first-child{text-align:left}
-.ct.sc .base{background:#fbf8f1}.ct.sc .sel{background:#eef6f0}.ct.sc th.sel{background:#dcecdf;color:var(--green)}
-.ct.sc td.ctd{text-align:left;vertical-align:top}.ct.sc .ch span{display:block}.ch{font-size:13.5px;line-height:1.4}.ch+.ch{margin-top:7px;padding-top:7px;border-top:1px dotted #e4dccb}.ch b{display:block;font-weight:700;font-size:13.5px;margin-bottom:1px}.ch span{display:block;color:#4d4552}.ch span{display:grid!important;grid-template-columns:42px 1fr;white-space:normal!important;font-size:13px}.ch span.one{display:block!important}.ch em{font-style:normal;color:#8b7f8e;font-size:12px}.ch span{white-space:nowrap}.ct.sc.n3 .ch span{white-space:normal}.ct.sc .df{display:block;font-size:12px;color:#8b7f8e}
-.ct.sc2 td.wc{white-space:normal}.ct.sc2 em{font-style:normal;color:#8b7f8e}.ct.sc2 .sep{color:#c9bfae;margin:0 8px}
-.fp{display:inline-flex;align-items:center;gap:6px}.fp i{display:block;width:44px;height:6px;border-radius:3px;background:#ece6da;overflow:hidden}.fp i b{display:block;height:100%;font-weight:400}
+.ct.sc .base{background:#eaf3fa}.ct.sc .sel{background:#eef6f0}.ct.sc th.sel{background:#dcecdf;color:var(--green)}
+.ct.sc td.ctd{text-align:left;vertical-align:top}.ct.sc .ch span{display:block}.ch{font-size:13.5px;line-height:1.4}.ch+.ch{margin-top:7px;padding-top:7px;border-top:1px dotted #cfdde9}.ch b{display:block;font-weight:700;font-size:13.5px;margin-bottom:1px}.ch span{display:block;color:#4d4552}.ch span{display:grid!important;grid-template-columns:42px 1fr;white-space:normal!important;font-size:13px}.ch span.one{display:block!important}.ch em{font-style:normal;color:#8b7f8e;font-size:12px}.ch span{white-space:nowrap}.ct.sc.n3 .ch span{white-space:normal}.ct.sc .df{display:block;font-size:12px;color:#8b7f8e}
+.ct.sc2 td.wc{white-space:normal}.ct.sc2 em{font-style:normal;color:#8b7f8e}.ct.sc2 .sep{color:#aebfcd;margin:0 8px}
+.fp{display:inline-flex;align-items:center;gap:6px}.fp i{display:block;width:44px;height:6px;border-radius:3px;background:#dce7f0;overflow:hidden}.fp i b{display:block;height:100%;font-weight:400}
 </style>`);
   const E = FP.esc, MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const fp = p => { const f = Math.max(0, Math.min(1, p || 0)), c = f > .995 ? '#005826' : f > .005 ? '#9a6a00' : '#934E32';
@@ -2865,7 +2879,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
     const tight = t => String(t).replace(/ → /g, '\u2009→\u2009');
     const lab0 = x => { const m = /^priority (.*)$/.exec(x); return m ? `<em>Priority</em>${E(m[1])}` : /^\d{4}\s*→/.test(x) ? `<em>Year</em>${E(x)}` : /^₹/.test(x) ? `<em>Cost</em>${E(x)}` : E(x[0].toUpperCase() + x.slice(1)); };
     const lab = x => lab0(tight(x));
-    const cell = L => L && L.length ? `<div class="ch">${L.map(x => `<span>${lab(x)}</span>`).join('')}</div>` : '<span style="color:#c9bfae">—</span>';
+    const cell = L => L && L.length ? `<div class="ch">${L.map(x => `<span>${lab(x)}</span>`).join('')}</div>` : '<span style="color:#aebfcd">—</span>';
     /* "What changes" row: each scenario's cell lists the goals it changes (name, then labelled lines).
        If it is too tall, it continues as more rows of the same table so pages break between rows. */
     const rows = [], grp = (t, keep) => rows.push({ h: 30, grp: 1, keep, html: `<tr class="grp"><td colspan="${span}">${t}</td></tr>` });
@@ -2901,7 +2915,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
   document.head.insertAdjacentHTML('beforeend', `<style>
 .ct td.c{text-align:center}.ct .bx{display:inline-block;width:14px;height:14px;border:1.5px solid #8b7f8e;border-radius:3px;vertical-align:-2px}.ct .bx.on{background:var(--green);border-color:var(--green);position:relative}
 .ct .bx.on::after{content:'';position:absolute;left:3.5px;top:0px;width:4px;height:8px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}.ct tr.dn td:nth-child(2){color:#8b7f8e;text-decoration:line-through}
-.disc2{margin-top:18px;font-size:12.5px;color:#6d6470;border-top:1px solid #e4dccb;padding-top:10px}.disc2 b{color:var(--dark)}
+.disc2{margin-top:18px;font-size:12.5px;color:#6d6470;border-top:1px solid #cfdde9;padding-top:10px}.disc2 b{color:var(--dark)}
 </style>`);
 
   /* ---------- Protecting your family ---------- */
