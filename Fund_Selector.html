@@ -886,7 +886,6 @@ function columns(v, R) {
     { k: 'as', label: 'Different from index', sub: 'active share', cell: o => o.bets && isNum(o.bets.activeShare) ? `<b>${o.bets.activeShare.toFixed(0)}%</b><span class="asbar"><i style="width:${o.bets.activeShare.toFixed(0)}%"></i></span>` : na, sort: o => o.bets && o.bets.activeShare, y: () => '0%' },
     { k: 'capmix', label: 'Company size', sub: 'large · mid · small', l: true, grp: true, cell: o => o.bets ? capBar(o.bets.capF) + `<span class="fund-meta">${capTxt(o.bets.capF)}</span>` : na, sort: o => o.bets ? (o.bets.capF.M || 0) + (o.bets.capF.S || 0) : null, y: () => y.capB ? capBar(y.capB) + `<span class="fund-meta">${capTxt(y.capB)}</span>` : na },
     { k: 'cash', label: 'Cash / other', sub: '% of fund', cell: o => o.bets ? cell(o.bets.cash, f1) : na, sort: o => o.bets && o.bets.cash },
-    { k: 'lean', label: 'Factor lean', sub: 'value · quality · momentum · low-vol only', l: true, grp: true, cell: o => leanChips(o, y), sort: o => { const t = tiltsOf(o, y); return t ? Math.max(...t.map(x => Math.abs(x[1]))) : null; } },
   ];
   if (v === 'phase') return PHASE_DEFS.map(([k, lab, d], i) => ({ k: 'ph' + k, label: lab, sub: 'pts a year', grp: i === 2 || i === 5, tip: d, heat: o => o.ph && o.ph[k] ? o.ph[k].lead : null,
     cell: o => o.ph && o.ph[k] ? `<b>${pts(o.ph[k].lead)}</b>` : na, sort: o => o.ph && o.ph[k] ? o.ph[k].lead : null, y: () => y.ph ? `${y.ph.months[k]} months` : na }));
@@ -902,7 +901,7 @@ const INTRO = {
   cons: 'Every 3-year period ending at a month-end over the last 10 years (up to 85). <b>Lead</b> = fund\'s yearly return − index\'s. <b>Beat index</b> = share of periods with a positive lead · <b>Typical lead</b> = the middle value · <b>Worst / Best</b> = the weakest and strongest period.',
   cap: '<b>Up capture 95</b> = when the index rose ₹100, the fund rose ₹95. <b>Down capture 80</b> = when the index fell ₹100, the fund fell ₹80. Green = better than the index.',
   risk: '<b>Tracking error</b> = how differently the fund moves from its index · <b>Average lead</b> = the extra return it earned · <b>Information ratio</b> = lead ÷ tracking error, like mileage: extra return per unit of difference.',
-  style: 'Holdings as on <b>__ASOF__</b>. <b>Different from index</b> (active share): 0% = a copy of the index, 100% = nothing in common. <b>Factor lean</b>: does the fund behave more (▲) or less (▼) like NSE\'s Value, Quality, Momentum or Low-volatility index than its own index does? Only leans of 15+ pts are shown. <b>Growth and GARP are not measured</b> (no NSE index), so “close to index” does not rule them out.',
+  style: 'Holdings as on <b>__ASOF__</b>. <b>Different from index</b> (active share): 0% = a copy of the index, 100% = nothing in common.',
   phase: 'Each of the last 120 months is tagged by what led the market that month. Each cell = the fund\'s average lead over its index in those months, pts a year. <b>Example:</b> +4.3 under “Large caps led” = in months when the Nifty 100 beat the Midcap 150 and Smallcap 250, this fund beat its index by 4.3 pts a year. <span class="up">Green</span> = did better, <span class="down">red</span> = worse. The index row shows how many months of each kind there were.',
   score: '<b>Score</b> = rank among category peers (100 = best) on three things: <b>beats the index often</b> · <b>earns well for its risk</b> · <b>falls less</b>. It describes the past; the back-test shows it does not forecast.',
 };
@@ -1004,8 +1003,6 @@ function openDetail(code) {
         <div class="cbrow"><span>Fund</span>${capBar(b.capF, 240)}<span class="fund-meta">${capTxt(b.capF)}</span></div>
         <div class="cbrow"><span>Index</span>${capBar(b.capB, 240)}<span class="fund-meta">${capTxt(b.capB)}</span></div>
         <div class="legend" style="margin:6px 0 0">${CAPC.map(([, l, c]) => `<span><i class="sw" style="background:${c}"></i>${l}</span>`).join('')}${isNum(b.cash) && b.cash >= 1 ? `<span>· ${b.cash.toFixed(1)}% cash/other</span>` : ''}</div></div>` : '';
-    const t = tiltsOf(o, y);
-    const styleBlock = t ? `<div class="card2"><div class="ct">Factor lean <span class="ctsub">vs index · value, quality, momentum, low-vol only (growth/GARP not measured) · leans of ${STY_T}+ pts</span></div>${divBars(t.filter(x => Math.abs(x[1]) >= STY_T))}${t.every(x => Math.abs(x[1]) < STY_T) ? '<div class="meta" style="margin:0">Close to the index: no reliable lean.</div>' : ''}</div>` : '';
     const sec = b && b.sectors ? [...b.sectors.filter(s => s[1] >= 1).slice(0, 4), ...b.sectors.filter(s => s[1] <= -1).slice(-4).reverse()].sort((p, q) => q[1] - p[1]).map(s => [s[0], s[1]]) : [];
     const secBlock = b && b.sectors ? `<div class="card2"><div class="ct">Sector bets <span class="ctsub">pts of the portfolio vs index</span></div>${divBars(sec)}</div>` : '';
     const stockList = (arr2, more) => arr2.length ? `<table class="mini plain"><tbody>${arr2.map(s => `<tr><td class="l">${esc(s.name)}</td><td><b class="${more ? 'up' : 'down'}">${s.f.toFixed(1)}%</b></td><td class="na">index ${s.b.toFixed(1)}%</td></tr>`).join('')}</tbody></table>` : na;
@@ -1013,7 +1010,7 @@ function openDetail(code) {
     const phBlock = o.ph ? `<div class="card2"><div class="ct">In different markets <span class="ctsub">lead vs index, pts a year, 10 years</span></div>${divBars(PHASE_DEFS.filter(([k]) => o.ph[k]).map(([k, lab]) => [lab, o.ph[k].lead]))}</div>` : '';
     diff = `<h3>How it differs from the index <span class="ctsub">holdings ${esc((HOLD && HOLD.asof) || '—')}</span></h3>
       ${b ? '' : '<div class="meta">This fund house is not in the holdings data yet, so stock and sector bets are not shown.</div>'}
-      <div class="grid2">${capBlock}${secBlock}${stockBlock}${styleBlock}${phBlock}</div>`;
+      <div class="grid2">${capBlock}${secBlock}${stockBlock}${phBlock}</div>`;
   }
   $('modal').innerHTML = `<button class="close" title="Close (Esc)" onclick="document.getElementById('modalBg').style.display='none'">×</button>
     <h2>${esc(o.name)}</h2><div class="meta">${esc(o.cat)} · ${R.plan} · vs ${esc(R.yardLabel)} · NAV ₹${o.lastNav.nav} on ${fmtDate(o.lastNav.t)}</div>
@@ -1147,7 +1144,6 @@ $('methodBox').innerHTML = `<h3>How it works, simply</h3>
 <div class="card2"><div class="ct">Up / down capture</div>Index rose ₹100, fund rose ₹X = <b>up capture</b>. Index fell ₹100, fund fell ₹Y = <b>down capture</b>. Fall less and rise more = good. Capture ratio = up ÷ down.</div>
 <div class="card2"><div class="ct">Tracking error &amp; information ratio</div><b>Tracking error</b> = how differently the fund's returns move from the index. <b>Average lead</b> = the extra return earned. <b>Information ratio</b> = lead ÷ tracking error, like mileage. Not the same as active share, which compares holdings.</div>
 <div class="card2"><div class="ct">Bets (holdings)</div>From each AMC's monthly portfolio, compared with the index's own portfolio on the same date: how different it is, company size, sectors and stocks it holds more or less of.</div>
-<div class="card2"><div class="ct">Factor lean (returns)</div>How much more or less the fund behaves like NSE's Value, Quality, Momentum or Low-volatility index than its own index does, from 3 years of monthly returns. Growth and GARP have no NSE index, so they are not measured.</div>
 <div class="card2"><div class="ct">Market phases</div>Each of the last 120 months is tagged: did the index rise or fall; which size led (large, mid, small); which style led (value, quality, momentum, low-vol). Then: how did the fund do in each kind of month? NSE has no "growth" style index, so growth can't be tagged; momentum is the nearest relative but not the same.</div>
 <div class="card2"><div class="ct">Score</div>Rank among category peers (100 = best) on three things: beats the index often · earns well for its risk · falls less. Needs 5 years of history.</div>
 <div class="card2"><div class="ct">Time-machine test</div>Go back to each October from 2014 to 2023, pick using only what was known then, and see what happened over the next 3 years. Result: no number picked future winners; falling less did tend to repeat.</div>
@@ -1155,7 +1151,7 @@ $('methodBox').innerHTML = `<h3>How it works, simply</h3>
 <h3>How accurate is this?</h3>
 <div class="grid2">
 <div class="card2"><div class="ct">Very accurate</div>Returns, index returns, 3-year periods, capture and risk: checked against AMFI's official figures (1-year index returns identical; funds within 0.01 pts on average). Holdings bets: taken straight from AMC monthly disclosures, so they are as of the last month-end loaded (shown on screen).</div>
-<div class="card2"><div class="ct">Approximate</div>Style lean: the style indices overlap heavily, so it is an estimate. Tested: when the 3-year window moves by a year, leans typically shift 2–7 pts, and for 1 fund in 5 by 12–14 pts, so only leans of 15+ pts are shown as real. A returns-based "size mix" was dropped: it was off from actual holdings by about 10 pts on average.</div>
+<div class="card2"><div class="ct">Left out on purpose</div>A returns-based "size mix": off from actual holdings by about 10 pts. Factor lean (value, quality, momentum, low-vol): NSE has no growth or GARP index, so the picture was too incomplete to help.</div>
 </div>
 <div class="meta" style="margin-top:10px">Missing data shows “—”; nothing is estimated. Full checks: VALIDATION.md in the dashboard repository.</div>`;
 
