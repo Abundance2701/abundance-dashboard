@@ -2492,7 +2492,16 @@ Move              = target − today; every change is shown (under ₹1,000 coun
   addEventListener('keydown', e => { if (e.key === 'Escape' && !view.hidden) close(); }, true);
 
   FP.cp.download = async () => {
-    const btn = $('#cpDl'); btn.disabled = true; const msg = $('#cpMsg'), keep = msg.textContent;
+    const btn = $('#cpDl'); btn.disabled = true; const msg = $('#cpMsg'), keep = msg.textContent, done = () => { $('#cpPages').classList.add('zoom'); msg.textContent = keep; btn.disabled = false; };
+    const c = ctxOf(), name = `Financial Blueprint - ${c.firsts || 'Client'} - ${c.date.replace(/\//g, '-')}.pdf`;
+    /* Ask where to save before making the PDF: the browser only allows the save box right after the click.
+       It opens in the client's WorkDrive folder (where the plan file is saved) when one is linked. */
+    let h = null;
+    if (window.showSaveFilePicker && window.self === window.top) {
+      try { const start = await FP.wdStart?.().catch(() => null);
+        h = await showSaveFilePicker({ suggestedName: name, id: 'fp-pdf', ...(start ? { startIn: start } : {}), types: [{ description: 'PDF', accept: { 'application/pdf': ['.pdf'] } }] }); }
+      catch (e) { if (e?.name === 'AbortError') { done(); return; } h = null; }
+    }
     try {
       await Promise.all(LIBS.map(load)); await document.fonts?.ready;
       await Promise.all(['500 16px Montserrat', '600 16px Montserrat', '700 16px Montserrat', '800 16px Montserrat', '400 16px Carlito', '700 16px Carlito'].map(f => document.fonts?.load(f).catch(() => 0)));
@@ -2505,14 +2514,13 @@ Move              = target − today; every change is shown (under ₹1,000 coun
         if (i) pdf.addPage(); pdf.addImage(cv.toDataURL('image/jpeg', .9), 'JPEG', 0, 0, 210, 297, undefined, 'FAST');
       }
       $('#cpPages').classList.add('zoom');
-      const c = ctxOf(), name = `Financial Blueprint - ${c.firsts || 'Client'} - ${c.date.replace(/\//g, '-')}.pdf`, blob = pdf.output('blob');
-      /* Where the browser allows it (the desktop copy of the tool), ask where to save; inside claude.ai the save prompt is used */
-      if (window.showSaveFilePicker) { try { const h = await showSaveFilePicker({ suggestedName: name, types: [{ description: 'PDF', accept: { 'application/pdf': ['.pdf'] } }] }), w = await h.createWritable(); await w.write(blob); await w.close(); FP.toast?.('PDF saved to ' + h.name); $('#cpPages').classList.add('zoom'); msg.textContent = keep; btn.disabled = false; return; } catch (e) { if (e?.name === 'AbortError') { $('#cpPages').classList.add('zoom'); msg.textContent = keep; btn.disabled = false; return; } } }
+      const blob = pdf.output('blob');
+      if (h) { const w = await h.createWritable(); await w.write(blob); await w.close(); FP.toast?.('PDF saved: ' + h.name); done(); return; }
       const dl = window.claude?.use ? await window.claude.use('downloads').catch(() => null) : null;
       if (dl) { try { await dl.save({ filename: name, data: blob }); FP.toast?.('PDF saved'); } catch (e) { if (e?.code !== 'declined') FP.toast?.('Could not save the PDF here (' + (e?.code || 'error') + ')'); } }
       else { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000); }
     } catch (e) { console.error(e); FP.toast?.(e.message || 'Could not make the PDF'); }
-    $('#cpPages').classList.add('zoom'); msg.textContent = keep; btn.disabled = false;
+    done();
   };
   $('#cpDl').onclick = FP.cp.download;
 })();
@@ -2662,7 +2670,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
     const lastH = pages[pages.length - 1].reduce((s, x) => s + x.H + GAP, -GAP), lastRoom = (pages.length > 1 ? 850 : 680) - lastH;
     const exNote = ex && lastRoom >= 110 ? `<div class="note ex" style="margin-top:${pages.length > 1 ? 28 : Math.max(16, Math.round((lastRoom - 100) / 2))}px">${il('infl', 72, 2)}<div><b>Why goals cost more later.</b> ${E(ex.name)} costs <b>${S(ex.amt)}</b> today. With prices rising ${FP.pct(ex.infl, 0)} a year, it will cost about <b>${S(ex.fv)}</b> by ${ex.year}. Every goal in this plan is priced for the year it falls due.</div></div>` : '';
     const body = pg => pg.map(x => x.html).join(`<div style="height:${GAP}px"></div>`);
-    return pages.map((pg, k) => FP.cp.page(c, 'goals', k ? 'Your Goals: At a Glance, continued' : 'Your Goals: At a Glance', k ? '' : 'What you are planning for, and when.',
+    return pages.map((pg, k) => FP.cp.page(c, 'goals', 'Your Goals: At a Glance', k ? '' : 'What you are planning for, and when.',
       (k ? '' : `<div class="kp" style="grid-template-columns:repeat(3,1fr)"><div><span>Your goals</span><b>${G.length}</b><small>${nHigh} high priority</small></div>
         <div><span>Time span</span><b>${groups[0]?.label === 'Now' ? 'Now' : groups[0]?.label} – ${y1}</b><small>${y1 - y0} years ahead</small></div>
         <div class="hero"><span>Total cost when due</span><b>${S(fv)}</b><small>After inflation</small></div></div>`)
@@ -2690,7 +2698,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
     const pages = [[]]; let used = 0;
     groups.forEach(([p, L]) => { for (let i = 0; i < L.length; i += 3) { const r = L.slice(i, i + 3), h = (r.some(g => g.type === 'retirement') ? 160 : 138) + (i ? 0 : 36);
       if (used + h > (pages.length > 1 ? 880 : 830)) { pages.push([]); used = 0; } const pg = pages[pages.length - 1]; if (!pg.length || pg[pg.length - 1][0] !== p) pg.push([p, []]); pg[pg.length - 1][1].push(...r); used += h; } });
-    return pages.map((pg, k) => FP.cp.page(c, 'goals', k ? 'Your Goals: Cost Today vs When Due, continued' : 'Your Goals: Cost Today vs When Due', k ? '' : 'What each goal costs today, and what it will cost when it falls due after inflation.',
+    return pages.map((pg, k) => FP.cp.page(c, 'goals', 'Your Goals: Cost Today vs When Due', k ? '' : 'What each goal costs today, and what it will cost when it falls due after inflation.',
       pg.map(([p, L]) => `<div class="gp2"><i style="background:${PC[p][0]}"></i>${p} priority</div><div class="gk3">${L.map(card).join('')}</div>`).join('')));
   };
   /* Notes typed in the preview are kept per client */
@@ -2759,9 +2767,9 @@ Move              = target − today; every change is shown (under ₹1,000 coun
   FP.cp.tablePages = (c, part, title, lead, top, topH, thead, rows, tail, tailH, art) => {
     const pages = [[]]; let room = 830 - topH - 48;
     rows.forEach((r, i) => { const need = r.grp ? r.h + (rows[i + 1]?.h || 0) : r.h; if (need > room && pages[pages.length - 1].some(x => !x.grp)) { pages.push([]); room = 870 - 48; } pages[pages.length - 1].push(r); room -= r.h; });
-    const own = room < tailH, out = pages.map((pg, k) => FP.cp.page(c, part, k ? title + ', continued' : title, k ? '' : lead,
+    const own = room < tailH, out = pages.map((pg, k) => FP.cp.page(c, part, title, k ? '' : lead,
       (k ? '' : top) + `<table class="ct gt">${thead}<tbody>${pg.map(r => r.html).join('')}</tbody></table>` + (k === pages.length - 1 && !own ? tail : ''), k ? '' : art));
-    if (own) out.push(FP.cp.page(c, part, title + ', continued', '', tail));
+    if (own) out.push(FP.cp.page(c, part, title, '', tail));
     return out;
   };
 
@@ -2882,7 +2890,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
     const pages = [[]]; let room = 740;
     rows.forEach((r, i) => { const need = r.keep || (r.grp ? r.h + (rows[i + 1]?.h || 0) : r.h); if (need > room && pages[pages.length - 1].length) { pages.push([]); room = 800; } pages[pages.length - 1].push(r.html); room -= r.h; });   /* a group heading never sits alone at a page end */
     const note = '<p class="unit" style="text-align:left;margin-top:8px">Funded = share of the goal met by your investments, money coming later and the SIP that fits in what you can invest.</p>';
-    return pages.map((p, k) => FP.cp.page(c, 'whatif', k ? 'What if? continued' : 'What if?', k ? '' : 'Other routes you could take, side by side with your plan.', tbl(p.join('')) + (k === pages.length - 1 ? note : ''), k ? '' : 'how'));
+    return pages.map((p, k) => FP.cp.page(c, 'whatif', 'What if?', k ? '' : 'Other routes you could take, side by side with your plan.', tbl(p.join('')) + (k === pages.length - 1 ? note : ''), k ? '' : 'how'));
   };
   FP.cp.parts.whatif = page;
 })();
@@ -2927,7 +2935,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
     /* the disclaimer always sits under the last steps: if it won't fit, the last few steps move to the next page with it */
     if (used + 110 > (pages.length > 1 ? 860 : 780)) { const lp = pages[pages.length - 1], lg = lp[lp.length - 1], mv = lg[1].splice(-Math.min(3, lg[1].length)); if (!lg[1].length) lp.pop(); pages.push([[lg[0], mv]]); }
     const fitsDisc = true;
-    const out = pages.map((pg, k) => FP.cp.page(c, 'action', k ? 'Your action plan, continued' : 'Your action plan', k ? '' : 'What to do, and when. Tick each step as it is done.',
+    const out = pages.map((pg, k) => FP.cp.page(c, 'action', 'Your action plan', k ? '' : 'What to do, and when. Tick each step as it is done.',
       `<table class="ct gt"><thead><tr><th>Done</th><th>What to do</th><th>Area</th></tr></thead><tbody>
       ${pg.map(([w, R]) => `<tr class="grp"><td colspan="3">${w}</td></tr>${R.map(x => `<tr class="${done[x.id] ? 'dn' : ''}"><td class="c"><span class="bx${done[x.id] ? ' on' : ''}"></span></td><td style="white-space:normal">${E(x.text.replace(/\s*\(see Section \d+ scenarios\)/i, ' (see the What if? page)').replace(/\(Self\)/g, `(${c.d.self?.first || 'you'})`).replace(/\(Spouse\)/g, `(${c.d.spouse?.first || 'spouse'})`))}</td><td>${E(x.area)}</td></tr>`).join('')}`).join('')}</tbody></table>
       ${k === pages.length - 1 && fitsDisc ? disc : ''}`, 'check'));
@@ -2944,8 +2952,8 @@ Move              = target − today; every change is shown (under ₹1,000 coun
 .mixr{display:grid;grid-template-columns:70px 1fr;gap:10px;align-items:center;margin:10px 0}.mixr>span{font:700 13px var(--fh);color:var(--dark)}
 .mixb{display:flex;height:40px;border-radius:10px;overflow:hidden;gap:2px}.mixb div{display:flex;align-items:center;justify-content:center;color:#fff;font:700 12.5px var(--fh);white-space:nowrap;overflow:hidden}
 .mixl{display:flex;gap:22px;margin:4px 0 0 80px;font-size:13px;color:#4d4552}.mixl i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:-1px}
-.rk{background:var(--green);border-radius:14px;padding:14px 20px;display:grid;grid-template-columns:auto 1fr;gap:2px 18px;align-items:center;color:#cfe6d9}
-.rk span{grid-column:1/-1;font:600 11px var(--fh);letter-spacing:.1em;text-transform:uppercase}.rk b{font:700 22px var(--fh);color:#fff}.rk small{font-size:14px;color:#e6f2ec}.rk em{grid-column:1/-1;font-style:normal;font-size:13px;margin-top:4px}
+.rk{background:var(--green);border-radius:14px;padding:14px 20px;display:grid;grid-template-columns:1fr;gap:3px;color:#cfe6d9}
+.rk span{grid-column:1/-1;font:600 11px var(--fh);letter-spacing:.1em;text-transform:uppercase}.rk b{font:700 22px var(--fh);color:#fff}.rk small{font-size:14px;color:#e6f2ec;line-height:1.35}.rk em{grid-column:1/-1;font-style:normal;font-size:13px;margin-top:4px}
 .why{margin-top:12px;font-size:13.5px;color:#4d4552}.why b{color:var(--dark)}
 </style>`);
   const E = FP.esc, S = v => Math.abs(v) >= 1e5 ? FP.short(v) : FP.inr(v);
@@ -3251,6 +3259,8 @@ Move              = target − today; every change is shown (under ₹1,000 coun
   $('#wdChip').onclick = () => wdState === 'ask' || wdState === 'error' ? wdSave(true) : FP.openDrawer('clientsPanel');
   const perm = async ask => { let p = await root.queryPermission({ mode: 'readwrite' }); if (p !== 'granted' && ask) p = await root.requestPermission({ mode: 'readwrite' }).catch(() => 'denied'); return p === 'granted'; };
   const cdir = () => root.getDirectoryHandle(clean(me()), { create: true });
+  /* Folder the PDF save box opens in: this client's WorkDrive folder, else the linked WorkDrive folder */
+  FP.wdStart = async () => { if (!root) return null; try { if (!FP.base?.sample && await perm(false)) return await cdir(); } catch (e) { } return root; };
   async function wdWrite(ask, onlyNew) {
     if (!root || FP.base?.sample || FP.key === 'sample') return false;
     if (!(await perm(ask))) { wdState = 'ask'; wdShow(); return false; }
