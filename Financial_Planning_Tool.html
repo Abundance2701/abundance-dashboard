@@ -152,6 +152,7 @@ table.ed tr.new td{background:#eaf6ee} table.ed tr.new td:first-child{box-shadow
 @media (max-width:700px){.mgrid{grid-template-columns:1fr}}
 .hedit{margin-left:auto;background:var(--gold);color:var(--dark);border:0;border-radius:6px;padding:7px 12px;font:700 13px var(--fh);cursor:pointer;flex:none}
 input.efin{width:110px;text-align:right;border:1px solid var(--line);border-radius:5px;padding:3px 5px}
+div.jobg{display:grid;grid-template-columns:repeat(3,1fr);gap:10px 14px}div.jobg>label{display:flex;flex-direction:column;justify-content:flex-end;gap:3px}div.jobg .jk{justify-content:center;font-size:13.5px}div.jobg .jk span{display:flex;gap:8px;align-items:center}div.jobg .jk small{color:var(--muted);margin-left:24px}
 div.epfbox{display:flex;flex-direction:column;gap:6px;margin:6px 0}div.epfbox .er{display:flex;flex-wrap:wrap;align-items:center;gap:6px 18px}div.epfbox .er label{display:flex;align-items:center;gap:6px;font-size:13.5px}div.epfbox .hint{margin:0}
 div.epfc{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;margin:12px 0 4px;padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:#fff}div.epfc label{display:flex;align-items:center;gap:6px;font-size:13.5px}div.epfc .hint{flex-basis:100%;margin:0}
 div.rtw{display:flex;flex-direction:column;gap:4px}select.rts{width:118px;min-height:0;border:1px solid var(--line);border-radius:5px;padding:3px 22px 3px 6px;font-size:13px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23005826' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right 7px center;-webkit-appearance:none;appearance:none;cursor:pointer}
@@ -226,7 +227,7 @@ table.cfc td{padding:6px 10px}table.cfc .sub{padding-left:18px;color:var(--muted
 .fb.full{color:var(--good)}.fb.full i b{background:var(--good)}.fb.part{color:var(--warn)}.fb.part i b{background:#D99A1A}.fb.none{color:var(--bad)}
 .up{color:var(--good);font-weight:700}.down{color:var(--bad);font-weight:700}
 .sced h3{margin:16px 0 8px}.sced .row3{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px 14px}
-.sced label{display:flex;flex-direction:column;font-size:13px;color:var(--muted);gap:3px}.sced .row3 input,.sced .row3 select,.sced textarea{border:1px solid var(--line);border-radius:6px;padding:6px 8px;font:14px var(--fb);color:var(--ink);background:var(--paper)}
+.sced label{display:flex;flex-direction:column;font-size:13px;color:var(--muted);gap:3px}.sced .row3 input,.sced .row3 select,.sced textarea,.sced .jobg input:not([type=checkbox]),.sced .jobg select{border:1px solid var(--line);border-radius:6px;padding:6px 8px;font:14px var(--fb);color:var(--ink);background-color:var(--paper);min-height:34px}.sced .row3 select,.sced .jobg select{padding-right:30px}
 .scsum{position:sticky;top:0;z-index:2;background:var(--dark);color:#fff;display:flex;flex-wrap:wrap;gap:6px 22px;padding:10px 20px;font-size:14px}.scsum b{color:var(--gold);font-variant-numeric:tabular-nums}
 .tbl tbody tr>td.ch{background:var(--goldtint)!important}table.bulk select[data-f=how]{min-width:138px}table.bulk input[data-f=pct]{min-width:58px}
 /* Progress ring, compact columns, highlights, toast, PDF */
@@ -935,7 +936,7 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
   /* Monthly EPF contribution counted for Retirement: on/off, amount (default: EPF in cash flow), rate (EPF's own rate, if set) */
   /* Monthly EPF counted for Retirement: the employee's share (EPF in Cash flow) always; the employer's share when ticked in Cash flow
      (st.epfEr = { on, amt }, amount defaults to the employee's). Grows at the EPF investment's return (Section 4), else the debt rate. */
-  FP.epfContrib = (d, st) => { const E = st.epfEr || {}, row = FP.calc.nw(d, st).rows.find(r => /\bepf\b/i.test(r.label)), emp = FP.calc.cf(d, st).epf || 0, er = E.on ? (E.amt ?? emp) : 0;
+  FP.epfContrib = (d, st) => { if (st.epfStop === 'Self') return { on: false, amt: 0, emp: 0, er: 0, erOn: false, label: null, rate: FP.rate('rDebt') }; const E = st.epfEr || {}, row = FP.calc.nw(d, st).rows.find(r => /\bepf\b/i.test(r.label)), emp = FP.calc.cf(d, st).epf || 0, er = E.on ? (E.amt ?? emp) : 0;
     return { on: emp + er > 0, amt: emp + er, emp, er, erOn: !!E.on, label: row?.label || null, rate: row ? FP.assetRate(st, row.label, row.cls).r : FP.rate('rDebt') }; };
   /* Emergency money = what Section 4 actually sets aside for the Emergency fund goal (earmarks + any top-up from the pool),
      so the health check and the lumpsum table always agree; without an emergency goal, just the earmarks */
@@ -1544,7 +1545,7 @@ Corpus = PV(((1+${+rv.r.toFixed(4)}%)/(1+${+rv.infl.toFixed(4)}%))^(1/12)-1, ${r
   /* Money kept for spending = what isn't available to invest (never less than actual spending) */
   const keepOf = S => Math.max(S.cf.inc - S.avail, S.cf.spend);
   const target = S => FP.rSip(keepOf(S) + S.req);
-  const sum = S => { const G = S.goals.filter(g => g.name !== FP.JOBG); return { gap: S.short, t: target(S), sip: S.req, avail: S.avail, now: S.nowShort, ok: G.filter(g => g.funded > .995).length, n: G.length }; };
+  const sum = S => { const G = S.goals.filter(g => !g.job); return { gap: S.short, t: target(S), sip: S.req, avail: S.avail, now: S.nowShort, ok: G.filter(g => g.funded > .995).length, n: G.length }; };
 
   FP.scenApply = (d, st, sc) => {
     const G = sc.goals || {}, ro = G.Retirement || {};
@@ -1555,19 +1556,130 @@ Corpus = PV(((1+${+rv.r.toFixed(4)}%)/(1+${+rv.infl.toFixed(4)}%))^(1/12)-1, ${r
     const goals = { ...(st.goals || {}) }; if (ro.pri) goals.Retirement = { ...(goals.Retirement || {}), pri: ro.pri };
     const ss = { ...st, sipMode: sc.sipMode || st.sipMode, fund, goals, inflows: [...(st.inflows || []), ...(sc.inflows || [])].filter(x => +x.amt > 0) };   /* plan's own money-coming-later plus the scenario's */
     if (sc.avail != null) ss.sipAvail = sc.avail;
-    /* Job loss (sc.job = { who: 'Self' | 'Spouse', months }): for those months the household lives on the other income and savings,
-       and SIPs pause. The money spent is a goal due now (paid from investments; the emergency fund is effectively used and refilled),
-       and every goal's SIP starts that many months later, so it has less time to build. */
+    /* Job loss: see FP.jobLoss. The household lives on the income left; the shortfall is a goal due now ("Living costs …"),
+       funded first from investments. Temporary: SIPs pause for those months and restart (at the new salary, if lower).
+       Permanent: no more salary, so it works like retirement starting now — the Retirement and emergency-fund goals fold into
+       "Living costs from now on" (to life expectancy), every investment is free to fund it, and other goals get what's left. */
     const J = FP.jobLoss(d, st, sc);
-    if (J) { dd.goals = [...dd.goals, { row: 0, grp: 'Scenario', name: JOBG, pri: 'High', amt: J.total, year: null, note: '', type: 'general' }]; ss.sipDelay = J.months; ss.order = [JOBG, ...(st.order || [])]; }
+    if (J) {
+      dd.inflows = d.inflows.map(x => J.perm && J.mine(x) ? { ...x, m: 0, y: 0 } : x);
+      if (J.sev > 0) dd.assets = [...dd.assets, { label: 'Severance and gratuity received', m: J.sev, note: '' }];
+      if (sc.avail == null) ss.sipAvail = J.availAfter;
+      ss.epfStop = J.who;
+      if (J.perm) {
+        const L = FP.jobNeed(d, st, J);
+        dd.goals = dd.goals.filter(g => g.type !== 'emergency');
+        ss.goals = { ...ss.goals, Retirement: { ...(ss.goals.Retirement || {}), include: false } };
+        ss.nw = Object.fromEntries(Object.entries(st.nw || {}).map(([k, o]) => [k, { ...o, ef: 0 }]));
+        FP.calc.nw(d, st).rows.forEach(r => { if (r.ef > 0) ss.nw[r.label] = { ...(ss.nw[r.label] || {}), ef: 0 }; });
+        /* Investments are freed for living costs; with "keep", each investment stays with the goals (other than retirement and the
+           emergency fund) it funds in the plan, and only what's left over pays living costs */
+        const A0 = sc.job.keep ? FP.calc.alloc(d, st) : null, fold = n => { const g = A0?.goals.find(x => x.name === n); return !g || g.type === 'retirement' || g.type === 'emergency'; };
+        ss.al = Object.fromEntries(FP.calc.nw(d, st).rows.map(r => { if ((st.al || {})[r.label] === 'none' || ((st.al || {})[r.label] == null && r.cls === 'Real estate')) return [r.label, 'none'];
+          const keepFor = A0 ? [...new Set((A0.assets.find(a => a.label === r.label)?.uses || []).map(u => u[0]).filter(n => !fold(n)))] : []; return [r.label, keepFor.length ? keepFor : '']; }));
+        ss.alKeep = {}; ss.srcOrd = {};
+        dd.goals = [...dd.goals, { row: 0, grp: 'Scenario', name: JOBP, pri: 'High', amt: L.pv, year: null, note: '', type: 'general', job: 1 }];
+        ss.order = [JOBP, ...(st.order || [])];
+      } else {
+        dd.goals = [...dd.goals, { row: 0, grp: 'Scenario', name: JOBG, pri: 'High', amt: J.total, year: null, note: '', type: 'general', job: 1 }];
+        ss.sipDelay = J.months; ss.order = [JOBG, ...(st.order || [])];
+      }
+    }
     return [dd, ss];
   };
-  const JOBG = 'Living costs while out of work'; FP.JOBG = JOBG;
-  FP.jobLoss = (d, st, sc) => { const j = sc?.job; if (!j || !(+j.months > 0) || !j.who) return null;
-    const pm = x => x.y > 0 ? x.y / 12 : x.m, cf = FP.calc.cf(d, st).t, lost = d.inflows.filter(x => x.label.includes(`(${j.who})`)).reduce((t, x) => t + pm(x), 0);
-    const need = Math.max(cf.spend - (cf.inc - lost), 0), first = (j.who === 'Self' ? d.self : d.spouse)?.first || j.who;
-    return { who: j.who, first, months: +j.months, lost, need, total: need * +j.months }; };
+  const JOBG = 'Living costs while out of work', JOBP = 'Living costs from now on'; FP.JOBG = JOBG; FP.JOBP = JOBP;
+  /* sc.job = { who: 'Self' | 'Spouse', type: 'temp' | 'perm', months, newPct (salary on rejoining, % of old), sev (severance, gratuity,
+     leave encashment received), health (new health premium a year if employer cover ends), cut (% cut in household spending) } */
+  FP.jobLoss = (d, st, sc) => { const j = sc?.job; if (!j || !j.who) return null; const perm = j.type === 'perm', months = perm ? 0 : +j.months || 0; if (!perm && !(months > 0)) return null;
+    const pm = x => x.y > 0 ? x.y / 12 : x.m, mine = x => x.label.includes(`(${j.who})`), sal = x => /salary|wage|bonus|business|profession|consult|commission/i.test(x.label);
+    const C = FP.calc.cf(d, st), t = C.t, lost = d.inflows.filter(mine).reduce((a, x) => a + pm(x), 0), other = Math.max(t.inc - lost, 0);
+    const otherSal = d.inflows.filter(x => !mine(x) && sal(x)).reduce((a, x) => a + pm(x), 0), otherFix = Math.max(other - otherSal, 0);
+    const cut = Math.min(Math.max(+j.cut || 0, 0), 90) / 100, health = Math.max(+j.health || 0, 0), sev = Math.max(+j.sev || 0, 0), pct = j.newPct == null || j.newPct === '' ? 100 : Math.max(+j.newPct, 0);
+    const spend = t.living * (1 - cut) + t.emi + t.ins + health / 12, deficit = Math.max(spend - other, 0);
+    const P = j.who === 'Self' ? d.self : d.spouse, first = P?.first || (j.who === 'Self' ? 'You' : 'Spouse'), age = P?.dob ? FP.planDate().getFullYear() - P.dob.getFullYear() : null;
+    const avail0 = t.sav + Math.max(t.surplus, 0), availAfter = perm ? Math.max(other - spend, 0) : Math.max(avail0 - lost * (1 - pct / 100), 0);
+    return { who: j.who, first, perm, months, lost, other, otherSal, otherFix, spend, spend0: t.spend, deficit, cut, health, sev, pct, age, mine, total: perm ? 0 : deficit * months, sip0: t.sav, avail0, availAfter, epf: FP.epfContrib(d, st).amt }; };
+  /* Permanent job loss: what living costs need from now to life expectancy. Until the planned retirement: today's spending (after cuts, plus
+     new health cover; household costs rise with inflation, EMIs end as loans close) less the income left (other salaries rise with increments).
+     After it: the planned retirement expense (less income that continues). Money is drawn monthly and earns the post-retirement return. */
+  FP.jobNeed = (d, st, J) => {
+    const R = FP.calc.retire(d), pd = FP.planDate(), y0 = pd.getFullYear(), p0 = y0 * 12 + pd.getMonth(), C = FP.calc.cf(d, st).t, inf = FP.rate('infl'), si = FP.rate('salaryInc'), lifeE = FP.rate('lifeExp');
+    const P = J.who === 'Self' ? d.self : d.spouse, endY = R ? R.endYear : P?.dob ? P.dob.getFullYear() + lifeE : y0 + 40, rm = (st.goals || {}).Retirement?.month ?? 3;
+    const N = Math.max(12, endY * 12 + rm - 1 - p0), RM = R ? Math.max(R.ry * 12 + rm - 1 - p0, 0) : N, r = FP.mrate(FP.rate('rPost'));
+    const need = m => { const y = Math.floor(m / 12), f = Math.pow(1 + inf, m / 12);
+      if (m < RM) { const emi = Math.max(C.emi - d.loans.filter(l => l.closeYear && l.closeYear < y0 + y).reduce((a, l) => a + l.emi, 0), 0);
+        return Math.max((C.living * (1 - J.cut) + J.health / 12) * f + emi + C.ins - J.otherSal * Math.pow(1 + si, y) - J.otherFix, 0); }
+      return Math.max(R.need * f, 0); };
+    let pv = 0; for (let m = 0; m < N; m++) pv += need(m) / Math.pow(1 + r, m);
+    const lasts = c => { let b = c; for (let m = 0; m < N; m++) { b -= need(m); if (b < -1) return m; b *= 1 + r; } return null; };
+    return { need, pv, N, RM, r, lasts, endY, y0, m0: pd.getMonth(), R };
+  };
   FP.scenRun = (d, st, sc) => run(...(sc ? FP.scenApply(d, st, sc) : [d, st]));
+
+  /* Everything the job-loss view shows, worked out once */
+  FP.jobResult = (d, st, sc) => {
+    const J = FP.jobLoss(d, st, sc); if (!J) return null;
+    const S0 = FP.calc.sip(d, st), S = FP.scenRun(d, st, sc).S, liv = S.goals.find(g => g.job), by = Object.fromEntries(S.goals.map(g => [g.name, g]));
+    const cov = liv ? liv.got + liv.later : 0, needAmt = liv ? liv.fullPV : 0, ef = FP.efCover(d, st);
+    const goals = S0.goals.filter(g => !g.job).map(g => ({ g, plan: g.funded, job: by[g.name] ? by[g.name].funded : 0, folded: J.perm && (g.type === 'retirement' || g.type === 'emergency') }));
+    const kept = FP.calc.alloc(d, st).assets.filter(a => a.to === 'none' && a.use === 'Investable' && a.free > 0);
+    const out = { J, S0, S, liv, cov, needAmt, ef, goals, kept };
+    if (J.perm) {
+      const L = FP.jobNeed(d, st, J), k = L.pv ? Math.min(cov / L.pv, 9) : 1, run = L.lasts(cov), yr = m => L.y0 + Math.floor((L.m0 + m) / 12);
+      Object.assign(out, { L, k, runOut: run, lastY: run == null ? L.endY : yr(run), forLife: run == null, sustain: k * J.deficit, spendOK: J.other + Math.min(k, 1) * J.deficit, earn: Math.max((1 - k) * J.deficit, 0),
+        keptExtra: kept.length ? (m => m == null ? L.endY : yr(m))(L.lasts(cov + kept.reduce((t, a) => t + a.free, 0))) : null });
+      out.lastAge = J.age != null ? J.age + (out.lastY - L.y0) : null;
+    } else Object.assign(out, { efMonths: J.deficit ? ef / J.deficit : Infinity, livGap: liv ? liv.gap : 0 });
+    return out;
+  };
+
+  /* The job-loss view: same content in the tool (Section 6) and the client PDF */
+  FP.jobView = (d, st, sc, pdf) => {
+    const X = FP.jobResult(d, st, sc); if (!X) return ''; const { J } = X, E = FP.esc, S = v => Math.abs(v) >= 1e5 ? FP.short(v) : FP.inr(v), MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const kp = L => pdf ? `<div class="kp" style="grid-template-columns:repeat(3,1fr)">${L.map(([l, v, sm, hero, warn]) => `<div class="${hero ? 'hero' : ''}"><span>${l}</span><b style="${warn ? 'color:var(--brown)' : ''}">${v}</b><small>${sm}</small></div>`).join('')}</div>`
+      : `<div class="kpis">${L.map(([l, v, sm, hero]) => FP.kpi(l, v, sm, hero)).join('')}</div>`;
+    const h3 = t => `<h3 class="st" style="margin:${pdf ? '16px 0 8px' : '18px 0 8px'}">${t}</h3>`;
+    const bar = f => { const v = Math.max(0, Math.min(1, f || 0)), c = v > .995 ? '#005826' : v > .005 ? '#9a6a00' : '#934E32';
+      return `<span style="display:inline-flex;align-items:center;gap:6px"><i style="display:block;width:44px;height:6px;border-radius:3px;background:#dce7f0;overflow:hidden"><b style="display:block;height:100%;width:${v * 100}%;background:${c}"></b></i><span style="color:${c};min-width:34px;text-align:right">${Math.round(v * 100)}%</span></span>`; };
+    const what = x => x.folded ? '<span style="color:#6d6470">Now part of living costs</span>' : x.job > .995 ? '<span style="color:var(--green)">Still funded</span>' : x.job >= x.plan - .005 ? '<span style="color:#6d6470">Same as the plan</span>' : x.job > .005 ? '<span style="color:#9a6a00">Less funded</span>' : '<span style="color:var(--brown)">No longer funded</span>';
+    const rows = X.goals.filter(x => !(x.g.due && x.g.type !== 'emergency')).map(x => `<tr><td>${FP.cp?.goalName ? FP.cp.goalName(x.g) : E(FP.gname(x.g.name))}</td><td${pdf ? ' class="dt"' : ''}>${x.g.n <= 0 ? 'Now' : `${MON[x.g.mon - 1]} ${x.g.year}`}</td><td>${bar(x.plan)}</td><td>${x.folded ? '—' : bar(x.job)}</td><td>${what(x)}</td></tr>`).join('');
+    const tbl = `${pdf ? '<table class="ct gt">' : '<div class="tbl"><table>'}<thead><tr><th${pdf ? '' : ' data-nosort'}>Goal</th><th${pdf ? '' : ' data-nosort'}>Due</th><th${pdf ? '' : ' data-nosort'}>In the plan</th><th${pdf ? '' : ' data-nosort'}>After the job loss</th><th${pdf ? '' : ' data-nosort'}>What happens</th></tr></thead><tbody>${rows}</tbody></table>${pdf ? '' : '</div>'}`;
+    const ul = L => `<ul class="bl" style="margin:4px 0 0;padding-left:20px;line-height:1.5">${L.filter(Boolean).map(x => `<li>${x}</li>`).join('')}</ul>`;
+    const notFunded = X.goals.filter(x => !x.folded && x.job < x.plan - .005 && !(x.g.due && x.g.type !== 'emergency')).map(x => E(FP.gname(x.g.name)));   /* goals the job loss makes worse */
+    const stops = [J.perm ? `SIPs stop: the plan's ${FP.inr(X.S0.alloc)} a month${X.S.avail > 0 ? `; ${FP.inr(X.S.avail)} a month can still be invested from the income left` : '; nothing is left over to invest'}.`
+        : `SIPs pause: the plan's ${FP.inr(X.S0.alloc)} a month stops for ${J.months} months, then ${FP.inr(X.S.avail)} a month restarts.`,
+      J.who === 'Self' && J.epf > 0 ? (J.perm ? `EPF contributions of ${FP.inr(J.epf)} a month stop; the EPF balance stays and is used for living costs.` : `EPF contributions of ${FP.inr(J.epf)} a month pause, and restart with the new job.`) : '',
+      J.health > 0 ? `Employer health cover ends: a personal policy of ${FP.inr(J.health)} a year is added to spending.` : 'If health cover came with the job, it ends too: add a personal family floater (set its premium in this scenario).',
+      J.sev > 0 ? `Severance and gratuity of ${S(J.sev)} are added to the money available.` : '',
+      J.perm ? 'Term insurance premiums continue: the family now depends on these investments.' : ''];
+    if (J.perm) {
+      const ways = X.k >= .995 ? [`Your money is enough for living costs for life, with ${X.goals.filter(x => !x.folded && x.job > .995).length ? 'the goals marked "Still funded" covered too' : 'little left for other goals'}.`]
+        : [`<b>Spend less:</b> bring monthly spending down from ${FP.inr(J.spend)} to about ${FP.inr(X.spendOK)} and the money lasts for life (age ${FP.rate('lifeExp')}).`,
+          `<b>Earn a little:</b> ${FP.inr(X.earn)} a month from part-time work, consulting or rent covers the gap for life.`,
+          X.kept.length ? `<b>Sell what's kept aside:</b> using ${X.kept.map(a => E(a.label.replace(/value of (the )?/i, ''))).join(', ')} (${S(X.kept.reduce((t, a) => t + a.free, 0))}) makes the money last till ${X.keptExtra}${X.keptExtra >= X.L.endY ? ', for life' : ''}.` : '',
+          notFunded.length ? `<b>Goals:</b> ${notFunded.join(', ')} ${notFunded.length > 1 ? 'lose' : 'loses'} funding. Move ${notFunded.length > 1 ? 'them' : 'it'} later, make ${notFunded.length > 1 ? 'them' : 'it'} smaller, ${pdf ? 'or drop' : 'drop'} ${notFunded.length > 1 ? 'them' : 'it'}${pdf ? '' : `, or tick "Keep investments already set aside" in the scenario to protect ${notFunded.length > 1 ? 'them' : 'it'}`}.` : ''];
+      return `${pdf ? '' : `<p class="hint" style="margin-top:0">No more salary from ${E(J.first)}. It works like retirement starting today: ${sc.job.keep ? 'investments not already set aside for other goals' : 'all investments'} (including EPF, the emergency fund${J.sev ? ', severance' : ''}) pay the living costs first, for life, and the other goals get what is left.</p>`}
+        ${h3('Every month after the job stops')}
+        ${kp([['Income still coming in', FP.inr(J.other), J.other ? 'Other salaries, rent and interest' : 'No other income'], ['Spending', FP.inr(J.spend), `${J.cut ? `After a ${Math.round(J.cut * 100)}% cut` : 'Household, EMIs, premiums'}${J.health ? ', with new health cover' : ''}`], ['Paid from investments', FP.inr(J.deficit), 'A month, rising with prices', 1]])}
+        ${h3('How long the money lasts')}
+        ${kp([['Money for living costs', S(X.cov), `Of ${S(X.needAmt)} needed for life, in today's money`], [X.forLife ? 'Lasts' : 'Lasts till', X.forLife ? 'For life' : String(X.lastY), X.forLife ? `Till age ${FP.rate('lifeExp')}` : `${X.lastAge != null ? `${E(J.first)}'s age ${X.lastAge}, ` : ''}${X.L.endY - X.lastY} years before ${X.L.endY}`, 0, !X.forLife], ['Can pay for life', `${FP.inr(Math.min(X.sustain, J.deficit * 9))}`, `A month if spread to age ${FP.rate('lifeExp')}, rising with prices (needed ${FP.inr(J.deficit)})`, 0, X.k < .995]])}
+        ${h3('What happens to each goal')}${tbl}
+        ${h3('What stops or changes')}${ul(stops)}
+        ${h3('Ways to make it work')}${ul(ways)}`;
+    }
+    const ways = [X.efMonths < J.months ? `<b>Emergency fund:</b> it covers about ${X.efMonths.toFixed(1)} months of this gap. Building it to ${J.months} months (${S(J.total)}) keeps other investments untouched.` : `<b>Emergency fund:</b> it covers the ${J.months} months on its own (about ${X.efMonths.toFixed(1)} months of this gap).`,
+      X.livGap > 1 ? `<b>Short now:</b> ${S(X.livGap)} of the living costs can't be met from savings and investments.` : '',
+      J.pct < 100 ? `<b>New job at ${J.pct}% of the salary:</b> what can be invested each month drops from ${FP.inr(X.S0.avail)} to ${FP.inr(X.S.avail)}.` : '',
+      notFunded.length ? `<b>Goals:</b> ${notFunded.join(', ')} ${notFunded.length > 1 ? 'fall' : 'falls'} further short. Restart SIPs as soon as income returns, or move ${notFunded.length > 1 ? 'these goals' : 'it'} later.` : '<b>Goals:</b> no goal is worse off once SIPs restart.'];
+    return `${pdf ? '' : `<p class="hint" style="margin-top:0">${E(J.first)} is out of work for ${J.months} months, then rejoins${J.pct < 100 ? ` at ${J.pct}% of the old salary` : ''}. Living costs beyond the income left come from savings, and SIPs pause.</p>`}
+      ${h3(`For ${J.months} months without ${E(J.first)}'s income`)}
+      ${kp([['Income still coming in', FP.inr(J.other), J.other ? 'Other salaries, rent and interest' : 'No other income'], ['Spending', FP.inr(J.spend), `${J.cut ? `After a ${Math.round(J.cut * 100)}% cut` : 'Household, EMIs, premiums'}`], ['From savings', S(J.total), `${FP.inr(J.deficit)} a month × ${J.months}`, 1]])}
+      ${h3('After rejoining')}
+      ${kp([['SIPs restart at', FP.inr(X.S.avail), `A month (plan: ${FP.inr(X.S0.avail)})`], ['SIP needed now', FP.inr(X.S.req), `Up from ${FP.inr(X.S0.req)}: ${J.months} fewer months to build`, 0, X.S.req > X.S0.req + 1], ['Goals fully funded', `${X.goals.filter(x => x.job > .995).length} of ${X.goals.length}`, `Plan: ${X.goals.filter(x => x.plan > .995).length} of ${X.goals.length}`]])}
+      ${h3('What happens to each goal')}${tbl}
+      ${h3('What stops or changes')}${ul(stops)}
+      ${h3('Ways to make it work')}${ul(ways)}`;
+  };
   /* for the client PDF: the same 'what changes' list and totals as the comparison table */
   FP.scenNotes = (d, st, sc) => notes(d, st, sc, FP.calc.goals(d, st).filter(g => g.on)); FP.scenSum = S => sum(S);
 
@@ -1581,7 +1693,9 @@ Corpus = PV(((1+${+rv.r.toFixed(4)}%)/(1+${+rv.infl.toFixed(4)}%))^(1/12)-1, ${r
     const low = d.goals.filter(g => g.pri === 'Low' && g.year && g.type !== 'emergency');
     if (low.length) out.push({ id: 'p2', name: 'Move low-priority goals', goals: Object.fromEntries(low.map(g => [g.name, { year: g.year + 2, amt: Math.round(g.amt * .8) }])), inflows: [], note: 'Low-priority goals 2 years later and 20% smaller.' });
     if (R) out.push({ id: 'p3', name: 'Retire 2 years later', goals: { Retirement: { year: R.ry + 2 } }, inflows: [], note: '' });
-    if (d.inflows.some(x => x.label.includes('(Self)'))) out.push({ id: 'p5', name: `If ${d.self?.first || 'you'} lose${d.self?.first ? 's' : ''} the job for 6 months`, job: { who: 'Self', months: 6 }, goals: {}, inflows: [], note: '' });
+    if (d.inflows.some(x => x.label.includes('(Self)'))) { const nm = d.self?.first || 'you';
+      out.push({ id: 'p5', name: `If ${nm} is out of work for 6 months`, job: { who: 'Self', type: 'temp', months: 6, newPct: 100 }, goals: {}, inflows: [], note: '' });
+      out.push({ id: 'p6', name: `If ${nm} stops working for good`, job: { who: 'Self', type: 'perm', cut: 10 }, goals: {}, inflows: [], note: '' }); }
     const src = sources(d, st).filter(x => x[2] === 'kept aside');
     if (src.length) out.push({ id: 'p4', name: 'Sell kept-aside assets', goals: {}, inflows: src.map(([l, v]) => ({ src: l, amt: v, month: 3, year: y0 + 3, to: 'pool' })), note: "Assumes each is sold in 3 years for today's value. Change the year and expected price." });
     return out;
@@ -1593,7 +1707,11 @@ Corpus = PV(((1+${+rv.r.toFixed(4)}%)/(1+${+rv.infl.toFixed(4)}%))^(1/12)-1, ${r
     if (sc.sipMode && sc.sipMode !== (st.sipMode === 'flat' ? 'flat' : 'step')) out.push(sc.sipMode === 'flat' ? 'Flat SIP' : `Step-up SIP (${FP.pct(FP.rate('stepUp'), 1)} a year)`);
     if (sc.avail != null) out.push(`Can invest ${FP.inr(sc.avail)} a month`);
     const J = FP.jobLoss(d, st, sc);
-    if (J) out.push(`${J.first} out of work for ${J.months} month${J.months > 1 ? 's' : ''}: SIPs pause, and ${FP.short(J.total)} of living costs (${FP.inr(J.need)} a month beyond other income) comes from savings and investments`);
+    if (J) out.push(J.perm ? `${J.first}'s job stops for good: no new SIPs; ${FP.inr(J.deficit)} a month of living costs beyond the income left comes from investments, for life`
+      : `${J.first} out of work for ${J.months} month${J.months > 1 ? 's' : ''}: SIPs pause; ${FP.short(J.total)} of living costs (${FP.inr(J.deficit)} a month beyond the income left) comes from savings${J.pct < 100 ? `; new job at ${J.pct}% of the old salary` : ''}`);
+    if (J?.sev > 0) out.push(`Severance and gratuity: ${FP.short(J.sev)}`);
+    if (J?.cut > 0) out.push(`Household spending cut by ${Math.round(J.cut * 100)}%`);
+    if (J?.health > 0) out.push(`New health cover: ${FP.inr(J.health)} a year`);
     Object.entries(sc.goals || {}).forEach(([n, o]) => {
       const g = P[n]; if (!g) return; const p = [], a0 = n === 'Retirement' ? d.other.retireMonthly : g.amt;
       if (o.pri && o.pri !== g.pri) p.push(`priority ${g.pri} → ${o.pri}`);
@@ -1679,6 +1797,7 @@ Corpus = PV(((1+${+rv.r.toFixed(4)}%)/(1+${+rv.infl.toFixed(4)}%))^(1/12)-1, ${r
           ${G.map(g => `<tr class="gl" data-k="${FP.esc(g.name)}"><td>${FP.esc(FP.gname(g.name))}<span class="note">${g.pri} priority</span></td><td class="n colbase">${fbar(g.funded)}</td>${CR.map(r => { const x = Object.fromEntries(r.S.goals.map(z => [z.name, z]))[g.name]; return `<td class="n ${cls(r)}">${x ? fbar(x.funded) : '—'}${r.nt.per[g.name] ? `<span class="note">${FP.esc(r.nt.per[g.name])}</span>` : ''}</td>`; }).join('')}</tr>`).join('')}
         </tbody></table></div>
         <p class="hint">Funded = share of the goal reached by existing investments, money coming in later and the SIP that fits within what can be invested.</p></div>` : ''}
+      ${(() => { const JX = [X, ...CR].find(r => r?.sc?.job && FP.jobLoss(d, st, r.sc)); return JX ? `<div class="jobv"><div class="secbar"><h3>${FP.esc(JX.sc.name)}</h3><button class="link noprint" data-sced="${JX.sc.id}">Change the job-loss details</button></div>${FP.jobView(d, st, JX.sc)}</div>` : ''; })()}
       <details class="noprint"><summary><b>How it's calculated (Excel formulas)</b></summary><div class="xl">Kept for spending   = MAX(take-home − can invest, household + EMIs + premiums)
 Target income       = kept for spending + SIP needed (Section 5)
 Extra needed        = MAX(target income − take-home, 0)
@@ -1733,9 +1852,16 @@ Need in year y      = household × (1 + inflation)^y + premiums + EMIs of loans 
               <div class="row3"><label>Scenario name<input id="se_name" type="text" value="${FP.esc(dr.name)}"></label>
                 <label>SIP type${sel('id="se_sipMode"', [['', `Same as plan (${st.sipMode === 'flat' ? 'flat' : 'step-up'})`], ['step', `Step-up (${sp} a year)`], ['flat', 'Flat']], dr.sipMode || '')}</label>
                 <label>Can invest per month<input id="se_avail" type="text" inputmode="decimal" class="money" ${dr.avail != null ? `data-raw="${dr.avail}" value="${FP.inrx(dr.avail)}"` : ''} placeholder="Same as plan: ${FP.inrx(S.avail)}"></label></div>
-              <div class="row3" style="margin-top:10px"><label>If a job is lost${sel('id="se_jobWho"', [['', 'No job loss'], ...(d.self ? [['Self', `${d.self.first || 'Self'} loses the job`]] : []), ...(d.spouse ? [['Spouse', `${d.spouse.first || 'Spouse'} loses the job`]] : [])], dr.job?.who || '')}</label>
-                <label>Months without income<input id="se_jobM" type="number" min="1" max="60" value="${dr.job?.months ?? 6}"></label>
-                <span class="hint" style="align-self:end" id="se_jobTxt"></span></div>
+              <h3>Job loss</h3>
+              <div class="jobg"><label>Whose job${sel('id="se_jobWho"', [['', 'No job loss'], ...(d.self ? [['Self', `${d.self.first || 'Self'}`]] : []), ...(d.spouse ? [['Spouse', `${d.spouse.first || 'Spouse'}`]] : [])], dr.job?.who || '')}</label>
+                <label>For how long${sel('id="se_jobT"', [['temp', 'A few months, then a new job'], ['perm', 'For good (no new job)']], dr.job?.type || 'temp')}</label>
+                <label class="jt">Months without income<input id="se_jobM" type="number" min="1" max="60" value="${dr.job?.months ?? 6}"></label>
+                <label class="jt">New job pays (% of old salary)<input id="se_jobP" type="number" min="0" max="200" value="${dr.job?.newPct ?? 100}"></label>
+                <label>Severance, gratuity, leave encashment<input id="se_jobS" type="text" inputmode="decimal" class="money" data-raw="${dr.job?.sev || 0}" value="${FP.inrx(dr.job?.sev || 0)}"></label>
+                <label>New health cover premium a year<input id="se_jobH" type="text" inputmode="decimal" class="money" data-raw="${dr.job?.health || 0}" value="${FP.inrx(dr.job?.health || 0)}" title="If health cover came with the job"></label>
+                <label>Cut household spending by %<input id="se_jobC" type="number" min="0" max="90" value="${dr.job?.cut ?? 0}"></label>
+                <label class="jp jk"><span><input type="checkbox" id="se_jobK" ${dr.job?.keep ? 'checked' : ''}> Keep money already going to other goals (e.g. a child's education)</span><small>Only the rest pays living costs</small></label></div>
+              <p class="hint" id="se_jobTxt" style="margin:8px 0 0"></p>
               <label style="margin-top:10px">Notes for this scenario<textarea id="se_note" rows="2" placeholder="e.g. Client open to selling the plot in 2029">${FP.esc(dr.note || '')}</textarea></label>
               <h3>Goals</h3><p class="hint" style="margin:0 0 8px">Changes apply only to this scenario. Gold cells differ from the plan; ↺ resets a goal. "Fund with": Lumpsum only = existing investments, no new SIP; SIP only = no existing investments; Leave unfunded = not planned. Fund % plans only part of the goal.</p>
               <div class="tbl"><table class="bulk" id="seG"><thead><tr><th>Goal</th><th>Priority</th><th class="n">Today's cost</th><th>Year</th><th>Fund with</th><th class="n">Fund %</th><th class="n">Funded</th><th class="n">SIP / month</th><th data-nosort></th></tr></thead><tbody>${plan.map(gRow).join('')}</tbody></table></div>
@@ -1751,9 +1877,13 @@ Need in year y      = household × (1 + inflation)^y + premiums + EMIs of loans 
           $('#seI').querySelectorAll('[data-xi]').forEach(b => b.onclick = () => { dr.inflows.splice(+b.dataset.xi, 1); show(); });
           $('#seAddI').onclick = () => { const s0 = srcs[0]; dr.inflows.push({ src: s0 ? s0[0] : '', amt: s0 ? s0[1] : 0, month: 3, year: y0 + 1, to: 'pool' }); show(); };
           ['name', 'note', 'sipMode', 'avail'].forEach(k => $('#se_' + k).addEventListener('change', e => { const x = e.target; dr[k] = k === 'avail' ? (x.value.trim() === '' ? undefined : FP.num(x.value)) : x.value || undefined; if (k === 'avail' && dr.avail == null) delete dr.avail; calc(); }));
-          const jobTxt = () => { const J = FP.jobLoss(d, st, dr); $('#se_jobTxt').textContent = J ? `${FP.inr(J.need)} a month beyond other income × ${J.months} = ${FP.short(J.total)} from savings; SIPs pause for ${J.months} months.` : ''; };
-          const jobUpd = () => { const w = $('#se_jobWho').value, m = +$('#se_jobM').value || 0; if (w && m > 0) dr.job = { who: w, months: m }; else delete dr.job; jobTxt(); calc(); };
-          $('#se_jobWho').addEventListener('change', jobUpd); $('#se_jobM').addEventListener('change', jobUpd); jobTxt();
+          const jobTxt = () => { const J = FP.jobLoss(d, st, dr), perm = $('#se_jobT').value === 'perm';
+            const on = !!$('#se_jobWho').value; $('#mbox').querySelectorAll('.jobg>label').forEach((x, i) => x.style.display = i && !on ? 'none' : '');
+            if (on) { $('#mbox').querySelectorAll('.jt').forEach(x => x.style.display = perm ? 'none' : ''); $('#mbox').querySelectorAll('.jp').forEach(x => x.style.display = perm ? '' : 'none'); }
+            $('#se_jobTxt').innerHTML = !J ? '' : J.perm ? `Income left ${FP.inr(J.other)}, spending ${FP.inr(J.spend)}: <b>${FP.inr(J.deficit)} a month</b> from investments, for life. Retirement and the emergency fund become part of this.`
+              : `Income left ${FP.inr(J.other)}, spending ${FP.inr(J.spend)}: ${FP.inr(J.deficit)} a month × ${J.months} = <b>${FP.short(J.total)}</b> from savings; SIPs pause ${J.months} months.`; };
+          const jobUpd = () => { const w = $('#se_jobWho').value; if (!w) delete dr.job; else dr.job = { who: w, type: $('#se_jobT').value, months: +$('#se_jobM').value || 6, newPct: $('#se_jobP').value === '' ? 100 : +$('#se_jobP').value, sev: FP.num($('#se_jobS').value) || 0, health: FP.num($('#se_jobH').value) || 0, cut: +$('#se_jobC').value || 0, keep: $('#se_jobK').checked }; jobTxt(); calc(); };
+          ['#se_jobWho', '#se_jobT', '#se_jobM', '#se_jobP', '#se_jobS', '#se_jobH', '#se_jobC', '#se_jobK'].forEach(k => $(k).addEventListener('change', jobUpd)); jobTxt();
           $('#seX').onclick = $('#seCancel').onclick = FP.closeModal;
           $('#seSave').onclick = () => FP.set(s => { const L = clone(list), i = L.findIndex(x => x.id === dr.id); dr.name = (dr.name || '').trim() || 'Scenario'; if (i < 0) L.push(dr); else L[i] = dr; s.scen = L; s.scSel = dr.id; FP.closeModal(); });
           $('#seDel')?.addEventListener('click', e => { if (!e.target.dataset.sure) { e.target.dataset.sure = 1; e.target.textContent = 'Click again to delete'; return; } FP.set(s => { s.scen = list.filter(x => x.id !== dr.id); }); FP.closeModal(); });
@@ -3102,7 +3232,11 @@ Move              = target − today; every change is shown (under ₹1,000 coun
     const note = '<p class="unit" style="text-align:left;margin-top:8px">Funded = share of the goal met by your investments, money coming later and the SIP that fits in what you can invest.</p>';
     return pages.map((p, k) => FP.cp.page(c, 'whatif', 'What if?', k ? '' : 'Other routes you could take, side by side with your plan.', tbl(p.join('')) + (k === pages.length - 1 ? note : ''), k ? '' : 'how'));
   };
-  FP.cp.parts.whatif = page;
+  /* one page per ticked job-loss scenario, after the comparison */
+  const jobPages = c => (c.st.scen || []).filter(s => s.cmp && s.job && FP.jobLoss(c.d, c.st, s)).map(s => { const J = FP.jobLoss(c.d, c.st, s);
+    return FP.cp.page(c, 'whatif', J.perm ? `If ${FP.esc(J.first)}'s Job Stops for Good` : `If ${FP.esc(J.first)} Is Out of Work for ${J.months} Months`,
+      J.perm ? 'No more salary: your investments pay the living costs first, for life, and the goals get what is left.' : `Living costs come from savings until a new job${J.pct < 100 ? ` at ${J.pct}% of the salary` : ''}, and SIPs pause.`, FP.jobView(c.d, c.st, s, 1), 'how'); });
+  FP.cp.parts.whatif = c => [...page(c), ...jobPages(c)];
 })();
 </script>
 <script data-src="cp-p7.js">/* Client PDF — Protecting your family (Section 7) and Your action plan (Section 9 + disclaimer). Same table style as Parts 4–5. */
