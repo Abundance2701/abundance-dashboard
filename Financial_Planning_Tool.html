@@ -344,9 +344,9 @@ FP.esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt
 FP.inrx = v => { const r = Math.round(+v || 0); return (r < 0 ? '−' : '') + '₹' + Math.abs(r).toLocaleString('en-IN'); };
 FP.up = v => { const a = Math.abs(+v || 0); if (a < 0.5) return 0; const s = a >= 1e4 ? 1e3 : 100; return Math.sign(v) * Math.ceil(a / s - 1e-9) * s; };
 /* Monthly plan amounts are rounded once, in the calculation, to multiples of ₹1,000, so every total, gap and left-over built from
-   them is a multiple of ₹1,000 too and adds up on screen. SIP needed: ₹300 or less over a thousand rounds down, more rounds up
-   (₹12,250 → ₹12,000; ₹12,350 → ₹13,000). What can be invested: always down. */
-FP.rSip = v => { const a = +v || 0; if (a < 0.5) return 0; const b = Math.floor(a / 1e3 + 1e-9) * 1e3; return a - b <= 300 ? b : b + 1e3; };
+   them is a multiple of ₹1,000 too and adds up on screen. SIP needed: always up (better a little extra than a shortfall).
+   What can be invested: always down. */
+FP.rSip = v => { const a = +v || 0; return a < 0.5 ? 0 : Math.ceil(a / 1e3 - 1e-9) * 1e3; };
 FP.rDown = v => Math.max(Math.floor((+v || 0) / 1e3 + 1e-9) * 1e3, 0);
 FP.inr = v => FP.inrx(FP.up(v));
 FP.short = v => { const a = Math.abs(v || 0), s = v < 0 ? '−' : ''; if (a >= 1e7) return s + '₹' + (a / 1e7).toFixed(2) + '\u00a0Cr'; if (a >= 1e5) return s + '₹' + (a / 1e5).toFixed(2) + '\u00a0L';   /* non-breaking space: the number and L/Cr never split across lines */ return s + '₹' + Math.round(a).toLocaleString('en-IN'); };
@@ -1168,7 +1168,7 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
       ${S.nowGap.length ? `<div class="callout"><b>${FP.short(S.nowShort)} is needed now and isn't covered by existing investments.</b> A SIP can't build this in time; use the bonus or surplus, or move the goal:<ul style="margin:6px 0 0;padding-left:18px">${S.nowGap.map(g => `<li>${FP.esc(g.name)}: ${FP.short(g.gap)}</li>`).join('')}</ul></div>` : ''}
       <div><h3>SIP for each goal</h3><div class="chartbox" style="height:${Math.max(140, F.length * 30 + 40)}px"><canvas id="sipBar" role="img" aria-label="SIP allocated and shortfall per goal"></canvas></div>
         ${FP.legend(['SIP allocated', 'Monthly shortfall'], null, ['#1E7A46', '#A3502F'])}</div>
-      <div><div class="secbar"><h3>How your monthly investment is shared <span class="chip${S.step ? '' : ' muted'}">${S.step ? `Step-up SIP @ ${sp} p.a.` : 'Flat SIP'}</span></h3><button class="addgoal noprint" data-addgoal>+ Add goal</button></div><p class="hint">The monthly SIP goes to goals from the top of this list down: a goal gets its SIP only after every goal above it is fully funded.<span class="noprint"> ${st.g5order ? 'You have reordered it here (<button class="link" id="g5reset">follow Section 4 again</button>).' : 'It starts in Section 4\'s order; drag ⠿ to change who gets the SIP first.'}</span> SIPs are rounded to a ₹1,000 (₹300 or less over rounds down, more rounds up) and the amount you can invest down to the nearest ₹1,000, so every total adds up. A ${S.step ? `step-up SIP rises ${sp} every 12 months` : 'flat SIP stays the same every month'}.</p>
+      <div><div class="secbar"><h3>How your monthly investment is shared <span class="chip${S.step ? '' : ' muted'}">${S.step ? `Step-up SIP @ ${sp} p.a.` : 'Flat SIP'}</span></h3><button class="addgoal noprint" data-addgoal>+ Add goal</button></div><p class="hint">The monthly SIP goes to goals from the top of this list down: a goal gets its SIP only after every goal above it is fully funded.<span class="noprint"> ${st.g5order ? 'You have reordered it here (<button class="link" id="g5reset">follow Section 4 again</button>).' : 'It starts in Section 4\'s order; drag ⠿ to change who gets the SIP first.'}</span> SIPs are rounded up to the next ₹1,000 and the amount you can invest down to the nearest ₹1,000, so every total adds up. A ${S.step ? `step-up SIP rises ${sp} every 12 months` : 'flat SIP stays the same every month'}.</p>
       <div class="tbl"><table><thead><tr><th class="noprint" data-nosort title="Drag rows to reorder"></th><th>Goal</th><th>Priority</th><th>Due</th><th class="n" data-h="Still to build by due date" title="Part Section 4 could not cover, grown to the due date">Yet to build by due date</th><th>Invest in</th><th class="n" data-h="SIP needed">${S.step ? 'Step-up SIP needed' : 'SIP needed'}</th><th class="n" data-h="SIP allocated">SIP allocated</th><th class="n">Shortfall</th><th class="n">On track</th></tr></thead><tbody>
         ${F.map(g => `<tr data-g="${FP.esc(g.name)}"><td class="noprint drag" draggable="true" title="Drag to reorder. Shift+click to pick several.">⠿</td><td>${FP.goalBtn(g)}</td><td data-sort="${PR[g.pri]}"><span class="chip ${g.pri === 'High' ? '' : g.pri === 'Medium' ? 'warn' : 'muted'}">${g.pri}</span></td><td>${MON[g.mon - 1]} ${g.year}<span class="note">${g.n} months${g.k < g.n ? `; SIP for the first ${g.k} (till retirement), then it grows untouched` : ''}</span></td>
           <td class="n">${FP.inr(g.gapFV)}</td><td>${g.bk}${g.bk === 'Retirement mix' ? '' : ' MFs'} · ${FP.pct(g.r, 0)}</td><td class="n">${FP.inr(g.req)}</td><td class="n"><b>${FP.inr(g.alloc)}</b></td>
@@ -1379,7 +1379,7 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
         <tr class="tot"><td>Total</td><td></td><td></td><td class="n">${FP.inrx(X)}</td></tr></tbody></table></div>` : '';
       $('#vfOut').innerHTML = `${own}
         <p>${X > 0 ? `The SIPs grow to <b>${FP.inrx(s.sipFV)}</b>; with the <b>${FP.inrx(X)}</b> already set aside, that is ` : `After ${vv.n} months the investment grows to `}<b>${FP.inrx(s.bal)}</b>${X > 0 ? ` by ${dueTxt}` : ''}. The goal needs <b>${FP.inrx(want)}</b>${isFixed ? '' : ` (today's cost grown month by month at ${+vv.infl.toFixed(2)}%)`}. ${verdict(s.bal, want)}</p>
-        ${planAmt != null && ov.amt == null && ov.ex == null && Math.abs(planAmt - toolAmt) >= 1 ? `<p class="hint">The plan shows <b>${FP.inrx(planAmt)}</b> a month for this goal: the ${FP.inrx(toolAmt)} above, rounded to a ₹1,000 (₹300 or less over rounds down, more rounds up), so it ends ${planAmt > toolAmt ? 'slightly above' : 'a little below'} the goal.</p>` : ''}
+        ${planAmt != null && ov.amt == null && ov.ex == null && Math.abs(planAmt - toolAmt) >= 1 ? `<p class="hint">The plan shows <b>${FP.inrx(planAmt)}</b> a month for this goal: the ${FP.inrx(toolAmt)} above, rounded up to the next ₹1,000, so it ends slightly above the goal.</p>` : ''}
         <div class="xl">Same check in Excel:
 Future cost   = ${isFixed ? FP.inrx(want).replace(/[₹,]/g, '') + '  (taken from the tool)' : `${Math.round(vv.cost)}*(1+${+vv.infl.toFixed(4)}%)^(${vv.n}/12)`}
 SIP           = ${vv.k < vv.n ? `PMT(${i}, ${vv.k}, 0, -(${Math.round(want)}${X > 0 ? '-' + Math.round(X) : ''})/(1+${i})^(${vv.n}-${vv.k}), 1)   SIP stops at retirement after ${vv.k} months` : `PMT(${i}, ${vv.n}, 0, -(${Math.round(want)}${X > 0 ? '-' + Math.round(X) : ''}), 1)`}${X > 0 ? '   (goal minus what is already set aside)' : ''}
@@ -1880,10 +1880,20 @@ Health        = MAX(minimum floater, per person × family members)</div></detail
     /* A retirement corpus lasts decades, so near retirement it follows the post-retirement mix instead of going fully to debt */
     const short = Math.min(A.goals.filter(g => g.n < 36 && g.type !== 'retirement').reduce((s, g) => s + g.gotRs, 0), total), ret = Math.min(A.goals.filter(g => g.n < 36 && g.type === 'retirement').reduce((s, g) => s + g.gotRs, 0), total - short), long = total - short - ret, re = FP.pctOf('retEq') / 100;
     const tgt = { Equity: long * mix[0] / 100 + ret * re, Debt: short + long * mix[1] / 100 + ret * (1 - re), Gold: long * mix[2] / 100 };
-    const move = Object.fromEntries(CL.map(k => [k, tgt[k] - cur[k]]));
+    /* Locked investments (EPF, PPF, NPS, Sukanya, NSC, endowment / ULIP plans) count in the mix but can't be sold to rebalance:
+       a class is reduced only from its movable part, and what is added elsewhere shrinks to match. The rest evens out over time
+       as new SIPs go to the classes below target. */
+    const LOCK = /\b(e?pf|ppf|nps|nsc|sukanya|ssy|endowment|ulip|lic|insurance|pension)\b/i, locked = { Equity: 0, Debt: 0, Gold: 0 };
+    fin.forEach(r => { if (!LOCK.test(r.label)) return; if (r.cls === 'Hybrid') { locked.Equity += r.m / 2; locked.Debt += r.m / 2; } else locked[r.cls === 'Cash' ? 'Debt' : r.cls] += r.m; });
+    const raw = Object.fromEntries(CL.map(k => [k, tgt[k] - cur[k]])), move = {};
+    CL.forEach(k => { if (raw[k] < 0) move[k] = Math.max(raw[k], -(cur[k] - locked[k])); });
+    const freed = CL.reduce((t, k) => t + (raw[k] < 0 ? -move[k] : 0), 0), want = CL.reduce((t, k) => t + Math.max(raw[k], 0), 0);
+    CL.forEach(k => { if (raw[k] >= 0) move[k] = want ? raw[k] * Math.min(freed / want, 1) : 0; });
+    const lockGap = CL.reduce((t, k) => t + Math.max(raw[k], 0), 0) - CL.reduce((t, k) => t + Math.max(move[k], 0), 0);   /* imbalance left for new SIPs to even out */
+    const lockedNote = Object.entries(locked).filter(([k, v]) => v > 0 && raw[k] < 0 && move[k] > raw[k] + 1).map(([k, v]) => ({ k, v, held: move[k] - raw[k] }));
     const sip = { Debt: 0, Hybrid: 0, Equity: 0 }; S.future.forEach(g => sip[g.bk === 'Retirement mix' ? 'Hybrid' : g.bk] += g.alloc);
     const other = nw.rows.filter(r => r.use === 'Investable' && !['Equity', 'Debt', 'Cash', 'Gold', 'Hybrid'].includes(r.cls)).reduce((s, r) => s + r.m, 0);
-    return { risk, mix, cur, tgt, move, total, short, ret, re, long, sip, sipTotal: S.alloc, other };
+    return { risk, mix, cur, tgt, move, raw, locked, lockGap, lockedNote, total, short, ret, re, long, sip, sipTotal: S.alloc, other };
   };
 
   FP.sec.allocation = {
@@ -1905,7 +1915,7 @@ Health        = MAX(minimum floater, per person × family members)</div></detail
           ${CL.map(k => `<tr data-k="${k}"><td><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${COL[k]};margin-right:7px"></i>${k}</td><td class="n">${FP.short(C.cur[k])}<span class="note">${FP.pct(pc(C.cur[k]), 0)}</span></td><td class="n">${FP.short(C.tgt[k])}<span class="note">${FP.pct(pc(C.tgt[k]), 0)}</span></td>
             <td class="n">${Math.abs(C.move[k]) < 1000 ? '<span class="hint">Fine</span>' : `<b class="${C.move[k] > 0 ? 'up' : 'down'}">${C.move[k] > 0 ? 'Add ' : 'Reduce '}${FP.short(Math.abs(C.move[k]))}</b>`}</td></tr>`).join('')}
           <tr class="tot"><td>Total</td><td class="n">${FP.short(C.total)}</td><td class="n">${FP.short(C.total)}</td><td></td></tr></tbody></table></div>
-          <p class="hint">Rebalance gradually and mind exit loads and capital-gains tax. Use new SIPs to fill the gap where possible instead of selling.${C.other ? ` Property and other assets (${FP.short(C.other)}) are left out.` : ''}</p></div>
+          <p class="hint">${C.lockGap > 1000 ? `<b>${C.lockedNote.map(x => `${FP.short(x.v)} of ${x.k.toLowerCase()}`).join(' and ')} is locked (EPF, PPF, insurance plans and similar) and stays as it is.</b> The moves above use only what can be sold; the remaining ${FP.short(C.lockGap)} evens out over time as new SIPs go to the classes below target. ` : ''}Rebalance gradually and mind exit loads and capital-gains tax. Use new SIPs to fill the gap where possible instead of selling.${C.other ? ` Property and other assets (${FP.short(C.other)}) are left out.` : ''}</p></div>
       </div>
       <div><h3>Where the new SIPs go</h3><div class="tbl"><table><thead><tr><th data-nosort>Fund type</th><th class="n" data-nosort>SIP / month</th><th class="n" data-nosort>Share</th><th data-nosort>Used for</th></tr></thead><tbody>
         ${['Equity', 'Hybrid', 'Debt'].filter(k => C.sip[k] > 0).map(k => `<tr data-k="${k}"><td>${k} MFs</td><td class="n">${FP.inr(C.sip[k])}</td><td class="n">${FP.pct(C.sipTotal ? C.sip[k] / C.sipTotal : 0, 0)}</td><td>${{ Equity: 'Goals 3+ years away', Hybrid: 'Goals 2–3 years away, and retirement once it is near', Debt: 'Goals under 2 years away' }[k]}</td></tr>`).join('') || '<tr><td colspan="4">No new SIP needed.</td></tr>'}
@@ -1949,7 +1959,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
     if (I.earners.length && !I.pa) add('pa', 'Within 3 months', 'Protection', `Take personal accident cover of about ${FP.short(I.paRec)}.`, 'insurance');
     if (I.earners.length && !I.ci) add('ci', 'Within 3 months', 'Protection', `Consider critical illness cover of about ${FP.short(I.ciRec)}.`, 'insurance');
     I.review.forEach((x, k) => add('pol' + k, 'Within 3 months', 'Protection', `Review ${x.company} (${x.insured}): ${x.why.toLowerCase()}.`, 'insurance'));
-    ['Equity', 'Debt', 'Gold'].filter(k => Math.abs(AA.move[k]) >= 1000).forEach(k => add('aa:' + k, 'Within 3 months', 'Investments', `${AA.move[k] > 0 ? 'Increase' : 'Reduce'} ${k.toLowerCase()} by ${FP.short(Math.abs(AA.move[k]))} to match the ${AA.risk.toLowerCase()} mix.`, 'allocation'));
+    ['Equity', 'Debt', 'Gold'].filter(k => Math.abs(AA.move[k]) >= 1000).forEach(k => add('aa:' + k, 'Within 3 months', 'Investments', `${AA.move[k] > 0 ? 'Increase' : 'Reduce'} ${k.toLowerCase()} by ${FP.short(Math.abs(AA.move[k]))}${AA.move[k] < 0 && AA.locked[k] > 0 ? ` (from ${k === 'Debt' ? 'debt funds and FDs' : 'what can be sold'}; EPF, PPF and insurance plans stay)` : ''} to match the ${AA.risk.toLowerCase()} mix.`, 'allocation'));
     d.loans.filter(l => l.rate > .09 && l.out > 0).forEach((l, k) => add('loan' + k, 'Within 3 months', 'Loans', `Consider prepaying ${l.desc} (${FP.pct(l.rate, 2)}), costlier than what safe investments earn.`, 'networth'));
     add('nom', 'Within 3 months', 'Estate', 'Check nominations on every bank account, investment and policy.', 'action');
     add('will', 'Within 3 months', 'Estate', 'Write or update a Will.', 'action');
@@ -3105,7 +3115,32 @@ Move              = target − today; every change is shown (under ₹1,000 coun
   };
 
   FP.cp.parts.protect = protect;
-  FP.cp.parts.action = action;
+  /* Your plan on one page: a recap before the steps, once the client has seen every part */
+  const summary = c => {
+    const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], N = FP.calc.nw(c.d, c.st), Sx = FP.calc.sip(c.d, c.st), I = FP.calc.ins(c.d, c.st);
+    const by = Object.fromEntries(Sx.goals.map(g => [g.name, g])), G = FP.cp.goalList(c).filter(g => by[g.name]), ok = G.filter(g => by[g.name].funded > .995).length;
+    const P = FP.calc.path(c.d, c.st), R = P.R, ry = P.runOut != null ? P.y0 + Math.floor((P.m0 + P.runOut) / 12) : null, early = R && ry != null && ry < R.ret.endYear;
+    const gap = Sx.short > 1, life = I.earners.reduce((t, p) => t + Math.max(p.gap, 0), 0), a = c.st.act || {}, hide = a.hide || {};
+    const steps = WHEN.flatMap(w => FP.calc.act(c.d, c.st).filter(x => !x.internal && !hide[x.id] && x.when === w)).slice(0, 4);
+    const fp = f => { const v = Math.max(0, Math.min(1, f || 0)), col = v > .995 ? '#005826' : v > .005 ? '#9a6a00' : '#934E32';
+      return `<span class="fp"><i><b style="width:${v * 100}%;background:${col}"></b></i><span style="color:${col};min-width:38px;text-align:right">${Math.round(v * 100)}%</span></span>`; };
+    const shown = G.slice(0, 12), more = G.length - shown.length;
+    return FP.cp.page(c, 'action', 'Your Plan on One Page', 'Everything in this plan, in brief. The steps follow on the next page.',
+      `<div class="kp" style="grid-template-columns:repeat(3,1fr)"><div><span>Net worth</span><b>${FP.short(N.net)}</b><small>What you own minus what you owe</small></div>
+        <div><span>Goals fully funded</span><b>${ok} of ${G.length}</b><small>With your investments and the SIP you can invest</small></div>
+        ${R ? `<div><span>Retirement money lasts till</span><b style="${early ? 'color:var(--brown)' : ''}">${early ? ry : R.ret.endYear}</b><small>${early ? 'Earlier than planned: see the gap below' : `Age ${FP.rate('lifeExp')}, as planned`}</small></div>` : `<div><span>Plan date</span><b>${c.date}</b><small>Review every year</small></div>`}</div>
+      <h3 class="st">Every month</h3>
+      <div class="kp" style="grid-template-columns:repeat(3,1fr)"><div><span>SIP needed</span><b>${FP.inr(Sx.req)}</b><small>For every goal, in the first year</small></div>
+        <div class="hero"><span>You can invest</span><b>${FP.inr(Sx.avail)}</b><small>Current SIPs plus what's left over</small></div>
+        <div><span>${gap ? 'Gap' : 'Spare'}</span><b style="${gap ? 'color:var(--brown)' : ''}">${FP.inr(gap ? Sx.short : Sx.left)}</b><small>${gap ? 'A month: raise income, move or trim goals' : 'A month, after every goal SIP'}</small></div></div>
+      <h3 class="st">Your goals</h3>
+      <table class="ct gt"><thead><tr><th>Goal</th><th>Due</th><th>Funded</th></tr></thead><tbody>
+        ${shown.map(g => `<tr><td><div class="gn">${FP.art.il(FP.art.goalKey(g), 22, 0)}${FP.cp.goalName(g)}</div></td><td class="dt">${g.n <= 0 ? 'Now' : `${MON[g.mon - 1]} ${g.year}`}</td><td>${fp(by[g.name].funded)}</td></tr>`).join('')}
+        ${more > 0 ? `<tr><td colspan="3" style="color:#6d6470">and ${more} more: see Part 4</td></tr>` : ''}</tbody></table>
+      ${life > 1 || I.hGap > 1 ? `<h3 class="st" style="margin-top:18px">Protection</h3><p style="margin:0">${[life > 1 ? `Add <b>${FP.short(life)}</b> of term life cover` : '', I.hGap > 1 ? `add <b>${FP.short(I.hGap)}</b> of health cover` : ''].filter(Boolean).join(', and ')}.</p>` : ''}
+      ${steps.length ? `<h3 class="st" style="margin-top:18px">First steps</h3><ol style="margin:0;padding-left:20px;line-height:1.55">${steps.map(x => `<li>${E(x.text.replace(/\s*\(see Section \d+ scenarios\)/i, ''))}</li>`).join('')}</ol>` : ''}`, 'check');
+  };
+  FP.cp.parts.action = c => [summary(c), ...action(c)];
 })();
 </script>
 <script data-src="cp-p8.js">/* Client PDF — Asset allocation (Section 8): risk profile, today vs target mix as two bars, what to move, where new SIPs go. */
@@ -3134,7 +3169,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
       <table class="ct gt"><thead><tr><th>Asset</th><th>Today</th><th>Target</th><th>Move</th></tr></thead><tbody>
         ${CL.map(k => `<tr><td><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${COL[k]};margin-right:8px"></span>${NM[k]}</td><td class="n">${S(C.cur[k])} · ${Math.round(pc(C.cur[k]) * 100)}%</td><td class="n">${S(C.tgt[k])} · ${Math.round(pc(C.tgt[k]) * 100)}%</td><td class="n">${mv(k)}</td></tr>`).join('')}
         <tr class="tot"><td>Total</td><td class="n">${S(C.total)}</td><td class="n">${S(C.total)}</td><td></td></tr></tbody></table>
-      <p class="unit" style="text-align:left;margin-top:8px">Move gradually, keeping exit loads and tax in mind. Where possible, use new SIPs to fill the gap instead of selling.${C.other ? ` Property and other assets (${S(C.other)}) are not included.` : ''}</p>
+      <p class="unit" style="text-align:left;margin-top:8px">${C.lockGap > 1000 ? `${C.lockedNote.map(x => `${S(x.v)} of your ${x.k.toLowerCase()}`).join(' and ')} is in EPF, PPF or insurance plans, which stay as they are, so the moves above use only what can be sold. The rest of the gap (${S(C.lockGap)}) closes over time as new SIPs go to ${CL.filter(k => C.raw[k] > 1000).map(k => k.toLowerCase()).join(' and ')}. ` : ''}Move gradually, keeping exit loads and tax in mind. Where possible, use new SIPs to fill the gap instead of selling.${C.other ? ` Property and other assets (${S(C.other)}) are not included.` : ''}</p>
       <h3 class="st" style="margin-top:20px">Today vs target</h3>
       <div class="mixr"><span>Today</span>${bar(C.cur)}</div><div class="mixr"><span>Target</span>${bar(C.tgt)}</div>
       <div class="mixl">${CL.map(k => `<span><i style="background:${COL[k]}"></i>${NM[k]}</span>`).join('')}</div>
