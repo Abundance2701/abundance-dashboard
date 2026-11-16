@@ -1169,7 +1169,7 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
       <div><h3>SIP for each goal</h3><div class="chartbox" style="height:${Math.max(140, F.length * 30 + 40)}px"><canvas id="sipBar" role="img" aria-label="SIP allocated and shortfall per goal"></canvas></div>
         ${FP.legend(['SIP allocated', 'Monthly shortfall'], null, ['#1E7A46', '#A3502F'])}</div>
       <div><div class="secbar"><h3>How your monthly investment is shared <span class="chip${S.step ? '' : ' muted'}">${S.step ? `Step-up SIP @ ${sp} p.a.` : 'Flat SIP'}</span></h3><button class="addgoal noprint" data-addgoal>+ Add goal</button></div><p class="hint">The monthly SIP goes to goals from the top of this list down: a goal gets its SIP only after every goal above it is fully funded.<span class="noprint"> ${st.g5order ? 'You have reordered it here (<button class="link" id="g5reset">follow Section 4 again</button>).' : 'It starts in Section 4\'s order; drag ⠿ to change who gets the SIP first.'}</span> SIPs are rounded up to the next ₹1,000 and the amount you can invest down to the nearest ₹1,000, so every total adds up. A ${S.step ? `step-up SIP rises ${sp} every 12 months` : 'flat SIP stays the same every month'}.</p>
-      <div class="tbl"><table><thead><tr><th class="noprint" data-nosort title="Drag rows to reorder"></th><th>Goal</th><th>Priority</th><th>Due</th><th class="n" data-h="Still to build by due date" title="Part Section 4 could not cover, grown to the due date">Yet to build by due date</th><th>Invest in</th><th class="n" data-h="SIP needed">${S.step ? 'Step-up SIP needed' : 'SIP needed'}</th><th class="n" data-h="SIP allocated">SIP allocated</th><th class="n">Shortfall</th><th class="n">On track</th></tr></thead><tbody>
+      <div class="tbl"><table id="sipTbl"><thead><tr><th class="noprint" data-nosort title="Drag rows to reorder"></th><th data-nosort>Goal</th><th data-nosort>Priority</th><th data-nosort>Due</th><th class="n" data-nosort data-h="Still to build by due date" title="Part Section 4 could not cover, grown to the due date">Yet to build by due date</th><th data-nosort>Invest in</th><th class="n" data-nosort data-h="SIP needed">${S.step ? 'Step-up SIP needed' : 'SIP needed'}</th><th class="n" data-nosort data-h="SIP allocated">SIP allocated</th><th class="n" data-nosort>Shortfall</th><th class="n" data-nosort>On track</th></tr></thead><tbody>
         ${F.map(g => `<tr data-g="${FP.esc(g.name)}"><td class="noprint drag" draggable="true" title="Drag to reorder. Shift+click to pick several.">⠿</td><td>${FP.goalBtn(g)}</td><td data-sort="${PR[g.pri]}"><span class="chip ${g.pri === 'High' ? '' : g.pri === 'Medium' ? 'warn' : 'muted'}">${g.pri}</span></td><td>${MON[g.mon - 1]} ${g.year}<span class="note">${g.n} months${g.k < g.n ? `; SIP for the first ${g.k} (till retirement), then it grows untouched` : ''}</span></td>
           <td class="n">${FP.inr(g.gapFV)}</td><td>${g.bk}${g.bk === 'Retirement mix' ? '' : ' MFs'} · ${FP.pct(g.r, 0)}</td><td class="n">${FP.inr(g.req)}</td><td class="n"><b>${FP.inr(g.alloc)}</b></td>
           <td class="n" style="${g.short > 1 ? 'color:var(--brown);font-weight:700' : ''}">${g.short > 1 ? FP.inr(g.short) : '—'}</td><td class="n">${FP.pct(g.ach, 0)}</td></tr>`).join('') || '<tr><td colspan="10">Every future goal is already covered by existing investments.</td></tr>'}
@@ -1178,7 +1178,9 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
         <p class="hint">${S.step ? `SIP amounts are for year 1; a step-up SIP rises ${sp} a year. ` : ''}"Yet to build by due date" is the part Section 4 couldn't cover, grown to the due date. "On track" is the share of that amount the allocated SIP will reach.</p></div>`;
       el.querySelectorAll('[data-sm]').forEach(b => b.onclick = () => FP.set(s => s.sipMode = b.dataset.sm));
       el.querySelector('#sipAvail').onchange = e => FP.set(s => s.sipAvail = FP.num(e.target.value));
-      FP.dragRows(el.querySelector('.tbl table'), 'tr[data-g]', r => r.dataset.g, names => FP.set(s => s.g5order = names));
+      /* rows are in the order SIPs are given out, so the table isn't sortable by column; dragging changes that order */
+      const sT = el.querySelector('#sipTbl'); FP.clearSort?.(sT);
+      FP.dragRows(sT, 'tr[data-g]', r => r.dataset.g, names => FP.set(s => s.g5order = names));
       el.querySelector('#g5reset')?.addEventListener('click', () => FP.set(s => { delete s.g5order; }));
       el.querySelector('#sipHow').onclick = () => FP.openSurplus();
       el.querySelector('#sipReset')?.addEventListener('click', () => FP.set(s => delete s.sipAvail));
@@ -1968,6 +1970,9 @@ Move              = target − today; every change is shown (under ₹1,000 coun
     const nChk = FP.PLAN.reduce((n, p) => n + (p.id === 'action' ? 0 : (FP.sec[p.id]?.checks?.(d, st) || []).filter(c => !(st.dismiss || {})[FP.checkKey({ ...c, sec: p.title })]).length), 0);
     if (nChk) add('chk', 'Now', 'Data', `Confirm ${nChk} data points with the client (see Data checks).`, null, true);
     (st.act?.custom || []).forEach(c => out.push({ ...c, area: 'Added', custom: true }));
+    /* who does each step: Abundance (SIPs, switches, rebalancing, insurance, the yearly review) or You (money, goals, nominations, Will); changeable per step */
+    const BY = { SIP: 'Abundance', Investments: 'Abundance', Protection: 'Abundance', Review: 'Abundance', Data: 'Abundance' }, SET = st.act?.by || {};
+    out.forEach(x => { x.by = SET[x.id] || x.by || BY[x.area] || 'You'; });
     return out;
   };
 
@@ -1977,12 +1982,12 @@ Move              = target − today; every change is shown (under ₹1,000 coun
       const secNo = id => FP.PLAN.find(p => p.id === id)?.no;
       el.innerHTML = `
       <div class="kpis">${FP.kpi('Steps', `${L.filter(x => !x.internal).length}`, `${L.filter(x => done[x.id] && !x.internal).length} done`, 1)}${WHEN.slice(0, 3).map(w => FP.kpi(w, String(L.filter(x => x.when === w && !x.internal).length), 'steps')).join('')}</div>
-      ${WHEN.map(w => { const R = L.filter(x => x.when === w); return R.length ? `<div><h3>${w}</h3><div class="tbl"><table class="acts"><thead><tr><th class="w1" data-nosort>Done</th><th data-nosort>What to do</th><th class="w1" data-nosort>Area</th><th class="w1 noprint" data-nosort></th></tr></thead><tbody>
+      ${WHEN.map(w => { const R = L.filter(x => x.when === w); return R.length ? `<div><h3>${w}</h3><div class="tbl"><table class="acts"><thead><tr><th class="w1" data-nosort>Done</th><th data-nosort>What to do</th><th class="w1" data-nosort>By</th><th class="w1" data-nosort>Area</th><th class="w1 noprint" data-nosort></th></tr></thead><tbody>
         ${R.map(x => `<tr class="${done[x.id] ? 'done' : ''}${x.internal ? ' noprint' : ''}" data-k="${FP.esc(x.id)}"><td class="c"><input type="checkbox" data-done="${FP.esc(x.id)}" ${done[x.id] ? 'checked' : ''} aria-label="Done"></td>
-          <td>${FP.esc(x.text)}${x.internal ? '<span class="note">Internal, not printed</span>' : ''}</td><td style="white-space:nowrap">${x.area}${x.sec && secNo(x.sec) && x.sec !== 'action' ? `<span class="note noprint"><a href="#${x.sec}">Section&nbsp;${secNo(x.sec)}</a></span>` : ''}</td>
+          <td>${FP.esc(x.text)}${x.internal ? '<span class="note">Internal, not printed</span>' : ''}</td><td><select class="rts" data-by="${FP.esc(x.id)}" aria-label="Who does this">${['Abundance', 'You'].map(b => `<option${x.by === b ? ' selected' : ''}>${b}</option>`).join('')}</select></td><td style="white-space:nowrap">${x.area}${x.sec && secNo(x.sec) && x.sec !== 'action' ? `<span class="note noprint"><a href="#${x.sec}">Section&nbsp;${secNo(x.sec)}</a></span>` : ''}</td>
           <td class="noprint"><button class="link" data-hide="${FP.esc(x.id)}" title="${x.custom ? 'Delete step' : 'Hide step'}" style="text-decoration:none">✕</button></td></tr>`).join('')}</tbody></table></div></div>` : ''; }).join('')}
       <div class="noprint" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
-        <select id="acWhen">${WHEN.map(w => `<option>${w}</option>`).join('')}</select>
+        <select id="acWhen">${WHEN.map(w => `<option>${w}</option>`).join('')}</select><select id="acBy" aria-label="Who does this"><option>You</option><option>Abundance</option></select>
         <input id="acText" type="text" placeholder="Add your own step, e.g. Close the old ULIP after Mar 2027" style="flex:1;min-width:240px;border:1px solid var(--line);border-radius:6px;padding:7px 9px;font:15px var(--fb)">
         <button class="bt" id="acAdd">Add step</button>${nHid ? `<button class="link" id="acShow">Show ${nHid} hidden</button>` : ''}</div>
       <div class="disc"><h3>Important</h3>
@@ -1992,7 +1997,8 @@ Move              = target − today; every change is shown (under ₹1,000 coun
       const upd = fn => FP.set(s => { s.act = { done: {}, hide: {}, custom: [], ...(s.act || {}) }; fn(s.act); });
       el.querySelectorAll('[data-done]').forEach(c => c.onchange = () => upd(x => { x.done = { ...x.done, [c.dataset.done]: c.checked }; }));
       el.querySelectorAll('[data-hide]').forEach(b => b.onclick = () => upd(x => { const id = b.dataset.hide; if (x.custom.some(c => c.id === id)) x.custom = x.custom.filter(c => c.id !== id); else x.hide = { ...x.hide, [id]: true }; }));
-      el.querySelector('#acAdd').onclick = () => { const t = el.querySelector('#acText').value.trim(); if (!t) return el.querySelector('#acText').focus(); upd(x => { x.custom = [...x.custom, { id: 'c' + Date.now(), when: el.querySelector('#acWhen').value, text: t }]; }); };
+      el.querySelector('#acAdd').onclick = () => { const t = el.querySelector('#acText').value.trim(); if (!t) return el.querySelector('#acText').focus(); upd(x => { x.custom = [...x.custom, { id: 'c' + Date.now(), when: el.querySelector('#acWhen').value, by: el.querySelector('#acBy').value, text: t }]; }); };
+      el.querySelectorAll('[data-by]').forEach(c => c.onchange = () => upd(x => { x.by = { ...(x.by || {}), [c.dataset.by]: c.value }; }));
       el.querySelector('#acText').onkeydown = e => { if (e.key === 'Enter') el.querySelector('#acAdd').click(); };
       el.querySelector('#acShow')?.addEventListener('click', () => upd(x => { x.hide = {}; }));
       el.querySelector('#acAmfi').onchange = e => upd(x => { x.amfi = e.target.checked; });
@@ -2149,7 +2155,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
   };
 
   /* Forget a table's column sort (used when its rows are reordered by dragging) */
-  FP.clearSort = tb => { if (tb?._key && mem[tb._key]) { delete mem[tb._key]; keep(); } };
+  FP.clearSort = tb => { if (!tb) return; const k = tb._key || keyOf(tb); if (mem[k]) { delete mem[k]; keep(); } };
   FP.enhance = (root = document) => {
     root.querySelectorAll('.tbl table').forEach(tb => {
       const body = tb.tBodies[0]; if (!body || body._orig) return;
@@ -2439,8 +2445,9 @@ Move              = target − today; every change is shown (under ₹1,000 coun
 .cv-art{position:absolute;right:0;bottom:0}
 .cv-wm{position:absolute;left:64px;bottom:56px;font:800 22px var(--fh);color:var(--green);letter-spacing:.08em}.cv-wm small{display:block;font:600 10.5px var(--fh);color:var(--brown);letter-spacing:.02em;margin-top:3px}
 /* contents */
-.toc{margin-top:8px}.toc .r{display:grid;grid-template-columns:62px 1fr auto;gap:8px 14px;align-items:baseline;padding:16px 0;border-bottom:1px dashed #cfdde9}
-.toc .n{font:800 30px var(--fh);color:var(--gold);line-height:1}.toc h3{font-size:18px;font-weight:700}.toc .s{font-size:14.5px;color:#6d6470;margin-top:3px}.toc .pg{font:700 15px var(--fh);color:var(--green)}
+.toc{margin-top:4px}.toc .r{display:grid;grid-template-columns:52px 1fr auto;gap:4px 14px;align-items:baseline;padding:10px 0;border-bottom:1px dashed #cfdde9}
+.toc .hl{display:flex;align-items:baseline;gap:6px;font-size:13.5px;color:#4d4552;margin-top:3px;padding-right:62px}.toc .hl i{flex:1;border-bottom:1.5px dotted #aebfcd;margin:0 4px;min-width:12px}.toc .hl b{font-weight:600;color:var(--green)}
+.toc .n{font:800 26px var(--fh);color:var(--gold);line-height:1}.toc h3{font-size:17px;font-weight:700;margin-bottom:2px}.toc .s{font-size:14.5px;color:#6d6470;margin-top:3px}.toc .pg{font:700 15px var(--fh);color:var(--green)}
 .toc .r.soon h3,.toc .r.soon .n{opacity:.45}
 /* why */
 .why-hero{display:grid;grid-template-columns:170px 1fr;gap:26px;align-items:center;background:#e4eef7;border-radius:16px;padding:22px 26px}
@@ -2528,8 +2535,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
     `<div class="qs">${[[1, 'now', 'Where are you today?', 'A snapshot of what you own, what you owe, and where your monthly income goes. This is your starting point: the blue dot on the map.'],
       [2, 'goal', 'Where do you want to go?', 'Each goal you shared with us: what it costs today, what it will cost when it falls due, and how important it is to you.'],
       [3, 'how', 'How can you get there?', 'The route: how your savings and monthly investments are matched to each goal, how your family stays protected, and the steps to take.']]
-      .map(([n, k, h, p], i) => `<div class="q">${il(k, 120, i)}<div><div class="k">Question ${n}</div><h2>${h}</h2><p>${p}</p>
-        <div class="in">${FP.cp.PARTS.filter(x => x.q === n).map(x => `<span data-part="${x.id}">Part ${FP.cp.PARTS.indexOf(x) + 1} · ${E(x.title)}</span>`).join('')}</div></div></div>`).join('')}</div>
+      .map(([n, k, h, p], i) => `<div class="q">${il(k, 120, i)}<div><div class="k">Question ${n}</div><h2>${h}</h2><p>${p}</p></div></div>`).join('')}</div>
     <p class="unit">All amounts are in Indian rupees and rounded. L = lakh, Cr = crore.</p>`);
 
   const assume = c => {
@@ -2556,7 +2562,9 @@ Move              = target − today; every change is shown (under ₹1,000 coun
     /* Parts are numbered in order among those that have pages, so a skipped part (e.g. no "What if?" scenarios) leaves no gap */
     const act = FP.cp.PARTS.filter(p => pages.some(pg => pg.part === p.id)), no = id => act.findIndex(p => p.id === id) + 1;
     pages.forEach(pg => { pg.html = pg.html.replace(/(<div class="eyebrow">Part )\d+/, (m, a) => a + no(pg.part)).replace(/<span data-part="(\w+)">Part \d+([\s\S]*?)<\/span>/g, (m, id, rest) => no(id) ? `<span data-part="${id}">Part ${no(id)}${rest}</span>` : ''); });
-    const toc = act.map((p, i) => `<div class="r${first[p.id] ? '' : ' soon'}"><span class="n">${String(i + 1).padStart(2, '0')}</span><div><h3>${E(p.title)}</h3><div class="s">${E(p.sub)}</div></div><span class="pg">${first[p.id] ? 'Page ' + first[p.id] : ''}</span></div>`).join('');
+    /* each part, then the headings of its pages (a heading that runs over several pages is listed once, at its first page) */
+    const heads = {}; pages.forEach((pg, i) => { if (pg.cover) return; const t = (/<h1 class="t">([\s\S]*?)<\/h1>/.exec(pg.html) || [])[1]; if (!t) return; const L = heads[pg.part] = heads[pg.part] || []; if (!L.some(x => x.t === t)) L.push({ t, n: i + 1 }); });
+    const toc = act.map((p, i) => `<div class="r"><span class="n">${String(i + 1).padStart(2, '0')}</span><div><h3>${E(p.title)}</h3>${(heads[p.id] || []).map(x => `<div class="hl"><span>${x.t}</span><i></i><b>${x.n}</b></div>`).join('')}</div><span class="pg">Page ${first[p.id]}</span></div>`).join('');
     const np = ['One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten'][act.length - 1] || act.length;
     return pages.map((pg, i) => pg.html.replace('<!--TOC-->', toc).replace('<!--NPARTS-->', np).replace(/<!--PG:(\w+)-->/g, (m, id) => first[id] ? ` · page ${first[id]}` : '')
       .replace('<!--FOOT-->', `<div class="foot"><span>Designing Portfolio. Delivering Peace.</span><span>www.abundance.co.in · service@abundanceindia.com</span><span>Page ${i + 1} of ${N}</span></div>`));
@@ -2721,7 +2729,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
 .tline .bx .g{display:grid;grid-template-columns:26px 1fr;gap:6px;align-items:center;font-size:12.5px;line-height:1.2;padding:2px 0}
 .tline .more{position:absolute;right:-12px;font-size:12px;color:#aebfcd}
 .tline .yr{position:absolute;top:232px;font:600 11px var(--fh);color:#8b7f8e;transform:translateX(-50%)}
-.gl{display:flex;gap:16px;justify-content:center;margin-top:6px;font-size:13px;color:#6d6470}.gl i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.gl{display:flex;gap:16px;justify-content:center;margin-top:18px;font-size:13px;color:#6d6470}.gl i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
 .ex{display:grid;grid-template-columns:72px 1fr;gap:16px;align-items:center;margin-top:16px}
 .gc{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
 .gcard{border:1.5px solid #cfdde9;border-radius:14px;background:#fff;padding:10px 14px;display:flex;flex-direction:column}.gcard .f{margin-top:auto!important}
@@ -2980,13 +2988,13 @@ Move              = target − today; every change is shown (under ₹1,000 coun
 
   const sipPage = c => {
     const Sx = FP.calc.sip(c.d, c.st), F = Object.fromEntries(Sx.future.map(g => [g.name, g])), PC = FP.cp.PC, sp = FP.pct(FP.rate('stepUp'), 0);
-    const R = Sx.goals.find(g => g.type === 'retirement'), L = FP.cp.goalList(c).filter(g => F[g.name]).map(g => F[g.name]);
+    const R = Sx.goals.find(g => g.type === 'retirement'), L = Sx.future;   /* the order SIPs are given out (Section 5), top first */
     const covered = FP.cp.goalList(c).filter(g => { const a = Sx.goals.find(x => x.name === g.name); return a && !F[g.name] && !(a.due && a.gap > 1); });
     const row = g => `<tr><td><div class="gn">${il(FP.art.goalKey(g), 22, 0)}${FP.cp.goalName(g)}</div>${g.k < g.n && R ? `<small>SIP till ${MON[R.mon - 1]} ${R.year}, then it grows untouched</small>` : ''}</td>
       <td class="dt">${MON[g.mon - 1]} ${g.year}</td><td class="n">${S(g.gapFV)}</td><td><small style="color:#4d4552">${FT[g.bk] || g.bk}</small></td>
       <td class="n">${FP.inr(g.req)}</td><td class="n">${FP.inr(g.alloc)}</td><td class="n">${g.short > 1 ? `<span class="gap">${FP.inr(g.short)}</span>` : '<span class="ok">On track</span>'}</td></tr>`;
     const rows = [];
-    ['High', 'Medium', 'Low'].map(p => [p, L.filter(g => g.pri === p)]).filter(x => x[1].length).forEach(([p, G]) => { rows.push({ h: 28, grp: 1, html: `<tr class="grp"><td colspan="7"><i style="background:${PC[p][0]}"></i>${p} priority</td></tr>` }); G.forEach(g => rows.push({ h: g.k < g.n && R ? 46 : 30, html: row(g) })); });
+    L.forEach((g, i) => { if (!i || L[i - 1].pri !== g.pri) rows.push({ h: 28, grp: 1, html: `<tr class="grp"><td colspan="7"><i style="background:${PC[g.pri][0]}"></i>${g.pri} priority</td></tr>` }); rows.push({ h: g.k < g.n && R ? 46 : 30, html: row(g) }); });
     const gap = Sx.short > 1, title = 'SIP Allocation', lead = `The monthly SIP each goal needs to build what your investments don't cover.${Sx.step ? ` SIPs are for the first year and rise ${sp} every year.` : ''}`;
     const top = `<div class="kp" style="grid-template-columns:repeat(3,1fr)"><div><span>Current SIPs</span><b>${FP.inr(Sx.cf.sav)}</b><small>Already investing a month</small></div>
         ${Math.abs(Sx.avail - Sx.availCalc) > 1 ? `<div><span>Plan to invest</span><b>${FP.inr(Sx.avail)}</b><small>A month in total, as agreed with you</small></div>` : `<div><span>Investable surplus</span><b>${FP.inr(Math.max(Sx.cf.surplus, 0))}</b><small>Left over a month after expenses</small></div>`}
@@ -3108,8 +3116,8 @@ Move              = target − today; every change is shown (under ₹1,000 coun
     if (used + 110 > (pages.length > 1 ? 860 : 780)) { const lp = pages[pages.length - 1], lg = lp[lp.length - 1], mv = lg[1].splice(-Math.min(3, lg[1].length)); if (!lg[1].length) lp.pop(); pages.push([[lg[0], mv]]); }
     const fitsDisc = true;
     const out = pages.map((pg, k) => FP.cp.page(c, 'action', 'Your action plan', k ? '' : 'What to do, and when. Tick each step as it is done.',
-      `<table class="ct gt"><thead><tr><th>Done</th><th>What to do</th><th>Area</th></tr></thead><tbody>
-      ${pg.map(([w, R]) => `<tr class="grp"><td colspan="3">${w}</td></tr>${R.map(x => `<tr class="${done[x.id] ? 'dn' : ''}"><td class="c"><span class="bx${done[x.id] ? ' on' : ''}"></span></td><td style="white-space:normal">${E(x.text.replace(/\s*\(see Section \d+ scenarios\)/i, ' (see the What if? page)').replace(/\(Self\)/g, `(${c.d.self?.first || 'you'})`).replace(/\(Spouse\)/g, `(${c.d.spouse?.first || 'spouse'})`))}</td><td>${E(x.area)}</td></tr>`).join('')}`).join('')}</tbody></table>
+      `<table class="ct gt"><thead><tr><th>Done</th><th>What to do</th><th>By</th><th>Area</th></tr></thead><tbody>
+      ${pg.map(([w, R]) => `<tr class="grp"><td colspan="4">${w}</td></tr>${R.map(x => `<tr class="${done[x.id] ? 'dn' : ''}"><td class="c"><span class="bx${done[x.id] ? ' on' : ''}"></span></td><td style="white-space:normal">${E(x.text.replace(/\s*\(see Section \d+ scenarios\)/i, ' (see the What if? page)').replace(/\(Self\)/g, `(${c.d.self?.first || 'you'})`).replace(/\(Spouse\)/g, `(${c.d.spouse?.first || 'spouse'})`))}</td><td style="white-space:nowrap;${x.by === 'Abundance' ? 'color:var(--green);font-weight:600' : ''}">${x.by === 'Abundance' ? 'Abundance' : 'You'}</td><td>${E(x.area)}</td></tr>`).join('')}`).join('')}</tbody></table>
       ${k === pages.length - 1 && fitsDisc ? disc : ''}`, 'check'));
     return out;
   };
@@ -3120,27 +3128,24 @@ Move              = target − today; every change is shown (under ₹1,000 coun
     const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], N = FP.calc.nw(c.d, c.st), Sx = FP.calc.sip(c.d, c.st), I = FP.calc.ins(c.d, c.st);
     const by = Object.fromEntries(Sx.goals.map(g => [g.name, g])), G = FP.cp.goalList(c).filter(g => by[g.name]), ok = G.filter(g => by[g.name].funded > .995).length;
     const P = FP.calc.path(c.d, c.st), R = P.R, ry = P.runOut != null ? P.y0 + Math.floor((P.m0 + P.runOut) / 12) : null, early = R && ry != null && ry < R.ret.endYear;
-    const gap = Sx.short > 1, life = I.earners.reduce((t, p) => t + Math.max(p.gap, 0), 0), a = c.st.act || {}, hide = a.hide || {};
-    const steps = WHEN.flatMap(w => FP.calc.act(c.d, c.st).filter(x => !x.internal && !hide[x.id] && x.when === w)).slice(0, 4);
+    const gap = Sx.short > 1;
     const fp = f => { const v = Math.max(0, Math.min(1, f || 0)), col = v > .995 ? '#005826' : v > .005 ? '#9a6a00' : '#934E32';
       return `<span class="fp"><i><b style="width:${v * 100}%;background:${col}"></b></i><span style="color:${col};min-width:38px;text-align:right">${Math.round(v * 100)}%</span></span>`; };
-    const shown = G.slice(0, 12), more = G.length - shown.length;
-    return FP.cp.page(c, 'action', 'Your Plan on One Page', 'Everything in this plan, in brief. The steps follow on the next page.',
-      `<div class="kp" style="grid-template-columns:repeat(3,1fr)"><div><span>Net worth</span><b>${FP.short(N.net)}</b><small>What you own minus what you owe</small></div>
+    const top = `<div class="kp" style="grid-template-columns:repeat(3,1fr)"><div><span>Net worth</span><b>${FP.short(N.net)}</b><small>What you own minus what you owe</small></div>
         <div><span>Goals fully funded</span><b>${ok} of ${G.length}</b><small>With your investments and the SIP you can invest</small></div>
         ${R ? `<div><span>Retirement money lasts till</span><b style="${early ? 'color:var(--brown)' : ''}">${early ? ry : R.ret.endYear}</b><small>${early ? 'Earlier than planned: see the gap below' : `Age ${FP.rate('lifeExp')}, as planned`}</small></div>` : `<div><span>Plan date</span><b>${c.date}</b><small>Review every year</small></div>`}</div>
       <h3 class="st">Every month</h3>
       <div class="kp" style="grid-template-columns:repeat(3,1fr)"><div><span>SIP needed</span><b>${FP.inr(Sx.req)}</b><small>For every goal, in the first year</small></div>
         <div class="hero"><span>You can invest</span><b>${FP.inr(Sx.avail)}</b><small>Current SIPs plus what's left over</small></div>
         <div><span>${gap ? 'Gap' : 'Spare'}</span><b style="${gap ? 'color:var(--brown)' : ''}">${FP.inr(gap ? Sx.short : Sx.left)}</b><small>${gap ? 'A month: raise income, move or trim goals' : 'A month, after every goal SIP'}</small></div></div>
-      <h3 class="st">Your goals</h3>
-      <table class="ct gt"><thead><tr><th>Goal</th><th>Due</th><th>Funded</th></tr></thead><tbody>
-        ${shown.map(g => `<tr><td><div class="gn">${FP.art.il(FP.art.goalKey(g), 22, 0)}${FP.cp.goalName(g)}</div></td><td class="dt">${g.n <= 0 ? 'Now' : `${MON[g.mon - 1]} ${g.year}`}</td><td>${fp(by[g.name].funded)}</td></tr>`).join('')}
-        ${more > 0 ? `<tr><td colspan="3" style="color:#6d6470">and ${more} more: see Part 4</td></tr>` : ''}</tbody></table>
-      ${life > 1 || I.hGap > 1 ? `<h3 class="st" style="margin-top:18px">Protection</h3><p style="margin:0">${[life > 1 ? `Add <b>${FP.short(life)}</b> of term life cover` : '', I.hGap > 1 ? `add <b>${FP.short(I.hGap)}</b> of health cover` : ''].filter(Boolean).join(', and ')}.</p>` : ''}
-      ${steps.length ? `<h3 class="st" style="margin-top:18px">First steps</h3><ol style="margin:0;padding-left:20px;line-height:1.55">${steps.map(x => `<li>${E(x.text.replace(/\s*\(see Section \d+ scenarios\)/i, ''))}</li>`).join('')}</ol>` : ''}`, 'check');
+      <h3 class="st">Your goals</h3>`;
+    /* every goal, in priority groups; the table continues on the next page when it doesn't fit */
+    const rows = []; G.forEach((g, i) => { if (!i || G[i - 1].pri !== g.pri) rows.push({ h: 28, grp: 1, html: `<tr class="grp"><td colspan="3"><i style="background:${FP.cp.PC[g.pri][0]}"></i>${g.pri} priority</td></tr>` });
+      rows.push({ h: 31, html: `<tr><td><div class="gn">${FP.art.il(FP.art.goalKey(g), 22, 0)}${FP.cp.goalName(g)}</div></td><td class="dt">${g.n <= 0 ? 'Now' : `${MON[g.mon - 1]} ${g.year}`}</td><td>${fp(by[g.name].funded)}</td></tr>` }); });
+    return FP.cp.tablePages(c, 'action', 'Your Plan on One Page', 'Everything in this plan, in brief. The steps follow after this.', top, 330,
+      '<thead><tr><th>Goal</th><th>Due</th><th>Funded</th></tr></thead>', rows, '', 0, 'check');
   };
-  FP.cp.parts.action = c => [summary(c), ...action(c)];
+  FP.cp.parts.action = c => [...summary(c), ...action(c)];
 })();
 </script>
 <script data-src="cp-p8.js">/* Client PDF — Asset allocation (Section 8): risk profile, today vs target mix as two bars, what to move, where new SIPs go. */
@@ -3169,7 +3174,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
       <table class="ct gt"><thead><tr><th>Asset</th><th>Today</th><th>Target</th><th>Move</th></tr></thead><tbody>
         ${CL.map(k => `<tr><td><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${COL[k]};margin-right:8px"></span>${NM[k]}</td><td class="n">${S(C.cur[k])} · ${Math.round(pc(C.cur[k]) * 100)}%</td><td class="n">${S(C.tgt[k])} · ${Math.round(pc(C.tgt[k]) * 100)}%</td><td class="n">${mv(k)}</td></tr>`).join('')}
         <tr class="tot"><td>Total</td><td class="n">${S(C.total)}</td><td class="n">${S(C.total)}</td><td></td></tr></tbody></table>
-      <p class="unit" style="text-align:left;margin-top:8px">${C.lockGap > 1000 ? `${C.lockedNote.map(x => `${S(x.v)} of your ${x.k.toLowerCase()}`).join(' and ')} is in EPF, PPF or insurance plans, which stay as they are, so the moves above use only what can be sold. The rest of the gap (${S(C.lockGap)}) closes over time as new SIPs go to ${CL.filter(k => C.raw[k] > 1000).map(k => k.toLowerCase()).join(' and ')}. ` : ''}Move gradually, keeping exit loads and tax in mind. Where possible, use new SIPs to fill the gap instead of selling.${C.other ? ` Property and other assets (${S(C.other)}) are not included.` : ''}</p>
+
       <h3 class="st" style="margin-top:20px">Today vs target</h3>
       <div class="mixr"><span>Today</span>${bar(C.cur)}</div><div class="mixr"><span>Target</span>${bar(C.tgt)}</div>
       <div class="mixl">${CL.map(k => `<span><i style="background:${COL[k]}"></i>${NM[k]}</span>`).join('')}</div>
