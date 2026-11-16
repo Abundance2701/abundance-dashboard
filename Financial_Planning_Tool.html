@@ -343,9 +343,10 @@ FP.esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt
 /* Display amounts: calculated figures round UP (₹10,000+ to the next ₹1,000, smaller to the next ₹100). FP.inrx = exact, for data entry and checks */
 FP.inrx = v => { const r = Math.round(+v || 0); return (r < 0 ? '−' : '') + '₹' + Math.abs(r).toLocaleString('en-IN'); };
 FP.up = v => { const a = Math.abs(+v || 0); if (a < 0.5) return 0; const s = a >= 1e4 ? 1e3 : 100; return Math.sign(v) * Math.ceil(a / s - 1e-9) * s; };
-/* Monthly plan amounts are rounded once, in the calculation, to multiples of ₹1,000 (SIP needed: up; what can be invested: down),
-   so every total, gap and left-over built from them is a multiple of ₹1,000 too and adds up on screen */
-FP.rSip = v => { const a = +v || 0; return a < 0.5 ? 0 : Math.ceil(a / 1e3 - 1e-9) * 1e3; };
+/* Monthly plan amounts are rounded once, in the calculation, to multiples of ₹1,000, so every total, gap and left-over built from
+   them is a multiple of ₹1,000 too and adds up on screen. SIP needed: ₹300 or less over a thousand rounds down, more rounds up
+   (₹12,250 → ₹12,000; ₹12,350 → ₹13,000). What can be invested: always down. */
+FP.rSip = v => { const a = +v || 0; if (a < 0.5) return 0; const b = Math.floor(a / 1e3 + 1e-9) * 1e3; return a - b <= 300 ? b : b + 1e3; };
 FP.rDown = v => Math.max(Math.floor((+v || 0) / 1e3 + 1e-9) * 1e3, 0);
 FP.inr = v => FP.inrx(FP.up(v));
 FP.short = v => { const a = Math.abs(v || 0), s = v < 0 ? '−' : ''; if (a >= 1e7) return s + '₹' + (a / 1e7).toFixed(2) + '\u00a0Cr'; if (a >= 1e5) return s + '₹' + (a / 1e5).toFixed(2) + '\u00a0L';   /* non-breaking space: the number and L/Cr never split across lines */ return s + '₹' + Math.round(a).toLocaleString('en-IN'); };
@@ -708,7 +709,7 @@ FP.boot = () => {
       const base = Math.max(t.inc, segs.reduce((s, x) => s + x.v, 0));
       /* Saving ratios use income before EPF (EPF from salary is both income and saving); spending ratios use take-home, which is what pays the bills (as banks do for EMIs) */
       const xe = st.cf.epfOutside ? epf : 0, gi = t.inc + xe, ix = xe ? ` (take-home ${FP.inr(t.inc)} + EPF ${FP.inr(xe)})` : '';
-      const sr = gi ? (gi - t.spend) / gi : 0, ir = gi ? (t.sav + xe) / gi : 0, er = t.inc ? t.living / t.inc : 0, emiR = t.inc ? t.emi / t.inc : 0, efm = t.spend ? nw.ef / t.spend : 0, efGoal = (g => g ? FP.efAmt(d, st, g) : 0)(d.goals.find(g => g.type === 'emergency'));
+      const sr = gi ? (gi - t.spend) / gi : 0, ir = gi ? (t.sav + xe) / gi : 0, er = t.inc ? t.living / t.inc : 0, emiR = t.inc ? t.emi / t.inc : 0, efm = t.spend ? FP.efCover(d, st) / t.spend : 0, efGoal = (g => g ? FP.efAmt(d, st, g) : 0)(d.goals.find(g => g.type === 'emergency'));
       const top = out.filter(x => x.g === 'living').sort((a, b) => b.pm - a.pm).slice(0, 8);
       el.innerHTML = `
       <div class="noprint epfbox"><label class="switch" for="epfOut"><input type="checkbox" id="epfOut" ${st.cf.epfOutside ? 'checked' : ''}> Salary entered is after EPF deduction</label>
@@ -935,6 +936,9 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
      (st.epfEr = { on, amt }, amount defaults to the employee's). Grows at the EPF investment's return (Section 4), else the debt rate. */
   FP.epfContrib = (d, st) => { const E = st.epfEr || {}, row = FP.calc.nw(d, st).rows.find(r => /\bepf\b/i.test(r.label)), emp = FP.calc.cf(d, st).epf || 0, er = E.on ? (E.amt ?? emp) : 0;
     return { on: emp + er > 0, amt: emp + er, emp, er, erOn: !!E.on, label: row?.label || null, rate: row ? FP.assetRate(st, row.label, row.cls).r : FP.rate('rDebt') }; };
+  /* Emergency money = what Section 4 actually sets aside for the Emergency fund goal (earmarks + any top-up from the pool),
+     so the health check and the lumpsum table always agree; without an emergency goal, just the earmarks */
+  FP.efCover = (d, st) => { const g = FP.calc.alloc(d, st).goals.find(x => x.type === 'emergency'); return g ? g.got : FP.calc.nw(d, st).ef; };
   FP.goalOrder = (st, goals) => { const o = st.order || []; const k = g => { const i = o.indexOf(g.name); return i < 0 ? 1e6 + g.n : i; }; return goals.slice().sort((x, y) => PRI[x.pri] - PRI[y.pri] || k(x) - k(y)); };
   FP.calc.alloc = (d, st) => {
     const nw = FP.calc.nw(d, st), goals = FP.calc.goals(d, st).filter(g => g.on).map(g => { const f = (st.fund || {})[g.name] || {}, full = g.due ? g.fv : g.lump, pct = f.how === 'none' ? 0 : f.pct != null ? f.pct / 100 : 1;
@@ -960,10 +964,11 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
     const pd = FP.planDate(), p0 = pd.getFullYear() * 12 + pd.getMonth();
     const inflows = (st.inflows || []).map((x, k) => { const amt = +x.amt || 0, ni = Math.max((+x.year || pd.getFullYear()) * 12 + (+x.month || pd.getMonth() + 1) - 1 - p0, 0);
       return { ...x, k, key: FP.inKey(x), label: `Later, ${MONS[(+x.month || 1) - 1]} ${x.year}: ${x.src || 'Money in'}`, amt, ni, tg: x.to && x.to !== 'pool' && byName[x.to] ? x.to : '', left: amt, uses: [] }; });
-    const fac = (x, g) => { if (g.due || x.ni >= g.n) return null; const m = g.n - x.ni - 1, rr = g.type === 'retirement' && m < 36 ? FP.rate('rPost') : FP.rate(m < 24 ? 'rDebt' : m < 36 ? 'rHybrid' : 'rEquity'), grow = Math.pow(1 + FP.mrate(rr), m);
+    /* x.rk: what the money is invested in once it arrives: 'Equity' | 'Hybrid' | 'Debt' (assumed rates), a number (own %), or blank = by time left to the goal */
+    const fac = (x, g) => { if (g.due || x.ni >= g.n) return null; const m = g.n - x.ni - 1, rr = RK[x.rk] ? FP.rate(RK[x.rk]) : x.rk != null && x.rk !== '' && x.rk !== 'own' && isFinite(+x.rk) ? +x.rk / 100 : g.type === 'retirement' && m < 36 ? FP.rate('rPost') : FP.rate(m < 24 ? 'rDebt' : m < 36 ? 'rHybrid' : 'rEquity'), grow = Math.pow(1 + FP.mrate(rr), m);
       return { m, rr, grow, f: grow / Math.pow(1 + FP.mrate(g.r), g.n) }; };   /* f = today's value of ₹1 of this money for this goal */
     const take = (x, g) => { const F = fac(x, g); if (!F || x.left < 0.5 || room(g) < 0.5) return; const pv = Math.min(x.left * F.f, room(g)), raw = pv / F.f;
-      g.later += pv; x.left -= raw; g.seq.push({ key: x.key, label: x.label, amt: pv, raw, later: 1 }); x.uses.push([g.name, raw, F.rr, F.m, raw * F.grow, pv]); g.fvParts.push({ label: x.label, now: raw, r: F.rr, fv: raw * F.grow, later: 1 }); };
+      g.later += pv; x.left -= raw; g.seq.push({ key: x.key, label: x.label, amt: pv, raw, later: 1 }); x.uses.push([g.name, raw, F.rr, F.m, raw * F.grow, pv]); g.fvParts.push({ label: x.label, now: raw, r: F.rr, fv: raw * F.grow, later: 1, start: g.n - F.m }); };
     const sortBy = (items, keys) => { if (!keys || !keys.length) return items; const pos = k => { const i = keys.indexOf(k); return i < 0 ? 1e6 : i; }; return items.map((x, i) => [x, i]).sort((p, q) => pos(p[0].key) - pos(q[0].key) || p[1] - q[1]).map(x => x[0]); };
     const efGoal = goals.find(g => g.type === 'emergency');
     if (efGoal) assets.forEach(a => give(a, efGoal, Math.min(a.ef, efGoal.needPV - efGoal.got), 'ef'));
@@ -1061,11 +1066,14 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
           <td>${a.uses.map(([g, v]) => `<span class="note" style="color:var(--ink)">${FP.esc(FP.gname(g))}: ${FP.short(v)}</span>`).join('') || '<span class="hint">—</span>'}</td><td class="n">${a.to === 'none' ? '<span class="hint">Kept aside</span>' : FP.inr(a.full - a.used) + (a.full - a.free > 0.5 ? `<span class="note">${FP.short(a.full - a.free)} not counted for goals</span>` : '')}</td></tr>`).join('')}</tbody></table></div></div>
       <div><h3>Money coming in later</h3><ul class="hint" style="margin:0 0 8px;padding-left:18px"><li>For money the client will get on a date: sale of a car or property, a maturity, a bonus, what's left in a fund after an SWP.</li><li>It arrives at the end of its month, and goals are due at the start of theirs, so it funds only goals due in a later month. Until then it earns the return for the time left: equity if 3+ years, hybrid if 2–3, debt if under 2.</li><li>Linked to a goal, it is used for that goal first (with the goal's other kept money, in the order you set). Anything left, and money not linked to a goal, goes to the shared pool and is used last.</li><li>To avoid counting it twice, set the asset itself to "Not used for goals" above.</li><li>All amounts for goals are in today's money: what it grows to by the goal's due date, brought back to today at that goal's own return.</li></ul>
         <datalist id="inSrc">${srcs.map(l => `<option value="${FP.esc(l)}">`).join('')}</datalist>
-        <div class="tbl"><table class="bulk" id="plIn"><thead><tr><th data-nosort>Source</th><th class="n" data-nosort>Expected amount</th><th data-nosort>Month</th><th data-nosort>Year</th><th data-nosort>Use for</th><th class="n" data-nosort>Used</th><th class="noprint" data-nosort></th></tr></thead><tbody>
+        <div class="tbl"><table class="bulk" id="plIn"><thead><tr><th data-nosort>Source</th><th class="n" data-nosort>Expected amount</th><th data-nosort>Month</th><th data-nosort>Year</th><th data-nosort title="What the money is invested in once it arrives">Invest in</th><th data-nosort>Use for</th><th class="n" data-nosort>Used</th><th class="noprint" data-nosort></th></tr></thead><tbody>
           ${inf.map((x, k) => { const u = S.inflows[k]; return `<tr data-i="${k}"><td><input data-f="src" type="text" list="inSrc" value="${FP.esc(x.src || '')}" placeholder="e.g. Car sale"></td><td><input data-f="amt" class="money n" type="text" inputmode="decimal" data-raw="${+x.amt || 0}" value="${FP.inrx(+x.amt || 0)}"></td>
             <td><select data-f="month">${MON.map((m, i) => `<option value="${i + 1}"${(x.month || 3) === i + 1 ? ' selected' : ''}>${m}</option>`).join('')}</select></td><td><input data-f="year" class="n" type="number" value="${x.year || y0}"></td>
+            <td>${(() => { const pc = k => FP.pct(FP.rate({ Equity: 'rEquity', Hybrid: 'rHybrid', Debt: 'rDebt' }[k]), 1).replace('.0%', '%'), own = x.rk === 'own' || (x.rk != null && x.rk !== '' && isFinite(+x.rk));
+              return `<div class="rtw"><select class="rts" data-f="rk"><option value="">By time to goal</option>${['Equity', 'Hybrid', 'Debt'].map(k => `<option value="${k}"${x.rk === k ? ' selected' : ''}>${k} ${pc(k)}</option>`).join('')}<option value="own"${own ? ' selected' : ''}>Own rate</option></select>
+                ${own ? `<input type="text" inputmode="decimal" class="rt" data-f="rkOwn" value="${x.rk !== 'own' ? x.rk : ''}" placeholder="rate%">` : ''}</div>`; })()}</td>
             <td><select data-f="to"><option value="pool">Shared pool (by priority)</option>${goals.map(g => `<option value="${FP.esc(g.name)}"${x.to === g.name ? ' selected' : ''}>${FP.esc(FP.gname(g.name))}</option>`).join('')}</select></td>
-            <td class="n">${u ? FP.short(u.used) + (u.left > 1 ? `<span class="note">${FP.short(u.left)} not needed</span>` : '') + u.uses.map(([gn, v, rr, m, fv, pv]) => { const g = goals.find(x => x.name === gn); return `<span class="note" style="text-align:left">${FP.esc(FP.gname(gn))}: ${FP.short(v)}${m ? ` grows at ${FP.pct(rr, 1)} for ${m} month${m > 1 ? 's' : ''} to ${FP.short(fv)} by the due date` : ' arrives just before the due date (no growth)'}; worth ${FP.short(pv)} today at the goal's ${FP.pct(g.r, 1)}</span>`; }).join('') : '—'}</td><td class="noprint"><button class="link" data-xi="${k}" style="text-decoration:none" aria-label="Remove">✕</button></td></tr>`; }).join('') || `<tr><td colspan="7" class="hint">None yet.</td></tr>`}</tbody></table></div>
+            <td class="n">${u ? FP.short(u.used) + (u.left > 1 ? `<span class="note">${FP.short(u.left)} not needed</span>` : '') + u.uses.map(([gn, v, rr, m, fv, pv]) => { const g = goals.find(x => x.name === gn); return `<span class="note" style="text-align:left">${FP.esc(FP.gname(gn))}: ${FP.short(v)}${m ? ` grows at ${FP.pct(rr, 1)} for ${m} month${m > 1 ? 's' : ''} to ${FP.short(fv)} by the due date` : ' arrives just before the due date (no growth)'}; worth ${FP.short(pv)} today at the goal's ${FP.pct(g.r, 1)}</span>`; }).join('') : '—'}</td><td class="noprint"><button class="link" data-xi="${k}" style="text-decoration:none" aria-label="Remove">✕</button></td></tr>`; }).join('') || `<tr><td colspan="8" class="hint">None yet.</td></tr>`}</tbody></table></div>
         <button class="addgoal noprint" id="plInAdd" style="margin-top:8px">+ Add money coming in</button></div>`;
       const alT = el.querySelector('#alTbl');
       FP.dragRows(alT, 'tr[data-al]', r => r.dataset.al, keys => { FP.clearSort?.(alT); FP.set(s => { s.alOrd = keys; }); });
@@ -1106,7 +1114,7 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
         if (x.value === 'own') s.alRate[l] = 'own'; else if (x.value === def) delete s.alRate[l]; else s.alRate[l] = x.value; }));
       el.querySelectorAll('[data-cap]').forEach(x => x.onchange = () => FP.set(s => { const v = Math.max(0, FP.num(x.value)); s.alAmt = { ...(s.alAmt || {}) }; if (v >= +x.dataset.full - 1) delete s.alAmt[x.dataset.cap]; else s.alAmt[x.dataset.cap] = v; }));
       const updIn = fn => FP.set(s => { s.inflows = JSON.parse(JSON.stringify(s.inflows || [])); fn(s.inflows); });
-      el.querySelectorAll('#plIn [data-f]').forEach(x => x.onchange = () => { const k = +x.closest('tr').dataset.i, f = x.dataset.f; updIn(a => { a[k][f] = f === 'amt' ? FP.num(x.value) : f === 'month' || f === 'year' ? +FP.num(x.value) : x.value; }); });
+      el.querySelectorAll('#plIn [data-f]').forEach(x => x.onchange = () => { const k = +x.closest('tr').dataset.i, f = x.dataset.f; updIn(a => { if (f === 'rk') { if (x.value) a[k].rk = x.value; else delete a[k].rk; return; } if (f === 'rkOwn') { const t = String(x.value).replace('%', '').trim(), v = FP.num(t); a[k].rk = t === '' || !isFinite(v) ? 'own' : +v; return; } a[k][f] = f === 'amt' ? FP.num(x.value) : f === 'month' || f === 'year' ? +FP.num(x.value) : x.value; }); });
       el.querySelectorAll('#plIn [data-xi]').forEach(b => b.onclick = () => updIn(a => a.splice(+b.dataset.xi, 1)));
       el.querySelector('#plInAdd').onclick = () => updIn(a => a.push({ id: 'm' + Date.now().toString(36), src: '', amt: 0, month: 3, year: y0 + 1, to: 'pool' }));
       FP.chart('alBar', { type: 'bar', data: { labels: G.map(g => { const t = FP.gname(g.name); return t.length > 28 ? t.slice(0, 26) + '…' : t; }), datasets: [
@@ -1160,7 +1168,7 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
       ${S.nowGap.length ? `<div class="callout"><b>${FP.short(S.nowShort)} is needed now and isn't covered by existing investments.</b> A SIP can't build this in time; use the bonus or surplus, or move the goal:<ul style="margin:6px 0 0;padding-left:18px">${S.nowGap.map(g => `<li>${FP.esc(g.name)}: ${FP.short(g.gap)}</li>`).join('')}</ul></div>` : ''}
       <div><h3>SIP for each goal</h3><div class="chartbox" style="height:${Math.max(140, F.length * 30 + 40)}px"><canvas id="sipBar" role="img" aria-label="SIP allocated and shortfall per goal"></canvas></div>
         ${FP.legend(['SIP allocated', 'Monthly shortfall'], null, ['#1E7A46', '#A3502F'])}</div>
-      <div><div class="secbar"><h3>How your monthly investment is shared <span class="chip${S.step ? '' : ' muted'}">${S.step ? `Step-up SIP @ ${sp} p.a.` : 'Flat SIP'}</span></h3><button class="addgoal noprint" data-addgoal>+ Add goal</button></div><p class="hint">The monthly SIP goes to goals from the top of this list down: a goal gets its SIP only after every goal above it is fully funded.<span class="noprint"> ${st.g5order ? 'You have reordered it here (<button class="link" id="g5reset">follow Section 4 again</button>).' : 'It starts in Section 4\'s order; drag ⠿ to change who gets the SIP first.'}</span> SIPs are rounded up to the next ₹1,000 and the amount you can invest down to the nearest ₹1,000, so every total adds up. A ${S.step ? `step-up SIP rises ${sp} every 12 months` : 'flat SIP stays the same every month'}.</p>
+      <div><div class="secbar"><h3>How your monthly investment is shared <span class="chip${S.step ? '' : ' muted'}">${S.step ? `Step-up SIP @ ${sp} p.a.` : 'Flat SIP'}</span></h3><button class="addgoal noprint" data-addgoal>+ Add goal</button></div><p class="hint">The monthly SIP goes to goals from the top of this list down: a goal gets its SIP only after every goal above it is fully funded.<span class="noprint"> ${st.g5order ? 'You have reordered it here (<button class="link" id="g5reset">follow Section 4 again</button>).' : 'It starts in Section 4\'s order; drag ⠿ to change who gets the SIP first.'}</span> SIPs are rounded to a ₹1,000 (₹300 or less over rounds down, more rounds up) and the amount you can invest down to the nearest ₹1,000, so every total adds up. A ${S.step ? `step-up SIP rises ${sp} every 12 months` : 'flat SIP stays the same every month'}.</p>
       <div class="tbl"><table><thead><tr><th class="noprint" data-nosort title="Drag rows to reorder"></th><th>Goal</th><th>Priority</th><th>Due</th><th class="n" data-h="Still to build by due date" title="Part Section 4 could not cover, grown to the due date">Yet to build by due date</th><th>Invest in</th><th class="n" data-h="SIP needed">${S.step ? 'Step-up SIP needed' : 'SIP needed'}</th><th class="n" data-h="SIP allocated">SIP allocated</th><th class="n">Shortfall</th><th class="n">On track</th></tr></thead><tbody>
         ${F.map(g => `<tr data-g="${FP.esc(g.name)}"><td class="noprint drag" draggable="true" title="Drag to reorder. Shift+click to pick several.">⠿</td><td>${FP.goalBtn(g)}</td><td data-sort="${PR[g.pri]}"><span class="chip ${g.pri === 'High' ? '' : g.pri === 'Medium' ? 'warn' : 'muted'}">${g.pri}</span></td><td>${MON[g.mon - 1]} ${g.year}<span class="note">${g.n} months${g.k < g.n ? `; SIP for the first ${g.k} (till retirement), then it grows untouched` : ''}</span></td>
           <td class="n">${FP.inr(g.gapFV)}</td><td>${g.bk}${g.bk === 'Retirement mix' ? '' : ' MFs'} · ${FP.pct(g.r, 0)}</td><td class="n">${FP.inr(g.req)}</td><td class="n"><b>${FP.inr(g.alloc)}</b></td>
@@ -1371,7 +1379,7 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
         <tr class="tot"><td>Total</td><td></td><td></td><td class="n">${FP.inrx(X)}</td></tr></tbody></table></div>` : '';
       $('#vfOut').innerHTML = `${own}
         <p>${X > 0 ? `The SIPs grow to <b>${FP.inrx(s.sipFV)}</b>; with the <b>${FP.inrx(X)}</b> already set aside, that is ` : `After ${vv.n} months the investment grows to `}<b>${FP.inrx(s.bal)}</b>${X > 0 ? ` by ${dueTxt}` : ''}. The goal needs <b>${FP.inrx(want)}</b>${isFixed ? '' : ` (today's cost grown month by month at ${+vv.infl.toFixed(2)}%)`}. ${verdict(s.bal, want)}</p>
-        ${planAmt != null && ov.amt == null && ov.ex == null && Math.abs(planAmt - toolAmt) >= 1 ? `<p class="hint">The plan shows <b>${FP.inrx(planAmt)}</b> a month for this goal: the ${FP.inrx(toolAmt)} above, rounded up to the next ₹1,000, so it ends slightly above the goal.</p>` : ''}
+        ${planAmt != null && ov.amt == null && ov.ex == null && Math.abs(planAmt - toolAmt) >= 1 ? `<p class="hint">The plan shows <b>${FP.inrx(planAmt)}</b> a month for this goal: the ${FP.inrx(toolAmt)} above, rounded to a ₹1,000 (₹300 or less over rounds down, more rounds up), so it ends ${planAmt > toolAmt ? 'slightly above' : 'a little below'} the goal.</p>` : ''}
         <div class="xl">Same check in Excel:
 Future cost   = ${isFixed ? FP.inrx(want).replace(/[₹,]/g, '') + '  (taken from the tool)' : `${Math.round(vv.cost)}*(1+${+vv.infl.toFixed(4)}%)^(${vv.n}/12)`}
 SIP           = ${vv.k < vv.n ? `PMT(${i}, ${vv.k}, 0, -(${Math.round(want)}${X > 0 ? '-' + Math.round(X) : ''})/(1+${i})^(${vv.n}-${vv.k}), 1)   SIP stops at retirement after ${vv.k} months` : `PMT(${i}, ${vv.n}, 0, -(${Math.round(want)}${X > 0 ? '-' + Math.round(X) : ''}), 1)`}${X > 0 ? '   (goal minus what is already set aside)' : ''}
@@ -2503,7 +2511,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
       <div class="cv-who">Prepared for<b>${E(c.names)}</b>Plan date<b>${c.date}</b></div>
       ${coverArt()}<div class="cv-wm">ABUNDANCE<small>Designing Portfolio. Delivering Peace.</small></div></div>` }; };
 
-  const contents = c => FP.cp.page(c, 'intro', "What's inside", `${['One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten'][FP.cp.PARTS.length - 1] || FP.cp.PARTS.length} short parts. Read them in order: each one builds on the last.`,
+  const contents = c => FP.cp.page(c, 'intro', "What's inside", '<!--NPARTS--> short parts. Read them in order: each one builds on the last.',
     `<div class="toc"><!--TOC--></div>`, 'contents');
 
   const questions = c => FP.cp.page(c, 'intro', 'Your plan answers three questions', 'Just like a map app. Each part of this plan answers one of them.',
@@ -2511,7 +2519,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
       [2, 'goal', 'Where do you want to go?', 'Each goal you shared with us: what it costs today, what it will cost when it falls due, and how important it is to you.'],
       [3, 'how', 'How can you get there?', 'The route: how your savings and monthly investments are matched to each goal, how your family stays protected, and the steps to take.']]
       .map(([n, k, h, p], i) => `<div class="q">${il(k, 120, i)}<div><div class="k">Question ${n}</div><h2>${h}</h2><p>${p}</p>
-        <div class="in">${FP.cp.PARTS.filter(x => x.q === n).map(x => `<span data-part="${x.id}">Part ${FP.cp.PARTS.indexOf(x) + 1} · ${E(x.title)}<!--PG:${x.id}--></span>`).join('')}</div></div></div>`).join('')}</div>
+        <div class="in">${FP.cp.PARTS.filter(x => x.q === n).map(x => `<span data-part="${x.id}">Part ${FP.cp.PARTS.indexOf(x) + 1} · ${E(x.title)}</span>`).join('')}</div></div></div>`).join('')}</div>
     <p class="unit">All amounts are in Indian rupees and rounded. L = lakh, Cr = crore.</p>`);
 
   const assume = c => {
@@ -2528,7 +2536,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
       </div>`);
   };
 
-  FP.cp.parts.intro = c => [cover(c), questions(c), assume(c)];   /* contents page to be revisited */
+  FP.cp.parts.intro = c => [cover(c), contents(c), questions(c), assume(c)];
 
   /* ---------- Assemble: page numbers, contents, footers ---------- */
   FP.cp.build = () => {
@@ -2539,8 +2547,9 @@ Move              = target − today; every change is shown (under ₹1,000 coun
     const act = FP.cp.PARTS.filter(p => pages.some(pg => pg.part === p.id)), no = id => act.findIndex(p => p.id === id) + 1;
     pages.forEach(pg => { pg.html = pg.html.replace(/(<div class="eyebrow">Part )\d+/, (m, a) => a + no(pg.part)).replace(/<span data-part="(\w+)">Part \d+([\s\S]*?)<\/span>/g, (m, id, rest) => no(id) ? `<span data-part="${id}">Part ${no(id)}${rest}</span>` : ''); });
     const toc = act.map((p, i) => `<div class="r${first[p.id] ? '' : ' soon'}"><span class="n">${String(i + 1).padStart(2, '0')}</span><div><h3>${E(p.title)}</h3><div class="s">${E(p.sub)}</div></div><span class="pg">${first[p.id] ? 'Page ' + first[p.id] : ''}</span></div>`).join('');
-    return pages.map((pg, i) => pg.html.replace('<!--TOC-->', toc).replace(/<!--PG:(\w+)-->/g, (m, id) => first[id] ? ` · page ${first[id]}` : '')
-      .replace('<!--FOOT-->', `<div class="foot"><span>Designing Portfolio. Delivering Peace.</span><span>Page ${i + 1} of ${N}</span></div>`));
+    const np = ['One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten'][act.length - 1] || act.length;
+    return pages.map((pg, i) => pg.html.replace('<!--TOC-->', toc).replace('<!--NPARTS-->', np).replace(/<!--PG:(\w+)-->/g, (m, id) => first[id] ? ` · page ${first[id]}` : '')
+      .replace('<!--FOOT-->', `<div class="foot"><span>Designing Portfolio. Delivering Peace.</span><span>www.abundance.co.in · service@abundanceindia.com</span><span>Page ${i + 1} of ${N}</span></div>`));
   };
 
   /* ---------- Preview and download ---------- */
@@ -2666,7 +2675,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
 
   const cfPage = c => {
     const { d, st } = c, { t, epf, out } = FP.calc.cf(d, st), n = FP.calc.nw(d, st);
-    const xe = st.cf.epfOutside ? epf : 0, gi = t.inc + xe, sr = gi ? (gi - t.spend) / gi : 0, ir = gi ? (t.sav + xe) / gi : 0, er = t.inc ? t.living / t.inc : 0, emiR = t.inc ? t.emi / t.inc : 0, efm = t.spend ? n.ef / t.spend : 0;
+    const xe = st.cf.epfOutside ? epf : 0, gi = t.inc + xe, sr = gi ? (gi - t.spend) / gi : 0, ir = gi ? (t.sav + xe) / gi : 0, er = t.inc ? t.living / t.inc : 0, emiR = t.inc ? t.emi / t.inc : 0, efm = t.spend ? FP.efCover(d, st) / t.spend : 0;
     const efG = d.goals.find(g => g.type === 'emergency'), efT = efG ? FP.efMonths(st, efG) : 6;
     const base = Math.max(t.inc, t.living + t.emi + t.ins + t.sav + Math.max(t.surplus, 0)) || 1;
     const segs = [['Household & lifestyle', t.living, '#A3502F'], ['Loan EMIs', t.emi, '#8A5FA0'], ['Insurance premiums', t.ins, '#2F86BC'], ['Already investing', t.sav, '#1E7A46'], ['Free surplus', Math.max(t.surplus, 0), '#D99A1A']].filter(x => x[1] > 0).map(([k, v, c]) => ({ k, v, c, p: v / base }));
@@ -2897,6 +2906,68 @@ Move              = target − today; every change is shown (under ₹1,000 coun
   const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const FT = { Equity: 'Equity MFs', Hybrid: 'Hybrid MFs', Debt: 'Debt MFs', 'Retirement mix': 'Hybrid MFs' };
 
+  /* Year by year: the plan's money, month by month. Each goal's money (investments at their own returns, money coming later from
+     its arrival, monthly EPF, and the SIP allocated) grows until the goal is paid; Retirement's money is then drawn down each month,
+     the expense rising with inflation, the rest growing at the post-retirement return. The emergency fund stays as it is. */
+  FP.calc.path = (d, st) => {
+    const S = FP.calc.sip(d, st), F = Object.fromEntries(S.future.map(g => [g.name, g])), su = FP.rate('stepUp'), EC = FP.epfContrib(d, st), si = FP.rate('salaryInc');
+    const G = S.goals.filter(g => !g.due), ef = S.goals.filter(g => g.type === 'emergency').reduce((t, g) => t + g.got, 0), R = G.find(g => g.type === 'retirement');
+    const end = Math.max(12, ...G.map(g => g.n + 1), R ? (R.ret.endYear - R.year) * 12 + R.n : 0), mr = r => FP.mrate(r), val = new Array(end + 1).fill(ef);
+    let runOut = null;
+    G.forEach(g => {
+      const f = F[g.name], parts = g.fvParts.map(x => ({ ...x, v: x.later || x.cont ? 0 : x.now })), frac = g.contAll ? g.cont / g.contAll : 0;
+      let sipV = 0, bucket = 0, w = g.ret ? g.ret.mAt : 0;
+      const fi = Math.pow(1 + FP.rate('infl'), 1 / 12), rP = mr(FP.rate('rPost')), rD = mr(FP.rate('rDebt'));
+      for (let m = 0; m <= end; m++) {
+        if (m < g.n) {   /* building up: value at the start of the month, then this month's money goes in and grows */
+          val[m] += parts.reduce((t, x) => t + x.v, 0) + sipV;
+          parts.forEach(x => { if (x.later && m === x.start) x.v += x.now; if (x.cont) x.v += EC.amt * Math.pow(1 + si, Math.floor(m / 12)) * frac; x.v *= 1 + mr(x.r); });
+          if (f && m < f.k) sipV += f.alloc * (S.step ? Math.pow(1 + su, Math.floor(m / 12)) : 1);
+          sipV *= 1 + mr(g.r);
+          continue;
+        }
+        if (m === g.n) bucket = g.ret || g.members ? parts.reduce((t, x) => t + x.v, 0) + sipV : 0;   /* other goals are paid in full on the due date */
+        if (g.ret) {   /* retirement: take out the month's expense, grow the rest */
+          val[m] += Math.max(bucket, 0); bucket -= w; if (bucket < -1 && runOut == null) runOut = m; bucket = Math.max(bucket, 0) * (1 + rP); w *= fi;
+        } else if (g.members) {   /* graduation: each year's fees paid from a safe fund */
+          val[m] += bucket; g.members.forEach(x => { if (x.n === m) bucket -= x.fv; }); bucket = Math.max(bucket, 0) * (1 + rD);
+        }
+      }
+    });
+    const pd = FP.planDate(), y0 = pd.getFullYear(), m0 = pd.getMonth(), pts = [];
+    for (let m = 0; m <= end; m += 12) pts.push({ y: y0 + m / 12, m, v: Math.max(val[m], 0) });
+    return { pts, val, R, runOut, y0, m0, short: S.short, alloc: S.alloc };
+  };
+
+  const growthPage = c => {
+    const P = FP.calc.path(c.d, c.st), pts = P.pts; if (pts.length < 3) return [];
+    const W = 682, H = 320, L = 64, B = 34, T = 16, mx = Math.max(...pts.map(p => p.v)) * 1.08 || 1, x0 = pts[0].m, x1 = pts[pts.length - 1].m;
+    const X = m => L + (m - x0) / (x1 - x0) * (W - L - 10), Y = v => T + (1 - v / mx) * (H - T - B);
+    const step = [1e5, 2e5, 5e5, 1e6, 2e6, 5e6, 1e7, 2e7, 5e7, 1e8, 2e8, 5e8, 1e9].find(s => mx / s <= 5) || 1e9;
+    const ticks = []; for (let v = 0; v <= mx; v += step) ticks.push(v);
+    const line = pts.map((p, i) => `${i ? 'L' : 'M'}${X(p.m).toFixed(1)},${Y(p.v).toFixed(1)}`).join(''), area = `${line}L${X(x1)},${Y(0)}L${X(x0)},${Y(0)}Z`;
+    const yrEvery = Math.max(1, Math.ceil(pts.length / 10)), pk = pts.reduce((a, b) => b.v > a.v ? b : a), R = P.R;
+    const rM = R ? R.n : null, rAt = R ? { v: P.val[rM] } : null;
+    const svg = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="display:block">
+      ${ticks.map(v => `<line x1="${L}" x2="${W - 10}" y1="${Y(v)}" y2="${Y(v)}" stroke="#dae6f0" stroke-width="1"/><text x="${L - 8}" y="${Y(v) + 4}" text-anchor="end" font-size="11" fill="#6d6470" font-family="Calibri,Carlito,sans-serif">${v ? FP.short(v).replace(' ', ' ') : '₹0'}</text>`).join('')}
+      ${pts.filter((p, i) => i % yrEvery === 0).map(p => `<text x="${X(p.m)}" y="${H - 12}" text-anchor="middle" font-size="11" fill="#6d6470" font-family="Calibri,Carlito,sans-serif">${p.y}</text>`).join('')}
+      ${R ? `<line x1="${X(rM)}" x2="${X(rM)}" y1="${T}" y2="${Y(0)}" stroke="#934E32" stroke-width="1.5" stroke-dasharray="4 4"/><text x="${X(rM) + 6}" y="${T + 12}" font-size="12" fill="#934E32" font-weight="700" font-family="Montserrat,sans-serif">Retirement ${R.year}</text>` : ''}
+      <path d="${area}" fill="#005826" fill-opacity=".10"/><path d="${line}" fill="none" stroke="#005826" stroke-width="2.5" stroke-linejoin="round"/>
+      <circle cx="${X(pk.m)}" cy="${Y(pk.v)}" r="4.5" fill="#F9B738" stroke="#005826" stroke-width="1.5"/>
+    </svg>`;
+    const ry = P.runOut != null ? P.y0 + Math.floor((P.m0 + P.runOut) / 12) : null, early = R && ry != null && ry < R.ret.endYear, lastYear = early ? ry : R ? R.ret.endYear : null;
+    return [FP.cp.page(c, 'route', 'Your Money Over the Years', 'How your investments grow with the plan\'s SIPs, and are used as each goal falls due. Based on assumed returns, which are not guaranteed.',
+      `<div class="kp" style="grid-template-columns:repeat(3,1fr)"><div><span>Highest value</span><b>${FP.short(pk.v)}</b><small>Around ${pk.y}</small></div>
+        ${R ? `<div class="hero"><span>At retirement</span><b>${FP.short(rAt.v)}</b><small>In ${R.year}, including all your other goals' money still invested</small></div>
+        <div><span>Money lasts till</span><b style="${early ? 'color:var(--brown)' : ''}">${lastYear}</b><small>${early ? `Before the plan's ${R.ret.endYear}: the SIP gap leaves retirement short` : `Age ${FP.rate('lifeExp')}, as planned`}</small></div>` : ''}</div>
+      <div style="border:1.5px solid #cfdde9;border-radius:14px;background:#fff;padding:14px 10px 6px">${svg}</div>
+      <ul class="bl" style="margin-top:14px;font-size:14px;color:#4d4552">
+        <li>The line rises as your investments and SIPs grow, and steps down each time a goal is paid for.</li>
+        ${R ? `<li>After retirement, the money pays your monthly expenses (rising with inflation each year) while the rest keeps growing.</li>` : ''}
+        ${P.short > 1 ? `<li>Drawn with the SIP you can invest today, ${FP.inr(P.alloc)} a month, which is short of the full plan by ${FP.inr(P.short)} a month.</li>` : ''}
+        <li>All values are in future rupees, before tax.</li></ul>`, 'grow')];
+  };
+
   const sipPage = c => {
     const Sx = FP.calc.sip(c.d, c.st), F = Object.fromEntries(Sx.future.map(g => [g.name, g])), PC = FP.cp.PC, sp = FP.pct(FP.rate('stepUp'), 0);
     const R = Sx.goals.find(g => g.type === 'retirement'), L = FP.cp.goalList(c).filter(g => F[g.name]).map(g => F[g.name]);
@@ -2922,7 +2993,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
       `<thead><tr><th>Goal</th><th>Due</th><th class="n">To build by due date</th><th>Invested in</th><th class="n">SIP needed</th><th class="n">SIP allocated</th><th class="n">Shortfall</th></tr></thead>`, rows,
       tail, 175 + (covered.length ? 45 : 0) + (Sx.nowGap.length ? 20 : 0), 'stepup');
   };
-  FP.cp.sipPages = sipPage;
+  FP.cp.sipPages = c => [...sipPage(c), ...growthPage(c)];
 })();
 </script>
 <script data-src="cp-p6.js">/* Client PDF, "What if?" — scenarios ticked in Section 6, compared with the plan. Skipped when none are ticked.
