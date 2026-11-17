@@ -1,124 +1,47 @@
 {
- "updated": "2026-11-16T20:33:18Z",
+ "updated": "2026-11-17T11:12:59Z",
  "items": [
+  {
+   "src": "RBI",
+   "title": "Directions under Section 35A read with Section 56 of the Banking Regulation Act, 1949 – Nagar Sahakari Bank Ltd., Etawah – Extension of Period",
+   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63988",
+   "date": "2026-11-17",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Additional Exposure Margin on Securities under MWPL",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CMPT77463.zip",
+   "date": "2026-11-17",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Availability of Kotak Nifty Realty Index Fund on NSE MF Invest Platform",
+   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77459.pdf",
+   "date": "2026-11-17",
+   "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Launch of Nippon India Crisil - IBX SDL - June 2037 Index Fund NFO on NSE MF Invest Platform",
+   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77458.pdf",
+   "date": "2026-11-17",
+   "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Withdrawal of Dealings in securities under the Permitted to Trade Category - Elpro International Limited",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77456.pdf",
+   "date": "2026-11-17",
+   "important": false
+  },
   {
    "src": "RBI",
    "title": "RBI cancels Certificate of Registration of 49 NBFCs",
    "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63979",
    "date": "2026-11-16",
    "important": false
-  },
-  {
-   "src": "RBI",
-   "title": "13 NBFCs and 1 HFC surrender their Certificates of Registration to the RBI",
-   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63978",
-   "date": "2026-11-16",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of further issues of securities",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77455.pdf",
-   "date": "2026-11-16",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of Equity Shares of J.K.Shah Commerce Education Limited pursuant to the Scheme of Arrangement",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77453.zip",
-   "date": "2026-11-16",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of privately placed securities on the debt market segment of the Exchange",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77452.pdf",
-   "date": "2026-11-16",
-   "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Introduction of API Facility in NMASS-Margins-SLB",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CMPT77451.zip",
-   "date": "2026-11-16",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Reminder for submission of Internal Audit Report for the half year ended September 30, 2026",
-   "url": "https://nsearchives.nseindia.com/content/circulars/INSP77450.pdf",
-   "date": "2026-11-16",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of privately placed securities on capital market segment",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77449.pdf",
-   "date": "2026-11-16",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Applicability of Short-Term Additional Surveillance Measure (ST-ASM)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77448.zip",
-   "date": "2026-11-16",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Applicability of Additional Surveillance Measure (ASM)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77447.zip",
-   "date": "2026-11-16",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Change in name and symbol of Shukra Pharmaceuticals Limited",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77446.pdf",
-   "date": "2026-11-16",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Applicability of Enhanced Surveillance Measure (ESM)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77445.zip",
-   "date": "2026-11-16",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Launch of Infinity Equity Long-Short Fund NFO under Specialized Investment Fund (SIF) on NSE MF Invest Platform",
-   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77444.pdf",
-   "date": "2026-11-16",
-   "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Change in minimum investment amount for Lumpsum under Axis Silver Fund of Fund of Axis Mutual Fund on NSE MF Invest platform",
-   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77443.zip",
-   "date": "2026-11-16",
-   "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Availability of Motilal Oswal Multi Asset - Omni Fund of on NSE MF Invest Platform",
-   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77442.pdf",
-   "date": "2026-11-16",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Revision in minimum application amount for SIP & STP under certain schemes of Dyna SIF and Introduction of SWP in DynaSIF Equity Long Short Fund of 360 One Mutual Fund on NSE MF Invest platform",
-   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77441.pdf",
-   "date": "2026-11-16",
-   "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Launch of Kotak Nifty Pharma Index Fund NFO on NSE MF Invest Platform",
-   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77440.pdf",
-   "date": "2026-11-16",
-   "important": true
   },
   {
    "src": "RBI",
@@ -205,8 +128,8 @@
    10
   ],
   "https://nsearchives.nseindia.com/content/RSS/Circulars.xml": [
-   16,
-   15
+   4,
+   4
   ]
  },
  "errors": []
