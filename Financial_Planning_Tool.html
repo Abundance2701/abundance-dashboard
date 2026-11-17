@@ -201,7 +201,7 @@ table.bulk tr.del>td{opacity:.45;text-decoration:line-through}table.bulk td.calc
 .scctl{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px 18px;background:var(--tint);border-radius:8px;padding:12px 14px}
 .scctl label{display:flex;flex-direction:column;font-size:13px;color:var(--muted);gap:3px}
 .scctl input,.scctl select{border:1px solid var(--line);border-radius:6px;padding:5px 8px;background:var(--paper);color:var(--ink);font:14px var(--fb)}
-.scctl .row{display:flex;gap:8px;align-items:center}.scctl .row input{width:70px}.scctl .chk{flex-direction:row;gap:6px;align-items:center;color:var(--ink)}
+.scctl .row{display:flex;gap:8px;align-items:center}.scctl .row input{width:70px}.scctl .row input.money{width:130px}.scctl .row select{padding:4px 6px;font-size:13px}.scctl .chk{flex-direction:row;gap:6px;align-items:center;color:var(--ink)}
 table.sc{font-size:13.5px}table.sc th{min-width:96px}table.sc td:first-child{min-width:150px}table.sc th .note{display:block;font:400 12px var(--fb);text-transform:none;letter-spacing:0;color:var(--muted)}
 td.best{box-shadow:inset 0 -3px var(--gold)}
 @media print{.kpi.hasref .l::after,th .si{display:none}td.hasref,.kpi.hasref .v{color:inherit}}
@@ -523,8 +523,11 @@ FP.render = () => {
   $('#toc').innerHTML = FP.PLAN.map(p => `<a href="#${p.id}" class="${FP.sec[p.id] ? '' : 'todo'}"><span class="no">${p.no}</span>${p.title}</a>`).join('') ;
   FP.renderAssm();
   const checks = [];
+  /* fold-outs (<details>) stay open or closed across a redraw, so editing a setting inside one doesn't close it */
+  const detWas = Object.fromEntries(FP.PLAN.map(p => [p.id, [...document.querySelectorAll(`#${p.id} details`)].map(x => x.open)]));
   $('#sections').innerHTML = FP.PLAN.map(p => `<section class="sec${FP.sec[p.id] ? '' : ' todo'}" id="${p.id}"><header><span class="no">${String(p.no).padStart(2, '0')}</span><div><h2>${p.title}</h2><p>${p.sub}</p></div>${p.edit ? `<button class="hedit noprint" data-edit="${p.edit}">Edit ${p.edit.toLowerCase()} data</button>` : FP.svg(p.id)}</header><div class="body">${FP.sec[p.id] ? '' : '<p>This section is being built next.</p>'}</div></section>`).join('');
   FP.PLAN.forEach(p => { const s = FP.sec[p.id]; if (!s) return; try { s.render($('#' + p.id + ' .body'), d, st); (s.checks?.(d, st) || []).forEach(c => checks.push({ ...c, sec: p.title })); } catch (e) { console.error(e); $('#' + p.id + ' .body').innerHTML = '<p class="callout">This section could not be calculated: ' + FP.esc(e.message) + '</p>'; } });
+  FP.PLAN.forEach(p => { const was = detWas[p.id], now = [...document.querySelectorAll(`#${p.id} details`)]; if (was && was.length === now.length) now.forEach((x, i) => { x.open = was[i]; }); });
   const dis = st.dismiss || {}, open = checks.filter(c => !dis[FP.checkKey(c)]), nDis = checks.length - open.length;
   $('#checks').innerHTML = `<h3>Data checks ${open.length ? `<span class="chip warn">${open.length} to review</span>` : '<span class="chip">All clear</span>'}</h3>
     ${open.length ? `<ul class="checks">${open.map(c => `<li><button class="x" data-clr="${FP.esc(FP.checkKey(c))}" title="Mark as reviewed and hide" aria-label="Clear this check">✕</button><span><b>${c.sec}:</b> ${c.msg} ${c.list ? `<button class="link" data-l="${c.list}" data-i="${c.i}">Edit</button>` : ''}</span></li>`).join('')}</ul>` : '<p class="hint">Nothing unusual in the data.</p>'}
@@ -2094,7 +2097,7 @@ Need in year y      = household × (1 + inflation)^y + premiums + EMIs of loans 
    accident & critical-illness check, and policies worth reviewing. Settings in st.ins. */
 (() => {
   FP.ICON.insurance = '<path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/>';
-  const DEF = { cons: 25, disc: 8, healthPer: 5e5, healthMin: 1e6, pa: 5, ci: 3 };
+  const DEF = { cons: 25, disc: 8, healthPer: 5e5, healthMin: 1e6, pa: 5, ci: 3, paBy: 'x', ciBy: 'x', paAmt: 0, ciAmt: 0 };   /* accident and critical illness: × yearly income, or a fixed amount (paBy / ciBy = 'amt') */
   const up = (v, step = 5e5) => v > 0 ? Math.ceil(v / step) * step : 0;
   const pm = x => x.y > 0 ? x.y / 12 : x.m;
   FP.calc.ins = (d, st) => {
@@ -2125,7 +2128,7 @@ Need in year y      = household × (1 + inflation)^y + premiums + EMIs of loans 
     const review = d.life.filter(x => x.type !== 'Term' && x.annual > 0 && x.sa < 10 * x.annual).map(x => ({ ...x, why: `Cover is only ${(x.sa / x.annual).toFixed(1)}× the yearly premium` }))
       .concat(d.life.filter(x => /stop/i.test(x.mode)).map(x => ({ ...x, why: 'Premiums stopped: check paid-up value and whether cover still runs' })));
     const earners = people.filter(p => p.E > 0);
-    return { o, people, earners, members, hCover, hRec, hGap: Math.max(hRec - hCover, 0), pa: has(/accident|\bpa\b/i), ci: has(/critical|\bci\b/i), paRec: up(earners.reduce((s, p) => s + p.E, 0) * o.pa), ciRec: up(earners.reduce((s, p) => s + p.E, 0) * o.ci), review, parents: d.others.length, loans, goalGap, spare };
+    return { o, people, earners, members, hCover, hRec, hGap: Math.max(hRec - hCover, 0), pa: has(/accident|\bpa\b/i), ci: has(/critical|\bci\b/i), paRec: o.paBy === 'amt' ? up(o.paAmt) : up(earners.reduce((s, p) => s + p.E, 0) * o.pa), ciRec: o.ciBy === 'amt' ? up(o.ciAmt) : up(earners.reduce((s, p) => s + p.E, 0) * o.ci), review, parents: d.others.length, loans, goalGap, spare };
   };
 
   FP.sec.insurance = {
@@ -2134,6 +2137,7 @@ Need in year y      = household × (1 + inflation)^y + premiums + EMIs of loans 
     },
     render(el, d, st) {
       const C = FP.calc.ins(d, st), o = C.o, sp = FP.pct(FP.rate('salaryInc'), 1);
+      const byInp = (k, l) => { const amt = o[k + 'By'] === 'amt'; return `<label>${l}<span class="row">${amt ? `<input data-io="${k}Amt" type="text" inputmode="decimal" class="money" data-raw="${o[k + 'Amt']}" value="${FP.inrx(o[k + 'Amt'])}">` : `<input data-io="${k}" type="number" step="any" value="${o[k]}">`}<select data-ioby="${k}" aria-label="${l} as"><option value="x"${amt ? '' : ' selected'}>× yearly income</option><option value="amt"${amt ? ' selected' : ''}>₹ amount</option></select></span></label>`; };
       const inp = (k, l, v, suf = '', money) => `<label>${l}<span class="row">${money ? `<input data-io="${k}" type="text" inputmode="decimal" class="money" data-raw="${v}" value="${FP.inrx(v)}">` : `<input data-io="${k}" type="number" step="any" value="${v}">`}${suf}</span></label>`;
       const life = C.people;
       el.innerHTML = `
@@ -2165,8 +2169,8 @@ Need in year y      = household × (1 + inflation)^y + premiums + EMIs of loans 
           <tr class="tot"><td>To add</td><td class="n">${C.hGap ? FP.inr(C.hGap) : 'None'}</td></tr></tbody></table></div>
           <p class="hint">${C.hGap ? 'A super top-up is usually the cheapest way to add this.' : 'Cover is in line with the family size.'}${C.parents ? ' Parents are best covered by a separate policy, so their claims don\'t use up the family cover.' : ''}</p></div>
         <div><h3>Accident and critical illness</h3><div class="tbl"><table><thead><tr><th data-nosort>Cover</th><th class="n" data-nosort>Suggested</th><th class="n" data-nosort>Held</th></tr></thead><tbody>
-          <tr data-k="pa"><td>Personal accident<span class="note">${o.pa}× yearly earned income</span></td><td class="n">${FP.inr(C.paRec)}</td><td class="n">${C.pa ? FP.inr(C.pa) : '<span style="color:var(--brown)">None</span>'}</td></tr>
-          <tr data-k="ci"><td>Critical illness<span class="note">${o.ci}× yearly earned income</span></td><td class="n">${FP.inr(C.ciRec)}</td><td class="n">${C.ci ? FP.inr(C.ci) : '<span style="color:var(--brown)">None</span>'}</td></tr></tbody></table></div>
+          <tr data-k="pa"><td>Personal accident<span class="note">${o.paBy === 'amt' ? 'Amount set in Settings' : `${o.pa}× yearly earned income`}</span></td><td class="n">${FP.inr(C.paRec)}</td><td class="n">${C.pa ? FP.inr(C.pa) : '<span style="color:var(--brown)">None</span>'}</td></tr>
+          <tr data-k="ci"><td>Critical illness<span class="note">${o.ciBy === 'amt' ? 'Amount set in Settings' : `${o.ci}× yearly earned income`}</span></td><td class="n">${FP.inr(C.ciRec)}</td><td class="n">${C.ci ? FP.inr(C.ci) : '<span style="color:var(--brown)">None</span>'}</td></tr></tbody></table></div>
           ${C.review.length ? `<h3 style="margin-top:16px">Policies to review</h3><ul style="margin:0;padding-left:18px">${C.review.map(x => `<li><b>${FP.esc(x.company)}</b> (${FP.esc(x.insured)}, ${FP.short(x.sa)}): ${x.why}.</li>`).join('')}</ul>` : ''}</div>
       </div>
       <div class="appendix"><h3>Life policies held</h3><div class="tbl"><table><thead><tr><th>Policy</th><th>Type</th><th>Insured</th><th class="n">Sum assured</th><th class="n">Premium / yr</th><th class="n">Cover till</th></tr></thead><tbody>
@@ -2174,12 +2178,14 @@ Need in year y      = household × (1 + inflation)^y + premiums + EMIs of loans 
       <details class="noprint"><summary><b>Settings and Excel formulas</b></summary>
         <div class="scctl" style="margin:10px 0">${inp('cons', 'Part of income the person spends on themselves', o.cons, ' %')}${inp('disc', 'Return the family earns on the claim money', o.disc, ' %')}
           ${life.filter(p => p.E).map(p => inp('yrs' + p.w, `Years of family cost to cover · ${FP.esc(p.first)}`, p.yrs, ' yrs')).join('')}
-          ${inp('healthPer', 'Health cover per person', o.healthPer, '', 1)}${inp('healthMin', 'Minimum family floater', o.healthMin, '', 1)}${inp('pa', 'Accident cover × income', o.pa, ' ×')}${inp('ci', 'Critical illness × income', o.ci, ' ×')}<label class="chk"><input type="checkbox" data-iob="paidUp" ${o.paidUp ? 'checked' : ''}> Count paid-up policies (premiums stopped) as cover</label></div>
+          ${inp('healthPer', 'Health cover per person', o.healthPer, '', 1)}${inp('healthMin', 'Minimum family floater', o.healthMin, '', 1)}${byInp('pa', 'Accident cover')}${byInp('ci', 'Critical illness cover')}<label class="chk"><input type="checkbox" data-iob="paidUp" ${o.paidUp ? 'checked' : ''}> Count paid-up policies (premiums stopped) as cover</label></div>
         <div class="xl">HLV           = Σ income × (1 − own spending %) × (1 + ${sp})^t ÷ (1 + ${o.disc}%)^(t+1),  t = 0 … working years − 1
 Needs         = share × (loans + goals still to build − unused investments) + PV(real rate, years, −share × living cost/yr, 0, 1)
                 real rate = (1 + ${o.disc}%) ÷ (1 + inflation) − 1
 Recommended   = MAX(HLV, Needs), rounded up to ₹5 L
 Health        = MAX(minimum floater, per person × family members)</div></details>`;
+      el.querySelectorAll('[data-ioby]').forEach(x => x.onchange = () => { const k = x.dataset.ioby, rec = FP.calc.ins(FP.d, FP.st)[k + 'Rec'] || 0;
+        FP.set(s => { const cur = { ...DEF, ...(s.ins || {}) }; s.ins = { ...(s.ins || {}), [k + 'By']: x.value }; if (x.value === 'amt' && !cur[k + 'Amt']) s.ins[k + 'Amt'] = rec; }); });   /* switching to an amount starts from today's recommendation */
       el.querySelectorAll('[data-iob]').forEach(x => x.onchange = () => FP.set(s => { s.ins = { ...(s.ins || {}), [x.dataset.iob]: x.checked }; }));
       el.querySelectorAll('[data-io]').forEach(x => x.onchange = () => FP.set(s => { s.ins = { ...(s.ins || {}), [x.dataset.io]: x.classList.contains('money') ? FP.num(x.value) : +x.value }; }));
       const L = [...life.filter(p => p.E).map(p => 'Life · ' + p.first), 'Health'], held = [...life.filter(p => p.E).map(p => Math.min(p.have, p.rec)), Math.min(C.hCover, C.hRec)], add = [...life.filter(p => p.E).map(p => p.gap), C.hGap];
