@@ -1745,7 +1745,7 @@ Corpus = PV(((1+${+rv.r.toFixed(4)}%)/(1+${+rv.infl.toFixed(4)}%))^(1/12)-1, ${r
   document.head.insertAdjacentHTML('beforeend', `<style>
 .jhead{border-radius:14px;padding:14px 18px;background:#fff;border:1.5px solid #cfdde9;font-size:16px;line-height:1.45;margin:2px 0 12px}.jhead b{color:var(--dark)}.jhead.bad{border-color:#e0c3b5;background:#fbf3ef}.jhead.good{border-color:#bcd9c5;background:#eef6f0}
 .jrun2{margin:12px 0 6px;border:1px solid var(--line);border-radius:12px;background:#fff;padding:10px 14px 8px}.jrw{display:grid;grid-template-columns:150px 1fr;gap:12px;align-items:center;margin:6px 0}.jrw .jl b{display:block;font:700 16px var(--fh);color:var(--dark);white-space:nowrap}.jrw .jl small{font-size:11.5px;color:#6d6470}
-.jrw .jt{position:relative;height:24px;border-radius:12px;background:repeating-linear-gradient(45deg,#f3e2da,#f3e2da 6px,#ead2c6 6px,#ead2c6 12px);display:flex;align-items:center}.jrw .jt i{display:flex;align-items:center;justify-content:flex-end;height:100%;border-radius:12px;background:#9a6a3a;padding-right:10px;box-sizing:border-box;min-width:70px}.jrw .jt i.ok{background:var(--green)}.jrw .jt em{font:700 12.5px var(--fb);color:#fff;font-style:normal;white-space:nowrap}.jrw .jt u{text-decoration:none;font:700 12px var(--fb);color:var(--brown);margin-left:auto;padding-right:12px;white-space:nowrap}
+.jrw .jt{position:relative;height:24px;border-radius:12px;background:#f1e0d6;display:flex;align-items:center}.jrw .jt i{display:flex;align-items:center;justify-content:flex-end;height:100%;border-radius:12px;background:#9a6a3a;padding-right:10px;box-sizing:border-box;min-width:70px}.jrw .jt i.ok{background:var(--green)}.jrw .jt em{font:700 12.5px var(--fb);color:#fff;font-style:normal;white-space:nowrap}.jrw .jt u{text-decoration:none;font:700 12px var(--fb);color:var(--brown);margin-left:auto;padding-right:12px;white-space:nowrap}
 .jax{display:flex;justify-content:space-between;margin-left:162px;font-size:11.5px;color:#6d6470}
 .jrun{margin:4px 0 14px}.jrun .bar{display:flex;height:16px;border-radius:8px;overflow:hidden;background:repeating-linear-gradient(45deg,#f3e2da,#f3e2da 6px,#ead2c6 6px,#ead2c6 12px)}.jrun .bar i{display:block;background:var(--green)}
 .jrun .lb{display:flex;justify-content:space-between;font-size:12.5px;color:#6d6470;margin-top:5px}.jrun .lb b{color:var(--dark);font-weight:700}
@@ -1808,10 +1808,10 @@ Corpus = PV(((1+${+rv.r.toFixed(4)}%)/(1+${+rv.infl.toFixed(4)}%))^(1/12)-1, ${r
       lost: GG.filter(x => x.job <= .005 && x.plan > .005), same: GG.filter(x => x.job < .995 && x.job >= x.plan - .005 && !(x.job <= .005 && x.plan > .005)) };
     const box = (t, col, L, f, w) => L.length ? `<div class="${w ? 'w' : ''}"><h4 style="color:${col}">${t}</h4><ul>${L.map(f).join('')}</ul></div>` : '';
     const goalsHTML = `<div class="jgl">
-      ${box('Still funded', 'var(--green)', grp.keep, x => `<li>${nm(x.g)} <small>${due(x.g)}</small></li>`)}
-      ${box('Less funded', '#9a6a00', grp.less, x => `<li>${nm(x.g)} <small>${due(x.g)} · ${pc(x.plan)} → ${pc(x.job)}</small></li>`)}
-      ${box('No longer funded', 'var(--brown)', grp.lost, x => `<li>${nm(x.g)} <small>${due(x.g)} · was ${pc(x.plan)}</small></li>`)}
-      ${box('Not fully funded in the plan either', '#6d6470', grp.same, x => `<li>${nm(x.g)} <small>${due(x.g)} · ${pc(x.job)}</small></li>`)}
+      ${box('Still funded', 'var(--green)', grp.keep, x => `<li>${nm(x.g)}</li>`)}
+      ${box('Less funded', '#9a6a00', grp.less, x => `<li>${nm(x.g)} <small>${pc(x.plan)} → ${pc(x.job)}</small></li>`)}
+      ${box('No longer funded', 'var(--brown)', grp.lost, x => `<li>${nm(x.g)} <small>was ${pc(x.plan)}</small></li>`)}
+      ${box('Not fully funded in the plan either', '#6d6470', grp.same, x => `<li>${nm(x.g)} <small>${pc(x.job)}</small></li>`)}
       ${retG || efG ? `<div class="w" style="background:#f6f9fc"><ul style="list-style:none;padding:0">${retG ? `<li><b>Retirement</b> <small>is now part of living costs: the money for living costs pays for it, till the plan's end.</small></li>` : ''}${efG ? `<li><b>Emergency fund</b> <small>${S(X.ef)} stays as a reserve for medical bills and surprises, ${J.perm ? 'not for monthly living costs' : 'and pays the living costs during the gap first'}.</small></li>` : ''}</ul></div>` : ''}</div>`;
     const stops = [J.perm ? `<b>SIPs stop:</b> the plan's ${FP.inr(X.S0.alloc)} a month${X.S.avail > 0 ? `; ${FP.inr(X.S.avail)} a month can still be invested from the income left` : ''}.` : `<b>SIPs pause</b> for ${J.months} months, then restart at ${FP.inr(X.S.avail)} a month (plan: ${FP.inr(X.S0.avail)}).`,
       J.who === 'Self' && J.epf > 0 ? (J.perm ? `<b>EPF contributions</b> of ${FP.inr(J.epf)} a month stop; the balance is part of the money for living costs.` : `<b>EPF contributions</b> of ${FP.inr(J.epf)} a month pause until the new job.`) : '',
@@ -2933,6 +2933,28 @@ Move              = target − today; every change is shown (under ₹1,000 coun
       .replace('<!--FOOT-->', `<div class="foot"><span>Designing Portfolio. Delivering Peace.</span><span>www.abundance.co.in · service@abundanceindia.com</span><span>Page ${i + 1} of ${N}</span></div>`));
   };
 
+  /* The page itself goes into the PDF as a picture (so it looks exactly like the preview). On top of it goes the same text, invisible,
+     line by line at the same place, the way scanned documents are made searchable: text can then be selected, searched and copied.
+     The PDF's built-in font has no ₹ sign, so ₹ copies as "Rs." and symbols like → ✓ as plain characters. */
+  const SUB = { '₹': 'Rs.', '→': '->', '←': '<-', '⟶': '->', '✓': '', '✔': '', '✕': 'x', '✗': 'x', '≈': '~', '−': '-', '…': '...', '⠿': '', '×': 'x' };
+  const plain = t => t.replace(/[₹→←⟶✓✔✕✗≈−…⠿×]/g, m => SUB[m]).replace(/[^\x20-\x7E\u00A0-\u00FF\u2013\u2014\u2018\u2019\u201C\u201D\u2022]/g, '');
+  FP.cp.textLayer = (pdf, pg) => {
+    const P = pg.getBoundingClientRect(), k = 210 / P.width, rg = document.createRange(); pdf.setFont('helvetica', 'normal');
+    const tw = document.createTreeWalker(pg, NodeFilter.SHOW_TEXT, { acceptNode: n => n.nodeValue.trim() && n.parentElement?.closest('svg,style,script') == null ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT });
+    for (let n; (n = tw.nextNode());) {
+      const cs = getComputedStyle(n.parentElement); if (cs.visibility === 'hidden' || +cs.opacity === 0) continue;
+      const lines = [], re = /\S+/g; let m, L = null;
+      while ((m = re.exec(n.nodeValue))) { rg.setStart(n, m.index); rg.setEnd(n, m.index + m[0].length); const r = rg.getClientRects()[0]; if (!r || !r.width) continue;
+        if (L && Math.abs(r.top - L.top) < r.height / 2 && r.left >= L.right - 2) { L.t += ' ' + m[0]; L.right = r.right; }
+        else { if (L) lines.push(L); L = { t: m[0], left: r.left, right: r.right, top: r.top, bottom: r.bottom }; } }
+      if (L) lines.push(L); if (!lines.length) continue;
+      if (/\s$/.test(n.nodeValue)) lines[lines.length - 1].sp = 1;   /* keep the space before the next piece of text ("pay the full ₹56,000") */
+      lines.forEach(L => { const t0 = plain(L.t).trim(); if (!t0 || L.top < P.top || L.bottom > P.bottom) return;
+        const h = (L.bottom - L.top) * k, w = (L.right - L.left) * k; pdf.setFontSize(Math.max(h / 1.15 * 2.835, 2)); const tw0 = pdf.getTextWidth(t0), t = t0 + (L.sp ? ' ' : '');
+        pdf.text(t, (L.left - P.left) * k, (L.bottom - P.top) * k - h * .22, { renderingMode: 'invisible', horizontalScale: tw0 > 0 ? w / tw0 : 1 }); });
+    }
+  };
+
   /* ---------- Preview and download ---------- */
   document.body.insertAdjacentHTML('beforeend', `<div id="cpView" class="noprint" hidden><div class="cpbar"><b>Client PDF</b><span class="hint" id="cpMsg"></span><span class="sp"></span><button class="btn primary" id="cpDl">Download PDF</button><button class="btn" id="cpX">Close</button></div><div id="cpPages" class="zoom"></div></div>`);
   const tools = document.querySelector('.topbar .tools');
@@ -2990,6 +3012,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
         msg.textContent = `Making page ${i + 1} of ${pgs.length}…`;
         const cv = await html2canvas(pg, { scale: 2, backgroundColor: '#F0F8FF', logging: false, useCORS: true });
         if (i) pdf.addPage(); pdf.addImage(cv.toDataURL('image/jpeg', .9), 'JPEG', 0, 0, 210, 297, undefined, 'FAST');
+        try { FP.cp.textLayer(pdf, pg); } catch (e) { console.error(e); }
       }
       RC.classList.add('zoom');
       const blob = pdf.output('blob');
