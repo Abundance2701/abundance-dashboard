@@ -996,7 +996,9 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
       const I_ = x => { const u = U(x.key); return { key: x.key, kind: 'i', k: x.k, label: x.label, used: u[0], raw: u[1], ok: !!fac(x, g), on: !no.includes(x.key) }; };
       g.fs = { kept: sortBy(keptOf(g), (SO[g.name] || {}).keep).map(s => s.a ? A_(s) : I_(s.x)), pool: poolOf(g).filter(s => s.a.free > 0.5 && !s.a.tos.includes(g.name)).map(A_),   /* its own kept investments are listed once, under kept */ later: inflows.filter(x => x.tg !== g.name).map(I_),
         fixed: g.seq.filter(x => x.key.startsWith('a:') && !keptOf(g).some(k => k.key === x.key) && !poolA.some(a => 'a:' + a.label === x.key)), custom: !!SO[g.name], reset: !!(SO[g.name] || no.length) }; });
-    goals.forEach(g => { g.gap = Math.max(room(g), 0); if (g.gap < 0.5) g.gap = 0; g.gapFV = g.due ? g.gap : g.gap * Math.pow(1 + FP.mrate(g.r), g.n); g.pctF = g.needPV ? (g.got + g.later + g.cont) / g.needPV : 1; });
+    goals.forEach(g => { g.gap = Math.max(room(g), 0); if (g.gap < 0.5) g.gap = 0; const G = g.due ? 1 : Math.pow(1 + FP.mrate(g.r), g.n); g.gapFV = g.gap * G; g.pctF = g.needPV ? (g.got + g.later + g.cont) / g.needPV : 1;
+      /* the same numbers at the due date: needed − what the money set aside grows to (each at its own rate) = shortfall (gapFV) */
+      g.needFV = g.needPV * G; g.fvTot = g.fvParts.reduce((t, x) => t + x.fv, 0); g.laterRaw = g.fvParts.filter(x => x.later).reduce((t, x) => t + x.now, 0); });
     const switches = goals.filter(g => !g.due && g.n < 24 && g.type !== 'retirement').flatMap(g => g.src.filter(([l]) => ['Equity', 'Hybrid'].includes((assets.find(a => a.label === l) || {}).cls)).map(([l, v]) => ({ g: g.name, l, v, n: g.n })));
     return { goals, assets, switches, inflows };
   };
@@ -1027,7 +1029,7 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
       /* "Funded from": the sources used (today's money); click to open the goal's funding panel */
       const fsCell = g => { const F = g.fs, E = FP.esc, M = new Map(); g.seq.forEach(x => { const o = M.get(x.key) || { ...x, amt: 0, raw: 0 }; o.amt += x.amt; o.raw += x.raw || 0; M.set(x.key, o); });
         const skip = [...F.pool, ...F.later].filter(x => !x.on).length;
-        const lines = [...M.values()].map(x => `<button type="button" class="note fso" data-fso style="color:${x.later ? 'var(--c3)' : 'var(--ink)'}" title="Change where this goal's money comes from">${E(x.label)}: ${FP.short(x.amt)}${x.later && Math.abs(x.raw - x.amt) > 1 ? ` <small>(${FP.short(x.raw)} of it)</small>` : ''}</button>`).join('') || '<span class="hint">—</span>';
+        const lines = [...M.values()].map(x => `<button type="button" class="note fso" data-fso style="color:${x.later ? 'var(--c3)' : 'var(--ink)'}" title="Change where this goal's money comes from">${E(x.label)}: ${FP.short(x.later ? x.raw : x.amt)}</button>`).join('') || '<span class="hint">—</span>';
         const amt = it => it.used > 0.5 ? FP.inr(it.used) + (it.kind === 'i' && Math.abs(it.raw - it.used) > 1 ? `<small>${FP.short(it.raw)} of it</small>` : '') : it.kind === 'i' && !it.ok ? '<small>arrives too late</small>' : it.on === false ? '<small>not used</small>' : '—';
         const row = (it, grp, drag) => `<div class="fr${it.on === false ? ' off' : ''}"${drag ? ' draggable="true"' : ''} data-k="${E(it.key)}"${it.kind === 'i' ? ` data-ik="${it.k}"` : ''}><span class="hd">${drag ? '⠿' : ''}</span>
           <input type="checkbox" data-grp="${grp}"${grp === 'keep' || it.on !== false ? ' checked' : ''} aria-label="Use ${E(it.label)} for this goal"><span class="nm">${E(it.label)}${it.sub ? `<small>${E(it.sub)}</small>` : ''}</span><span class="am">${amt(it)}</span></div>`;
@@ -1039,9 +1041,9 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
           ${grp('From the shared pool', 'Only if still short, top to bottom. Untick to skip for this goal.', F.pool, 'pool', 1)}
           ${grp('Money coming later, shared pool', 'Used last. Untick to skip for this goal.', F.later, 'later', 0)}
           ${!F.kept.length && !F.pool.length && !F.later.length && !F.fixed.length ? '<p class="hint">No investments are available for this goal.</p>' : ''}
-          <div class="pf"><span>Covered ${FP.inr(g.got + g.later + g.cont)} · Still to build ${FP.inr(g.gap)}</span>${F.reset ? '<button class="link" data-fsreset>Reset to automatic</button>' : ''}</div></div></details>`; };
+          <div class="pf"><span>Grows to ${FP.inr(g.fvTot)} by the due date · Shortfall ${FP.inr(g.gapFV)}</span>${F.reset ? '<button class="link" data-fsreset>Reset to automatic</button>' : ''}</div></div></details>`; };
       el.innerHTML = `
-      <div class="kpis">${FP.kpi('Covered by existing investments', FP.short(got), `${FP.pct(need ? got / need : 1, 0)} of the ${FP.short(need)} needed today`, 1)}
+      <div class="kpis">${FP.kpi('Investments set aside', FP.short(sum(G, 'gotRs')), `Today's value · cover ${FP.pct(need ? got / need : 1, 0)} of what the goals need`, 1)}
         ${laterT > 1 ? FP.kpi('Covered by money coming later', FP.short(laterT), 'In today\'s money') : ''}
         ${FP.kpi('Still to build', FP.short(stillT), 'In today\'s money · Section 5 sets the SIP')}
         ${FP.kpi('Goals fully funded', `${G.filter(g => still(g) < 1).length} of ${G.length}`)}
@@ -1050,13 +1052,14 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
       ${switches.length ? `<div class="callout"><b>Move to a debt or liquid fund now</b> (equity is funding goals due within 2 years; a market fall could hurt them):<ul style="margin:6px 0 0;padding-left:18px">${Object.entries(bySw).map(([g, x]) => `<li><b>${FP.esc(FP.gname(g))}</b> (in ${x.n} months): ${x.items.map(i => `${FP.short(i.v)} of ${FP.esc(i.l)}`).join(', ')}</li>`).join('')}</ul></div>` : ''}
       <div><h3>How much of each goal is already covered</h3><div class="chartbox" style="height:${Math.max(160, G.length * 30 + 40)}px"><canvas id="alBar" role="img" aria-label="Covered and remaining amount for each goal"></canvas></div>
         ${FP.legend(['Covered by existing investments', ...(laterT > 1 ? ['Money coming later'] : []), 'Still to build'], null, ['#1E7A46', ...(laterT > 1 ? ['#2F86BC'] : []), '#A3502F'])}</div>
-      <div><div class="secbar"><h3>Goal by goal</h3><button class="addgoal noprint" data-addgoal>+ Add goal</button></div><div class="tbl"><table><thead><tr><th class="noprint" data-nosort title="Funding order">#</th><th>Goal</th><th>Priority</th><th>Due</th><th class="n">Needed today</th><th>Funded from</th><th class="n">Covered</th><th class="n">Still to build</th></tr></thead><tbody>
-        ${G.map((g, j) => { const st2 = still(g); return `<tr data-p="${g.pri}" data-g="${FP.esc(g.name)}"><td class="noprint drag" draggable="true" title="Drag to fund earlier or later (within ${g.pri} priority). Shift+click to pick several.">⠿ ${j + 1}</td><td>${FP.goalBtn(g)}</td><td data-sort="${PR[g.pri]}">${chip(g.pri)}</td><td>${due(g)}</td><td class="n"${FP.ex.need(g)}>${FP.inr(g.needPV)}</td>
+      <div><div class="secbar"><h3>Goal by goal</h3><button class="addgoal noprint" data-addgoal>+ Add goal</button></div><div class="tbl"><table><thead><tr><th class="noprint" data-nosort title="Funding order">#</th><th>Goal</th><th>Priority</th><th>Due</th><th class="n" title="What the goal costs when it falls due">Needed by due date</th><th>Funded from</th><th class="n" title="Current value of the investments set aside for it">Allocated today</th><th class="n" title="Each investment grown at its own rate to the due date">Grows to by due date</th><th class="n">Shortfall by due date</th></tr></thead><tbody>
+        ${G.map((g, j) => { const st2 = still(g); return `<tr data-p="${g.pri}" data-g="${FP.esc(g.name)}"><td class="noprint drag" draggable="true" title="Drag to fund earlier or later (within ${g.pri} priority). Shift+click to pick several.">⠿ ${j + 1}</td><td>${FP.goalBtn(g)}</td><td data-sort="${PR[g.pri]}">${chip(g.pri)}</td><td>${due(g)}</td><td class="n"${FP.ex.need(g)}>${FP.inr(g.needFV)}</td>
           <td>${fsCell(g)}</td>
-          <td class="n"${FP.ex.cov(g)}>${FP.inr(g.got + g.later + g.cont)}<span class="note">${FP.pct(g.pctF, 0)}</span></td><td class="n"${FP.ex.gap(g)} style="${st2 > 1 ? 'color:var(--brown);font-weight:700' : ''}">${st2 > 1 ? FP.inr(st2) : 'Fully funded'}${st2 > 1 && !g.due ? `<span class="note">${FP.short(g.gapFV)} by ${g.year}</span>` : ''}</td></tr>`; }).join('')}
-        ${FP.calc.goals(d, st).filter(g => !g.on).map(g => `<tr class="off noprint"><td class="noprint"></td><td>${FP.goalBtn(g)}<span class="note">Not in the plan. Click the name to include it.</span></td><td>${chip(g.pri)}</td><td>${due(g)}</td><td class="n">${FP.inr(g.due ? g.fv : g.lump)}</td><td colspan="3" class="hint">Left out of the plan</td></tr>`).join('')}
-        <tr class="tot"><td class="noprint"></td><td colspan="3">Total</td><td class="n">${FP.inr(need)}</td><td></td><td class="n">${FP.inr(got)}</td><td class="n">${FP.inr(stillT)}</td></tr></tbody></table></div>
-        <p class="hint">"Needed today" and "Still to build" are in today's money. The small figure under "Still to build" is the amount that must be ready on the due date.</p></div>
+          <td class="n"${FP.ex.cov(g)}>${g.gotRs > 0.5 ? FP.inr(g.gotRs) : '—'}${g.laterRaw > 1 ? `<span class="note">+ ${FP.short(g.laterRaw)} later</span>` : ''}${g.cont > 1 ? '<span class="note">+ monthly EPF</span>' : ''}</td>
+          <td class="n"${FP.ex.grow(g)}>${FP.inr(g.fvTot)}<span class="note">${FP.pct(g.pctF, 0)}</span></td><td class="n"${FP.ex.gap(g)} style="${st2 > 1 ? 'color:var(--brown);font-weight:700' : ''}">${st2 > 1 ? FP.inr(g.gapFV) : 'Fully funded'}${st2 > 1 && !g.due ? `<span class="note">${FP.short(st2)} today</span>` : ''}</td></tr>`; }).join('')}
+        ${FP.calc.goals(d, st).filter(g => !g.on).map(g => `<tr class="off noprint"><td class="noprint"></td><td>${FP.goalBtn(g)}<span class="note">Not in the plan. Click the name to include it.</span></td><td>${chip(g.pri)}</td><td>${due(g)}</td><td class="n">${FP.inr(g.fv)}</td><td colspan="4" class="hint">Left out of the plan</td></tr>`).join('')}
+        <tr class="tot"><td class="noprint"></td><td colspan="3">Total</td><td></td><td></td><td class="n">${FP.inr(sum(G, 'gotRs'))}</td><td></td><td class="n">${FP.inr(stillT)}<span class="note">in today's money</span></td></tr></tbody></table></div>
+        <p class="hint">Each goal: what it costs when due, what the investments set aside today grow to by then (each at its own rate), and the shortfall the SIP in Section 5 builds. The shortfall in today's money is that amount brought back at the goal's own return. Click any figure to see the working.</p></div>
       <div><h3>Where each investment goes</h3><ul class="hint noprint" style="margin:0 0 8px;padding-left:18px"><li>Set an investment aside for one or more goals, keep it in the shared pool, or leave it out (e.g. a property the client won't sell).</li><li>Set aside for several goals: they are funded in the goal order above. Any leftover goes to the shared pool, unless you tick "Keep any leftover".</li><li>"Use for goals" lets you count only part of it, e.g. a debt fund being drawn down by an SWP.</li><li>Emergency fund amounts are set in Section 1.</li><li>"Specific Return%": the return an investment earns till its goal. It starts at its class (equity, hybrid, else debt); pick another assumed rate, or "Own rate" and type it (e.g. EPF 8.25).</li></ul>
       <div class="tbl"><table id="alTbl"><thead><tr><th class="noprint" data-nosort title="Drag rows to reorder"></th><th>Investment</th><th class="n">Available</th><th class="n noprint">Use for goals ₹</th><th data-nosort title="Return this investment earns till the goal: Equity, Hybrid or Debt (assumed rates), or its own rate. Default: its class">Specific Return%</th><th>Assigned to</th><th>Used for</th><th class="n">Left</th></tr></thead><tbody>
         ${FP.alSort(assets.filter(a => a.full > 0 || a.ef > 0), st).map((a, i) => `<tr data-al="${FP.esc(a.label)}"><td class="noprint drag" draggable="true" title="Drag to reorder (also sets the order in the client PDF)">⠿</td><td>${FP.esc(a.label)}<span class="note">${a.cls}${a.ef ? ` · ${FP.short(a.ef)} emergency fund` : ''}</span></td><td class="n">${FP.inr(a.full)}</td>
@@ -1179,24 +1182,28 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
       if (g.n <= 0) return why(k, `${FP.gname(g.name)}: ${I(g.fv)}`, [`Due now, so it costs today's amount: <b>${I(g.fv)}</b>.`]);
       return why(k, `${FP.gname(g.name)}: ${I(g.fv)} in ${when(g)}`, [`Costs ${I(g.amt)} today.`, `Prices rise ${P(g.infl)} a year for ${mo(g.n)}.`, `Cost when due = ${I(g.amt)} × (1 + ${P(g.infl)})^(${g.n}/12) = <b>${I(g.fv)}</b>.`],
         `=${Math.round(g.amt)}*(1+${P(g.infl)})^(${g.n}/12)`); },
-    /* Section 4: lumpsum needed today */
-    need: g => { const k = 'need:' + g.name, G = Math.pow(1 + FP.mrate(g.r), g.n);
-      if (g.due) return why(k, `Needed now: ${I(g.needPV)}`, [`The goal is due now, so it needs its full cost today: <b>${I(g.needPV)}</b>.`]);
-      return why(k, `Lumpsum needed today: ${I(g.needPV)}`, [`The goal needs ${I(g.fv)} in ${when(g)}, ${mo(g.n)} away.`, `Money set aside for it is assumed to earn ${rateWhy(g)}.`,
-        `₹1 invested today grows to (1 + ${P(g.r)})^(${g.n}/12) = ${G.toFixed(4)} by then.`, `So the lumpsum needed today = ${I(g.fv)} ÷ ${G.toFixed(4)} = <b>${I(g.fullPV)}</b>${g.needPV < g.fullPV - 1 ? `; only ${Math.round(g.needPV / g.fullPV * 100)}% is planned, ${I(g.needPV)}` : ''}.`],
-        `=PV((1+${P(g.r)})^(1/12)-1, ${g.n}, 0, -${Math.round(g.fv)})`); },
-    /* Section 4: what existing money covers */
-    cov: g => { const k = 'cov:' + g.name, G = g.due ? 1 : Math.pow(1 + FP.mrate(g.r), g.n), tot = g.fvParts.reduce((t, x) => t + x.fv, 0);
-      const L = g.fvParts.map(x => x.cont ? `${x.label}: at ${P(x.r)} till ${when(g)} grows to ${I(x.fv)}.`
+    /* Section 4: needed by the due date */
+    need: g => { const k = 'need:' + g.name;
+      if (g.due) return why(k, `Needed now: ${I(g.needFV)}`, [`The goal is due now, so it needs its full cost today: <b>${I(g.needFV)}</b>.`]);
+      return why(k, `Needed by ${when(g)}: ${I(g.needFV)}`, [g.type === 'retirement' ? `The retirement corpus worked out in Section 3: ${I(g.fv)} (click it there for the working).` : `Costs ${I(g.amt)} today; rising ${P(g.infl)} a year for ${mo(g.n)}: ${I(g.amt)} × (1 + ${P(g.infl)})^(${g.n}/12) = ${I(g.fv)}.`,
+        g.needFV < g.fv - 1 ? `Only ${Math.round(g.needFV / g.fv * 100)}% of it is planned: <b>${I(g.needFV)}</b>.` : '']); },
+    /* Section 4: allocated today = current value of what's set aside */
+    cov: g => { const k = 'cov:' + g.name, A = g.fvParts.filter(x => !x.later && !x.cont), Lt = g.fvParts.filter(x => x.later), Ct = g.fvParts.filter(x => x.cont);
+      if (!g.fvParts.length) return why(k, 'Allocated today: ₹0', ['No existing investments or money coming later are set aside for this goal.']);
+      return why(k, `Allocated today: ${I(g.gotRs)}`, [...A.map(x => `${x.label}: ${I(x.now)} (its value today).`), A.length > 1 ? `Total today: <b>${I(g.gotRs)}</b>.` : '',
+        ...Lt.map(x => `Plus money coming later: ${x.label.replace(/^Later, /, '')}, ${I(x.now)} when it arrives.`), ...Ct.map(x => `Plus ${x.label}.`),
+        `Only what the goal needs is taken from each investment; the rest stays for other goals.`]); },
+    /* Section 4: what that money grows to by the due date */
+    grow: g => { const k = 'grow:' + g.name;
+      const L = g.fvParts.map(x => x.cont ? `${x.label}: invested each month at ${P(x.r)} till ${when(g)} → ${I(x.fv)}.`
         : x.later ? `${x.label.replace(/^Later, /, '')}: ${I(x.now)} arrives, then grows at ${P(x.r)} for ${mo(g.n - x.start)} → ${I(x.fv)}.`
-        : g.due ? `${x.label}: ${I(x.now)}.` : `${x.label}: ${I(x.now)} grows at ${P(x.r)} a year (${howTxt(x.how)}) for ${mo(g.n)} → ${I(x.fv)}.`);
-      if (!L.length) return why(k, 'Covered: ₹0', ['No existing investments or money coming later are set aside for this goal.']);
-      return why(k, `Covered: ${I(g.got + g.later + g.cont)}`, [...L, g.due ? `Total: <b>${I(tot)}</b>.` : `Together they reach ${I(tot)} by ${when(g)}.`,
-        g.due ? '' : `In today's money, at this goal's return (${P(g.r)}): ${I(tot)} ÷ ${G.toFixed(4)} = <b>${I(g.got + g.later + g.cont)}</b>.`,
-        !g.due && Math.abs(g.gotRs - g.got) > 1 ? `The investments themselves are worth ${I(g.gotRs)} today. They count for ${g.gotRs > g.got ? 'less' : 'more'} here because they grow ${g.gotRs > g.got ? 'slower' : 'faster'} than the goal's ${P(g.r)}.` : '']); },
-    /* Section 4: still to build */
-    gap: g => why('gap:' + g.name, `Still to build: ${I(g.gap)}`, [`Lumpsum needed today ${I(g.needPV)} − covered ${I(g.got + g.later + g.cont)} = <b>${I(g.gap)}</b> in today's money.`,
-      g.due ? 'Due now: it can only come from savings or a bonus, not a SIP.' : `By ${when(g)}, at the goal's ${P(g.r)}, that is ${I(g.gap)} × (1 + ${P(g.r)})^(${g.n}/12) = <b>${I(g.gapFV)}</b>: what the SIP has to build.`]),
+        : g.due ? `${x.label}: ${I(x.now)} (due now, no growth).` : `${x.label}: ${I(x.now)} × (1 + ${P(x.r)})^(${g.n}/12), at ${howTxt(x.how)}, → ${I(x.fv)}.`);
+      if (!L.length) return why(k, 'Grows to: ₹0', ['Nothing is set aside for this goal yet.']);
+      return why(k, `Grows to ${I(g.fvTot)} by ${g.due ? 'now' : when(g)}`, [...L, `Together: <b>${I(g.fvTot)}</b>, which is ${FP.pct(g.pctF, 0)} of the ${I(g.needFV)} needed.`]); },
+    /* Section 4: shortfall by the due date */
+    gap: g => why('gap:' + g.name, `Shortfall: ${I(g.gapFV)} by ${g.due ? 'now' : when(g)}`, [`Needed ${I(g.needFV)} − what's set aside grows to ${I(g.fvTot)} = <b>${I(g.gapFV)}</b>.`,
+      g.due ? 'Due now: it can only come from savings or a bonus, not a SIP.' : `Section 5 builds this with a SIP invested in ${rateWhy(g)}.`,
+      g.due ? '' : `In today's money: ${I(g.gapFV)} ÷ (1 + ${P(g.r)})^(${g.n}/12) = ${I(g.gap)} (what a lumpsum invested today at that rate would need to be).`]),
     /* Section 5: SIP needed */
     sip: (f, S) => { const k = 'sip:' + f.name, i = FP.mrate(f.r), D = +FP.st.sipDelay || 0, n = f.n - D, kk = Math.max((f.k ?? f.n) - D, 1);
       return why(k, `SIP needed: ${I(f.req)} a month`, [`To build ${I(f.gapFV)} by ${when(f)}.`, `Invested in ${f.bk.toLowerCase()} at ${P(f.r)} a year: monthly rate = (1 + ${P(f.r)})^(1/12) − 1 = ${Pm(i)}.`,
@@ -1735,9 +1742,9 @@ Corpus = PV(((1+${+rv.r.toFixed(4)}%)/(1+${+rv.infl.toFixed(4)}%))^(1/12)-1, ${r
       L.push(`<b>The period:</b> from ${now} to the plan's end in ${N.endY}${aS != null ? ` (${n1}'s age ${aS}${aP != null ? `, ${FP.esc(sp.first || 'spouse')}'s ${aP}` : ''})` : ''}: ${N.N} months. The plan runs to whichever of you reaches age ${FP.rate('lifeExp')} later.`);
       L.push(`<b>Each month's need</b>${R ? `, till the planned retirement in ${MON[rm - 1]} ${ry} (${N.RM} months)` : ''}: household${J.cut ? ' (after the cut)' : ''}${J.health ? ' + health cover' : ''} rising ${P(inf)} a year, + EMIs${loans.length ? ` (ending: ${loans.join(', ')})` : ''} + premiums, − other salaries rising ${P(si)} a year, − rent and interest. Today that is ${I(N.need(0))}.${R ? ` From ${MON[rm - 1]} ${ry}: the planned retirement expense less income that continues, ${I(R.need)} in today's money, rising ${P(inf)} a year (${I(N.need(N.RM))} in ${ry}).` : ''}`);
       L.push(`<b>Return on the money:</b> ${P(r)} a year (the post-retirement mix: ${FP.pctOf('retEq')}% equity at ${P(FP.rate('rEquity'))}, the rest debt at ${P(FP.rate('rDebt'))}), i.e. (1 + ${P(r)})^(1/12) − 1 = ${(+(i * 100).toFixed(4))}% a month.`);
-      L.push(`<b>Needed for life ${I(X.needAmt)}</b> = each month's need brought back to today at ${(+(i * 100).toFixed(4))}% a month, added up: Σ need(m) ÷ (1 + ${(+(i * 100).toFixed(4))}%)^m for m = 0 to ${N.N - 1}.`);
+      L.push(`<b>Needed till ${N.endY}: ${I(X.needAmt)}</b> = each month's need brought back to today at ${(+(i * 100).toFixed(4))}% a month, added up: Σ need(m) ÷ (1 + ${(+(i * 100).toFixed(4))}%)^m for m = 0 to ${N.N - 1}.`);
       L.push(`<b>Lasts till ${X.lastY}</b>: start with ${I(X.cov)}; each month take out that month's need, then the rest grows ${(+(i * 100).toFixed(4))}%. ${X.forLife ? `The money is still there at the end of ${N.endY}.` : `The balance runs out in ${X.lastY}${X.lastAge != null ? ` (${n1}'s age ${X.lastAge})` : ''}, ${N.endY - X.lastY} years before ${N.endY}.`}`);
-      L.push(`<b>Can pay ${I(Math.min(X.sustain, J.deficit * 9))} a month for life</b>: available ÷ needed = ${I(X.cov)} ÷ ${I(X.needAmt)} = ${Math.round(X.k * 100)}%. So the money can pay ${Math.round(X.k * 100)}% of every month's need till ${N.endY}: ${Math.round(X.k * 100)}% × ${I(J.deficit)} = ${I(X.sustain)} a month now. It rises with prices like the need (about ${I(X.sustain * Math.pow(1 + inf, 5))} in ${N.y0 + 5})${R ? `; from ${ry} it is ${Math.round(X.k * 100)}% of the retirement need, ${I(Math.min(X.k, 9) * N.need(N.RM))} then` : ''}.`);
+      L.push(`<b>Two ways to use the money.</b> (a) Pay the full need, ${I(J.deficit)} a month now, rising with prices: it lasts till ${X.lastY}${X.forLife ? ' and beyond' : ''}. (b) Spread it so it lasts till ${N.endY}: available ÷ needed = ${I(X.cov)} ÷ ${I(X.needAmt)} = ${Math.round(X.k * 100)}%, so it can pay ${Math.round(X.k * 100)}% of every month's need till ${N.endY}: ${Math.round(X.k * 100)}% × ${I(J.deficit)} = ${I(X.sustain)} a month now. It rises with prices like the need (about ${I(X.sustain * Math.pow(1 + inf, 5))} in ${N.y0 + 5})${R ? `; from ${ry} it is ${Math.round(X.k * 100)}% of the retirement need, ${I(Math.min(X.k, 9) * N.need(N.RM))} then` : ''}.`);
       if (X.k < .995) {
         L.push(`<b>Spend less, to about ${I(X.spendOK)}</b> = income left ${I(J.other)} + what the money can pay ${I(Math.min(X.k, 1) * J.deficit)}.`);
         L.push(`<b>Earn ${I(X.earn)} a month</b> = need ${I(J.deficit)} − what the money can pay ${I(X.sustain)}, rising with prices.`);
@@ -1772,29 +1779,29 @@ Corpus = PV(((1+${+rv.r.toFixed(4)}%)/(1+${+rv.infl.toFixed(4)}%))^(1/12)-1, ${r
       ${box('Less funded', '#9a6a00', grp.less, x => `<li>${nm(x.g)} <small>${due(x.g)} · ${pc(x.plan)} → ${pc(x.job)}</small></li>`)}
       ${box('No longer funded', 'var(--brown)', grp.lost, x => `<li>${nm(x.g)} <small>${due(x.g)} · was ${pc(x.plan)}</small></li>`)}
       ${box('Not fully funded in the plan either', '#6d6470', grp.same, x => `<li>${nm(x.g)} <small>${due(x.g)} · ${pc(x.job)}</small></li>`)}
-      ${retG || efG ? `<div class="w" style="background:#f6f9fc"><ul style="list-style:none;padding:0">${retG ? `<li><b>Retirement</b> <small>is now part of living costs: the money for living costs pays for the rest of life.</small></li>` : ''}${efG ? `<li><b>Emergency fund</b> <small>${S(X.ef)} stays as a reserve for medical bills and surprises, ${J.perm ? 'not for monthly living costs' : 'and pays the living costs during the gap first'}.</small></li>` : ''}</ul></div>` : ''}</div>`;
+      ${retG || efG ? `<div class="w" style="background:#f6f9fc"><ul style="list-style:none;padding:0">${retG ? `<li><b>Retirement</b> <small>is now part of living costs: the money for living costs pays for it, till the plan's end.</small></li>` : ''}${efG ? `<li><b>Emergency fund</b> <small>${S(X.ef)} stays as a reserve for medical bills and surprises, ${J.perm ? 'not for monthly living costs' : 'and pays the living costs during the gap first'}.</small></li>` : ''}</ul></div>` : ''}</div>`;
     const stops = [J.perm ? `<b>SIPs stop:</b> the plan's ${FP.inr(X.S0.alloc)} a month${X.S.avail > 0 ? `; ${FP.inr(X.S.avail)} a month can still be invested from the income left` : ''}.` : `<b>SIPs pause</b> for ${J.months} months, then restart at ${FP.inr(X.S.avail)} a month (plan: ${FP.inr(X.S0.avail)}).`,
       J.who === 'Self' && J.epf > 0 ? (J.perm ? `<b>EPF contributions</b> of ${FP.inr(J.epf)} a month stop; the balance is part of the money for living costs.` : `<b>EPF contributions</b> of ${FP.inr(J.epf)} a month pause until the new job.`) : '',
       J.health > 0 ? `<b>Health cover</b> from the employer ends: a personal policy of ${FP.inr(J.health)} a year is added to spending.` : `<b>Health cover</b>: if it came with the job, it ends too; a personal family floater is needed.`,
       J.perm ? '<b>Term insurance</b> premiums continue: the family now depends on these investments.' : ''];
     if (J.perm) {
       const short = X.L.endY - X.lastY, pct = Math.max(0, Math.min(1, (X.lastY - X.L.y0) / Math.max(X.L.endY - X.L.y0, 1)));
-      const head = X.forLife ? `<div class="jhead good">Your investments can pay the household's living costs <b>for life</b> (the plan runs to ${X.L.endY}), even with no salary.</div>`
-        : `<div class="jhead bad">With no salary from ${E(n1)}, your investments can pay the household's living costs <b>till ${X.lastY}</b>${X.lastAge != null ? ` (${E(n1)}'s age ${X.lastAge})` : ''}. The plan runs to ${X.L.endY}, so that is <b>${short} year${short > 1 ? 's' : ''} short</b>.</div>`;
+      const head = X.forLife ? `<div class="jhead good">Even with no salary, your investments can pay the full ${FP.inr(J.deficit)} a month the household needs (rising with prices) <b>till ${X.L.endY}</b>, the end of the plan.</div>`
+        : `<div class="jhead bad">With no salary from ${E(n1)}, your investments can pay the full <b>${FP.inr(J.deficit)} a month</b> the household needs (rising with prices) <b>till ${X.lastY}</b>${X.lastAge != null ? ` (${E(n1)}'s age ${X.lastAge})` : ''}. The plan runs to ${X.L.endY}, so that is <b>${short} year${short > 1 ? 's' : ''} short</b>. Or, to make it last till ${X.L.endY}, it can pay <b>${FP.inr(Math.min(X.sustain, J.deficit))} a month</b> instead.</div>`;
       const run = `<div class="jrun"><div class="bar"><i style="width:${pct * 100}%"></i></div><div class="lb"><span>Today, ${X.L.y0}</span><span><b>Money lasts till ${X.lastY}</b></span><span>Plan runs to ${X.L.endY}</span></div></div>`;
       const top = X.src.slice(0, 7), rest = X.src.slice(7).reduce((t, x) => t + x[1], 0);
       const p1 = `${head}${run}
         ${h3('Every month, once the salary stops')}
         ${kp([['Income still coming in', FP.inr(J.other), J.other ? 'Other salaries, rent and interest' : 'No other income'], ['Spending', FP.inr(J.spend), `${J.cut ? `After a ${Math.round(J.cut * 100)}% cut` : 'Household, EMIs, premiums'}${J.health ? ', with new health cover' : ''}`], ['Paid from investments', FP.inr(J.deficit), 'A month, rising with prices', 1]])}
         ${h3('The money for living costs')}
-        ${kp([['Available', S(X.cov), X.keep ? 'Investments not kept for other goals' : 'All investments except the emergency fund'], ['Needed for life', S(X.needAmt), `In today's money, to ${X.L.endY}`], ['Can pay for life', FP.inr(Math.min(X.sustain, J.deficit * 9)), `A month, rising with prices (need ${FP.inr(J.deficit)})`, 0, X.k < .995]])}
+        ${kp([['Available', S(X.cov), X.keep ? 'Investments not kept for other goals' : 'All investments except the emergency fund'], ['Needed till ' + X.L.endY, S(X.needAmt), `In today's money, to pay the full need every month`], [X.k < .995 ? `To last till ${X.L.endY}, it can pay` : 'Paying the full need', X.k < .995 ? FP.inr(X.sustain) + ' a month' : 'Yes', X.k < .995 ? `Instead of the ${FP.inr(J.deficit)} needed; both rise with prices` : `With ${S(X.cov - X.needAmt)} to spare`, 0, X.k < .995]])}
         ${top.length ? `<div class="jsrc">${top.map(([l, v]) => `<div><span>${nmS(l)}</span><i class="ld"></i><span>${S(v)}</span></div>`).join('')}${rest > 1 ? `<div><span>Others</span><i class="ld"></i><span>${S(rest)}</span></div>` : ''}<div class="tot"><span>Total available</span><i class="ld"></i><span>${S(X.cov)}</span></div></div>` : ''}
         ${h3('What stops or changes')}${ul(stops)}`;
-      const ways = X.k >= .995 ? [] : [`<b>Spend less:</b> bring monthly spending from ${FP.inr(J.spend)} down to about ${FP.inr(X.spendOK)}, and the money lasts for life.`,
-        `<b>Earn some income:</b> ${FP.inr(X.earn)} a month from part-time work, consulting or rent covers the gap for life.`,
-        X.goalExtra ? `<b>Rethink the goals still funded:</b> they use ${S(X.goalMoney)} of your investments. Putting that towards living costs makes the money last till ${X.goalExtra}${X.goalExtra >= X.L.endY ? ', for life' : ''}.` : '',
-        X.kept.length ? `<b>Sell what's kept aside:</b> ${X.kept.map(a => nmS(a.label)).join(', ')} (${S(X.kept.reduce((t, a) => t + a.free, 0))}) would make it last till ${X.keptExtra}${X.keptExtra >= X.L.endY ? ', for life' : ''}.` : ''];
-      const p2 = `${h3('What happens to your goals')}${goalsHTML}${ways.length ? h3('Ways to make it last for life') + ul(ways) : ''}`;
+      const ways = X.k >= .995 ? [] : [`<b>Spend less:</b> bring monthly spending from ${FP.inr(J.spend)} down to about ${FP.inr(X.spendOK)}, and the money lasts till ${X.L.endY}.`,
+        `<b>Earn some income:</b> ${FP.inr(X.earn)} a month from part-time work, consulting or rent covers the gap till ${X.L.endY}.`,
+        X.goalExtra ? `<b>Rethink the goals still funded:</b> they use ${S(X.goalMoney)} of your investments. Putting that towards living costs makes the money last till ${X.goalExtra}${X.goalExtra >= X.L.endY ? ', the end of the plan' : ''}.` : '',
+        X.kept.length ? `<b>Sell what's kept aside:</b> ${X.kept.map(a => nmS(a.label)).join(', ')} (${S(X.kept.reduce((t, a) => t + a.free, 0))}) would make it last till ${X.keptExtra}${X.keptExtra >= X.L.endY ? ', the end of the plan' : ''}.` : ''];
+      const p2 = `${h3('What happens to your goals')}${goalsHTML}${ways.length ? h3(`Ways to make it last till ${X.L.endY}`) + ul(ways) : ''}`;
       return (P1 ? p1 : '') + (P2 ? p2 : '') + (pdf ? '' : FP.jobWhy(d, st, X));
     }
     const ok = X.livGap <= 1, efOK = X.efMonths >= J.months;
@@ -1840,7 +1847,7 @@ Corpus = PV(((1+${+rv.r.toFixed(4)}%)/(1+${+rv.infl.toFixed(4)}%))^(1/12)-1, ${r
     if (sc.sipMode && sc.sipMode !== (st.sipMode === 'flat' ? 'flat' : 'step')) out.push(sc.sipMode === 'flat' ? 'Flat SIP' : `Step-up SIP (${FP.pct(FP.rate('stepUp'), 1)} a year)`);
     if (sc.avail != null) out.push(`Can invest ${FP.inr(sc.avail)} a month`);
     const J = FP.jobLoss(d, st, sc);
-    if (J) out.push(J.perm ? `${J.first}'s job stops for good: no new SIPs; ${FP.inr(J.deficit)} a month of living costs beyond the income left comes from investments, for life`
+    if (J) out.push(J.perm ? `${J.first}'s job stops for good: no new SIPs; ${FP.inr(J.deficit)} a month of living costs beyond the income left comes from investments, till the plan's end`
       : `${J.first} out of work for ${J.months} month${J.months > 1 ? 's' : ''}: SIPs pause; ${FP.short(J.total)} of living costs (${FP.inr(J.deficit)} a month beyond the income left) comes from savings${J.pct < 100 ? `; new job at ${J.pct}% of the old salary` : ''}`);
     if (J?.sev > 0) out.push(`Severance and gratuity: ${FP.short(J.sev)}`);
     if (J?.cut > 0) out.push(`Household spending cut by ${Math.round(J.cut * 100)}%`);
@@ -1878,7 +1885,7 @@ Corpus = PV(((1+${+rv.r.toFixed(4)}%)/(1+${+rv.infl.toFixed(4)}%))^(1/12)-1, ${r
   const T = () => FP.trace;
 
   FP.sec.income = {
-    get kref() { return { 'Target monthly income': T().row('income', 0, 'TOTAL', 'Per month'), 'Current take-home': T().kpi('cashflow', 'Monthly income'), 'Extra income needed': T().kpi('income', 'Target monthly income'), 'Spare each month': T().kpi('income', 'Target monthly income'), 'Due now, not covered': T().row('lumpsum', 0, 'TOTAL', 'Still to build') }; },
+    get kref() { return { 'Target monthly income': T().row('income', 0, 'TOTAL', 'Per month'), 'Current take-home': T().kpi('cashflow', 'Monthly income'), 'Extra income needed': T().kpi('income', 'Target monthly income'), 'Spare each month': T().kpi('income', 'Target monthly income'), 'Due now, not covered': T().row('lumpsum', 0, 'TOTAL', 'Shortfall by due date') }; },
     ref(w) {
       const t = T();
       if (w.t === 0 && w.c === 'Per month') return { living: t.surplus('living'), emi: t.surplus('emi'), ins: t.surplus('ins'), keep: t.surplus(), sip: t.kpi('sip', 'Monthly SIP needed'), TOTAL: t.kpi('cashflow', 'Spending') }[w.r] || null;
@@ -1896,7 +1903,7 @@ Corpus = PV(((1+${+rv.r.toFixed(4)}%)/(1+${+rv.infl.toFixed(4)}%))^(1/12)-1, ${r
       const res = list.map(sc => ({ sc, ...FP.scenRun(d, st, sc), nt: notes(d, st, sc, plan) })).map(r => ({ ...r, m: sum(r.S) })), pm = sum(S);
       const X = res.find(r => r.sc.id === st.scSel) || res[0];
       const gapTxt = g => g > 1 ? `<span style="color:var(--brown)">${FP.inr(g)}</span>` : '<span style="color:var(--good)">None</span>';
-      const jobLine = r => { const Y = FP.jobResult(d, st, r.sc); if (!Y) return ''; return Y.J.perm ? `<span class="m">Money for living costs lasts</span><span class="g" style="color:${Y.forLife ? 'var(--good)' : 'var(--brown)'}">${Y.forLife ? 'For life' : 'Till ' + Y.lastY}</span>` : `<span class="m">From savings</span><span class="g">${FP.short(Y.J.total)}</span>`; };
+      const jobLine = r => { const Y = FP.jobResult(d, st, r.sc); if (!Y) return ''; return Y.J.perm ? `<span class="m">Money for living costs lasts</span><span class="g" style="color:${Y.forLife ? 'var(--good)' : 'var(--brown)'}">Till ${Y.lastY}${Y.forLife ? ' (plan end)' : ''}</span>` : `<span class="m">From savings</span><span class="g">${FP.short(Y.J.total)}</span>`; };
       const card = (r, base) => `<div class="scard${!base && !r.sc.cmp ? ' noprint' : ''}${!base && r.sc.cmp ? ' on' : ''}" role="button" tabindex="0" ${base ? '' : `data-pick="${r.sc.id}" aria-pressed="${r === X}"`}>
           <span class="t">${base ? '' : `<input type="checkbox" class="sctick noprint" data-scpdf="${r.sc.id}" ${r.sc.cmp ? 'checked' : ''} title="Show in the comparison and the PDF" aria-label="Compare ${FP.esc(r.sc.name)}">`}${base ? 'As planned' : FP.esc(r.sc.name)}</span>${!base && r.sc.job ? jobLine(r) + `<span class="m">${r.m.ok} of ${r.m.n} goals still funded</span>` : `<span class="m">Monthly gap</span><span class="g">${gapTxt(r.m.gap)}</span>
           <span class="m">Target ${FP.inr(r.m.t)} · ${r.m.ok} of ${r.m.n} goals funded</span>`}
@@ -2014,7 +2021,7 @@ Need in year y      = household × (1 + inflation)^y + premiums + EMIs of loans 
           const jobTxt = () => { const J = FP.jobLoss(d, st, dr), perm = $('#se_jobT').value === 'perm';
             const on = !!$('#se_jobWho').value; $('#mbox').querySelectorAll('.jobg>label').forEach((x, i) => x.style.display = i && !on ? 'none' : '');
             if (on) { $('#mbox').querySelectorAll('.jt').forEach(x => x.style.display = perm ? 'none' : ''); $('#mbox').querySelectorAll('.jp').forEach(x => x.style.display = perm ? '' : 'none'); }
-            $('#se_jobTxt').innerHTML = !J ? '' : J.perm ? `Income left ${FP.inr(J.other)}, spending ${FP.inr(J.spend)}: <b>${FP.inr(J.deficit)} a month</b> from investments, for life. Retirement and the emergency fund become part of this.`
+            $('#se_jobTxt').innerHTML = !J ? '' : J.perm ? `Income left ${FP.inr(J.other)}, spending ${FP.inr(J.spend)}: <b>${FP.inr(J.deficit)} a month</b> from investments, till the plan's end. Retirement and the emergency fund become part of this.`
               : `Income left ${FP.inr(J.other)}, spending ${FP.inr(J.spend)}: ${FP.inr(J.deficit)} a month × ${J.months} = <b>${FP.short(J.total)}</b> from savings; SIPs pause ${J.months} months.`; };
           const jobUpd = () => { const w = $('#se_jobWho').value; if (!w) delete dr.job; else dr.job = { who: w, type: $('#se_jobT').value, months: +$('#se_jobM').value || 6, newPct: $('#se_jobP').value === '' ? 100 : +$('#se_jobP').value, sev: FP.num($('#se_jobS').value) || 0, health: FP.num($('#se_jobH').value) || 0, cut: +$('#se_jobC').value || 0, keep: $('#se_jobK').checked }; jobTxt(); calc(); };
           ['#se_jobWho', '#se_jobT', '#se_jobM', '#se_jobP', '#se_jobS', '#se_jobH', '#se_jobC', '#se_jobK'].forEach(k => $(k).addEventListener('change', jobUpd)); jobTxt();
@@ -2572,7 +2579,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
     networth: { 'Net worth': T.kpi('networth', 'Total assets'), 'Total assets': T.row('networth', 0, 'TOTAL', 'Value'), 'Liabilities': T.data('Net worth', 'liabs'), 'Current financial resources': T.row('networth', 0, null, 'Use') },
     cashflow: { 'Monthly income': T.surplus('inc'), 'Spending': T.surplus('spend'), 'Already investing': T.surplus('sav'), 'Free surplus': T.surplus('surplus'), 'Monthly deficit': T.surplus('surplus') },
     goals: { 'Value needed today': T.row('goals', 0, 'TOTAL', 'Value needed today'), 'Future cost of goals': T.row('goals', 0, 'TOTAL', 'Future cost (FV)'), 'Current financial resources': T.kpi('networth', 'Current financial resources') },
-    lumpsum: { 'Covered by existing investments': T.row('lumpsum', 0, 'TOTAL', 'Covered'), 'Still to build': T.row('lumpsum', 0, 'TOTAL', 'Still to build') },
+    lumpsum: { 'Investments set aside': T.row('lumpsum', 0, 'TOTAL', 'Allocated today'), 'Still to build': T.row('lumpsum', 0, 'TOTAL', 'Shortfall by due date') },
     sip: { 'Monthly SIP needed': T.row('sip', 0, 'TOTAL', 'SIP needed'), 'Can invest now': T.surplus(), 'Monthly shortfall': T.row('sip', 0, 'TOTAL', 'Shortfall') }
   };
   const refOf = w => {
@@ -2586,13 +2593,13 @@ Move              = target − today; every change is shown (under ₹1,000 coun
       case 'goals:0:Invest in': case 'sip:0:Invest in': { const x = FP.cellText(w.td); return /debt/i.test(x) ? T.asm('rDebt') : /hybrid/i.test(x) ? T.asm('rHybrid') : /equity/i.test(x) ? T.asm('rEquity') : /retirement/i.test(x) ? T.asm('retEq') : null; }
       case 'goals:0:Future cost (FV)': return T.row('goals', 0, r, "Today's cost (PV)");
       case 'goals:0:Value needed today': return T.row('goals', 0, r, 'Future cost (FV)');
-      case 'lumpsum:0:Needed today': return T.row('goals', 0, r, 'Value needed today');
-      case 'lumpsum:0:Funded from': case 'lumpsum:0:Covered': { const row = c === 'Covered' ? [...w.tr.cells].find(x => FP.colOf(x) === FP.colOf(w.td) - 1) : w.td;
+      case 'lumpsum:0:Needed by due date': return T.row('goals', 0, r, 'Future cost (FV)');
+      case 'lumpsum:0:Funded from': case 'lumpsum:0:Allocated today': { const row = c === 'Allocated today' ? [...w.tr.cells].find(x => FP.colOf(x) === FP.colOf(w.td) - 1) : w.td;
         const ls = [...(row?.querySelectorAll('.note') || [])].map(n => n.textContent).filter(t => !/^Later/.test(t) && t.includes(':')).map(t => t.slice(0, t.lastIndexOf(':')));
         return T.all(...ls.map(l => T.row('lumpsum', 1, l, 'Available'))); }
-      case 'lumpsum:0:Still to build': return T.row('lumpsum', 0, r, 'Needed today');
+      case 'lumpsum:0:Shortfall by due date': return T.row('lumpsum', 0, r, 'Needed by due date');
       case 'lumpsum:1:Available': return T.row('networth', 0, r, 'Value');
-      case 'sip:0:Still to build by due date': return T.row('lumpsum', 0, r, 'Still to build');
+      case 'sip:0:Still to build by due date': return T.row('lumpsum', 0, r, 'Shortfall by due date');
       case 'sip:0:SIP needed': return T.row('sip', 0, r, 'Still to build by due date');
     }
     return FP.sec[s]?.ref?.(w) || null;
@@ -3185,27 +3192,27 @@ Move              = target − today; every change is shown (under ₹1,000 coun
   };
 
   /* Page 2: goal by goal, uncovered "needed now" goals at the bottom, then the summary */
+  /* Page 2: goal by goal, in the same terms throughout: what each goal needs when due, what the money set aside today grows to by then
+     (each investment at its own rate), and the shortfall the SIP builds. Uncovered "needed now" goals at the bottom. */
   const goalTable = (c, K) => {
-    const { by, later, still } = K, PC = FP.cp.PC;
-    const L = FP.cp.goalList(c).map(g => ({ g, a: by[g.name] })).filter(x => x.a), isNow = x => x.a.due && x.a.gap > 1;
-    const hasLater = Object.keys(later).length > 0, cols = hasLater ? 7 : 6;
-    const row = ({ g, a }) => { const st = still(a), lt = a.later,   /* coming later, in today's money */ names = [...new Set(a.src.map(([l]) => src(l)))].concat(a.cont > 1 ? ['EPF monthly contribution'] : []);
-      
-      return `<tr><td><div class="gn">${il(FP.art.goalKey(g), 26, 0)}${FP.cp.goalName(g)}</div></td><td class="dt">${g.n <= 0 ? 'Now' : `${MON[g.mon - 1]} ${g.year}`}</td><td class="n">${S(a.needPV)}</td>
-        <td>${names.length ? `<small style="color:#4d4552">${E(names.join(', '))}</small>` : '<small>—</small>'}</td><td class="n">${a.gotRs > 1 ? `<b>${S(a.gotRs)}</b>` : a.cont > 1 ? '' : '—'}${a.cont > 1 ? `<small style="font-size:11px;color:#6d6470;white-space:nowrap">+ ${S(a.cont)} monthly EPF</small>` : ''}</td>
-        ${hasLater ? `<td class="n">${lt > 1 ? `<b>${S(lt)}</b>` : '—'}</td>` : ''}<td class="n">${st > 1 ? `<b class="gap">${S(st)}</b>` : '<span class="ok">100% funded</span>'}</td></tr>`; };
+    const { by } = K, PC = FP.cp.PC;
+    const L = FP.cp.goalList(c).map(g => ({ g, a: by[g.name] })).filter(x => x.a), isNow = x => x.a.due && x.a.gap > 1, cols = 7;
+    const row = ({ g, a }) => { const names = [...new Set(a.src.map(([l]) => src(l)))].concat(a.laterRaw > 1 ? ['money coming later'] : []).concat(a.cont > 1 ? ['monthly EPF'] : []), sh = a.gapFV;
+      return `<tr><td><div class="gn">${il(FP.art.goalKey(g), 26, 0)}${FP.cp.goalName(g)}</div></td><td class="dt">${g.n <= 0 ? 'Now' : `${MON[g.mon - 1]} ${g.year}`}</td><td class="n">${S(a.needFV)}</td>
+        <td>${names.length ? `<small style="color:#4d4552">${E(names.join(', '))}</small>` : '<small>—</small>'}</td><td class="n">${a.gotRs > 1 ? S(a.gotRs) : '—'}${a.laterRaw > 1 ? `<small style="font-size:11px;color:#6d6470;white-space:nowrap">+ ${S(a.laterRaw)} later</small>` : ''}</td>
+        <td class="n">${a.fvTot > 1 ? S(a.fvTot) : '—'}</td><td class="n">${sh > 1 ? `<b class="gap">${S(sh)}</b>` : '<span class="ok">100% funded</span>'}</td></tr>`; };
     const main = L.filter(x => !isNow(x)), now = L.filter(isNow);
-    const rh = x => 30 + (x.a.src.length > 2 ? 16 : 0) + (x.a.cont > 1 ? 15 : 0), rows = [];
+    const rh = x => 30 + (x.a.src.length > 2 ? 16 : 0) + (x.a.laterRaw > 1 ? 15 : 0), rows = [];
     ['High', 'Medium', 'Low'].map(p => [p, main.filter(x => x.g.pri === p)]).filter(x => x[1].length).forEach(([p, R]) => { rows.push({ h: 28, grp: 1, html: `<tr class="grp"><td colspan="${cols}"><i style="background:${PC[p][0]}"></i>${p} priority</td></tr>` }); R.forEach(x => rows.push({ h: rh(x), html: row(x) })); });
     if (now.length) { rows.push({ h: 28, grp: 1, html: `<tr class="nowh grp"><td colspan="${cols}">Needed now, not yet covered: pay from savings or a bonus, or move the goal</td></tr>` }); now.forEach(x => rows.push({ h: rh(x), html: row(x).replace('<tr>', '<tr class="now">') })); }
-    const G = K.Sx.goals, need = G.reduce((s, g) => s + g.needPV, 0) || 1, got = G.reduce((s, g) => s + g.gotRs, 0), cov = G.reduce((s, g) => s + g.got + g.cont, 0), stl = G.reduce((s, g) => s + still(g), 0), lat = G.reduce((s, g) => s + g.later, 0);
+    const G = K.Sx.goals, got = G.reduce((s, g) => s + g.gotRs, 0), lat = G.reduce((s, g) => s + g.laterRaw, 0), nShort = G.filter(g => g.gapFV > 1).length;
     const srcs = [...new Set(K.Sx.inflows.filter(x => x.used > 1).map(x => `${x.src || 'Money in'}, ${MON[(x.month || 1) - 1]} ${x.year}`))];
-    return FP.cp.tablePages(c, 'route', 'Lumpsum Allocation', 'The lumpsum each goal needs today, and how much your investments already cover. All amounts are in today\'s money.', '', 0,
-      `<thead><tr><th>Goal</th><th>Due</th><th class="n">Lumpsum needed</th><th>Allocated from</th><th class="n">Allocated</th>${hasLater ? '<th class="n">Coming later</th>' : ''}<th class="n">Shortfall</th></tr></thead>`, rows,
-      `      ${lat > 1 ? `<p class="unit" style="text-align:left;margin-top:8px">Coming later is shown in today's money: ${S(K.Sx.inflows.reduce((s, x) => s + x.used, 0))} arriving later is worth about ${S(lat)} today.</p>` : ''}
+    return FP.cp.tablePages(c, 'route', 'Lumpsum Allocation', 'What each goal needs when it falls due, what the investments set aside for it today will grow to by then, and the shortfall.', '', 0,
+      `<thead><tr><th>Goal</th><th>Due</th><th class="n">Needed by due date</th><th>Allocated from</th><th class="n">Allocated today</th><th class="n">Grows to by due date</th><th class="n">Shortfall by due date</th></tr></thead>`, rows,
+      `      <p class="unit" style="text-align:left;margin-top:8px">Each investment grows at its own assumed return till the goal's date${lat > 1 ? '; money coming later grows from the day it arrives' : ''}. Assumed returns, not guaranteed.</p>
       <h3 class="st" style="margin-top:20px">Summary</h3>
-      <div class="kp" style="grid-template-columns:repeat(${lat > 1 ? 3 : 2},1fr)"><div class="hero"><span>From your investments</span><b>${S(got)}</b><small>Covers ${FP.pct(cov / need, 0)} of what your goals need today</small></div>
-        ${lat > 1 ? `<div><span>Coming later</span><b>${S(lat)}</b><small>${E(srcs.join(' · '))}</small></div>` : ''}<div><span>Shortfall</span><b>${S(stl)}</b><small>To build through monthly SIPs: see SIP Allocation</small></div></div>`, lat > 1 ? 200 : 175);
+      <div class="kp" style="grid-template-columns:repeat(${lat > 1 ? 3 : 2},1fr)"><div class="hero"><span>Set aside from your investments</span><b>${S(got)}</b><small>Today's value</small></div>
+        ${lat > 1 ? `<div><span>Coming later</span><b>${S(lat)}</b><small>${E(srcs.join(' · '))}</small></div>` : ''}<div><span>Goals with a shortfall</span><b>${nShort} of ${G.length}</b><small>Monthly SIPs build these: see SIP Allocation</small></div></div>`, lat > 1 ? 200 : 175);
   };
 
   FP.cp.parts.route = c => { const K = calc(c); return [resources(c, K), ...goalTable(c, K), ...(FP.cp.sipPages ? FP.cp.sipPages(c) : [])]; };   /* SIP allocation (cp-p5) is part of the same part */
@@ -3370,7 +3377,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
   const jobPages = c => (c.st.scen || []).filter(s => s.cmp && s.job && FP.jobLoss(c.d, c.st, s)).map(s => { const J = FP.jobLoss(c.d, c.st, s);
     const pr = (J.who === 'Self' ? c.d.self : c.d.spouse)?.gender, his = /^f/i.test(pr || '') ? 'Her' : /^m/i.test(pr || '') ? 'His' : 'Their';
     const t = J.perm ? `If ${FP.esc(J.first)} Loses ${his} Job` : `If ${FP.esc(J.first)} Is Out of Work for ${J.months} Months`;
-    return [FP.cp.page(c, 'whatif', t, J.perm ? 'No more salary: your investments pay the living costs first, for life, and the goals get what is left.' : `Living costs come from savings until a new job${J.pct < 100 ? ` at ${J.pct}% of the salary` : ''}, and SIPs pause.`, FP.jobView(c.d, c.st, s, 1, 1), 'how'),
+    return [FP.cp.page(c, 'whatif', t, J.perm ? 'No more salary: your investments pay the living costs first, till the end of the plan, and the goals get what is left.' : `Living costs come from savings until a new job${J.pct < 100 ? ` at ${J.pct}% of the salary` : ''}, and SIPs pause.`, FP.jobView(c.d, c.st, s, 1, 1), 'how'),
       FP.cp.page(c, 'whatif', t, '', FP.jobView(c.d, c.st, s, 1, 2))]; }).flat();
   FP.cp.parts.whatif = c => [...page(c), ...jobPages(c)];
 })();
