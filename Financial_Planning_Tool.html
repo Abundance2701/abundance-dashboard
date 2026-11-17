@@ -1060,7 +1060,7 @@ Retirement corpus      = PV(j, N, −need at retirement, 0, 1)
       ${switches.length ? `<div class="callout"><b>Move to a debt or liquid fund now</b> (equity is funding goals due within 2 years; a market fall could hurt them):<ul style="margin:6px 0 0;padding-left:18px">${Object.entries(bySw).map(([g, x]) => `<li><b>${FP.esc(FP.gname(g))}</b> (in ${x.n} months): ${x.items.map(i => `${FP.short(i.v)} of ${FP.esc(i.l)}`).join(', ')}</li>`).join('')}</ul></div>` : ''}
       <div><h3>How much of each goal is already covered</h3><div class="chartbox" style="height:${Math.max(160, G.length * 30 + 40)}px"><canvas id="alBar" role="img" aria-label="Covered and remaining amount for each goal"></canvas></div>
         ${FP.legend(['Covered by existing investments', ...(laterT > 1 ? ['Money coming later'] : []), 'Still to build'], null, ['#1E7A46', ...(laterT > 1 ? ['#2F86BC'] : []), '#A3502F'])}</div>
-      <div><div class="secbar"><h3>Goal by goal</h3><button class="addgoal noprint" data-addgoal>+ Add goal</button></div><div class="tbl"><table><thead><tr><th class="noprint" data-nosort title="Funding order">#</th><th>Goal</th><th>Priority</th><th>Due</th><th class="n" title="What the goal costs when it falls due">Needed by due date</th><th>Funded from</th><th class="n" title="Current value of the investments set aside for it">Allocated today</th><th class="n" title="Each investment grown at its own rate to the due date">Grows to by due date</th><th class="n">Shortfall by due date</th></tr></thead><tbody>
+      <div><div class="secbar"><h3>Goal by goal</h3><button class="addgoal noprint" data-addgoal>+ Add goal</button></div><div class="tbl"><table><thead><tr><th class="noprint" data-nosort title="Funding order">#</th><th>Goal</th><th>Priority</th><th>Due</th><th class="n" title="What the goal costs when it falls due">Future Value</th><th>Funded from</th><th class="n" title="Current value of the investments set aside for it">Allocated today</th><th class="n" title="Each investment grown at its own rate to the due date">Grows To</th><th class="n">Shortfall</th></tr></thead><tbody>
         ${G.map((g, j) => { const st2 = still(g); return `<tr data-p="${g.pri}" data-g="${FP.esc(g.name)}"><td class="noprint drag" draggable="true" title="Drag to fund earlier or later (within ${g.pri} priority). Shift+click to pick several.">⠿ ${j + 1}</td><td>${FP.goalBtn(g)}</td><td data-sort="${PR[g.pri]}">${chip(g.pri)}</td><td>${due(g)}</td><td class="n"${FP.ex.need(g)}>${FP.inr(g.needFV)}</td>
           <td>${fsCell(g)}</td>
           <td class="n"${FP.ex.cov(g)}>${g.gotRs > 0.5 ? FP.inr(g.gotRs) : '—'}${g.laterRaw > 1 ? `<span class="note">+ ${FP.short(g.laterRaw)} later</span>` : ''}${g.cont > 1 ? '<span class="note">+ monthly EPF</span>' : ''}</td>
@@ -1917,7 +1917,7 @@ Corpus = PV(((1+${+rv.r.toFixed(4)}%)/(1+${+rv.infl.toFixed(4)}%))^(1/12)-1, ${r
   const T = () => FP.trace;
 
   FP.sec.income = {
-    get kref() { return { 'Target monthly income': T().row('income', 0, 'TOTAL', 'Per month'), 'Current take-home': T().kpi('cashflow', 'Monthly income'), 'Extra income needed': T().kpi('income', 'Target monthly income'), 'Spare each month': T().kpi('income', 'Target monthly income'), 'Due now, not covered': T().row('lumpsum', 0, 'TOTAL', 'Shortfall by due date') }; },
+    get kref() { return { 'Target monthly income': T().row('income', 0, 'TOTAL', 'Per month'), 'Current take-home': T().kpi('cashflow', 'Monthly income'), 'Extra income needed': T().kpi('income', 'Target monthly income'), 'Spare each month': T().kpi('income', 'Target monthly income'), 'Due now, not covered': T().row('lumpsum', 0, 'TOTAL', 'Shortfall') }; },
     ref(w) {
       const t = T();
       if (w.t === 0 && w.c === 'Per month') return { living: t.surplus('living'), emi: t.surplus('emi'), ins: t.surplus('ins'), keep: t.surplus(), sip: t.kpi('sip', 'Monthly SIP needed'), TOTAL: t.kpi('cashflow', 'Spending') }[w.r] || null;
@@ -2635,7 +2635,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
     networth: { 'Net worth': T.kpi('networth', 'Total assets'), 'Total assets': T.row('networth', 0, 'TOTAL', 'Value'), 'Liabilities': T.data('Net worth', 'liabs'), 'Current financial resources': T.row('networth', 0, null, 'Use') },
     cashflow: { 'Monthly income': T.surplus('inc'), 'Spending': T.surplus('spend'), 'Already investing': T.surplus('sav'), 'Free surplus': T.surplus('surplus'), 'Monthly deficit': T.surplus('surplus') },
     goals: { 'Value needed today': T.row('goals', 0, 'TOTAL', 'Value needed today'), 'Future cost of goals': T.row('goals', 0, 'TOTAL', 'Future cost (FV)'), 'Current financial resources': T.kpi('networth', 'Current financial resources') },
-    lumpsum: { 'Investments set aside': T.row('lumpsum', 0, 'TOTAL', 'Allocated today'), 'Still to build': T.row('lumpsum', 0, 'TOTAL', 'Shortfall by due date') },
+    lumpsum: { 'Investments set aside': T.row('lumpsum', 0, 'TOTAL', 'Allocated today'), 'Still to build': T.row('lumpsum', 0, 'TOTAL', 'Shortfall') },
     sip: { 'Monthly SIP needed': T.row('sip', 0, 'TOTAL', 'SIP needed'), 'Can invest now': T.surplus(), 'Monthly shortfall': T.row('sip', 0, 'TOTAL', 'Shortfall') }
   };
   const refOf = w => {
@@ -2649,13 +2649,13 @@ Move              = target − today; every change is shown (under ₹1,000 coun
       case 'goals:0:Invest in': case 'sip:0:Invest in': { const x = FP.cellText(w.td); return /debt/i.test(x) ? T.asm('rDebt') : /hybrid/i.test(x) ? T.asm('rHybrid') : /equity/i.test(x) ? T.asm('rEquity') : /retirement/i.test(x) ? T.asm('retEq') : null; }
       case 'goals:0:Future cost (FV)': return T.row('goals', 0, r, "Today's cost (PV)");
       case 'goals:0:Value needed today': return T.row('goals', 0, r, 'Future cost (FV)');
-      case 'lumpsum:0:Needed by due date': return T.row('goals', 0, r, 'Future cost (FV)');
+      case 'lumpsum:0:Future Value': return T.row('goals', 0, r, 'Future cost (FV)');
       case 'lumpsum:0:Funded from': case 'lumpsum:0:Allocated today': { const row = c === 'Allocated today' ? [...w.tr.cells].find(x => FP.colOf(x) === FP.colOf(w.td) - 1) : w.td;
         const ls = [...(row?.querySelectorAll('.note') || [])].map(n => n.textContent).filter(t => !/^Later/.test(t) && t.includes(':')).map(t => t.slice(0, t.lastIndexOf(':')));
         return T.all(...ls.map(l => T.row('lumpsum', 1, l, 'Available'))); }
-      case 'lumpsum:0:Shortfall by due date': return T.row('lumpsum', 0, r, 'Needed by due date');
+      case 'lumpsum:0:Shortfall': return T.row('lumpsum', 0, r, 'Future Value');
       case 'lumpsum:1:Available': return T.row('networth', 0, r, 'Value');
-      case 'sip:0:Still to build by due date': return T.row('lumpsum', 0, r, 'Shortfall by due date');
+      case 'sip:0:Still to build by due date': return T.row('lumpsum', 0, r, 'Shortfall');
       case 'sip:0:SIP needed': return T.row('sip', 0, r, 'Still to build by due date');
     }
     return FP.sec[s]?.ref?.(w) || null;
@@ -2936,7 +2936,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
   let CUR = { doc: document, win: window, view };
   const q = sel => CUR.view.querySelector(sel);
   /* A page whose content runs into the footer is tightened a little (then a little more) instead of spilling over */
-  const fit = () => CUR.view.querySelectorAll('#cpPages .cpg:not(.cpcover)').forEach(pg => { if (!pg.offsetParent) return; const over = () => { const f = pg.querySelector('.foot').getBoundingClientRect().top - 6; return [...pg.children].some(x => !x.classList.contains('foot') && x.getBoundingClientRect().bottom > f); };
+  const fit = () => CUR.view.querySelectorAll('#cpPages .cpg:not(.cpcover)').forEach(pg => { if (!pg.offsetParent) return; const over = () => { const f = pg.querySelector('.foot').getBoundingClientRect().top - 16; return [...pg.children].some(x => !x.classList.contains('foot') && x.getBoundingClientRect().bottom > f); };
     if (over()) pg.classList.add('fit1'); if (over()) pg.classList.add('fit2'); });
   const draw = () => { q('#cpPages').innerHTML = FP.cp.build().join(''); fit(); const n = FP.cp.PARTS.filter(p => FP.cp.parts[p.id]).length; q('#cpMsg').textContent = n < FP.cp.PARTS.length ? `Parts ready: ${n} of ${FP.cp.PARTS.length}` : ''; };
   const overlay = () => { CUR = { doc: document, win: window, view }; FP.closeDrawer?.(); FP.closeModal?.(); view.hidden = false; draw(); view.scrollTop = 0; document.body.style.overflow = 'hidden'; };
@@ -3238,11 +3238,21 @@ Move              = target − today; every change is shown (under ₹1,000 coun
 
   /* A goal table that runs onto more pages when there are many goals. rows: [{h, html, grp}]; a priority heading never
      sits alone at the bottom of a page; the summary (tail) goes after the last row, or on its own page if it doesn't fit. */
+  /* Does a page fit above the footer (with at least `min` px to spare), as drawn or after the same tightening the preview applies? */
+  FP.cp.fits = (pgObj, min = 24) => {
+    let host = document.getElementById('cpMeasure'); if (!host) { host = document.createElement('div'); host.id = 'cpMeasure'; host.setAttribute('aria-hidden', 'true'); host.style.cssText = 'position:absolute;left:-30000px;top:0;width:900px;visibility:hidden;pointer-events:none'; document.body.appendChild(host); }
+    host.innerHTML = pgObj.html.replace('<!--FOOT-->', '<div class="foot"><span>.</span><span>.</span><span>Page 1 of 1</span></div>'); const pg = host.querySelector('.cpg'); if (!pg) return true;
+    const gap = () => { const f = pg.querySelector('.foot').getBoundingClientRect().top; return f - Math.max(...[...pg.children].filter(x => !x.classList.contains('foot')).map(x => x.getBoundingClientRect().bottom)); };
+    const ok = gap() >= min || (pg.classList.add('fit1'), gap() >= min) || (pg.classList.add('fit2'), gap() >= min); host.innerHTML = ''; return ok;
+  };
   FP.cp.tablePages = (c, part, title, lead, top, topH, thead, rows, tail, tailH, art) => {
     const pages = [[]]; let room = 830 - topH - 48;
     rows.forEach((r, i) => { const need = r.grp ? r.h + (rows[i + 1]?.h || 0) : r.h; if (need > room && pages[pages.length - 1].some(x => !x.grp)) { pages.push([]); room = 870 - 48; } pages[pages.length - 1].push(r); room -= r.h; });
-    const own = room < tailH, out = pages.map((pg, k) => FP.cp.page(c, part, title, k ? '' : lead,
-      (k ? '' : top) + `<table class="ct gt">${thead}<tbody>${pg.map(r => r.html).join('')}</tbody></table>` + (k === pages.length - 1 && !own ? tail : ''), k ? '' : art));
+    const mk = (pg, k, withTail) => FP.cp.page(c, part, title, k ? '' : lead, (k ? '' : top) + `<table class="ct gt">${thead}<tbody>${pg.map(r => r.html).join('')}</tbody></table>` + (withTail ? tail : ''), k ? '' : art);
+    /* the estimates above are checked against the real page: rows that don't fit move on, and the summary below the table gets its own page if it would touch the footer */
+    for (let k = 0; k < pages.length; k++) { let guard = 0;
+      while (pages[k].filter(x => !x.grp).length > 1 && !FP.cp.fits(mk(pages[k], k, false)) && guard++ < 40) { const mv = [pages[k].pop()]; if (pages[k][pages[k].length - 1]?.grp) mv.unshift(pages[k].pop()); if (!pages[k + 1]) pages.push([]); pages[k + 1].unshift(...mv); } }
+    const last = pages.length - 1, own = room < tailH || !FP.cp.fits(mk(pages[last], last, true)), out = pages.map((pg, k) => mk(pg, k, k === last && !own));
     if (own) out.push(FP.cp.page(c, part, title, '', tail));
     return out;
   };
@@ -3264,7 +3274,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
     const G = K.Sx.goals, got = G.reduce((s, g) => s + g.gotRs, 0), lat = G.reduce((s, g) => s + g.laterRaw, 0), nShort = G.filter(g => g.gapFV > 1).length;
     const srcs = [...new Set(K.Sx.inflows.filter(x => x.used > 1).map(x => `${x.src || 'Money in'}, ${MON[(x.month || 1) - 1]} ${x.year}`))];
     return FP.cp.tablePages(c, 'route', 'Lumpsum Allocation', 'What each goal needs when it falls due, what the investments set aside for it today will grow to by then, and the shortfall.', '', 0,
-      `<thead><tr><th>Goal</th><th>Due</th><th class="n">Needed by due date</th><th>Allocated from</th><th class="n">Allocated today</th><th class="n">Grows to by due date</th><th class="n">Shortfall by due date</th></tr></thead>`, rows,
+      `<thead><tr><th>Goal</th><th>Due</th><th class="n">Future Value</th><th>Allocated from</th><th class="n">Allocated today</th><th class="n">Grows To</th><th class="n">Shortfall</th></tr></thead>`, rows,
       `      <p class="unit" style="text-align:left;margin-top:8px">Each investment grows at its own assumed return till the goal's date${lat > 1 ? '; money coming later grows from the day it arrives' : ''}. Assumed returns, not guaranteed.</p>
       <h3 class="st" style="margin-top:20px">Summary</h3>
       <div class="kp" style="grid-template-columns:repeat(${lat > 1 ? 3 : 2},1fr)"><div class="hero"><span>Set aside from your investments</span><b>${S(got)}</b><small>Today's value</small></div>
