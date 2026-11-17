@@ -1743,7 +1743,7 @@ Corpus = PV(((1+${+rv.r.toFixed(4)}%)/(1+${+rv.infl.toFixed(4)}%))^(1/12)-1, ${r
   };
 
   document.head.insertAdjacentHTML('beforeend', `<style>
-.jhead{border-radius:14px;padding:14px 18px;background:#fff;border:1.5px solid #cfdde9;font-size:16px;line-height:1.45;margin:2px 0 12px}.jhead b{color:var(--dark)}.jhead.bad{border-color:#e0c3b5;background:#fbf3ef}.jhead.good{border-color:#bcd9c5;background:#eef6f0}
+.jhead{border-radius:14px;padding:14px 18px;background:#fff;border:1.5px solid #cfdde9;font-size:16px;line-height:1.45;margin:2px 0 12px}.jhead b{color:var(--dark)}.jhead.bad{border-color:#e6d6cd;border-left:4px solid var(--brown);background:#fff}.jhead.good{border-color:#cfe2d5;border-left:4px solid var(--green);background:#fff}.cpg .jhead{font-size:14px;padding:10px 14px;border-radius:10px}.cpg .kp.jk b{font-size:20px}.cpg .kp.jk>div{padding:10px 14px}
 .jrun2{margin:12px 0 6px;border:1px solid var(--line);border-radius:12px;background:#fff;padding:10px 14px 8px}.jrw{display:grid;grid-template-columns:150px 1fr;gap:12px;align-items:center;margin:6px 0}.jrw .jl b{display:block;font:700 16px var(--fh);color:var(--dark);white-space:nowrap}.jrw .jl small{font-size:11.5px;color:#6d6470}
 .jrw .jt{position:relative;height:24px;border-radius:12px;background:#f1e0d6;display:flex;align-items:center}.jrw .jt i{display:flex;align-items:center;justify-content:flex-end;height:100%;border-radius:12px;background:#9a6a3a;padding-right:10px;box-sizing:border-box;min-width:70px}.jrw .jt i.ok{background:var(--green)}.jrw .jt em{font:700 12.5px var(--fb);color:#fff;font-style:normal;white-space:nowrap}.jrw .jt u{text-decoration:none;font:700 12px var(--fb);color:var(--brown);margin-left:auto;padding-right:12px;white-space:nowrap}
 .jax{display:flex;justify-content:space-between;margin-left:162px;font-size:11.5px;color:#6d6470}
@@ -1795,7 +1795,7 @@ Corpus = PV(((1+${+rv.r.toFixed(4)}%)/(1+${+rv.infl.toFixed(4)}%))^(1/12)-1, ${r
   /* The job-loss view (tool Section 6 and client PDF). part 1 = the money picture, part 2 = goals and what to do; the PDF puts each on its own page. */
   FP.jobView = (d, st, sc, pdf, part) => {
     const X = FP.jobResult(d, st, sc); if (!X) return ''; const { J } = X, E = FP.esc, wa = k => WY[k] || '', S = v => Math.abs(v) >= 1e5 ? FP.short(v) : FP.inr(v), MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const kp = L => pdf ? `<div class="kp" style="grid-template-columns:repeat(3,1fr);margin-bottom:12px">${L.map(([l, v, sm, hero, warn]) => `<div class="${hero ? 'hero' : ''}"><span>${l}</span><b style="${warn ? 'color:var(--brown)' : ''}">${v}</b><small>${sm}</small></div>`).join('')}</div>`
+    const kp = L => pdf ? `<div class="kp jk" style="grid-template-columns:repeat(3,1fr);margin-bottom:12px">${L.map(([l, v, sm, hero, warn]) => `<div class="${hero ? 'hero' : ''}"><span>${l}</span><b style="${warn ? 'color:var(--brown)' : ''}">${v}</b><small>${sm}</small></div>`).join('')}</div>`
       : `<div class="kpis">${L.map(([l, v, sm, hero, warn, wk]) => FP.kpi(l, wk ? `<span${wk}>${v}</span>` : v, sm, hero)).join('')}</div>`;
     const WY = pdf ? {} : FP.jobWhys(d, st, X);
     const h3 = t => `<h3 class="st" style="margin:14px 0 8px">${t}</h3>`, ul = L => `<ul class="bl" style="margin:2px 0 0;padding-left:20px;line-height:1.5">${L.filter(Boolean).map(x => `<li>${x}</li>`).join('')}</ul>`;
