@@ -236,7 +236,10 @@ th.w1{width:1%;white-space:nowrap}
 .tbl tbody tr>td.trhit,.kpi.trhit,.trhit{background:#FDEBB5!important;box-shadow:inset 0 0 0 2px var(--gold)}
 #toast{position:fixed;left:50%;transform:translateX(-50%);top:calc(var(--tb,100px) + 10px);z-index:50;background:var(--dark);color:#fff;border-radius:8px;padding:8px 14px;font:600 13.5px var(--fh);box-shadow:0 6px 20px rgba(0,0,0,.25)}
 #pdfBusy{position:fixed;inset:0;z-index:60;background:rgba(240,248,255,.92);display:grid;place-items:center}#pdfBusy div{background:var(--paper);border-radius:10px;padding:18px 26px;font:15px var(--fh);box-shadow:0 10px 30px rgba(0,0,0,.15)}
-table.acts tr.done td:nth-child(2){text-decoration:line-through;color:var(--muted)}table.acts td.c{text-align:center}
+table.acts tr.done td:nth-child(3){text-decoration:line-through;color:var(--muted)}table.acts td.c{text-align:center}
+.actmine{margin-top:22px;border:1.5px dashed #c9a593;border-radius:12px;background:#fbf6f2;padding:12px 16px 6px}.actmine .amh{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;margin-bottom:4px}.actmine .amh b{font:700 16px var(--fh);color:var(--brown)}.actmine .amh span{font-size:13px;color:var(--muted)}
+.actg.empty h3{font-size:13px;color:var(--muted);margin-bottom:4px}.actg.empty table thead{display:none}table.acts tr.ph td{text-align:center;color:var(--muted);font-size:12.5px;padding:8px;border:1.5px dashed var(--line);background:transparent}
+table.acts tbody.dropin{outline:2px dashed var(--green);outline-offset:2px}table.acts tr.dg{opacity:.45}table.acts select.mv{font-size:12px;padding:2px 4px;border:1px solid var(--line);border-radius:5px;max-width:132px;background:#fff}
 .disc{border-top:2px solid var(--line);padding-top:14px}.disc p{margin:6px 0;font-size:14px}.disc .sign{color:var(--green);font:700 13px var(--fh);margin-top:12px}
 body.pdf .topbar,body.pdf nav.toc,body.pdf .noprint,body.pdf details,body.pdf #drawer,body.pdf #trBar,body.pdf #selBar,body.pdf #toast,body.pdf .sec.todo,body.pdf .hedit{display:none!important}
 body.pdf:not(.pa) .appendix{display:none!important}
@@ -249,7 +252,7 @@ body.pdf .trsel{outline:none!important}body.pdf .trhit{background:inherit!import
 .tbl td{white-space:normal}.tbl td.n{white-space:nowrap}   /* text wraps only when a column can't fit it; numbers stay on one line */.tbl td .note{min-width:16ch}
 .tbl th{white-space:normal}.tbl th small{font-weight:600;letter-spacing:0;text-transform:none;color:var(--muted)}
 .tbl td:first-child .note{max-width:44ch}
-table.acts td:nth-child(2),table.sccmp tr.chg td,#lumpsum td:nth-child(6){white-space:normal}#lumpsum td:nth-child(6) .note{min-width:24ch}
+table.acts td:nth-child(3),table.sccmp tr.chg td,#lumpsum td:nth-child(6){white-space:normal}#lumpsum td:nth-child(6) .note{min-width:24ch}
 table.sccmp{font-size:14px}table.sccmp .note{font-size:13px}table.sccmp ul{margin:0;padding-left:16px;font-size:13px;color:var(--ink);min-width:170px;text-align:left}table.sccmp tr.chg td{vertical-align:top}
 .tbl tbody tr>td.colbase{background:#f8f6fc!important}.tbl th.colbase{background:#f2eef8!important}
 .tbl tbody tr>td.colsel{background:#ebe4f6!important}.tbl th.colsel{background:#ddd2ef!important;color:#4b3a7a}table.sccmp th.colsel .note,table.sccmp th.colbase .note{color:#4b3a7a}
@@ -698,6 +701,10 @@ FP.boot = () => {
     return { inc, out, t, epf };
   };
 
+  /* What the monthly investing actually is, in a few words: "SIPs", "SIPs, PPF" ... (from the Investments rows in Outflows) */
+  FP.savWhat = (d, st) => { const nm = l => /\bsip|mutual|\bmf\b/i.test(l) ? 'SIPs' : /\bepf|provident/i.test(l) ? 'EPF' : /\bppf/i.test(l) ? 'PPF' : /\bnps/i.test(l) ? 'NPS' : /liquid/i.test(l) ? 'Liquid fund' : /\brd\b|recurring/i.test(l) ? 'RD' : /sukanya|\bssy/i.test(l) ? 'Sukanya' : /chit/i.test(l) ? 'Chit fund' : String(l).replace(/\s*\(.*?\)/g, '').trim();
+    const L = [...new Set(FP.calc.cf(d, st).out.filter(x => x.g === 'sav').sort((a, b) => b.pm - a.pm).map(x => nm(x.label)))]; return L.length ? L.join(', ') : 'Nothing yet'; };
+
   FP.sec.cashflow = {
     checks(d, st) {
       const o = [];
@@ -721,7 +728,7 @@ FP.boot = () => {
           <span class="hint">${EC.amt > 0 ? `EPF of ${FP.inrx(EC.amt)} a month (${FP.inrx(EC.emp)} employee${EC.er ? ` + ${FP.inrx(EC.er)} employer` : ''}) counts towards Retirement, kept the same every month (no salary rise assumed) and growing at ${FP.pct(EC.rate, 2).replace(/\.00%/, '%')} (EPF's return in Section 4).` : 'No EPF in Outflows, so no EPF contribution is counted for Retirement.'}</span>`; })()}</div>
       <div class="kpis">${FP.kpi(t.surplus >= 0 ? 'Free surplus' : 'Monthly deficit', FP.inr(t.surplus), 'Left after expenses, EMIs, premiums and current SIPs', 1)}
         ${FP.kpi('Monthly income', FP.inr(t.inc), 'Take-home, all sources')}${FP.kpi('Spending', FP.inr(t.spend), 'Household, EMIs, premiums')}
-        ${FP.kpi('Already investing', FP.inr(t.sav), st.cf.epfOutside && epf ? `Plus ${FP.inr(epf)} EPF from salary` : 'SIPs, PPF, RD, EPF')}</div>
+        ${FP.kpi('Already investing', FP.inr(t.sav), `${FP.esc(FP.savWhat(d, st))}${st.cf.epfOutside && epf ? `, plus ${FP.inr(epf)} EPF from salary` : ''}`)}</div>
       ${t.surplus < 0 ? `<p class="callout">Outflows are higher than income by <b>${FP.inr(-t.surplus)}</b> a month. Sections 5 and 6 will show how to close this gap.</p>` : ''}
       <div class="grid2">
         <div><h3>How monthly income is used</h3>${FP.donut('cfDonut', segs, base, 'Split of monthly income')}</div>
@@ -2294,21 +2301,31 @@ Move              = target − today; every change is shown (under ₹1,000 coun
     out.forEach(x => { x.by = SET[x.id] || x.by || BY[x.area] || 'You'; });
     /* wording you typed over a step (st.act.text) replaces the tool's; the tool's wording stays in x.auto to go back to */
     const TX = st.act?.text || {}; out.forEach(x => { if (TX[x.id] != null) { x.auto = x.text; x.text = TX[x.id]; x.edited = true; } });
-    return out;
+    /* moved by you: which table (st.act.when), client or only-for-me (st.act.mine; data checks start in only-for-me), and the order (st.act.ord) */
+    const WH = st.act?.when || {}, MINE = st.act?.mine || {}, ORD = st.act?.ord || [], pos = id => { const k = ORD.indexOf(id); return k < 0 ? 1e6 : k; };
+    out.forEach((x, i) => { if (WHEN.includes(WH[x.id])) x.when = WH[x.id]; x.mine = !!(MINE[x.id] ?? x.mine ?? x.internal); x.internal = x.mine; x.i0 = i; });
+    return out.sort((a, b) => pos(a.id) - pos(b.id) || a.i0 - b.i0);
   };
 
   FP.sec.action = {
     render(el, d, st) {
       const a = st.act || {}, done = a.done || {}, hide = a.hide || {}, all = FP.calc.act(d, st), L = all.filter(x => !hide[x.id]), nHid = all.length - L.length;
       const secNo = id => FP.PLAN.find(p => p.id === id)?.no;
+      const mvOpt = x => `<select class="mv" data-mv="${FP.esc(x.id)}" title="Move to another table" aria-label="Move to">${[['c', 'For the client'], ['m', 'Only for me']].map(([k, l]) => `<optgroup label="${l}">${WHEN.map(w => `<option value="${k}|${w}"${(x.mine ? 'm' : 'c') === k && x.when === w ? ' selected' : ''}>${w}</option>`).join('')}</optgroup>`).join('')}</select>`;
+      const row = x => `<tr class="${done[x.id] ? 'done' : ''}" data-k="${FP.esc(x.id)}"><td class="noprint drag" draggable="true" title="Drag to reorder, or into another table">⠿</td><td class="c"><input type="checkbox" data-done="${FP.esc(x.id)}" ${done[x.id] ? 'checked' : ''} aria-label="Done"></td>
+          <td><div class="actx" contenteditable="true" spellcheck="false" data-ed="${FP.esc(x.id)}" title="Click to edit this step">${FP.esc(x.text)}</div>${x.edited ? `<span class="note noprint">Edited · <button class="link" data-unedit="${FP.esc(x.id)}">use the tool's wording</button> (it updates when the numbers change)</span>` : ''}</td><td><select class="rts" data-by="${FP.esc(x.id)}" aria-label="Who does this">${['Abundance', 'You'].map(b => `<option${x.by === b ? ' selected' : ''}>${b}</option>`).join('')}</select></td><td style="white-space:nowrap">${x.area}${x.sec && secNo(x.sec) && x.sec !== 'action' ? `<span class="note noprint"><a href="#${x.sec}">Section&nbsp;${secNo(x.sec)}</a></span>` : ''}</td>
+          <td class="noprint" style="white-space:nowrap">${mvOpt(x)}<button class="link" data-hide="${FP.esc(x.id)}" title="${x.custom ? 'Delete step' : 'Hide step'}" style="text-decoration:none;margin-left:6px">✕</button></td></tr>`;
+      const tables = mine => WHEN.map(w => { const R = L.filter(x => x.when === w && x.mine === mine);
+        return `<div class="actg${R.length ? '' : ' empty noprint'}"><h3>${w}</h3><div class="tbl"><table class="acts" data-when="${w}" data-mine="${mine ? 1 : 0}"><thead><tr><th class="w1 noprint" data-nosort></th><th class="w1" data-nosort>Done</th><th data-nosort>What to do</th><th class="w1" data-nosort>By</th><th class="w1" data-nosort>Area</th><th class="w1 noprint" data-nosort>Move</th></tr></thead><tbody>
+        ${R.map(row).join('') || `<tr class="ph"><td colspan="6">Drag a step here</td></tr>`}</tbody></table></div></div>`; }).join('');
+      const nMine = L.filter(x => x.mine).length;
       el.innerHTML = `
       <div class="kpis">${FP.kpi('Steps', `${L.filter(x => !x.internal).length}`, `${L.filter(x => done[x.id] && !x.internal).length} done`, 1)}${WHEN.slice(0, 3).map(w => FP.kpi(w, String(L.filter(x => x.when === w && !x.internal).length), 'steps')).join('')}</div>
-      ${WHEN.map(w => { const R = L.filter(x => x.when === w); return R.length ? `<div><h3>${w}</h3><div class="tbl"><table class="acts"><thead><tr><th class="w1" data-nosort>Done</th><th data-nosort>What to do</th><th class="w1" data-nosort>By</th><th class="w1" data-nosort>Area</th><th class="w1 noprint" data-nosort></th></tr></thead><tbody>
-        ${R.map(x => `<tr class="${done[x.id] ? 'done' : ''}${x.internal ? ' noprint' : ''}" data-k="${FP.esc(x.id)}"><td class="c"><input type="checkbox" data-done="${FP.esc(x.id)}" ${done[x.id] ? 'checked' : ''} aria-label="Done"></td>
-          <td><div class="actx" contenteditable="true" spellcheck="false" data-ed="${FP.esc(x.id)}" title="Click to edit this step">${FP.esc(x.text)}</div>${x.edited ? `<span class="note noprint">Edited · <button class="link" data-unedit="${FP.esc(x.id)}">use the tool's wording</button> (it updates when the numbers change)</span>` : ''}${x.internal ? '<span class="note">Internal, not printed</span>' : ''}</td><td><select class="rts" data-by="${FP.esc(x.id)}" aria-label="Who does this">${['Abundance', 'You'].map(b => `<option${x.by === b ? ' selected' : ''}>${b}</option>`).join('')}</select></td><td style="white-space:nowrap">${x.area}${x.sec && secNo(x.sec) && x.sec !== 'action' ? `<span class="note noprint"><a href="#${x.sec}">Section&nbsp;${secNo(x.sec)}</a></span>` : ''}</td>
-          <td class="noprint"><button class="link" data-hide="${FP.esc(x.id)}" title="${x.custom ? 'Delete step' : 'Hide step'}" style="text-decoration:none">✕</button></td></tr>`).join('')}</tbody></table></div></div>` : ''; }).join('')}
-      <div class="noprint" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
-        <select id="acWhen">${WHEN.map(w => `<option>${w}</option>`).join('')}</select><select id="acBy" aria-label="Who does this"><option>You</option><option>Abundance</option></select>
+      <p class="hint noprint">Drag ⠿ to reorder a step or move it to another table, or use Move. Steps in <b>Only for me</b> stay out of the client PDF.</p>
+      <div class="actsec">${tables(false)}</div>
+      <div class="actmine noprint"><div class="amh"><b>🔒 Only for me</b><span>${nMine} step${nMine === 1 ? '' : 's'} · for your follow-up; not shown to the client or in the PDF</span></div>${tables(true)}</div>
+      <div class="noprint" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px">
+        <select id="acFor" aria-label="Who sees this"><option value="c">For the client</option><option value="m">Only for me</option></select><select id="acWhen">${WHEN.map(w => `<option>${w}</option>`).join('')}</select><select id="acBy" aria-label="Who does this"><option>You</option><option>Abundance</option></select>
         <input id="acText" type="text" placeholder="Add your own step, e.g. Close the old ULIP after Mar 2027" style="flex:1;min-width:240px;border:1px solid var(--line);border-radius:6px;padding:7px 9px;font:15px var(--fb)">
         <button class="bt" id="acAdd">Add step</button>${nHid ? `<button class="link" id="acShow">Show ${nHid} hidden</button>` : ''}</div>
       <div class="disc"><h3>Important</h3>
@@ -2318,7 +2335,21 @@ Move              = target − today; every change is shown (under ₹1,000 coun
       const upd = fn => FP.set(s => { s.act = { done: {}, hide: {}, custom: [], ...(s.act || {}) }; fn(s.act); });
       el.querySelectorAll('[data-done]').forEach(c => c.onchange = () => upd(x => { x.done = { ...x.done, [c.dataset.done]: c.checked }; }));
       el.querySelectorAll('[data-hide]').forEach(b => b.onclick = () => upd(x => { const id = b.dataset.hide; if (x.custom.some(c => c.id === id)) x.custom = x.custom.filter(c => c.id !== id); else x.hide = { ...x.hide, [id]: true }; }));
-      el.querySelector('#acAdd').onclick = () => { const t = el.querySelector('#acText').value.trim(); if (!t) return el.querySelector('#acText').focus(); upd(x => { x.custom = [...x.custom, { id: 'c' + Date.now(), when: el.querySelector('#acWhen').value, by: el.querySelector('#acBy').value, text: t }]; }); };
+      el.querySelector('#acAdd').onclick = () => { const t = el.querySelector('#acText').value.trim(); if (!t) return el.querySelector('#acText').focus(); upd(x => { x.custom = [...x.custom, { id: 'c' + Date.now(), when: el.querySelector('#acWhen').value, by: el.querySelector('#acBy').value, text: t, mine: el.querySelector('#acFor').value === 'm' }]; }); };
+      /* moving steps: save every table's rows (order, table, client / only-for-me) */
+      const saveOrder = () => upd(x => { const ord = [], when = { ...(x.when || {}) }, mine = { ...(x.mine || {}) };
+        el.querySelectorAll('table.acts').forEach(tb => tb.querySelectorAll('tr[data-k]').forEach(r => { const id = r.dataset.k; ord.push(id); when[id] = tb.dataset.when; mine[id] = tb.dataset.mine === '1'; }));
+        x.ord = ord; x.when = when; x.mine = mine; });
+      el.querySelectorAll('[data-mv]').forEach(c => c.onchange = () => { const [k, w] = c.value.split('|'), r = c.closest('tr'), tb = el.querySelector(`table.acts[data-when="${w}"][data-mine="${k === 'm' ? 1 : 0}"] tbody`); tb.querySelector('tr.ph')?.remove(); tb.appendChild(r); saveOrder(); });
+      let dr = null;
+      el.querySelectorAll('td.drag').forEach(h => { const r = h.closest('tr');
+        h.addEventListener('dragstart', e => { dr = r; r.classList.add('dg'); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', r.dataset.k); e.dataTransfer.setDragImage(r, 20, 15); });
+        h.addEventListener('dragend', () => { r.classList.remove('dg'); dr = null; el.querySelectorAll('.dropin').forEach(t => t.classList.remove('dropin')); }); });
+      el.querySelectorAll('table.acts tbody').forEach(tb => {
+        tb.addEventListener('dragover', e => { if (!dr) return; e.preventDefault(); e.dataTransfer.dropEffect = 'move'; el.querySelectorAll('.dropin').forEach(t => t !== tb && t.classList.remove('dropin')); tb.classList.add('dropin');
+          const rows = [...tb.querySelectorAll('tr[data-k]')].filter(x => x !== dr), nx = rows.find(x => { const b = x.getBoundingClientRect(); return e.clientY < b.top + b.height / 2; });
+          tb.querySelector('tr.ph')?.remove(); if (nx) tb.insertBefore(dr, nx); else tb.appendChild(dr); });
+        tb.addEventListener('drop', e => { if (!dr) return; e.preventDefault(); dr.classList.remove('dg'); dr = null; saveOrder(); }); });
       el.querySelectorAll('[data-ed]').forEach(c => { c.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); c.blur(); } });
         c.addEventListener('blur', () => { const id = c.dataset.ed, t = c.innerText.replace(/\s+/g, ' ').trim(), it = all.find(x => x.id === id), auto = it?.auto ?? it?.text;
           if (t === (it?.text || '')) return; upd(x => { x.text = { ...(x.text || {}) }; if (!t || t === auto) delete x.text[id]; else x.text[id] = t; }); }); });
@@ -3025,7 +3056,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
     const segs = [['Household & lifestyle', t.living, '#A3502F'], ['Loan EMIs', t.emi, '#8A5FA0'], ['Insurance premiums', t.ins, '#2F86BC'], ['Already investing', t.sav, '#1E7A46'], ['Free surplus', Math.max(t.surplus, 0), '#D99A1A']].filter(x => x[1] > 0).map(([k, v, c]) => ({ k, v, c, p: v / base }));
     const top = out.filter(x => x.g === 'living').sort((a, b) => b.pm - a.pm).slice(0, 4), mx = top[0]?.pm || 1;
     return FP.cp.page(c, 'today', 'Cash Flow Analysis', 'Where your monthly income goes, from all sources.',
-      kp([['Income', FP.inr(t.inc), 'Take-home'], ['Spending', FP.inr(t.spend), 'Home, EMIs, insurance'], ['Investing', FP.inr(t.sav), 'SIPs, PPF and similar'], [t.surplus >= 0 ? 'Free surplus' : 'Shortfall', FP.inr(Math.abs(t.surplus)), t.surplus >= 0 ? 'Left over each month' : 'Spending more than income', 1]], 4)
+      kp([['Income', FP.inr(t.inc), 'Take-home'], ['Spending', FP.inr(t.spend), 'Home, EMIs, insurance'], ['Investing', FP.inr(t.sav), E(FP.savWhat(c.d, c.st))], [t.surplus >= 0 ? 'Free surplus' : 'Shortfall', FP.inr(Math.abs(t.surplus)), t.surplus >= 0 ? 'Left over each month' : 'Spending more than income', 1]], 4)
       + `<h3 class="st">Out of every ₹100 you earn</h3>${bar(segs)}<div class="lg">${segs.map(s => `<div><i style="background:${s.c}"></i><span><b>₹${Math.round(s.p * 100)}</b> ${s.k}</span><small>${FP.inr(s.v)} a month</small></div>`).join('')}</div>
       ${top.length ? `<div class="box top5" style="margin-top:20px"><h3 class="st">Biggest household expenses</h3>${top.map(x => `<div class="r"><span>${E(x.label.replace(/\s*\(.*?\)/g, ''))}</span><i style="width:${x.pm / mx * 100}%"></i><b>${FP.inr(x.pm)}</b></div>`).join('')}</div>` : ''}
       <h3 class="st" style="margin-top:22px">Health check</h3><div class="hcs">
