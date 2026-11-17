@@ -210,12 +210,12 @@ async function mcpLive() {
 /* Daily closes, oldest first, from NSE's official end-of-day data: 2 years in two 12-month calls. */
 async function mcpHistory(k, years = 2) {
   const name = NSEMCP[k][1], rows = [];
-  let end = 'today';
-  for (let i = 0; i < years; i++) {
-    const j = await N.call('eod', 'get_index_history', { indexName: name, months: 12, endDate: end });
-    (j.data || []).forEach(r => { if (r.date && isFinite(+r.close) && +r.close > 0) rows.push([r.date, +r.close]); });
-    if (!j.next_end_date) break; end = j.next_end_date;
-  }
+  /* the 12-month chunks are asked for at the same time (explicit end dates), each with a 15 s wait and one retry:
+     NSE's server is sometimes slow (17/11/2026: a 9 s timeout lost Multicap's history at the 8:50 AM run) */
+  const ends = Array.from({ length: years }, (_, i) => { if (!i) return 'today'; const d = new Date(Date.now() + 5.5 * 3600e3); d.setUTCMonth(d.getUTCMonth() - 12 * i); d.setUTCDate(d.getUTCDate() - 1); return d.toISOString().slice(0, 10); });
+  const chunk = async end => { for (let a = 0; ; a++) { try { return await N.call('eod', 'get_index_history', { indexName: name, months: 12, endDate: end }, 15000); } catch (e) { if (a >= 1) throw e; } } };
+  const got = await Promise.all(ends.map(chunk));
+  got.forEach(j => (j.data || []).forEach(r => { if (r.date && isFinite(+r.close) && +r.close > 0) rows.push([r.date, +r.close]); }));
   if (rows.length < 200) throw new Error('only ' + rows.length + ' days');
   const seen = {}; return rows.filter(r => !seen[r[0]] && (seen[r[0]] = 1)).sort((a, b) => a[0] < b[0] ? -1 : 1);
 }
@@ -253,23 +253,29 @@ module.exports = async (req, res) => {
   const known = new Set(Object.entries(keys).flatMap(([k, ds]) => ds.map(d => k + '/' + d)));
   const last = k => (keys[k] || []).sort().slice(-1)[0] || null;
 
-  let L = {}, liveSrc = 'NSE MCP';
-  try { L = await mcpLive(); } catch (e) { notes.push('live nse-mcp: ' + e.message); liveSrc = 'NSE website'; try { L = await nse(); } catch (e2) { notes.push('live: ' + e2.message); liveSrc = 'none'; } }
-  const H = {};
-  const histSrc = {};
-  const years = contacts.some(c => /all[- ]?time high|\bath\b/i.test(String(c[FIELD] || ''))) ? 5 : 2;   /* all-time high needs the long history */
-  await Promise.all(Object.keys(IDX).map(async k => { try { H[k] = (await closesFor(k, T, histSrc, years)).filter(r => r[0] < T); } catch (e) { notes.push(k + ' history: ' + e.message); } }));
-  const missLive = Object.keys(IDX).filter(k => !(L[k] > 0)), missHist = Object.keys(IDX).filter(k => !(H[k] && H[k].length > 150));
-  if (missLive.length && marketHours) problems.push({ type: 'live', text: 'No live market level for ' + missLive.map(k => LABEL[k]).join(', ') + ' (' + notes.filter(n => /live/.test(n)).join('; ') + '). Alerts that depend on these indices are not being checked right now.' });
-  if (missHist.length) problems.push({ type: 'history', text: 'No closing-price history for ' + missHist.map(k => LABEL[k]).join(', ') + ' (' + notes.filter(n => /history/.test(n)).join('; ') + '). Alerts that need past closes for these indices are not being checked right now.' });
-  const closes = (idx, a, b) => (H[idx] || []).filter(r => r[0] >= a && (!b || r[0] <= b)).map(r => r[1]);
-  const ok = v => v != null && isFinite(v) && v > 0;
   /* Market triggers are judged near the close, not intraday (MF NAVs use the closing value):
      2:40–3:00 PM IST on weekdays the live level stands in for the close, in time to redeem before the 3 PM cut-off;
      from 3:31 PM the live level IS the close. Other runs (8:15 AM) send only dated reminders and deadlines.
      ?market=1 or ?dry=market forces a market check (?dry=market = a dry run that also checks the market). */
   const weekday = wd >= 1 && wd <= 5, nearClose = weekday && mins >= 14 * 60 + 40 && mins <= 15 * 60, afterClose = weekday && mins >= 15 * 60 + 31;
   const marketNow = nearClose || afterClose || !!(req.query && (req.query.market || req.query.dry === 'market'));
+
+  /* market data only when the market is being checked: reminder-only runs (8:15 AM etc.) don't need it, so a slow
+     NSE server then can't cause a false "problem" email */
+  let L = {}, liveSrc = 'not needed';
+  const H = {};
+  const histSrc = {};
+  if (marketNow) {
+    liveSrc = 'NSE MCP';
+    try { L = await mcpLive(); } catch (e) { notes.push('live nse-mcp: ' + e.message); liveSrc = 'NSE website'; try { L = await nse(); } catch (e2) { notes.push('live: ' + e2.message); liveSrc = 'none'; } }
+    const years = contacts.some(c => /all[- ]?time high|\bath\b/i.test(String(c[FIELD] || ''))) ? 5 : 2;   /* all-time high needs the long history */
+    await Promise.all(Object.keys(IDX).map(async k => { try { H[k] = (await closesFor(k, T, histSrc, years)).filter(r => r[0] < T); } catch (e) { notes.push(k + ' history: ' + e.message); } }));
+  }
+  const missLive = marketNow ? Object.keys(IDX).filter(k => !(L[k] > 0)) : [], missHist = marketNow ? Object.keys(IDX).filter(k => !(H[k] && H[k].length > 150)) : [];
+  if (missLive.length && marketHours) problems.push({ type: 'live', text: 'No live market level for ' + missLive.map(k => LABEL[k]).join(', ') + ' (' + notes.filter(n => /live/.test(n)).join('; ') + '). Alerts that depend on these indices are not being checked right now.' });
+  if (missHist.length) problems.push({ type: 'history', text: 'No closing-price history for ' + missHist.map(k => LABEL[k]).join(', ') + ' (' + notes.filter(n => /history/.test(n)).join('; ') + '). Alerts that need past closes for these indices are not being checked right now.' });
+  const closes = (idx, a, b) => (H[idx] || []).filter(r => r[0] >= a && (!b || r[0] <= b)).map(r => r[1]);
+  const ok = v => v != null && isFinite(v) && v > 0;
   const hhmm = `${String(Math.floor(mins / 60) % 12 || 12)}:${String(mins % 60).padStart(2, '0')} ${mins >= 720 ? 'PM' : 'AM'}`;
   const AT = v => afterClose ? `closed at ${fmt(v)}` : `is at ${fmt(v)} at ${hhmm} IST, near the close`;
   const endedOn = d => (T > d || (T === d && afterClose)) && T <= addDays(d, 10);   // a period counts as over only after that day's close
