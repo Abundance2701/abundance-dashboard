@@ -203,3 +203,10 @@ Core 5 categories, Regular plans.
 - Excess-return correlation: monthly (fund − own index TRI) over 36 months, with at least 24 common months needed.
 - Market phases: equity funds held at today's weights against the same weights in each fund's own index. Funds without data in a month are dropped from both sides for that month.
 - Rendering was checked at 1400 px and 390 px widths with mock NAV data. Live data was checked separately.
+
+### Phase 3 v2 — verdicts and clean-up test (18/11/2026)
+- Cut-offs (agreed with the user): same job = over 50% common stock weight, or excess-return correlation ≥ 0.7 (36 months); index-like = active share under 50%; weak record = ahead of own index in under 40% of 3-year periods (10 years, 24+ periods); too small = under 1% of the portfolio. Two of {same job, index-like, weak record}, or too small → exit candidate; one flag or a data gap → review.
+- **Why 0.7:** in a real 34-fund client portfolio (18/11/2026), 496 fund pairs had a correlation. The median was 0.21, 78 pairs were ≥ 0.5, 33 were ≥ 0.6, and 13 were ≥ 0.7 (the top 3%). The highest was 0.84.
+- **Mix scorecard:** the mix's monthly return is the value-weighted return of its equity funds, and the blended index uses the same weights on each fund's own TRI. When a fund has no data for a month, it is dropped from both sides for that month. The mix and index are compounded into month-end values, then run through the same `rolling3()` used for single funds.
+- **Caveat shown on screen:** the before/after record is partly in-sample, because weak-record funds are chosen using the same 10 years.
+- Same client test: 34 funds → 17 (all exit candidates removed). Different from index 35% → 37%; pairs doing the same job 27 → 4; largest fund house 27% → 39%. Record rows improved too, but that is in-sample.

@@ -1630,7 +1630,7 @@ function xrSimulate() {
     return `<tr><td class="l">${m[0]}</td><td>${fmt(m, va)}</td><td class="arr">→</td><td class="${cls}"><b>${fmt(m, vb)}</b></td></tr>`; }).join('');
   $('xrSim').innerHTML = `<div class="grid2"><div class="tablewrap"><table class="ba"><thead><tr><th class="l">Measure</th><th>Now</th><th></th><th>After</th></tr></thead><tbody>${rows}</tbody></table></div>
     <div class="card2"><div class="ct">Moves tested</div>${moves.map(([f, to]) => `<div style="font-size:13px;margin:3px 0">Exit <b>#${f.no} ${esc(f.short)}</b> (${inrS(f.val)}) → ${to === '__spread' || !agg.has(to) ? 'spread across the rest' : '#' + X.funds.find(g => g.code === to).no + ' ' + esc(X.funds.find(g => g.code === to).short)}</div>`).join('')}
-    <div class="meta" style="margin-top:8px">“After” = the funds you keep, at the new amounts, run through the same checks and the same last 10 years. It shows how the cleaner mix <b>behaved</b>, not what it will do. Green = better, red = worse. Tax and exit loads are not counted.</div></div></div>`;
+    <div class="meta" style="margin-top:8px">“After” = the funds you keep, at the new amounts, run through the same checks and the same last 10 years. It shows how the cleaner mix <b>behaved</b>, not what it will do. Green = better, red = worse. Tax and exit loads are not counted.<br><b>Read the record rows with care:</b> funds flagged for a weak record are dropped using the same 10 years, so the “after” record looks better partly by construction. The structural rows (different from index, pairs doing the same job, fund-house share) are the fair test.</div></div></div>`;
 }
 function xrRender(X) {
   const F = X.funds, client = $('xrClient').value.trim(), R = X.mixRoll;
