@@ -1,6 +1,20 @@
 {
- "updated": "2026-11-17T19:13:55Z",
+ "updated": "2026-11-18T10:46:12Z",
  "items": [
+  {
+   "src": "NSE",
+   "title": "EGR - Multiple Settlement scheduled on November 25, 2026",
+   "url": "https://nsearchives.nseindia.com/content/circulars/EGR77478.pdf",
+   "date": "2026-11-18",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Review of Margin Framework for Commodity Derivatives Segment",
+   "url": "https://nsearchives.nseindia.com/content/circulars/COM77468.zip",
+   "date": "2026-11-18",
+   "important": true
+  },
   {
    "src": "RBI",
    "title": "Premature redemption under Sovereign Gold Bond (SGB) Scheme - Redemption Price for premature redemption of SGB 2020-21 Series VIII due on November 18, 2026",
@@ -12,118 +26,6 @@
    "src": "RBI",
    "title": "Directions under Section 35A read with Section 56 of the Banking Regulation Act, 1949 – Nagar Sahakari Bank Ltd., Etawah – Extension of Period",
    "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63988",
-   "date": "2026-11-17",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Reminder for Submission of System Audit Report for the period ending September 30, 2026",
-   "url": "https://nsearchives.nseindia.com/content/circulars/INSP77476.pdf",
-   "date": "2026-11-17",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of further issues of securities",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77475.pdf",
-   "date": "2026-11-17",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Change in name and symbol of Virat Industries Limited",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77472.pdf",
-   "date": "2026-11-17",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Removal of Exclusively listed companies of De-recognized/Non-operational/Exited Stock Exchanges placed on the Dissemination Board (DB)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77471.pdf",
-   "date": "2026-11-17",
-   "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of privately placed securities on the debt market segment of the Exchange",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77470.pdf",
-   "date": "2026-11-17",
-   "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of privately placed securities on capital market segment",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77469.pdf",
-   "date": "2026-11-17",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Suspension of trading in Non-Convertible Debentures - Cholamandalam Investment and Finance Company Limited",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77467.pdf",
-   "date": "2026-11-17",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Applicability of Enhanced Surveillance Measure (ESM)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77466.zip",
-   "date": "2026-11-17",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "List of Securities Moving to Stage IV of Graded Surveillance Measure (GSM)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77465.pdf",
-   "date": "2026-11-17",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Additional Exposure Margin on Securities under MWPL",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CMPT77463.zip",
-   "date": "2026-11-17",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Applicability of Short-Term Additional Surveillance Measure (ST-ASM)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77462.zip",
-   "date": "2026-11-17",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Applicability of Additional Surveillance Measure (ASM)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77461.zip",
-   "date": "2026-11-17",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Availability of Kotak Nifty Realty Index Fund on NSE MF Invest Platform",
-   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77459.pdf",
-   "date": "2026-11-17",
-   "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Launch of Nippon India Crisil - IBX SDL - June 2037 Index Fund NFO on NSE MF Invest Platform",
-   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77458.pdf",
-   "date": "2026-11-17",
-   "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Suspension of trading in Non-Convertible Securities (Privately Placed)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77457.pdf",
-   "date": "2026-11-17",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Withdrawal of Dealings in securities under the Permitted to Trade Category - Elpro International Limited",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77456.pdf",
    "date": "2026-11-17",
    "important": false
   },
@@ -212,8 +114,8 @@
    10
   ],
   "https://nsearchives.nseindia.com/content/RSS/Circulars.xml": [
-   19,
-   17
+   3,
+   2
   ]
  },
  "errors": []
