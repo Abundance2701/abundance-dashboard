@@ -189,7 +189,11 @@
   .fixes{margin:0; padding-left:20px; line-height:1.55;} .fixes li{margin:3px 0;}
   .lineup{margin:10px 0;} .lineup .ct{font-size:14px; text-transform:none; letter-spacing:0; color:var(--dark);}
   table.lut{font-size:14px; table-layout:fixed; width:100%; min-width:780px;} .lut th{background:#f1f5f2 !important; color:var(--dark) !important; text-transform:none; letter-spacing:0; font-size:12px;} .lut th .sub{color:var(--muted);}
-  .lut td{background:#fff !important; vertical-align:middle;} .lut td.l{white-space:normal;} .lut th{white-space:normal;} .lut td .up{font-weight:700;}
+  .lut td{background:#fff !important; vertical-align:middle;} .lut tbody tr:nth-child(even) td{background:#f4f8f5 !important;}
+  .xr4 .card2, table.lut, .bp .card2{font-size:15px;} .lut .fund-meta{font-size:12.5px;}
+  .calls{display:inline-flex; gap:3px; margin-right:6px; vertical-align:1px;} .cb{font-size:11px; padding:1px 5px; border-radius:5px; border:1px solid var(--line); background:#fff; color:#b3abb6; font-family:Calibri,sans-serif; cursor:pointer;}
+  .cb.on.p{background:#e3f3e8; color:var(--primary); border-color:#9fd1b0;} .cb.on.a{background:#f6e3de; color:var(--down); border-color:#e6b3a6;}
+  .callsbox{margin:10px 0;} .lut td.l{white-space:normal;} .lut th{white-space:normal;} .lut td .up{font-weight:700;}
   .ba{font-size:14px;}
 </style>
 </head>
@@ -208,7 +212,7 @@
     <button data-page="bench">Benchmarks &amp; data</button>
     <button data-page="method">How it works</button>
     <button data-page="xray">Portfolio X-ray</button>
-    <button disabled title="Phase 4">Build portfolio (Phase 4)</button>
+    <button data-page="build">Build portfolio</button>
   </div>
 
   <!-- ===================== FUND LAB ===================== -->
@@ -291,6 +295,26 @@
 
   <!-- ===================== METHOD ===================== -->
   <section id="page-method" class="hide"><div class="panel method" id="methodBox"></div></section>
+  <!-- ===================== BUILD PORTFOLIO (Phase 4) ===================== -->
+  <section id="page-build" class="hide">
+    <div class="panel bp">
+      <h3>Build a portfolio <span class="sub">your amount and split → an indicative shortlist, checked as a whole portfolio</span></h3>
+      <div class="controls">
+        <div class="field"><label>Client name</label><input type="text" id="bpClient" placeholder="e.g. Ramesh K" style="min-width:200px"></div>
+        <div class="field"><label>Lumpsum ₹</label><input type="text" id="bpLump" inputmode="numeric" placeholder="e.g. 10,00,000" style="width:150px;min-width:0"></div>
+        <div class="field"><label>SIP ₹ a month</label><input type="text" id="bpSip" inputmode="numeric" placeholder="e.g. 50,000" style="width:150px;min-width:0"></div>
+        <div class="field"><label>Plan</label><select id="bpPlan"><option>Regular</option><option>Direct</option></select></div>
+        <div class="field"><label>Smallest fund size, ₹ Cr</label><input type="number" id="bpAum" value="500" min="0" step="100" style="width:110px"></div>
+      </div>
+      <div class="ct" style="margin-top:14px">Equity split <span class="ctsub">you decide the categories and %; the tool picks the funds</span></div>
+      <div class="tablewrap"><table class="mini plain" id="bpSplit" style="width:auto"></table></div>
+      <div class="btnrow" style="margin-top:6px"><button class="ghost" id="bpAddCat" style="padding:5px 12px;font-size:12.5px">+ Add category</button><span class="selcount" id="bpSum"></span></div>
+      <label class="checkline" style="margin-top:8px"><input type="checkbox" id="bpUseX"> Build around the client's current portfolio (the X-ray loaded on the Portfolio X-ray page): keep its keepers, add only what's missing</label>
+      <div class="btnrow"><button class="primary" id="bpRun">Build shortlist</button><span id="bpRunSt" class="selcount"></span></div>
+      <div class="status" id="bpStatus"></div>
+    </div>
+    <div id="bpOut"></div>
+  </section>
   <!-- ===================== PORTFOLIO X-RAY (Phase 3) ===================== -->
   <section id="page-xray" class="hide">
     <div class="panel">
@@ -507,8 +531,8 @@ const PHASES = [
   { n: 1, t: 'Data foundation & Fund Lab', d: 'Official TRI benchmarks, rolling, capture, risk', s: 'done' },
   { n: 2, t: 'Fund scoring & style', d: 'Peer scores, style & bets, market phases, back-test', s: 'done' },
   { n: 3, t: 'Portfolio X-ray', d: 'Look-through overlap, active share, client portfolio upload', s: 'done' },
-  { n: 4, t: 'Build portfolio', d: 'Amount + your split → diversified shortlist → Portfolio Generator', s: 'next' },
-  { n: 5, t: 'Strategy summary', d: 'Plain-language vetting strategy + monthly monitoring', s: 'todo' },
+  { n: 4, t: 'Build portfolio', d: 'Amount + your split → diversified shortlist → Portfolio Generator', s: 'done' },
+  { n: 5, t: 'Strategy summary', d: 'Plain-language vetting strategy + monthly monitoring', s: 'next' },
 ];
 $('roadmap').innerHTML = PHASES.map(p => `<div class="phase ${p.s}"><span class="st">${p.s === 'done' ? '✓ Built' : p.s === 'next' ? 'Next up' : 'Planned'}</span><b>Phase ${p.n} · ${p.t}</b>${p.d}</div>`).join('');
 
@@ -1274,7 +1298,7 @@ $('clearCatsBtn').addEventListener('click', () => { setSelected([]); customKeywo
 $('saveFavLink').addEventListener('click', () => { const vals = getSelected(); if (!vals.length) { setStatus('Select the categories you want as Favorites first.'); return; } setStatus(saveFavs(vals) ? `Favorites saved: ${vals.map(v => CAT_LABEL[v]).join(', ')}.` : 'Could not save Favorites in this browser.'); refreshFavBtn(); });
 $('resetFavLink').addEventListener('click', () => { try { localStorage.removeItem(FAV_KEY); } catch (e) {} refreshFavBtn(); setStatus('Favorites reset to Large, Flexi, Small, Mid, Large & Mid Cap.'); });
 refreshFavBtn();
-$('pages').addEventListener('click', e => { const b = e.target.closest('[data-page]'); if (!b) return; $('pages').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); ['lab', 'bt', 'bench', 'method', 'xray'].forEach(p => $('page-' + p).classList.toggle('hide', p !== b.dataset.page)); if (b.dataset.page === 'bench') renderBench(); });
+$('pages').addEventListener('click', e => { const b = e.target.closest('[data-page]'); if (!b) return; $('pages').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); ['lab', 'bt', 'bench', 'method', 'xray', 'build'].forEach(p => $('page-' + p).classList.toggle('hide', p !== b.dataset.page)); if (b.dataset.page === 'bench') renderBench(); });
 loadTRI().then(() => setStatus(`Index data ready (latest ${DAILY && DAILY['NIFTY 500'] ? fmtDate(DAILY['NIFTY 500'].at(-1).t) : fmtDate(M0)}). Pick categories, or press ★ Favorites.`)).catch(e => setStatus('Index data could not load: ' + e.message, true));
 
 // =====================================================================================
@@ -1648,69 +1672,127 @@ function xrSimulate(given, outId = 'xrSim') {
     <div class="meta" style="margin-top:8px">“After” = the funds you keep, at the new amounts, run through the same checks and the same last 10 years. It shows how the cleaner mix <b>behaved</b>, not what it will do. Green = better, red = worse. Tax and exit loads are not counted.<br><b>Read the record rows with care:</b> funds flagged for a weak record are dropped using the same 10 years, so the “after” record looks better partly by construction. The structural rows (different from index, pairs doing the same job, fund-house share) are the fair test.</div></div></div>`;
 }
 // ---------- X-ray v3: top issues to fix (no automatic verdicts; the advisor decides) ----------
+// =====================================================================================
+// YOUR CALLS: the advisor's own Prefer / Avoid marks, kept in this browser, used by the X-ray and the builder
+// =====================================================================================
+const CALLS_KEY = 'abundance_fs_calls_v1';
+const callKey = n => holdKey(xrShort(n));
+function getCalls() { try { return JSON.parse(localStorage.getItem(CALLS_KEY)) || {}; } catch (e) { return {}; } }
+function saveCalls(c) { try { localStorage.setItem(CALLS_KEY, JSON.stringify(c)); return true; } catch (e) { return false; } }
+function setCall(name, v) { const c = getCalls(), k = callKey(name); if (!v || (c[k] && c[k].v === v)) delete c[k]; else c[k] = { v, name: xrShort(name), d: fmtDate(Date.now()) }; saveCalls(c); }
+const callOf = name => (getCalls()[callKey(name)] || {}).v || null;
+const callBtns = name => { const v = callOf(name); return `<span class="calls" data-n="${esc(name)}"><button class="cb${v === 'prefer' ? ' on p' : ''}" data-v="prefer" title="Prefer: put this fund first, for every client">★</button><button class="cb${v === 'avoid' ? ' on a' : ''}" data-v="avoid" title="Avoid: don't keep or pick this fund, for every client">✕</button></span>`; };
+function callsPanel() {
+  const c = Object.entries(getCalls());
+  return `<details class="callsbox"><summary class="linkbtn">Your calls (${c.length}): funds you marked ★ Prefer or ✕ Avoid</summary>
+    <div class="meta">Saved in this browser and used every time, for every client. Export to back them up or move to another computer.</div>
+    ${c.length ? `<table class="mini plain"><tbody>${c.sort((a, b) => a[1].v.localeCompare(b[1].v) || a[1].name.localeCompare(b[1].name)).map(([k, x]) => `<tr><td class="l">${x.v === 'prefer' ? '<b class="up">★ Prefer</b>' : '<b class="down">✕ Avoid</b>'}</td><td class="l">${esc(x.name)}</td><td class="l na" style="color:var(--muted)">${esc(x.d)}</td><td><button class="linkbtn callDel" data-k="${esc(k)}">remove</button></td></tr>`).join('')}</tbody></table>` : '<div class="meta">None yet. Use ★ or ✕ next to any fund.</div>'}
+    <div class="btnrow"><button class="ghost callExp" style="padding:5px 10px;font-size:12px">Export</button><label class="ghost" style="padding:5px 10px;font-size:12px;border:1.5px solid var(--primary);border-radius:7px;color:var(--primary);font-family:Montserrat,sans-serif;font-weight:700;cursor:pointer">Import<input type="file" class="callImp" accept=".json" hidden></label></div></details>`;
+}
+function rerenderCalls() { if (!$('page-xray').classList.contains('hide') && XR.last) xrRender(XR.last); if (!$('page-build').classList.contains('hide') && BP.last) bpRender(); }
+document.addEventListener('click', e => {
+  const b = e.target.closest('.calls .cb'); if (b) { setCall(b.parentElement.dataset.n, b.dataset.v); rerenderCalls(); return; }
+  const d = e.target.closest('.callDel'); if (d) { const c = getCalls(); delete c[d.dataset.k]; saveCalls(c); rerenderCalls(); return; }
+  if (e.target.closest('.callExp')) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(getCalls(), null, 1)], { type: 'application/json' })); a.download = 'abundance-fund-calls.json'; a.click(); }
+});
+document.addEventListener('change', async e => { if (!e.target.classList.contains('callImp')) return; const f = e.target.files[0]; if (!f) return;
+  try { const add = JSON.parse(await f.text()), c = getCalls(); for (const [k, x] of Object.entries(add)) if (x && (x.v === 'prefer' || x.v === 'avoid')) c[k] = x; saveCalls(c); rerenderCalls(); } catch (err) { alert('That file could not be read as saved calls.'); } });
+
+// =====================================================================================
+// Peer data for a whole category (same plan, window and share-class de-duplication as Fund Lab)
+// =====================================================================================
+const PEERS = {};
+async function peerUniverse(ck, plan, W, onProg) {
+  const key = ck + '|' + plan + '|' + W; if (PEERS[key]) return PEERS[key];
+  const rfA = (parseFloat($('rf').value) || 0) / 100, data = await ensureMasterData(), bench = TIER1[ck].bench, yard = TRI.idx[bench].arr;
+  const rows = data.filter(r => isActive(r) && r.scheme_option === 'Growth' && planOk(r, plan) && !isETF(r) && catKeyOf(r) === ck);
+  await fetchNavs(rows.map(r => r.scheme_code), onProg);
+  const keyOf = (amc, arr) => { const p0 = valAt(arr, 0), p12 = valAt(arr, 12); return p0 && p12 ? `${amc}|${p0.nav.toFixed(4)}|${p12.nav.toFixed(4)}` : null; };
+  const seen = new Map(), list = [];
+  for (const r of rows.filter(r => NAVS[r.scheme_code] && NAVS[r.scheme_code].length).sort((a, b) => (parseFloat(b.aaum_cr_quarterly_avg) || 0) - (parseFloat(a.aaum_cr_quarterly_avg) || 0))) {
+    const arr = NAVS[r.scheme_code], k = keyOf(r.amc, arr); if (k && seen.has(k)) continue;
+    const hf = findHoldings(r.scheme_name), bb = hf ? bets(hf, bench) : null;
+    const o = { code: String(r.scheme_code), r, name: r.scheme_name, short: xrShort(r.scheme_name), amc: r.amc || '—', ck, cat: CANON_LABEL[ck], asset: 'Equity', benchKey: bench, broad: !!TIER1[ck].broad,
+      aum: parseFloat(r.aaum_cr_quarterly_avg) || null, hist: histMonths(arr), hf, as: bb && isNum(bb.activeShare) ? bb.activeShare : null };
+    o.an = analyse(arr, yard, W, rfA); Object.assign(o, { roll: o.an.roll, sortino: o.an.sortino, ir: o.an.ir, downCap: o.an.downCap, mdd: o.an.mdd });
+    list.push(o); if (k) seen.set(k, o.code); }
+  scoreGroup(list, W);
+  for (const o of list) o.peer = o.score;
+  return (PEERS[key] = { list, seen, keyOf, byCode: new Map(list.map(o => [o.code, o])) });
+}
+
+// =====================================================================================
+// One keeper engine for the X-ray (client's funds) and the builder (new funds)
+// groups: [{ job, ranked: [funds, best first], keepN }]; alike(a, b, sameGroup) -> reason text or ''
+// Rules: ★ Prefer always kept (within the count); ✕ Avoid never kept while anything else is available; no twins;
+// tiny funds only when nothing else; at most 2 kept funds per fund house (the house's weakest keeper gives way).
+// =====================================================================================
+function pickKeepers(groups, alike, opt = {}) {
+  const isEq = f => f.asset === 'Equity' || f.asset === 'Hybrid', amcMax = opt.amcMax || 2;
+  const allKept = () => groups.flatMap(g => g.kept);
+  for (const g of groups) { g.kept = []; g.blocked = new Map(); }
+  const fill = (g, useAmc) => {
+    for (const f of g.ranked) {
+      if (g.kept.length >= g.keepN) break;
+      if (g.kept.includes(f) || g.blocked.has(f)) continue;
+      const pref = f.call === 'prefer' || f.pin, others = g.ranked.filter(x => x !== f && x.call !== 'avoid' && !g.blocked.has(x) && !g.kept.includes(x));
+      if (f.call === 'avoid' && (g.kept.length || others.length)) { g.blocked.set(f, { why: 'you marked it ✕ Avoid' }); continue; }
+      let tw = null, twWhy = ''; for (const k of allKept()) { const w = alike(f, k, g.kept.includes(k)); if (w) { tw = k; twWhy = w; break; } }
+      if (tw && !pref) { g.blocked.set(f, { why: `does the same job as #${tw.no || ''} ${tw.short} (${twWhy})`.replace('# ', ''), twin: tw }); continue; }
+      if (opt.tiny && opt.tiny(f) && g.kept.length && !pref) { g.blocked.set(f, { why: 'under 1% of the portfolio' }); continue; }
+      if (useAmc && isEq(f) && !pref && allKept().filter(k => isEq(k) && k.amc === f.amc).length >= amcMax) { g.blocked.set(f, { why: `${f.amc.replace(/ Mutual Fund$/i, '')} already has ${amcMax} funds kept` }); continue; }
+      g.kept.push(f);
+    }
+  };
+  const order = [...groups].sort((a, b) => (b.weight || 0) - (a.weight || 0));
+  for (const g of order) fill(g, false);
+  for (let it = 0; it < 60; it++) {   // fund-house limit: drop the house's weakest unpreferred keeper, then refill that category
+    const cnt = {}; for (const k of allKept()) if (isEq(k)) (cnt[k.amc] = cnt[k.amc] || []).push(k);
+    const over = Object.values(cnt).find(a => a.length > amcMax); if (!over) break;
+    const drop = over.filter(k => k.call !== 'prefer' && !k.pin).sort((a, b) => (isNum(a.peer) ? a.peer : -1) - (isNum(b.peer) ? b.peer : -1))[0]; if (!drop) break;
+    const g = groups.find(x => x.kept.includes(drop)); g.kept = g.kept.filter(k => k !== drop);
+    g.blocked.set(drop, { why: `${drop.amc.replace(/ Mutual Fund$/i, '')} already has ${amcMax} stronger funds kept` });
+    fill(g, true);
+  }
+  return groups;
+}
+
 // ---------- X-ray v4: fund line-up by category (grouping by the job each fund does in the plan) ----------
 // Peer score = the Fund Lab score (same category, same plan, same window), so the two pages never disagree.
 async function xrPeerScores(X, say) {
-  const W = +$('win').value, rfA = (parseFloat($('rf').value) || 0) / 100, data = await ensureMasterData();
-  XR.peer = XR.peer || {};
-  const groups = new Map();
-  for (const f of X.funds) if (f.asset === 'Equity' && f.ck && TIER1[f.ck] && !TIER1[f.ck].broad && TRI.idx[f.benchKey]) { const k = f.ck + '|' + planGroup(f.r) + '|' + W; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(f); }
-  const todo = [...groups.keys()].filter(k => !XR.peer[k]), rowsBy = {};
-  for (const k of todo) { const [ck, plan] = k.split('|'); rowsBy[k] = data.filter(r => isActive(r) && r.scheme_option === 'Growth' && planOk(r, plan) && !isETF(r) && catKeyOf(r) === ck); }
-  const codes = Object.values(rowsBy).flat().map(r => r.scheme_code);
-  if (codes.length) await fetchNavs(codes, (d, t) => say && say(`<span class="spinner"></span> Scoring funds against their category peers… ${d} / ${t}`));
-  const keyOf = (amc, arr) => { const p0 = valAt(arr, 0), p12 = valAt(arr, 12); return p0 && p12 ? `${amc}|${p0.nav.toFixed(4)}|${p12.nav.toFixed(4)}` : null; };
-  for (const k of todo) {
-    const [ck] = k.split('|'), yard = TRI.idx[TIER1[ck].bench].arr, seen = new Map(), list = [];
-    for (const r of rowsBy[k].filter(r => NAVS[r.scheme_code] && NAVS[r.scheme_code].length).sort((a, b) => (parseFloat(b.aaum_cr_quarterly_avg) || 0) - (parseFloat(a.aaum_cr_quarterly_avg) || 0))) {
-      const arr = NAVS[r.scheme_code], key = keyOf(r.amc, arr); if (key && seen.has(key)) continue;
-      const o = { code: String(r.scheme_code), hist: histMonths(arr), ...analyse(arr, yard, W, rfA) }; list.push(o); if (key) seen.set(key, o.code); }
-    scoreGroup(list, W);
-    const m = new Map(list.map(o => [o.code, { score: o.score, n: o.scoreN }]));
-    XR.peer[k] = { m, seen };
+  const W = +$('win').value;
+  for (const f of X.funds) {
+    if (!(f.asset === 'Equity' && f.ck && TIER1[f.ck] && !TIER1[f.ck].broad && TRI.idx[f.benchKey])) continue;
+    const P = await peerUniverse(f.ck, planGroup(f.r), W, (d, t) => say && say(`<span class="spinner"></span> Scoring funds against their category peers (${esc(CANON_LABEL[f.ck])})… ${d} / ${t}`));
+    const arr = NAVS[f.code], alias = arr ? P.seen.get(P.keyOf(f.r.amc, arr)) : null, hit = P.byCode.get(f.code) || (alias ? P.byCode.get(alias) : null);
+    f.peer = hit ? hit.peer : null; f.peerN = hit ? P.list.filter(o => isNum(o.peer)).length : null;
   }
-  for (const [k, fs] of groups) for (const f of fs) {
-    const P = XR.peer[k], arr = NAVS[f.code], alias = arr ? P.seen.get(keyOf(f.r.amc, arr)) : null, hit = P.m.get(f.code) || (alias ? P.m.get(alias) : null);
-    f.peer = hit ? hit.score : null; f.peerN = hit ? hit.n : null; }
 }
 const JOBS = { large_cap: 'Large cap', large_mid_cap: 'Large & mid cap', flexi_cap: 'Flexi & diversified', multi_cap: 'Flexi & diversified', focused: 'Flexi & diversified', value_contra: 'Flexi & diversified', dividend_yield: 'Flexi & diversified', elss: 'Flexi & diversified', mid_cap: 'Mid cap', small_cap: 'Small cap', sectoral_thematic: 'Sectoral / thematic' };
 const JOB_ORDER = ['Large cap', 'Large & mid cap', 'Flexi & diversified', 'Mid cap', 'Small cap', 'Sectoral / thematic', 'Hybrid', 'International', 'Index & other'];
 const USUAL = { 'Large cap': [1, 2], 'Large & mid cap': [1, 2], 'Flexi & diversified': [2, 3], 'Mid cap': [2, 3], 'Small cap': [2, 3], 'Sectoral / thematic': [1, 1], 'Hybrid': [1, 2], 'International': [1, 1], 'Index & other': [1, 1] };
 function xrLineup(X) {
   const jobOf = f => f.ck && JOBS[f.ck] ? JOBS[f.ck] : f.asset === 'Hybrid' ? 'Hybrid' : f.asset === 'International' ? 'International' : 'Index & other';
-  // how alike two funds are: share of stocks in common (holdings) and same-bets correlation (returns)
   const ovI = new Map(X.cov.map((f, i) => [f, i])), exI = new Map(X.ex.map((f, i) => [f, i]));
   const ov = (a, b) => { const i = ovI.get(a), j = ovI.get(b); return i !== undefined && j !== undefined && X.ov[i][j] ? X.ov[i][j].o : null; };
   const cr = (a, b) => { const i = exI.get(a), j = exI.get(b); return i !== undefined && j !== undefined ? X.corr[i][j] : null; };
-  const alike = (a, b) => { const o = ov(a, b), c = cr(a, b); return (isNum(o) && o > XRT.ov) || (isNum(c) && c >= XRT.corr); };
   const why = (a, b) => [isNum(ov(a, b)) && ov(a, b) > XRT.ov ? `${ov(a, b).toFixed(0)}% same stocks` : '', isNum(cr(a, b)) && cr(a, b) >= XRT.corr ? `same bets ${cr(a, b).toFixed(2)}` : ''].filter(Boolean).join(', ');
-  const G = new Map(); for (const f of X.funds) { const j = jobOf(f); if (!G.has(j)) G.set(j, []); G.get(j).push(f); }
-  const groups = [], amcN = {};   // fund-house rule: at most 2 kept schemes per AMC across the portfolio
-  const order = JOB_ORDER.filter(j => G.has(j)).sort((a, b) => G.get(b).reduce((s, f) => s + f.val, 0) - G.get(a).reduce((s, f) => s + f.val, 0));
-  for (const job of order) { const fs = G.get(job);
-    const val = fs.reduce((s, f) => s + f.val, 0), share = val / X.total * 100, [lo, hi] = USUAL[job];
-    const keepN = Math.min(fs.length, share < 10 ? lo : hi);
-    // order: real holdings before tiny ones, distinctive before index-like, then the Fund Lab peer score, then size
-    const tinyF = f => f.val / X.total * 100 < XRT.tiny, idxF = f => f.asset === 'Equity' && isNum(f.as) && f.as < XRT.as;
-    const ranked = [...fs].sort((a, b) => tinyF(a) - tinyF(b) || idxF(a) - idxF(b) || (isNum(b.peer) ? b.peer : -1) - (isNum(a.peer) ? a.peer : -1) || b.val - a.val);
-    const kept = [];
-    const isEq = f => f.asset === 'Equity' || f.asset === 'Hybrid';
-    for (const f of ranked) {
-      const tiny = f.val / X.total * 100 < XRT.tiny, twin = kept.find(k => alike(f, k)), amcFull = isEq(f) && (amcN[f.amc] || 0) >= 2;
-      if (kept.length < keepN && !twin && !amcFull && !(tiny && kept.length)) { f.sug = { keep: true }; kept.push(f); if (isEq(f)) amcN[f.amc] = (amcN[f.amc] || 0) + 1; continue; }
-      f.sug = { keep: false, twin, reason: twin ? `does the same job as #${twin.no} (${why(f, twin)})` : amcFull && kept.length < keepN ? `${f.amc.replace(/ Mutual Fund$/i, '')} already has 2 funds kept` : tiny ? `under ${XRT.tiny}% of the portfolio` : `more ${job.toLowerCase()} funds than you usually hold` };
-    }
-    if (!kept.length && ranked.length) { const f = ranked[0]; f.sug = { keep: true }; kept.push(f); if (isEq(f)) amcN[f.amc] = (amcN[f.amc] || 0) + 1; }
-    // money from a merged fund goes to its twin, else to the smallest keeper (keeps the category balanced and spreads fund houses)
-    for (const f of ranked) if (!f.sug.keep) f.sug.into = f.sug.twin && kept.includes(f.sug.twin) ? f.sug.twin : [...kept].sort((a, b) => a.val - b.val)[0];
-    for (const f of fs) f.histM = NAVS[f.code] ? histMonths(NAVS[f.code]) : 0;
-    for (const f of fs) { // most similar fund in another group, for awareness
-      const other = X.funds.filter(g => g !== f && jobOf(g) !== job && alike(f, g)).sort((a, b) => (ov(f, b) || 0) - (ov(f, a) || 0))[0];
-      f.alikeElse = other ? `#${other.no} ${other.short} (${why(f, other)})` : null; }
-    const keptN = ranked.filter(f => f.sug.keep).length;
-    groups.push({ job, fs: ranked, val, share, lo, hi, keepN: keptN, merge: ranked.length - keptN, allIdx: !['Hybrid', 'International', 'Index & other'].includes(job) && kept.length && kept.every(idxF) });
+  const tinyF = f => f.val / X.total * 100 < XRT.tiny, idxF = f => f.asset === 'Equity' && isNum(f.as) && f.as < XRT.as;
+  const G = new Map(); for (const f of X.funds) { f.call = callOf(f.name); f.pin = false; f.held = false; f.histM = NAVS[f.code] ? histMonths(NAVS[f.code]) : 0; const j = jobOf(f); if (!G.has(j)) G.set(j, []); G.get(j).push(f); }
+  const groups = JOB_ORDER.filter(j => G.has(j)).map(job => { const fs = G.get(job), val = fs.reduce((s, f) => s + f.val, 0), share = val / X.total * 100, [lo, hi] = USUAL[job];
+    const cv = f => f.call === 'prefer' ? 0 : f.call === 'avoid' ? 2 : 1;
+    const ranked = [...fs].sort((a, b) => cv(a) - cv(b) || tinyF(a) - tinyF(b) || idxF(a) - idxF(b) || (isNum(b.peer) ? b.peer : -1) - (isNum(a.peer) ? a.peer : -1) || b.val - a.val);
+    return { job, ranked, fs: ranked, val, share, lo, hi, keepN: Math.min(fs.length, share < 10 ? lo : hi), weight: val }; });
+  pickKeepers(groups, (a, b, same) => same ? why(a, b) : '', { tiny: tinyF });
+  for (const g of groups) {
+    for (const f of g.ranked) { const keep = g.kept.includes(f), b = g.blocked.get(f) || {};
+      f.sug = keep ? { keep: true } : { keep: false, reason: b.why || `more ${g.job.toLowerCase()} funds than you usually hold`, into: b.twin && g.kept.includes(b.twin) ? b.twin : [...g.kept].sort((a, c) => a.val - c.val)[0] }; }
+    g.fs = [...g.kept, ...g.ranked.filter(f => !g.kept.includes(f))];
+    for (const f of g.fs) { const other = X.funds.filter(o => o !== f && jobOf(o) !== g.job && why(f, o)).sort((a, b) => (ov(f, b) || 0) - (ov(f, a) || 0))[0]; f.alikeElse = other ? `#${other.no} ${other.short} (${why(f, other)})` : null; }
+    g.keepN = g.kept.length; g.merge = g.fs.length - g.kept.length;
+    g.allIdx = !['Hybrid', 'International', 'Index & other'].includes(g.job) && g.kept.length && g.kept.every(idxF);
   }
-  return groups.sort((a, b) => JOB_ORDER.indexOf(a.job) - JOB_ORDER.indexOf(b.job));
+  return groups;
 }
 function xrLineupCard(g, X) {
   const best = (get, dir) => { const v = g.fs.map(get).filter(isNum); return v.length > 1 ? (dir > 0 ? Math.max(...v) : Math.min(...v)) : null; };
@@ -1719,7 +1801,7 @@ function xrLineupCard(g, X) {
   const cellB = (v, b, fmt) => !isNum(v) ? na : `<span class="${isNum(b) && v === b ? 'up' : ''}">${fmt(v)}</span>`;
   const head = `${g.job} <span class="ctsub">${g.fs.length} fund${g.fs.length > 1 ? 's' : ''} · ${inrS(g.val)} (${g.share.toFixed(0)}% of portfolio) · you usually hold ${g.lo === g.hi ? g.lo : g.lo + '–' + g.hi}</span>`;
   const verdict = g.merge ? `<span class="vchip review">Keep ${g.keepN}, merge ${g.merge}</span>` : '<span class="vchip keep">Fine as it is</span>';
-  const rows = g.fs.map((f, i) => `<tr><td class="l"><b>#${f.no} ${esc(f.short)}</b>${f.alikeElse ? `<span class="fund-meta">also like ${esc(f.alikeElse)}</span>` : ''}${isNum(f.as) && f.as < XRT.as ? `<span class="fund-meta warn">index-like: ${f.as.toFixed(0)}% different from its index</span>` : ''}</td>
+  const rows = g.fs.map((f, i) => `<tr><td class="l">${callBtns(f.name)}<b>#${f.no} ${esc(f.short)}</b>${f.alikeElse ? `<span class="fund-meta">also like ${esc(f.alikeElse)}</span>` : ''}${isNum(f.as) && f.as < XRT.as ? `<span class="fund-meta warn">index-like: ${f.as.toFixed(0)}% different from its index</span>` : ''}</td>
     <td>${inrS(f.val)}<span class="fund-meta">${(f.val / X.total * 100).toFixed(1)}%</span></td>
     <td>${isNum(f.peer) ? cellB(f.peer, bP, v => v.toFixed(0)) + `<span class="fund-meta">of ${f.peerN} peers</span>` : `<span class="na">—</span><span class="fund-meta">${f.asset !== 'Equity' || !f.ck || !TIER1[f.ck] || TIER1[f.ck].broad ? 'no category index' : f.histM < 60 ? `${Math.floor(f.histM / 12)} yrs of NAV data` : 'not scored'}</span>`}</td>
     <td>${cellB(hit(f), bH, v => v.toFixed(0) + '%')}</td><td>${cellB(c5(f), b5, v => v.toFixed(1) + '%')}</td><td>${cellB(dc(f), bD, v => v.toFixed(0))}</td>
@@ -1758,7 +1840,8 @@ function xrRender(X) {
     ${LU.map(g => xrLineupCard(g, X)).join('')}
     <div class="btnrow"><button class="primary" id="xrSugBtn">Test these suggestions: before vs after</button><span class="selcount">Exit tax and loads not counted; stagger exits where gains are large.</span></div>
     <div id="xrSugOut"></div>
-    <div class="meta">Green = best in that category on that line. Peer score is the same track-record score as Fund Lab (${winLabel(+$('win').value)} window): beats its index often, earns well for its risk, falls less. It is a record, not a forecast; the Phase 2 back-test found no past number reliably picks next winners, so treat the order as a starting point.${gaps.length ? ` Not looked through: ${gaps.map(f => `#${f.no} ${esc(f.short)}`).join(', ')}.` : ''}</div>
+    <div class="meta">★ = prefer this fund, ✕ = avoid it: your call is saved and used for every client (see “Your calls” below). Green = best in that category on that line. Peer score is the same track-record score as Fund Lab (${winLabel(+$('win').value)} window): beats its index often, earns well for its risk, falls less. It is a record, not a forecast; the Phase 2 back-test found no past number reliably picks next winners, so treat the order as a starting point.${gaps.length ? ` Not looked through: ${gaps.map(f => `#${f.no} ${esc(f.short)}`).join(', ')}.` : ''}</div>
+    ${callsPanel()}
     <div class="grid2 xsec">
       <div class="card2"><div class="ct">By fund category <span class="ctsub">% of portfolio</span></div>${catBars}</div>
       <div class="card2"><div class="ct">By fund house <span class="ctsub">% of equity money · over 40% in gold</span></div>${amcBars}</div>
@@ -1778,7 +1861,133 @@ function xrRender(X) {
   $('xrSugBtn').onclick = () => xrSimulate(merges.map(f => [f, f.sug.into ? f.sug.into.code : '__spread']), 'xrSugOut');
 }
 
-window.FS = { rbsa, solveLinear, factorMix, phases, bets, scoreGroup, pctRanks, analyse, captures, riskStats, rolling3, cagr, monthlyRet, trailing, valAt, me, peerSeries, holdKey, findHoldings, loadTRI, loadHoldings, runCategories, runBacktest, get TRI() { return TRI; }, get HOLD() { return HOLD; }, get M0() { return M0; }, NAVS, get RESULTS() { return RESULTS; }, ensureMasterData, xrSimulate, leadChart, xrTokens, xrMatch, xrParseAOA, xrCompute, xrUniverse, XR };
+// =====================================================================================
+// PHASE 4 — BUILD PORTFOLIO: the advisor's amount and category split → an indicative shortlist
+// Picks: Fund Lab peer score within the category (5+ years of history), fund size floor, not index-like,
+// no two funds doing the same job (same category: over 35% same stocks; any two picks: over 50% same stocks,
+// or same-bets correlation 0.7+), at most 2 funds per fund house; your ★/✕ calls first.
+// =====================================================================================
+const BP = { rows: null, last: null, swap: {}, ban: {} };
+const BP_CATS = [['large_cap', 'Large Cap', 1], ['large_mid_cap', 'Large & Mid Cap', 1], ['flexi_cap', 'Flexi Cap', 2], ['multi_cap', 'Multi Cap', 1], ['focused', 'Focused', 1], ['value_contra', 'Value / Contra', 1], ['mid_cap', 'Mid Cap', 2], ['small_cap', 'Small Cap', 2], ['elss', 'ELSS (Tax Saver)', 1]];
+const BP_PG = { large_cap: 'Large Cap', large_mid_cap: 'Large & Mid Cap', flexi_cap: 'Flexi Cap', multi_cap: 'Multi Cap', focused: 'Focused', value_contra: 'Value / Contra', mid_cap: 'Mid Cap', small_cap: 'Small Cap', elss: 'ELSS' };
+const BP_KEY = 'abundance_fs_split_v1';
+function bpRowsLoad() { try { const r = JSON.parse(localStorage.getItem(BP_KEY)); if (Array.isArray(r) && r.length) return r; } catch (e) {} return [['large_cap', '', 1], ['flexi_cap', '', 2], ['mid_cap', '', 2], ['small_cap', '', 2]].map(([ck, pc, n]) => ({ ck, pc, n })); }
+function bpRowsSave() { try { localStorage.setItem(BP_KEY, JSON.stringify(BP.rows)); } catch (e) {} }
+function bpSplitRender() {
+  BP.rows = BP.rows || bpRowsLoad();
+  $('bpSplit').innerHTML = `<thead><tr><th class="l">Category</th><th>% of equity</th><th>Funds</th><th></th></tr></thead><tbody>${BP.rows.map((r, i) => `<tr><td class="l"><select data-i="${i}" class="bpCk" style="min-width:170px">${BP_CATS.map(([k, l]) => `<option value="${k}"${k === r.ck ? ' selected' : ''}>${l}</option>`).join('')}</select></td>
+    <td><input data-i="${i}" class="bpPc" type="number" min="0" max="100" step="1" value="${esc(r.pc)}" style="width:80px"></td><td><select data-i="${i}" class="bpN" style="min-width:0;width:70px">${[1, 2, 3].map(n => `<option${+r.n === n ? ' selected' : ''}>${n}</option>`).join('')}</select></td><td><button class="linkbtn bpDel" data-i="${i}">remove</button></td></tr>`).join('')}</tbody>`;
+  const sum = BP.rows.reduce((s, r) => s + (parseFloat(r.pc) || 0), 0);
+  $('bpSum').innerHTML = `Total ${sum.toFixed(0)}%${Math.abs(sum - 100) > 0.5 ? ' <span class="warn">(should be 100%)</span>' : ' ✓'}`;
+}
+$('bpSplit').addEventListener('change', e => { const i = +e.target.dataset.i; if (isNaN(i)) return;
+  if (e.target.classList.contains('bpCk')) BP.rows[i].ck = e.target.value; if (e.target.classList.contains('bpPc')) BP.rows[i].pc = e.target.value; if (e.target.classList.contains('bpN')) BP.rows[i].n = +e.target.value;
+  bpRowsSave(); bpSplitRender(); });
+$('bpSplit').addEventListener('input', e => { if (e.target.classList.contains('bpPc')) { BP.rows[+e.target.dataset.i].pc = e.target.value; bpRowsSave(); const sum = BP.rows.reduce((s, r) => s + (parseFloat(r.pc) || 0), 0); $('bpSum').innerHTML = `Total ${sum.toFixed(0)}%${Math.abs(sum - 100) > 0.5 ? ' <span class="warn">(should be 100%)</span>' : ' ✓'}`; } });
+$('bpSplit').addEventListener('click', e => { const b = e.target.closest('.bpDel'); if (!b) return; BP.rows.splice(+b.dataset.i, 1); bpRowsSave(); bpSplitRender(); });
+$('bpAddCat').addEventListener('click', () => { const used = new Set(BP.rows.map(r => r.ck)), nx = BP_CATS.find(([k]) => !used.has(k)); if (!nx) return; BP.rows.push({ ck: nx[0], pc: '', n: nx[2] }); bpRowsSave(); bpSplitRender(); });
+const bpSt = (h, err) => { const s = $('bpStatus'); s.innerHTML = h; s.classList.toggle('err', !!err); };
+$('bpRun').addEventListener('click', () => { BP.swap = {}; BP.ban = {}; bpRun(); });
+
+// overlap and same-bets between any two funds (holdings from AMC portfolios; returns from NAVs vs each fund's own index)
+const BPX = new Map();
+function bpExcess(f) { if (BPX.has(f.code)) return BPX.get(f.code); const arr = NAVS[f.code], b = TRI.idx[f.benchKey]; let s = null;
+  if (arr && b) { const fr = xrMonthly(arr, 36), br = xrMonthly(b.arr, 36); s = fr.map((x, i) => x !== null && br[i] !== null ? x - br[i] : null); } BPX.set(f.code, s); return s; }
+function bpOverlap(a, b) { if (!a.hf || !b.hf) return null; const wb = new Map(b.hf.h); let o = 0; for (const [s, w] of a.hf.h) if (wb.has(s)) o += Math.min(w, wb.get(s)); return o; }
+function bpAlike(a, b, same) {
+  const o = bpOverlap(a, b), ea = bpExcess(a), eb = bpExcess(b), c = ea && eb ? pearson(ea, eb) : null, lim = same ? 35 : 50;
+  return [isNum(o) && o > lim ? `${o.toFixed(0)}% same stocks` : '', isNum(c) && c >= XRT.corr ? `same bets ${c.toFixed(2)}` : ''].filter(Boolean).join(', ');
+}
+async function bpRun() {
+  const lump = xrNum($('bpLump').value) || 0, sip = xrNum($('bpSip').value) || 0, plan = $('bpPlan').value, minAum = parseFloat($('bpAum').value) || 0, W = +$('win').value;
+  const rows = (BP.rows || []).filter(r => (parseFloat(r.pc) || 0) > 0), sum = rows.reduce((s, r) => s + parseFloat(r.pc), 0);
+  if (!(lump > 0 || sip > 0)) { bpSt('Enter a lumpsum, a SIP, or both.', true); return; }
+  if (!rows.length || Math.abs(sum - 100) > 0.5) { bpSt('The equity split should add up to 100%.', true); return; }
+  if (new Set(rows.map(r => r.ck)).size !== rows.length) { bpSt('Each category should appear once.', true); return; }
+  const btn = $('bpRun'), rs = $('bpRunSt'), say = h => { rs.innerHTML = h; }; btn.disabled = true; rs.innerHTML = '<span class="spinner"></span> Working…'; bpSt('');
+  try {
+    await loadTRI(); await loadHoldings(); await xrUniverse();
+    const groups = [];
+    for (const r of rows) {
+      const P = await peerUniverse(r.ck, plan, W, (d, t) => say(`<span class="spinner"></span> ${esc(CANON_LABEL[r.ck])}: fetching NAVs ${d} / ${t}`));
+      const cv = f => f.call === 'prefer' || f.pin ? 0 : 1;
+      const pool = P.list.filter(o => isNum(o.peer) && (o.aum || 0) >= minAum && !(isNum(o.as) && o.as < XRT.as) && !BP.ban[o.code]).map(o => Object.assign(o, { call: callOf(o.name), pin: !!BP.swap[o.code], held: false }));
+      const ranked = pool.sort((a, b) => cv(a) - cv(b) || (b.hf ? 1 : 0) - (a.hf ? 1 : 0) || b.peer - a.peer).slice(0, 12);
+      groups.push({ job: CANON_LABEL[r.ck], ck: r.ck, ranked, keepN: +r.n, weight: parseFloat(r.pc), pc: parseFloat(r.pc), P, eligible: pool.length, total: P.list.length });
+    }
+    // the client's current keepers (from the X-ray) count as already chosen
+    let held = [];
+    if ($('bpUseX').checked && XR.last) {
+      const LU = xrLineup(XR.last); held = LU.flatMap(g => g.kept).filter(f => f.asset === 'Equity' || f.asset === 'Hybrid');
+      for (const f of held) { f.pin = true; f.held = true; const g = groups.find(x => x.ck === f.ck); if (g) { g.ranked = [f, ...g.ranked.filter(o => o.code !== f.code)]; g.keepN = Math.max(g.keepN, g.ranked.filter(o => o.held).length); } }
+      const rest = held.filter(f => !groups.some(g => g.ck === f.ck));
+      if (rest.length) groups.push({ job: 'Already held, other categories', ck: '__held', ranked: rest, keepN: rest.length, weight: 0, pc: 0, heldOnly: true });
+    }
+    say('<span class="spinner"></span> Checking how the picks fit together…'); await new Promise(r => setTimeout(r, 20));
+    pickKeepers(groups, bpAlike);
+    // amounts: each category's share of new money, split equally across its kept funds; lumpsum to ₹1,000, SIP to ₹500
+    const split = (amt, n, step) => { if (!n || !amt) return Array(n).fill(0); const each = Math.floor(amt / n / step) * step, a = Array(n).fill(each); a[0] += Math.round((amt - each * n) / step) * step; return a; };
+    for (const g of groups) { if (g.heldOnly) { g.kept.forEach(f => { f.lump = 0; f.sip = 0; }); continue; }
+      const L = split(lump * g.pc / 100, g.kept.length, 1000), Sx = split(sip * g.pc / 100, g.kept.length, 500); g.kept.forEach((f, i) => { f.lump = L[i]; f.sip = Sx[i]; }); }
+    const picks = groups.flatMap(g => g.kept);
+    const wmap = new Map(); for (const f of picks) { const w = f.held ? f.val + (f.lump || 0) : (lump > 0 ? f.lump : f.sip * 12); if (w > 0) wmap.set(f.code, (wmap.get(f.code) || 0) + w); }
+    const X = wmap.size ? xrCompute(wmap) : null;
+    BP.last = { groups, picks, X, lump, sip, plan, W, minAum, client: $('bpClient').value.trim(), held: held.length };
+    bpRender(); rs.innerHTML = '✓ Done, see below'; $('bpOut').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch (e) { console.error(e); rs.innerHTML = ''; bpSt('Could not complete: ' + esc(e.message) + '. Nothing has been estimated; please retry.', true); }
+  finally { btn.disabled = false; }
+}
+function bpRender() {
+  const B = BP.last; if (!B) return; const X = B.X, picks = B.picks, R = X && X.mixRoll;
+  let hiOv = null; for (let i = 0; i < picks.length; i++) for (let j = i + 1; j < picks.length; j++) { const o = bpOverlap(picks[i], picks[j]); if (isNum(o) && (!hiOv || o > hiOv.o)) hiOv = { o, a: picks[i], b: picks[j] }; }
+  const T = [];
+  T.push(tile('Funds', picks.length, B.held ? `${B.held} already held` : `${B.groups.length} categories`));
+  T.push(tile('Different from index', X && isNum(X.activeShare) ? X.activeShare.toFixed(0) + '%' : '—', 'active share · aim for 40%+', X && isNum(X.activeShare) ? (X.activeShare >= 40 ? 'good' : 'bad') : ''));
+  T.push(tile('Highest overlap', hiOv ? hiOv.o.toFixed(0) + '%' : '—', hiOv ? `${esc(hiOv.a.short)} & ${esc(hiOv.b.short)}` : 'between any two picks'));
+  T.push(tile('Largest fund house', X && X.amc.length ? X.amc[0][1].toFixed(0) + '%' : '—', X && X.amc.length ? esc(X.amc[0][0].replace(/ Mutual Fund$/i, '')) : '—'));
+  T.push(tile('Ahead of its index', R ? R.hit.toFixed(0) + '%' : '—', R ? `of ${R.n} three-year periods · this mix, 10 yrs` : 'not enough history'));
+  const c5 = f => NAVS[f.code] ? cagr(NAVS[f.code], 5) : null, hit = f => f.an && f.an.roll ? f.an.roll.hit : (f.roll ? f.roll.hit : null);
+  const card = g => {
+    const others = g.ranked.filter(f => !g.kept.includes(f)).slice(0, 4);
+    const maxOv = f => { let m = null, w = null; for (const p of picks) if (p !== f) { const o = bpOverlap(f, p); if (isNum(o) && (m === null || o > m)) { m = o; w = p; } } return m === null ? 'overlap unknown (holdings not in data)' : `most overlap ${m.toFixed(0)}% (with ${w.short})`; };
+    const row = (f, kept) => `<tr><td class="l">${callBtns(f.name)}<b>${esc(f.short)}</b>${f.held ? ' <span class="pill">held</span>' : ''}${BP.swap[f.code] ? ' <span class="pill">your swap</span>' : ''}<span class="fund-meta">${kept ? maxOv(f) : esc((g.blocked.get(f) || {}).why || 'lower in the ranking')}</span></td>
+      <td>${kept ? (B.lump ? inr(f.lump) : '') + (B.lump && B.sip ? '<span class="fund-meta">' : '') + (B.sip ? (B.lump ? 'SIP ' : '') + inr(f.sip) + (B.lump ? '' : '<span class="fund-meta">a month</span>') : '') + (B.lump && B.sip ? ' a month</span>' : '') : `<button class="ghost bpSwap" data-in="${f.code}" data-ck="${g.ck}" style="padding:3px 8px;font-size:11.5px">Use this</button>`}</td>
+      <td>${isNum(f.peer) ? `<b>${f.peer.toFixed(0)}</b>` : na}</td><td>${isNum(hit(f)) ? hit(f).toFixed(0) + '%' : na}</td><td>${pct(c5(f))}</td><td>${isNum(f.downCap) ? f.downCap.toFixed(0) : isNum(f.an && f.an.downCap) ? f.an.downCap.toFixed(0) : na}</td><td>${isNum(f.as) ? f.as.toFixed(0) + '%' : na}</td><td>${isNum(f.aum) ? '₹' + Math.round(f.aum).toLocaleString('en-IN') : na}</td>${kept && !f.held ? `<td><button class="linkbtn bpDrop" data-out="${f.code}" title="Leave this fund out of this build">drop</button></td>` : '<td></td>'}</tr>`;
+    const short = !g.heldOnly && g.kept.length < g.keepN ? `<div class="meta warn" style="margin:0 0 6px">Only ${g.kept.length} fund${g.kept.length === 1 ? '' : 's'} passed the checks; you asked for ${g.keepN}. Lower the fund-size floor or use one of the options below.</div>` : '';
+    const head = g.heldOnly ? `${g.job} <span class="ctsub">counted for fund-house and overlap checks</span>` : `${esc(g.job)} <span class="ctsub">${g.pc}% of equity${B.lump ? ' · ' + inrS(B.lump * g.pc / 100) : ''}${B.sip ? ' · SIP ' + inr(B.sip * g.pc / 100) + ' a month' : ''} · ${g.eligible} of ${g.total} funds passed the filters</span>`;
+    return `<div class="card2 lineup"><div class="ct">${head}</div>${short}
+      <div class="tablewrap"><table class="mini lut"><colgroup><col style="width:30%"><col style="width:13%"><col style="width:8%"><col style="width:10%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:8%"><col style="width:4%"></colgroup>
+      <thead><tr><th class="l">Fund</th><th>Amount</th><th>Peer score<span class="sub">0–100</span></th><th>Ahead of index<span class="sub">% of 3-yr periods</span></th><th>5-yr return</th><th>Down capture<span class="sub">lower = falls less</span></th><th>Different from index</th><th>Fund size<span class="sub">₹ Cr</span></th><th></th></tr></thead>
+      <tbody>${g.kept.map(f => row(f, true)).join('')}${others.length ? `<tr><td colspan="9" class="l" style="background:#fff !important;padding-top:10px"><b style="font-size:12.5px;color:var(--secondary)">Other options</b> <span class="fund-meta" style="display:inline">next in line, with why they were not picked</span></td></tr>` + others.map(f => row(f, false)).join('') : ''}</tbody></table></div></div>`;
+  };
+  $('bpOut').innerHTML = `<div class="panel xr4 bp">
+    <h3>Indicative shortlist${B.client ? ' · ' + esc(B.client) : ''} <span class="sub">${B.lump ? 'Lumpsum ' + inr(B.lump) : ''}${B.lump && B.sip ? ' + ' : ''}${B.sip ? 'SIP ' + inr(B.sip) + ' a month' : ''} · ${esc(B.plan)} plans · data to ${fmtDate(M0)}</span></h3>
+    <div class="tiles">${T.join('')}</div>
+    ${B.groups.map(card).join('')}
+    <div class="btnrow"><button class="primary" id="bpSend">Send to Portfolio Generator</button><span class="selcount">Opens the Portfolio Generator with these funds and amounts filled in.</span></div>
+    ${callsPanel()}
+    <div class="meta">How funds are picked: the Fund Lab peer score within the category (${winLabel(B.W)} window, 5+ years of history), fund size at least ₹${Math.round(B.minAum).toLocaleString('en-IN')} Cr, not index-like (under ${XRT.as}% different from its index). No two picks doing the same job: over 35% same stocks within a category or over 50% across categories, or same-bets correlation ${XRT.corr}+. At most 2 funds per fund house. Your ★ Prefer funds go first; ✕ Avoid funds are never picked. Lumpsum amounts are rounded to ₹1,000 and SIPs to ₹500. The score is a track record, not a forecast; the shortlist is indicative.${X && R ? ' The 10-year record of this mix uses today\'s picks, so it looks back with hindsight.' : ''}</div>
+  </div>`;
+  $('bpOut').querySelectorAll('.bpSwap').forEach(b => b.onclick = () => { BP.swap[b.dataset.in] = true; bpRun(); });
+  $('bpOut').querySelectorAll('.bpDrop').forEach(b => b.onclick = () => { BP.ban[b.dataset.out] = true; delete BP.swap[b.dataset.out]; bpRun(); });
+  $('bpSend').onclick = bpSend;
+}
+function bpSend() {
+  const B = BP.last; if (!B) return;
+  const mk = k => B.picks.filter(f => !B.groups.find(g => g.kept.includes(f)).heldOnly && f[k] > 0).map(f => ({ name: xrCore(f.name.replace(/\([^)]*\)/g, ' ')).replace(/\s+/g, ' ').trim(), cat: BP_PG[f.ck] || '', amt: String(f[k]), folio: '', manual: !!BP_PG[f.ck], custom: false }));
+  const lumpRows = mk('lump'), sipRows = mk('sip');
+  let cur = null; try { cur = JSON.parse(localStorage.getItem('ab_state') || 'null'); } catch (e) {}
+  const has = cur && ['lump', 'sip'].some(k => Array.isArray(cur[k]) && cur[k].some(f => f && f.name));
+  if (has && !confirm('The Portfolio Generator already has a portfolio in progress' + (cur.name ? ' (' + cur.name + ')' : '') + '. Replace it with this shortlist?')) return;
+  const d = new Date(), iso = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  const S = Object.assign({}, cur || {}, { name: B.client, date: iso, type: B.lump && B.sip ? 'Both' : B.sip ? 'SIP' : 'Lumpsum', lump: lumpRows.length ? lumpRows : [{ name: '', cat: '', amt: '', folio: '', manual: false, custom: false }], sip: sipRows.length ? sipRows : [{ name: '', cat: '', amt: '', folio: '', manual: false, custom: false }] });
+  try { localStorage.setItem('ab_state', JSON.stringify(S)); } catch (e) { alert('Could not hand over: browser storage is blocked.'); return; }
+  window.open('Portfolio_Generator.html', '_blank');
+}
+bpSplitRender();
+$('pages').addEventListener('click', e => { const b = e.target.closest('[data-page="build"]'); if (b) { bpSplitRender(); $('bpUseX').disabled = !XR.last; $('bpUseX').parentElement.style.opacity = XR.last ? 1 : .55; } });
+
+window.FS = { rbsa, solveLinear, factorMix, phases, bets, scoreGroup, pctRanks, analyse, captures, riskStats, rolling3, cagr, monthlyRet, trailing, valAt, me, peerSeries, holdKey, findHoldings, loadTRI, loadHoldings, runCategories, runBacktest, get TRI() { return TRI; }, get HOLD() { return HOLD; }, get M0() { return M0; }, NAVS, get RESULTS() { return RESULTS; }, ensureMasterData, peerUniverse, pickKeepers, bpAlike, bpOverlap, get BP() { return BP; }, getCalls, xrSimulate, leadChart, xrTokens, xrMatch, xrParseAOA, xrCompute, xrUniverse, XR };
 </script>
 </body>
 </html>
