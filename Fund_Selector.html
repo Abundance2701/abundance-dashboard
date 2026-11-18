@@ -1689,7 +1689,9 @@ function xrLineup(X) {
   for (const job of JOB_ORDER) { const fs = G.get(job); if (!fs) continue;
     const val = fs.reduce((s, f) => s + f.val, 0), share = val / X.total * 100, [lo, hi] = USUAL[job];
     const keepN = Math.min(fs.length, share < 10 ? lo : hi);
-    const ranked = [...fs].sort((a, b) => (isNum(b.peer) ? b.peer : -1) - (isNum(a.peer) ? a.peer : -1) || b.val - a.val);
+    // order: real holdings before tiny ones, distinctive before index-like, then the Fund Lab peer score, then size
+    const tinyF = f => f.val / X.total * 100 < XRT.tiny, idxF = f => isNum(f.as) && f.as < XRT.as;
+    const ranked = [...fs].sort((a, b) => tinyF(a) - tinyF(b) || idxF(a) - idxF(b) || (isNum(b.peer) ? b.peer : -1) - (isNum(a.peer) ? a.peer : -1) || b.val - a.val);
     const kept = [];
     for (const f of ranked) {
       const tiny = f.val / X.total * 100 < XRT.tiny, twin = kept.find(k => alike(f, k));
@@ -1697,10 +1699,12 @@ function xrLineup(X) {
       const into = twin || [...kept].sort((a, b) => (ov(f, b) || 0) - (ov(f, a) || 0))[0] || kept[0];
       f.sug = { keep: false, into, reason: twin ? `does the same job as #${twin.no} (${why(f, twin)})` : tiny ? `under ${XRT.tiny}% of the portfolio` : `more ${job.toLowerCase()} funds than you usually hold` };
     }
+    for (const f of fs) f.histM = NAVS[f.code] ? histMonths(NAVS[f.code]) : 0;
     for (const f of fs) { // most similar fund in another group, for awareness
       const other = X.funds.filter(g => g !== f && jobOf(g) !== job && alike(f, g)).sort((a, b) => (ov(f, b) || 0) - (ov(f, a) || 0))[0];
       f.alikeElse = other ? `#${other.no} ${other.short} (${why(f, other)})` : null; }
-    groups.push({ job, fs: ranked, val, share, lo, hi, keepN, merge: ranked.filter(f => !f.sug.keep).length });
+    const keptN = ranked.filter(f => f.sug.keep).length;
+    groups.push({ job, fs: ranked, val, share, lo, hi, keepN: keptN, merge: ranked.length - keptN, allIdx: kept.length && kept.every(idxF) });
   }
   return groups;
 }
@@ -1713,11 +1717,12 @@ function xrLineupCard(g, X) {
   const verdict = g.merge ? `<span class="vchip review">Keep ${g.keepN}, merge ${g.merge}</span>` : '<span class="vchip keep">Fine as it is</span>';
   const rows = g.fs.map((f, i) => `<tr><td class="l"><b>#${f.no} ${esc(f.short)}</b>${f.alikeElse ? `<span class="fund-meta">also like ${esc(f.alikeElse)}</span>` : ''}${isNum(f.as) && f.as < XRT.as ? `<span class="fund-meta warn">index-like: ${f.as.toFixed(0)}% different from its index</span>` : ''}</td>
     <td>${inrS(f.val)}<span class="fund-meta">${(f.val / X.total * 100).toFixed(1)}%</span></td>
-    <td>${isNum(f.peer) ? cellB(f.peer, bP, v => v.toFixed(0)) + `<span class="fund-meta">of ${f.peerN} peers</span>` : `<span class="na">—</span><span class="fund-meta">${f.asset !== 'Equity' || !f.ck || !TIER1[f.ck] || TIER1[f.ck].broad ? 'no category index' : f.an && f.an.roll ? 'not scored' : 'under 5 yrs'}</span>`}</td>
+    <td>${isNum(f.peer) ? cellB(f.peer, bP, v => v.toFixed(0)) + `<span class="fund-meta">of ${f.peerN} peers</span>` : `<span class="na">—</span><span class="fund-meta">${f.asset !== 'Equity' || !f.ck || !TIER1[f.ck] || TIER1[f.ck].broad ? 'no category index' : f.histM < 60 ? `${Math.floor(f.histM / 12)} yrs of NAV data` : 'not scored'}</span>`}</td>
     <td>${cellB(hit(f), bH, v => v.toFixed(0) + '%')}</td><td>${cellB(c5(f), b5, v => v.toFixed(1) + '%')}</td><td>${cellB(dc(f), bD, v => v.toFixed(0))}</td>
     <td class="l">${f.sug.keep ? '<span class="vchip keep">Keep</span>' : `<span class="vchip exit">Merge into #${f.sug.into ? f.sug.into.no : '—'}</span><span class="fund-meta">${esc(f.sug.reason)}</span>`}</td></tr>`).join('');
   return `<div class="card2 lineup"><div class="ct" style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><span>${head}</span>${verdict}</div>
-    <div class="tablewrap"><table class="mini lut"><colgroup><col style="width:32%"><col style="width:10%"><col style="width:11%"><col style="width:11%"><col style="width:9%"><col style="width:10%"><col style="width:17%"></colgroup><thead><tr><th class="l">Fund <span class="sub">best record first</span></th><th>Value</th><th>Peer score<span class="sub">0–100, as Fund Lab</span></th><th>Ahead of index<span class="sub">% of 3-yr periods</span></th><th>5-yr return</th><th>Down capture<span class="sub">lower = falls less</span></th><th class="l">Suggestion</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+    ${g.allIdx ? `<div class="meta warn" style="margin:0 0 6px">Every ${g.job.toLowerCase()} fund kept here is index-like. A ${g.job.toLowerCase()} index fund, or a more distinctive fund (Phase 4), may serve better.</div>` : ''}
+    <div class="tablewrap"><table class="mini lut"><colgroup><col style="width:32%"><col style="width:10%"><col style="width:11%"><col style="width:11%"><col style="width:9%"><col style="width:10%"><col style="width:17%"></colgroup><thead><tr><th class="l">Fund <span class="sub">suggested keepers first</span></th><th>Value</th><th>Peer score<span class="sub">0–100, as Fund Lab</span></th><th>Ahead of index<span class="sub">% of 3-yr periods</span></th><th>5-yr return</th><th>Down capture<span class="sub">lower = falls less</span></th><th class="l">Suggestion</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
 }
 function xrRender(X) {
   const F = X.funds, client = $('xrClient').value.trim(), R = X.mixRoll, LU = xrLineup(X);
@@ -1745,7 +1750,7 @@ function xrRender(X) {
     <h3>Portfolio X-ray${client ? ' · ' + esc(client) : ''} <span class="sub">holdings as on ${esc(X.asof || '—')} · NAVs and index to ${fmtDate(M0)}</span></h3>
     <div class="tiles">${T.join('')}</div>
     <div class="card2"><div class="ct">What to fix</div>${fixes.length ? `<ol class="fixes">${fixes.map(x => `<li>${x}</li>`).join('')}</ol>` : '<div>Nothing flagged.</div>'}</div>
-    <div class="ct xsec">Fund line-up by category <span class="ctsub">ranked by track record within the category; a fund is merged when it duplicates a better one, is tiny, or the category has more funds than you usually hold</span></div>
+    <div class="ct xsec">Fund line-up by category <span class="ctsub">keepers chosen by Fund Lab peer score, preferring real holdings over tiny ones and distinctive funds over index-like ones. A fund is merged when it duplicates a keeper, is tiny, or the category has more funds than you usually hold</span></div>
     ${LU.map(g => xrLineupCard(g, X)).join('')}
     <div class="btnrow"><button class="primary" id="xrSugBtn">Test these suggestions: before vs after</button><span class="selcount">Exit tax and loads not counted; stagger exits where gains are large.</span></div>
     <div id="xrSugOut"></div>
