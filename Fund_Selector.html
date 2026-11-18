@@ -1691,7 +1691,7 @@ function xrLineup(X) {
     const val = fs.reduce((s, f) => s + f.val, 0), share = val / X.total * 100, [lo, hi] = USUAL[job];
     const keepN = Math.min(fs.length, share < 10 ? lo : hi);
     // order: real holdings before tiny ones, distinctive before index-like, then the Fund Lab peer score, then size
-    const tinyF = f => f.val / X.total * 100 < XRT.tiny, idxF = f => isNum(f.as) && f.as < XRT.as;
+    const tinyF = f => f.val / X.total * 100 < XRT.tiny, idxF = f => f.asset === 'Equity' && isNum(f.as) && f.as < XRT.as;
     const ranked = [...fs].sort((a, b) => tinyF(a) - tinyF(b) || idxF(a) - idxF(b) || (isNum(b.peer) ? b.peer : -1) - (isNum(a.peer) ? a.peer : -1) || b.val - a.val);
     const kept = [];
     const isEq = f => f.asset === 'Equity' || f.asset === 'Hybrid';
@@ -1708,7 +1708,7 @@ function xrLineup(X) {
       const other = X.funds.filter(g => g !== f && jobOf(g) !== job && alike(f, g)).sort((a, b) => (ov(f, b) || 0) - (ov(f, a) || 0))[0];
       f.alikeElse = other ? `#${other.no} ${other.short} (${why(f, other)})` : null; }
     const keptN = ranked.filter(f => f.sug.keep).length;
-    groups.push({ job, fs: ranked, val, share, lo, hi, keepN: keptN, merge: ranked.length - keptN, allIdx: kept.length && kept.every(idxF) });
+    groups.push({ job, fs: ranked, val, share, lo, hi, keepN: keptN, merge: ranked.length - keptN, allIdx: !['Hybrid', 'International', 'Index & other'].includes(job) && kept.length && kept.every(idxF) });
   }
   return groups.sort((a, b) => JOB_ORDER.indexOf(a.job) - JOB_ORDER.indexOf(b.job));
 }
