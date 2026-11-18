@@ -1,10 +1,129 @@
 {
- "updated": "2026-11-18T10:46:12Z",
+ "updated": "2026-11-18T18:53:08Z",
  "items": [
+  {
+   "src": "RBI",
+   "title": "Premature redemption under Sovereign Gold Bond (SGB) Scheme - Redemption Price for premature redemption of SGB 2020-21 Series II due on November 19, 2026",
+   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63996",
+   "date": "2026-11-18",
+   "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Final Empanelment of Algo Provider currently empanelled on a provisional basis with the exchange",
+   "url": "https://nsearchives.nseindia.com/content/circulars/INVG77498.pdf",
+   "date": "2026-11-18",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Algo Provider - Empanelment for providing Algorithmic Trading Solutions",
+   "url": "https://nsearchives.nseindia.com/content/circulars/INVG77497.pdf",
+   "date": "2026-11-18",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Suspension of Zero Coupon Zero Principal (ZCZP) security - Matoshri Jayaben Himmatlal Shah Charitable Trust",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77494.pdf",
+   "date": "2026-11-18",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of further issues of securities",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77493.pdf",
+   "date": "2026-11-18",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of further issue of Spandana Sphoorty Financial Limited",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77492.pdf",
+   "date": "2026-11-18",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of units issued by Invesco Asset Management (India) Private Limited (Invesco India Silver ETF)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77491.pdf",
+   "date": "2026-11-18",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of privately placed securities on the debt market segment of the Exchange",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77489.pdf",
+   "date": "2026-11-18",
+   "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Reminder for Submission of VAPT Action Taken Report for the FY 2025-26",
+   "url": "https://nsearchives.nseindia.com/content/circulars/INSP77487.pdf",
+   "date": "2026-11-18",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of privately placed securities on capital market segment",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77486.pdf",
+   "date": "2026-11-18",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Face Value Split - Varvee Global Limited (VGL)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77485.pdf",
+   "date": "2026-11-18",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Applicability of Short-Term Additional Surveillance Measure (ST-ASM)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77484.zip",
+   "date": "2026-11-18",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Applicability of Additional Surveillance Measure (ASM)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77483.zip",
+   "date": "2026-11-18",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Applicability of Enhanced Surveillance Measure (ESM)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77481.zip",
+   "date": "2026-11-18",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Availability of Invesco India Silver ETF Fund of Fund on NSE MF Invest Platform",
+   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77480.pdf",
+   "date": "2026-11-18",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Change in scheme name of Zerodha CASE Mutual Fund on NSE MF Invest platform",
+   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77479.zip",
+   "date": "2026-11-18",
+   "important": true
+  },
   {
    "src": "NSE",
    "title": "EGR - Multiple Settlement scheduled on November 25, 2026",
    "url": "https://nsearchives.nseindia.com/content/circulars/EGR77478.pdf",
+   "date": "2026-11-18",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Trade for Trade - J.K.Shah Commerce Education Limited",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77477.pdf",
    "date": "2026-11-18",
    "important": false
   },
@@ -107,15 +226,15 @@
   ],
   "https://rbi.org.in/pressreleases_rss.xml": [
    10,
-   2
+   3
   ],
   "https://rbi.org.in/notifications_rss.xml": [
    10,
    10
   ],
   "https://nsearchives.nseindia.com/content/RSS/Circulars.xml": [
-   3,
-   2
+   24,
+   18
   ]
  },
  "errors": []
