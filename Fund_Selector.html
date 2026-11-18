@@ -1236,7 +1236,7 @@ const XR = { rows: [], uni: null, byCode: null, last: null };
 const xrNum = v => { if (typeof v === 'number') return v; const s = String(v == null ? '' : v).replace(/[₹,\s]/g, '').replace(/^Rs\.?/i, ''); const n = parseFloat(s); return isNaN(n) ? NaN : n; };
 const inr = v => isNum(v) ? '₹' + Math.round(v).toLocaleString('en-IN') : '—';
 const inrS = v => !isNum(v) ? '—' : v >= 1e7 ? '₹' + (v / 1e7).toFixed(2) + ' Cr' : v >= 1e5 ? '₹' + (v / 1e5).toFixed(2) + ' L' : inr(v);
-const xrShort = n => { const p = String(n || '').split(/\s+[-–]\s+/)[0]; return p.replace(/\b(fund|scheme)\b/gi, '').replace(/\s+/g, ' ').trim() || String(n); };
+const xrShort = n => { const p = xrCore(String(n || '').replace(/\([^)]*\)/g, ' ')); return p.replace(/\b(fund|scheme)\b/gi, '').replace(/\s+/g, ' ').trim() || String(n); };
 const XR_STOP = new Set('fund plan option scheme the of and mutual mf regular direct idcw dividend payout reinvestment reinvest investment sweep cumulative erstwhile formerly known as an open ended gr dir reg opt'.split(' '));
 const XR_ALIAS = { absl: 'aditya birla sun life', abslmf: 'aditya birla sun life', mosl: 'motilal oswal', pru: 'prudential', ppfas: 'parag parikh', idfc: 'bandhan', bob: 'baroda bnp paribas', boi: 'bank of india' };
 function xrCore(s) {   // scheme name without plan/option tails: the part before the first " - " / "-" separator
