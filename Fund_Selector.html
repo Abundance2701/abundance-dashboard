@@ -143,6 +143,31 @@
   .dv{text-align:right; font-weight:700;}
   table.plain td{border-bottom:1px dashed #edf1ee; background:#fff !important;}
   .modal h3 .ctsub{text-transform:none;}
+  /* Phase 3: portfolio X-ray */
+  .xgrid{border-collapse:separate; border-spacing:2px; width:auto; font-size:12px;}
+  .xgrid th{background:none !important; color:var(--muted); font-family:Montserrat,sans-serif; font-size:10.5px; font-weight:700; padding:3px 4px; text-align:center; cursor:default; text-transform:none; letter-spacing:0;}
+  .xgrid th.rl{text-align:left; color:var(--dark); font-family:Calibri,sans-serif; font-size:12.5px; font-weight:600; white-space:nowrap; max-width:240px; overflow:hidden; text-overflow:ellipsis; position:sticky; left:0; background:#fff !important; z-index:1;}
+  .xgrid td{width:46px; min-width:46px; height:30px; text-align:center; vertical-align:middle; border-radius:5px; border:none !important; padding:2px; font-weight:700; color:var(--dark); white-space:nowrap;}
+  .xgrid td.self{background:#f1f1f1 !important; color:#c4c0c6; font-weight:400;}
+  .rules{display:flex; flex-wrap:wrap; gap:8px; margin:4px 0 14px;}
+  .rule{border:1px solid var(--line); border-radius:999px; padding:5px 12px; font-size:12.5px; background:#fff;}
+  .rule.ok{border-color:#9fd1b0; background:#eef8f1;} .rule.warn{border-color:#f3cf7a; background:#fff8e6;} .rule.nd{color:var(--muted);}
+  .rule b{font-family:Montserrat,sans-serif; font-size:11.5px;}
+  .hbar{display:grid; grid-template-columns:minmax(120px,210px) 1fr 64px; align-items:center; gap:8px; font-size:12.5px; margin:4px 0;}
+  .hbar .tr{height:11px; background:#eef2ef; border-radius:6px; overflow:hidden; position:relative;}
+  .hbar .tr i{display:block; height:100%; border-radius:6px;}
+  .hbar .tr u{position:absolute; top:-2px; bottom:-2px; width:2px; background:var(--dark); text-decoration:none;}
+  .hbar .val{text-align:right; font-weight:700;}
+  .hbar .sm{display:block; font-size:10.5px; color:var(--muted); font-weight:400;}
+  .xin td{vertical-align:middle;}
+  .xin select{min-width:0; width:100%; max-width:440px; font-size:13px; padding:5px 8px;}
+  .xin input{width:120px; font-size:13px; padding:5px 8px;}
+  .mstat{font-size:11px; font-weight:700; border-radius:6px; padding:1px 6px;}
+  .mstat.ok{background:#eaf5ee; color:var(--primary);} .mstat.chk{background:#fff1cc; color:#8a5a00;} .mstat.no{background:#f6e3de; color:var(--down);}
+  .xsec{margin-top:16px;}
+  .szrow{display:grid; grid-template-columns:52px 1fr; gap:2px 8px; align-items:center; margin:6px 0; font-size:12.5px;}
+  .szrow .capbar{width:100% !important; height:13px;} .szrow .meta{grid-column:2;}
+  @media (max-width:760px){ .xgrid th.rl{max-width:140px;} .hbar{grid-template-columns:minmax(90px,130px) 1fr 54px;} }
 </style>
 </head>
 <body>
@@ -159,7 +184,7 @@
     <button data-page="bt">Back-test</button>
     <button data-page="bench">Benchmarks &amp; data</button>
     <button data-page="method">How it works</button>
-    <button disabled title="Phase 3">Portfolio X-ray (Phase 3)</button>
+    <button data-page="xray">Portfolio X-ray</button>
     <button disabled title="Phase 4">Build portfolio (Phase 4)</button>
   </div>
 
@@ -243,6 +268,29 @@
 
   <!-- ===================== METHOD ===================== -->
   <section id="page-method" class="hide"><div class="panel method" id="methodBox"></div></section>
+  <!-- ===================== PORTFOLIO X-RAY (Phase 3) ===================== -->
+  <section id="page-xray" class="hide">
+    <div class="panel">
+      <h3>Client portfolio <span class="sub">upload a holdings statement, paste rows, or add funds one by one · stays on this device</span></h3>
+      <div class="controls">
+        <div class="field"><label>Client name (optional)</label><input type="text" id="xrClient" placeholder="e.g. Ramesh K" style="min-width:220px"></div>
+        <div class="field"><label>Upload Excel / CSV</label><input type="file" id="xrFile" accept=".xlsx,.xls,.csv" style="font-size:13px;max-width:260px"></div>
+        <div class="field" style="flex:1 1 320px"><label>Add a fund</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap"><input type="text" id="xrAddName" list="xrNames" placeholder="Start typing a scheme name" style="flex:1 1 260px;min-width:0"><input type="text" id="xrAddAmt" inputmode="decimal" placeholder="Value ₹" style="min-width:0;width:130px"><button class="ghost" id="xrAddBtn">Add</button></div>
+          <datalist id="xrNames"></datalist></div>
+      </div>
+      <details id="xrPasteWrap" style="margin-top:10px"><summary class="linkbtn" style="font-size:13px">Paste rows from Excel instead</summary>
+        <textarea id="xrPaste" rows="5" style="width:100%;margin-top:6px;font-family:Calibri,sans-serif;font-size:13px;border:1.5px solid var(--line);border-radius:7px;padding:8px" placeholder="Copy the table including its header row (a scheme-name column and a current-value column), then paste here."></textarea>
+        <button class="ghost" id="xrPasteBtn" style="margin-top:6px">Read pasted rows</button></details>
+      <div class="status" id="xrStatus"></div>
+      <div id="xrInput" class="hide" style="margin-top:10px">
+        <div class="tablewrap"><table id="xrInTbl"></table></div>
+        <div class="btnrow"><button class="primary" id="xrRunBtn">Run X-ray</button><button class="ghost" id="xrClearBtn">Clear all</button><span class="selcount" id="xrInSum"></span></div>
+      </div>
+    </div>
+    <div id="xrOut"></div>
+  </section>
+
 </div>
 
 <div class="modal-bg" id="modalBg"><div class="modal" id="modal"></div></div>
@@ -433,8 +481,8 @@ function matchesCategory(row, catVal) {
 const PHASES = [
   { n: 1, t: 'Data foundation & Fund Lab', d: 'Official TRI benchmarks, rolling, capture, risk', s: 'done' },
   { n: 2, t: 'Fund scoring & style', d: 'Peer scores, style & bets, market phases, back-test', s: 'done' },
-  { n: 3, t: 'Portfolio X-ray', d: 'Look-through overlap, active share, client portfolio upload', s: 'next' },
-  { n: 4, t: 'Build portfolio', d: 'Amount + your split → diversified shortlist → Portfolio Generator', s: 'todo' },
+  { n: 3, t: 'Portfolio X-ray', d: 'Look-through overlap, active share, client portfolio upload', s: 'done' },
+  { n: 4, t: 'Build portfolio', d: 'Amount + your split → diversified shortlist → Portfolio Generator', s: 'next' },
   { n: 5, t: 'Strategy summary', d: 'Plain-language vetting strategy + monthly monitoring', s: 'todo' },
 ];
 $('roadmap').innerHTML = PHASES.map(p => `<div class="phase ${p.s}"><span class="st">${p.s === 'done' ? '✓ Built' : p.s === 'next' ? 'Next up' : 'Planned'}</span><b>Phase ${p.n} · ${p.t}</b>${p.d}</div>`).join('');
@@ -1146,6 +1194,7 @@ $('methodBox').innerHTML = `<h3>How it works, simply</h3>
 <div class="card2"><div class="ct">Bets (holdings)</div>From each AMC's monthly portfolio, compared with the index's own portfolio on the same date: how different it is, company size, sectors and stocks it holds more or less of.</div>
 <div class="card2"><div class="ct">Market phases</div>Each of the last 120 months is tagged: did the index rise or fall; which size led (large, mid, small); which style led (value, quality, momentum, low-vol). Then: how did the fund do in each kind of month? NSE has no "growth" style index, so growth can't be tagged; momentum is the nearest relative but not the same.</div>
 <div class="card2"><div class="ct">Score</div>Rank among category peers (100 = best) on three things: beats the index often · earns well for its risk · falls less. Needs 5 years of history.</div>
+<div class="card2"><div class="ct">Portfolio X-ray</div>Upload a client's holdings. Every fund is looked through to its stocks (AMC monthly portfolios) and compared with a <b>blended index</b>: each fund's own index, weighted by the client's money in it. Shows overlap between funds, how alike their bets are, fund-house spread and how the mix behaved in each market phase.</div>
 <div class="card2"><div class="ct">Time-machine test</div>Go back to each October from 2014 to 2023, pick using only what was known then, and see what happened over the next 3 years. Result: no number picked future winners; falling less did tend to repeat.</div>
 </div>
 <h3>How accurate is this?</h3>
@@ -1175,9 +1224,319 @@ $('clearCatsBtn').addEventListener('click', () => { setSelected([]); customKeywo
 $('saveFavLink').addEventListener('click', () => { const vals = getSelected(); if (!vals.length) { setStatus('Select the categories you want as Favorites first.'); return; } setStatus(saveFavs(vals) ? `Favorites saved: ${vals.map(v => CAT_LABEL[v]).join(', ')}.` : 'Could not save Favorites in this browser.'); refreshFavBtn(); });
 $('resetFavLink').addEventListener('click', () => { try { localStorage.removeItem(FAV_KEY); } catch (e) {} refreshFavBtn(); setStatus('Favorites reset to Large, Flexi, Small, Mid, Large & Mid Cap.'); });
 refreshFavBtn();
-$('pages').addEventListener('click', e => { const b = e.target.closest('[data-page]'); if (!b) return; $('pages').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); ['lab', 'bt', 'bench', 'method'].forEach(p => $('page-' + p).classList.toggle('hide', p !== b.dataset.page)); if (b.dataset.page === 'bench') renderBench(); });
+$('pages').addEventListener('click', e => { const b = e.target.closest('[data-page]'); if (!b) return; $('pages').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); ['lab', 'bt', 'bench', 'method', 'xray'].forEach(p => $('page-' + p).classList.toggle('hide', p !== b.dataset.page)); if (b.dataset.page === 'bench') renderBench(); });
 loadTRI().then(() => setStatus(`Index data ready (latest ${DAILY && DAILY['NIFTY 500'] ? fmtDate(DAILY['NIFTY 500'].at(-1).t) : fmtDate(M0)}). Pick categories, or press ★ Favorites.`)).catch(e => setStatus('Index data could not load: ' + e.message, true));
-window.FS = { rbsa, solveLinear, factorMix, phases, bets, scoreGroup, pctRanks, analyse, captures, riskStats, rolling3, cagr, monthlyRet, trailing, valAt, me, peerSeries, holdKey, findHoldings, loadTRI, loadHoldings, runCategories, runBacktest, get TRI() { return TRI; }, get HOLD() { return HOLD; }, get M0() { return M0; }, NAVS, get RESULTS() { return RESULTS; }, ensureMasterData };
+
+// =====================================================================================
+// PORTFOLIO X-RAY (Phase 3): look-through of a client's existing portfolio
+// Every number is computed from: the uploaded values, AMC monthly holdings (HOLD), index portfolios (HOLD.bench),
+// NSE TRI (TRI) and fund NAVs (NAVS). Missing data shows "—"; nothing is estimated.
+// =====================================================================================
+const XR = { rows: [], uni: null, byCode: null, last: null };
+const xrNum = v => { if (typeof v === 'number') return v; const s = String(v == null ? '' : v).replace(/[₹,\s]/g, '').replace(/^Rs\.?/i, ''); const n = parseFloat(s); return isNaN(n) ? NaN : n; };
+const inr = v => isNum(v) ? '₹' + Math.round(v).toLocaleString('en-IN') : '—';
+const inrS = v => !isNum(v) ? '—' : v >= 1e7 ? '₹' + (v / 1e7).toFixed(2) + ' Cr' : v >= 1e5 ? '₹' + (v / 1e5).toFixed(2) + ' L' : inr(v);
+const xrShort = n => { const p = String(n || '').split(/\s+[-–]\s+/)[0]; return p.replace(/\b(fund|scheme)\b/gi, '').replace(/\s+/g, ' ').trim() || String(n); };
+const XR_STOP = new Set('fund plan option scheme the of and mutual mf regular direct growth idcw dividend payout reinvestment reinvest investment sweep cumulative erstwhile formerly known as an open ended gr dir reg opt'.split(' '));
+const XR_ALIAS = { absl: 'aditya birla sun life', abslmf: 'aditya birla sun life', mosl: 'motilal oswal', pru: 'prudential', ppfas: 'parag parikh', idfc: 'bandhan', bob: 'baroda bnp paribas', boi: 'bank of india' };
+function xrTokens(s) {
+  let t = String(s || '').toLowerCase().replace(/\((?:formerly|erstwhile)[^)]*\)/g, ' ').replace(/&/g, ' and ').replace(/dividend yield/g, 'dividendyield')
+    .replace(/\b(large|mid|small|flexi|multi|micro)\s*-?\s*cap\b/g, '$1cap').replace(/[^a-z0-9 ]/g, ' ');
+  const out = new Set();
+  for (const w of t.split(/\s+/)) { if (!w || XR_STOP.has(w)) continue; if (XR_ALIAS[w]) XR_ALIAS[w].split(' ').forEach(x => out.add(x)); else out.add(w); }
+  return out;
+}
+const xrPlan = s => /\bdirect\b|\bdir\b/i.test(s) ? 'Direct' : 'Regular';
+const xrOpt = s => /idcw|dividend(?! ?yield)|payout|reinvest|bonus/i.test(s) ? 'I' : 'G';
+function xrAssetOf(r) {
+  if (isGoldSilver(r)) return 'Gold / Silver';
+  const c = (r.category || '').toLowerCase(), n = (r.scheme_name || '').toLowerCase();
+  if (/^equity/.test(c)) return 'Equity';
+  if (/^hybrid/.test(c)) return 'Hybrid';
+  if (/^debt/.test(c)) return 'Debt';
+  if (/index/.test(c + ' ' + n) && /nifty|sensex|bse|index/.test(n) && !/gilt|g-sec|gsec|sdl|bond|debt|crisil|psu|t-bill|liquid|target maturity|\d{4}/.test(n)) return 'Equity';
+  return 'Other';
+}
+async function xrUniverse() {
+  if (XR.uni) return XR.uni;
+  const data = await ensureMasterData();
+  XR.uni = data.filter(r => isActive(r) && !isETF(r)).map(r => ({ r, code: String(r.scheme_code), name: r.scheme_name, plan: planGroup(r), opt: /growth/i.test(r.scheme_option || '') ? 'G' : 'I', tok: xrTokens(r.scheme_name), aum: parseFloat(r.aaum_cr_quarterly_avg) || 0 }));
+  XR.byCode = new Map(XR.uni.map(u => [u.code, u]));
+  const names = XR.uni.filter(u => u.opt === 'G').map(u => u.name).sort((a, b) => a.localeCompare(b));
+  $('xrNames').innerHTML = names.map(n => `<option value="${esc(n)}">`).join('');
+  return XR.uni;
+}
+function xrMatch(raw) {
+  const A = xrTokens(raw), plan = xrPlan(raw), opt = xrOpt(raw);
+  if (!A.size) return { cands: [], code: null, st: 'no' };
+  const sc = [];
+  for (const u of XR.uni) { let inter = 0; for (const w of A) if (u.tok.has(w)) inter++; if (!inter) continue;
+    const dice = 2 * inter / (A.size + u.tok.size); sc.push({ u, dice, s: dice + (u.plan === plan ? 0.08 : 0) + (u.opt === opt ? 0.05 : 0) + Math.min(u.aum, 1e5) / 1e9 }); }
+  sc.sort((a, b) => b.s - a.s);
+  const top = sc.slice(0, 8), best = top[0];
+  if (!best || best.dice < 0.45) return { cands: top.map(x => x.u.code), code: null, st: 'no' };
+  return best.dice >= 0.8 ? { cands: top.map(x => x.u.code), code: best.u.code, st: 'ok' } : { cands: top.map(x => x.u.code), code: null, st: 'chk' };   // near-misses are never auto-picked
+}
+// Upload: header row with a scheme column and a value column (current/market value preferred over amount invested)
+function xrParseAOA(aoa) {
+  let h = -1;
+  for (let i = 0; i < Math.min(aoa.length, 40); i++) { const r = (aoa[i] || []).map(c => String(c ?? '').toLowerCase());
+    if (r.some(c => /scheme|fund/.test(c)) && r.some(c => /value|amount|valuation|market/.test(c))) { h = i; break; } }
+  if (h < 0) return null;
+  const hd = aoa[h].map(c => String(c ?? '').toLowerCase().trim());
+  const find = res => { for (const re of res) { const j = hd.findIndex(c => re.test(c)); if (j >= 0) return j; } return -1; };
+  const cs = find([/scheme\s*name/, /fund\s*name/, /scheme/, /fund/]);
+  const cv = find([/current\s*value|curr\.?\s*val|current\s*market|market\s*value|present\s*value|valuation/, /^value|value\b/, /amount|invested|cost/]);
+  if (cs < 0 || cv < 0) return null;
+  const rows = [];
+  for (let i = h + 1; i < aoa.length; i++) { const r = aoa[i] || [], s = r[cs];
+    if (!s || /^\s*(grand\s*)?(sub\s*)?total/i.test(String(s)) || /^\s*(grand\s*)?total/i.test(String(r[0] ?? ''))) continue;
+    const v = xrNum(r[cv]); if (isNaN(v) || v <= 0) continue;
+    rows.push({ raw: String(s).trim(), val: v }); }
+  return { rows, valCol: aoa[h][cv] };
+}
+let xrXlsx = null;
+function xrEnsureXLSX() {
+  if (window.XLSX) return Promise.resolve(true);
+  if (!xrXlsx) xrXlsx = new Promise(res => { const sc = document.createElement('script'); sc.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'; sc.onload = () => res(!!window.XLSX); sc.onerror = () => res(false); document.head.appendChild(sc); });
+  return xrXlsx;
+}
+const xrSt = (h, err) => { const s = $('xrStatus'); s.innerHTML = h; s.classList.toggle('err', !!err); };
+async function xrLoadRows(list, label) {
+  xrSt('<span class="spinner"></span>Matching scheme names with the AMFI fund list…');
+  try { await xrUniverse(); await loadHoldings(); } catch (e) { xrSt('The fund list could not load: ' + esc(e.message) + '. Please retry.', true); return; }
+  for (const x of list) { const m = xrMatch(x.raw); XR.rows.push({ raw: x.raw, val: x.val, ...m }); }
+  const chk = XR.rows.filter(r => r.st !== 'ok').length;
+  xrSt(`${label}: ${list.length} rows read.` + (chk ? ` <b>${chk} need a quick check</b> (marked amber/red): pick the right scheme from the list. Rows left unpicked are not included.` : ' All names matched.'));
+  xrRenderInput();
+}
+async function xrHandleFile(f) {
+  xrSt(`<span class="spinner"></span>Reading ${esc(f.name)}…`);
+  if (!(await xrEnsureXLSX())) { xrSt('The Excel reader could not load. Check the internet connection, or paste the rows instead.', true); return; }
+  let wb; try { wb = XLSX.read(await f.arrayBuffer(), { type: 'array' }); } catch (e) { xrSt(`Couldn't open ${esc(f.name)}. If it is password-protected or an old format, save it as .xlsx and try again.`, true); return; }
+  for (const n of wb.SheetNames) { const p = xrParseAOA(XLSX.utils.sheet_to_json(wb.Sheets[n], { header: 1, raw: true, defval: null }));
+    if (p && p.rows.length) { await xrLoadRows(p.rows, `${esc(f.name)} · sheet “${esc(n)}” · values from column “${esc(p.valCol)}”`); return; } }
+  xrSt(`Couldn't find a scheme-name column and a value column in ${esc(f.name)}. Check the header row and try again.`, true);
+}
+function xrRenderInput() {
+  $('xrInput').classList.toggle('hide', !XR.rows.length);
+  const opts = r => { const set = [...new Set([...(r.code ? [r.code] : []), ...r.cands])];
+    return (r.code ? '' : '<option value="">— pick the scheme —</option>') + set.map(c => { const u = XR.byCode.get(c); return u ? `<option value="${c}"${c === r.code ? ' selected' : ''}>${esc(u.name)}</option>` : ''; }).join(''); };
+  const stl = { ok: ['ok', 'Matched'], chk: ['chk', 'Please pick'], no: ['no', 'Not found'], man: ['ok', 'Picked'] };
+  $('xrInTbl').innerHTML = `<thead><tr><th class="l">#</th><th class="l">As uploaded</th><th class="l">Matched scheme (AMFI list)</th><th class="l">Category</th><th class="c">Holdings</th><th>Value ₹</th><th></th></tr></thead><tbody>${XR.rows.map((r, i) => {
+    const u = r.code ? XR.byCode.get(r.code) : null, hf = u ? findHoldings(u.name) : null, [c, t] = stl[r.st] || stl.no;
+    return `<tr class="xin"><td class="l">${i + 1}</td><td class="l" style="white-space:normal;max-width:260px">${esc(r.raw)}<br><span class="mstat ${c}">${t}</span></td><td class="l" style="white-space:normal;min-width:260px"><select data-i="${i}" class="xrSel">${opts(r)}</select></td><td class="l">${u ? esc(normCat(u.r)) : na}</td><td class="c">${hf ? `<span class="up" title="AMC portfolio for ${esc(hf.d)}">✓</span>` : u && ['Equity', 'Hybrid'].includes(xrAssetOf(u.r)) ? '<span class="warn" title="This fund house is not in the holdings data yet">not in data</span>' : '<span class="na">n/a</span>'}</td><td><input data-i="${i}" class="xrVal" type="text" inputmode="decimal" value="${Math.round(r.val).toLocaleString('en-IN')}"></td><td><button class="linkbtn xrDel" data-i="${i}" title="Remove">✕</button></td></tr>`; }).join('')}</tbody>`;
+  const tot = XR.rows.reduce((s, r) => s + (r.code ? r.val : 0), 0), un = XR.rows.filter(r => !r.code).length;
+  $('xrInSum').innerHTML = `${XR.rows.length} rows · matched value ${inr(tot)}${un ? ` · <span class="warn">${un} not matched (left out until picked)</span>` : ''}`;
+}
+$('xrInTbl').addEventListener('change', e => {
+  const i = +e.target.dataset.i; if (isNaN(i)) return;
+  if (e.target.classList.contains('xrSel')) { XR.rows[i].code = e.target.value || null; XR.rows[i].st = e.target.value ? 'man' : 'no'; xrRenderInput(); }
+  if (e.target.classList.contains('xrVal')) { const v = xrNum(e.target.value); if (!isNaN(v) && v > 0) XR.rows[i].val = v; xrRenderInput(); }
+});
+$('xrInTbl').addEventListener('click', e => { const b = e.target.closest('.xrDel'); if (!b) return; XR.rows.splice(+b.dataset.i, 1); xrRenderInput(); });
+$('xrFile').addEventListener('change', e => { const f = e.target.files[0]; if (f) xrHandleFile(f); e.target.value = ''; });
+$('xrPasteBtn').addEventListener('click', async () => {
+  const t = $('xrPaste').value; if (!t.trim()) return;
+  const aoa = t.replace(/\r/g, '').split('\n').filter(l => l.trim()).map(l => (l.includes('\t') ? l.split('\t') : parseCSVLine(l)).map(c => { c = c.trim().replace(/^"(.*)"$/, '$1'); return c === '' ? null : c; }));
+  const p = xrParseAOA(aoa);
+  if (!p || !p.rows.length) { xrSt('The pasted rows need a header row with a scheme-name column and a value column. Copy again starting from the header row.', true); return; }
+  await xrLoadRows(p.rows, `Pasted rows · values from column “${esc(p.valCol)}”`); $('xrPasteWrap').open = false; $('xrPaste').value = '';
+});
+$('xrAddBtn').addEventListener('click', async () => {
+  const name = $('xrAddName').value.trim(), v = xrNum($('xrAddAmt').value);
+  if (!name || isNaN(v) || v <= 0) { xrSt('Type a scheme name and a value in ₹.', true); return; }
+  try { await xrUniverse(); await loadHoldings(); } catch (e) { xrSt('The fund list could not load: ' + esc(e.message), true); return; }
+  const exact = XR.uni.find(u => u.name === name);
+  XR.rows.push(exact ? { raw: name, val: v, code: exact.code, cands: [exact.code], st: 'man' } : { raw: name, val: v, ...xrMatch(name) });
+  $('xrAddName').value = ''; $('xrAddAmt').value = ''; xrSt(''); xrRenderInput();
+});
+$('xrClearBtn').addEventListener('click', () => { XR.rows = []; XR.last = null; $('xrOut').innerHTML = ''; xrSt(''); xrRenderInput(); });
+$('pages').addEventListener('click', e => { const b = e.target.closest('[data-page="xray"]'); if (b && !XR.uni) { xrSt('<span class="spinner"></span>Loading the AMFI fund list (~9 MB, once per session)…'); xrUniverse().then(() => xrSt('Fund list ready. Upload a statement, paste rows, or add funds.')).catch(err => xrSt('The fund list could not load: ' + esc(err.message), true)); } });
+$('xrRunBtn').addEventListener('click', xrRun);
+
+// ---------- calculations ----------
+const HOLD_BENCH_INV = Object.fromEntries(Object.entries(HOLD_BENCH).map(([k, v]) => [v, k]));
+function xrMonthly(arr, W) {   // oldest first; null where a month is missing
+  const out = []; for (let i = 0; i < W; i++) { const k = W - i, p0 = valAt(arr, k), p1 = valAt(arr, k - 1); out.push(p0 && p1 ? p1.nav / p0.nav - 1 : null); } return out;
+}
+function pearson(x, y) {
+  const p = []; for (let i = 0; i < x.length; i++) if (x[i] !== null && y[i] !== null) p.push([x[i], y[i]]);
+  if (p.length < 24) return null;
+  const mx = mean(p.map(a => a[0])), my = mean(p.map(a => a[1])); let n = 0, dx = 0, dy = 0;
+  for (const [a, b] of p) { n += (a - mx) * (b - my); dx += (a - mx) ** 2; dy += (b - my) ** 2; }
+  return dx && dy ? n / Math.sqrt(dx * dy) : null;
+}
+async function xrRun() {
+  const use = XR.rows.filter(r => r.code && r.val > 0);
+  if (!use.length) { xrSt('Add at least one matched fund first.', true); return; }
+  try {
+    xrSt('<span class="spinner"></span>Loading index, holdings and NAV data…');
+    await loadTRI(); await loadHoldings(); await xrUniverse();
+    const agg = new Map(); for (const r of use) agg.set(r.code, (agg.get(r.code) || 0) + r.val);
+    await fetchNavs([...agg.keys()], (d, t) => xrSt(`<span class="spinner"></span>Fetching NAV history… ${d} / ${t}`));
+    XR.last = xrCompute(agg); xrRender(XR.last);
+    xrSt(`X-ray ready: ${agg.size} funds, ${inr(XR.last.total)}.`);
+  } catch (e) { console.error(e); xrSt('Could not complete: ' + esc(e.message) + '. Nothing has been estimated; please retry.', true); }
+}
+function xrCompute(agg) {
+  const S = HOLD.stocks, funds = [];
+  for (const [code, val] of agg) {
+    const u = XR.byCode.get(code), r = u.r, ck = catKeyOf(r), asset = xrAssetOf(r), hf = ['Equity', 'Hybrid'].includes(asset) ? findHoldings(u.name) : null;
+    let benchKey = null, broad = false;
+    if (ck && TIER1[ck]) { benchKey = TIER1[ck].bench; broad = !!TIER1[ck].broad; }
+    else if (hf && hf.bm && HOLD_BENCH_INV[hf.bm]) benchKey = HOLD_BENCH_INV[hf.bm];
+    const eqPct = hf && isNum(hf.eq) ? hf.eq : null;
+    funds.push({ code, u, r, val, name: u.name, short: xrShort(u.name), amc: r.amc || '—', cat: ck ? CANON_LABEL[ck] : normCat(r), ck, asset, hf, benchKey, broad,
+      eqVal: asset === 'Equity' ? val : asset === 'Hybrid' && isNum(eqPct) ? val * eqPct / 100 : asset === 'Hybrid' ? null : 0,
+      lookVal: hf && isNum(eqPct) ? val * eqPct / 100 : 0 });
+  }
+  funds.sort((a, b) => b.val - a.val);
+  funds.forEach((f, i) => f.no = i + 1);
+  const total = funds.reduce((s, f) => s + f.val, 0);
+  const byAsset = {}; for (const f of funds) byAsset[f.asset] = (byAsset[f.asset] || 0) + f.val;
+  const byCat = {}; for (const f of funds) byCat[f.cat] = (byCat[f.cat] || 0) + f.val;
+  // look-through over funds with AMC holdings
+  const cov = funds.filter(f => f.hf && f.lookVal > 0), E = cov.reduce((s, f) => s + f.lookVal, 0);
+  const eqHyb = funds.filter(f => f.asset === 'Equity' || f.asset === 'Hybrid'), eqHybVal = eqHyb.reduce((s, f) => s + f.val, 0);
+  const out = { funds, total, byAsset, byCat, cov, E, eqHyb, eqHybVal, covVal: cov.reduce((s, f) => s + f.val, 0), asof: HOLD.asof };
+  if (E > 0) {
+    const pv = new Map(), holders = new Map(), bw = new Map(); let bOk = true;
+    for (const f of cov) {
+      for (const [s, w] of f.hf.h) { pv.set(s, (pv.get(s) || 0) + f.lookVal * w / 100); holders.set(s, (holders.get(s) || 0) + 1); }
+      const B = f.benchKey ? benchWeights(f.benchKey) : null;
+      if (B && B.w) for (const [s, w] of B.w) bw.set(s, (bw.get(s) || 0) + f.lookVal / E * w); else bOk = false;
+    }
+    const p = new Map([...pv].map(([s, v]) => [s, v / E * 100]));
+    out.p = p; out.holders = holders; out.nStocks = p.size;
+    out.effN = 1 / [...p.values()].reduce((s, w) => s + (w / 100) ** 2, 0);
+    const top = [...p].sort((a, b) => b[1] - a[1]);
+    out.top10 = top.slice(0, 10).map(([s, w]) => ({ s, name: S[s] ? S[s][1] : s, w, n: holders.get(s), rs: w / 100 * E }));
+    out.top10sum = out.top10.reduce((s, x) => s + x.w, 0);
+    const secOf = s => S[s] ? S[s][2] : 'Other', capOf = s => S[s] ? S[s][3] : 'S';
+    const sumBy = (m, fn) => { const o = {}; for (const [s, w] of m) { const k = fn(s); o[k] = (o[k] || 0) + w; } return o; };
+    out.secP = sumBy(p, secOf); out.capP = sumBy(p, capOf);
+    out.top3sec = Object.values(out.secP).sort((a, b) => b - a).slice(0, 3).reduce((s, x) => s + x, 0);
+    if (bOk && bw.size) {
+      const keys = new Set([...p.keys(), ...bw.keys()]); let as = 0; for (const k of keys) as += Math.abs((p.get(k) || 0) - (bw.get(k) || 0));
+      out.activeShare = as / 2; out.bw = bw; out.secB = sumBy(bw, secOf); out.capB = sumBy(bw, capOf);
+      const mixB = {}; for (const f of cov) { const l = HOLD_BENCH[f.benchKey] || (f.benchKey === 'NIFTY500 MULTICAP 50:25:25' ? 'Nifty500 Multicap 50:25:25' : f.benchKey); mixB[l] = (mixB[l] || 0) + f.lookVal / E * 100; }
+      out.mixB = mixB;
+    }
+    const n5 = HOLD.bench['Nifty 500'];
+    if (n5) { const keys = new Set([...p.keys(), ...n5.keys()]); let as = 0; for (const k of keys) as += Math.abs((p.get(k) || 0) - (n5.get(k) || 0)); out.as500 = as / 2; }
+    // fund-vs-fund overlap (common weight, equity part of each fund)
+    out.ov = cov.map(a => cov.map(b => { if (a === b) return null; const wb = new Map(b.hf.h); let o = 0, n = 0; for (const [s, w] of a.hf.h) if (wb.has(s)) { o += Math.min(w, wb.get(s)); n++; } return { o, n }; }));
+    for (const f of cov) { const bb = f.benchKey ? bets(f.hf, f.benchKey) : null; f.as = bb && isNum(bb.activeShare) ? bb.activeShare : null; }
+  }
+  // excess-return correlation (36 months, each fund minus its own index, equity categories only)
+  const W = 36, ex = funds.filter(f => f.asset === 'Equity' && f.ck && TIER1[f.ck] && TRI.idx[f.benchKey] && NAVS[f.code] && NAVS[f.code].length);
+  const exS = ex.map(f => { const fr = xrMonthly(NAVS[f.code], W), br = xrMonthly(TRI.idx[f.benchKey].arr, W); return fr.map((x, i) => x !== null && br[i] !== null ? x - br[i] : null); });
+  out.ex = ex; out.corr = ex.map((a, i) => ex.map((b, j) => i === j ? null : pearson(exS[i], exS[j])));
+  out.exMonths = ex.map((f, i) => exS[i].filter(x => x !== null).length);
+  // market phases: equity funds held at today's weights vs the same weights in each fund's own index
+  const ph = ex, P = 120, R = regimes();
+  if (ph.length) {
+    const fr = ph.map(f => xrMonthly(NAVS[f.code], P)), br = ph.map(f => xrMonthly(TRI.idx[f.benchKey].arr, P));
+    const pr = [], bmr = [], nIn = [];
+    for (let i = 0; i < P; i++) { let wsum = 0, a = 0, b = 0, n = 0; ph.forEach((f, j) => { if (fr[j][i] !== null && br[j][i] !== null) { wsum += f.val; a += f.val * fr[j][i]; b += f.val * br[j][i]; n++; } });
+      pr.push(wsum ? a / wsum : null); bmr.push(wsum ? b / wsum : null); nIn.push(n); }
+    const flags = { fall: bmr.map(x => x !== null && x < 0), rise: bmr.map(x => x !== null && x > 0), lrg: R.lrg, mid: R.mid, sml: R.sml, val: R.val, qual: R.qual, mom: R.mom, lowv: R.lowv };
+    out.ph = {}; for (const [k] of PHASE_DEFS) { const idx = flags[k].map((on, i) => on && pr[i] !== null ? i : -1).filter(i => i >= 0);
+      out.ph[k] = idx.length >= 12 ? { n: idx.length, lead: mean(idx.map(i => pr[i] - bmr[i])) * 12 * 100, beat: idx.filter(i => pr[i] > bmr[i]).length / idx.length * 100 } : null; }
+    out.phMonths = pr.filter(x => x !== null).length; out.phFull = nIn.filter(n => n === ph.length).length; out.phN = ph.length;
+  }
+  // fund houses: share of equity money (equity funds + equity part of hybrids)
+  const amc = {}; let eqMoney = 0, eqUnknown = 0;
+  for (const f of funds) { if (f.asset !== 'Equity' && f.asset !== 'Hybrid') continue; if (!isNum(f.eqVal)) { eqUnknown += f.val; continue; } amc[f.amc] = (amc[f.amc] || 0) + f.eqVal; eqMoney += f.eqVal; }
+  out.amc = Object.entries(amc).map(([a, v]) => [a, v / eqMoney * 100, v]).sort((a, b) => b[1] - a[1]); out.eqMoney = eqMoney; out.eqUnknown = eqUnknown;
+  // rule checks (warnings, not blocks)
+  const eqF = funds.filter(f => f.asset === 'Equity' || f.asset === 'Hybrid'), rules = [];
+  const sameCat = {}; for (const f of eqF) { const k = f.amc + '|' + f.cat; (sameCat[k] = sameCat[k] || []).push(f); }
+  const dupCat = Object.values(sameCat).filter(a => a.length > 1);
+  rules.push({ ok: !dupCat.length, t: 'One fund per AMC per category', d: dupCat.length ? dupCat.map(a => `${a[0].amc}: ${a.length} × ${a[0].cat}`).join('; ') : 'No repeats' });
+  const perAmc = {}; for (const f of eqF) perAmc[f.amc] = (perAmc[f.amc] || 0) + 1;
+  const many = Object.entries(perAmc).filter(([, n]) => n > 2);
+  rules.push({ ok: !many.length, t: 'At most 2 schemes per AMC', d: many.length ? many.map(([a, n]) => `${a}: ${n}`).join('; ') : 'OK' });
+  const big = out.amc.filter(x => x[1] > 40);
+  rules.push({ ok: !big.length, t: 'No AMC above 40% of equity', d: big.length ? big.map(x => `${x[0]} ${x[1].toFixed(0)}%`).join('; ') : out.amc.length ? `Largest ${out.amc[0][0]} ${out.amc[0][1].toFixed(0)}%` : '—', nd: !out.amc.length });
+  rules.push({ ok: isNum(out.activeShare) ? out.activeShare >= 40 : null, t: 'Active share ≥ 40%', d: isNum(out.activeShare) ? `${out.activeShare.toFixed(0)}% vs blended index` : 'No holdings data', nd: !isNum(out.activeShare) });
+  let hiPair = null; if (out.ov) out.ov.forEach((row, i) => row.forEach((c, j) => { if (c && j > i && (!hiPair || c.o > hiPair.o)) hiPair = { o: c.o, a: cov[i], b: cov[j] }; }));
+  rules.push({ ok: hiPair ? hiPair.o <= 50 : null, t: 'No pair overlapping above 50%', d: hiPair ? `Highest ${hiPair.o.toFixed(0)}%: #${hiPair.a.no} & #${hiPair.b.no}` : 'Needs 2+ funds with holdings', nd: !hiPair });
+  out.rules = rules;
+  return out;
+}
+
+// ---------- rendering ----------
+function hbars(items, opt = {}) {   // items: {l, v, sub, ref, col}
+  if (!items.length) return '<div class="na">—</div>';
+  const mx = opt.max || Math.max(...items.map(x => Math.max(x.v, x.ref || 0)), 0.01);
+  return items.map(x => `<div class="hbar"><span class="dl" title="${esc(x.l)}">${esc(x.l)}${x.sub ? `<span class="sm">${x.sub}</span>` : ''}</span><span class="tr"><i style="width:${(x.v / mx * 100).toFixed(1)}%;background:${x.col || 'var(--primary)'}"></i>${isNum(x.ref) ? `<u style="left:${Math.min(99.5, x.ref / mx * 100).toFixed(1)}%" title="Index ${x.ref.toFixed(1)}%"></u>` : ''}</span><span class="val">${opt.fmt ? opt.fmt(x) : x.v.toFixed(1) + '%'}</span></div>`).join('');
+}
+const ovBg = v => `background:rgba(249,183,56,${(0.08 + 0.85 * Math.min(1, v / 60)).toFixed(2)})`;
+const crBg = v => v >= 0 ? `background:rgba(43,76,111,${(0.06 + 0.8 * Math.min(1, v)).toFixed(2)});${v > 0.55 ? 'color:#fff' : ''}` : `background:rgba(147,78,50,${(0.06 + 0.5 * Math.min(1, -v)).toFixed(2)})`;
+function xrGrid(list, M, fmt, bg, title) {
+  return `<div class="tablewrap"><table class="xgrid"><thead><tr><th></th>${list.map(f => `<th title="${esc(f.name)}">#${f.no}</th>`).join('')}</tr></thead><tbody>${list.map((a, i) => `<tr><th class="rl" title="${esc(a.name)}">#${a.no} ${esc(a.short)}</th>${list.map((b, j) => { const c = M[i][j]; if (i === j) return '<td class="self">—</td>'; if (c === null || c === undefined) return `<td>${na}</td>`; const v = typeof c === 'object' ? c.o : c; return `<td style="${bg(v)}" title="${esc(title(a, b, c))}">${fmt(v)}</td>`; }).join('')}</tr>`).join('')}</tbody></table></div>`;
+}
+function xrRender(X) {
+  const F = X.funds, client = $('xrClient').value.trim();
+  const T = [];
+  T.push(tile('Portfolio value', inrS(X.total), `${F.length} funds${client ? ' · ' + esc(client) : ''}`));
+  const eqShare = X.eqMoney + X.eqUnknown > 0 ? X.eqMoney / X.total * 100 : null;
+  T.push(tile('Equity money', inrS(X.eqMoney), isNum(eqShare) ? `${eqShare.toFixed(0)}% of value${X.eqUnknown ? ' · some hybrids unknown' : ''}` : '—'));
+  T.push(tile('Looked through', X.eqHybVal ? `${(X.covVal / X.eqHybVal * 100).toFixed(0)}%` : '—', `${X.cov.length} of ${X.eqHyb.length} equity &amp; hybrid funds`));
+  T.push(tile('Stocks held', isNum(X.nStocks) ? X.nStocks : '—', 'different companies, all funds'));
+  T.push(tile('Effective stocks', isNum(X.effN) ? X.effN.toFixed(0) : '—', 'as diversified as this many equal holdings'));
+  T.push(tile('Top 10 stocks', isNum(X.top10sum) ? X.top10sum.toFixed(0) + '%' : '—', 'of the equity looked through'));
+  T.push(tile('Different from index', isNum(X.activeShare) ? X.activeShare.toFixed(0) + '%' : '—', 'active share vs blended index'));
+  T.push(tile('Largest fund house', X.amc.length ? X.amc[0][1].toFixed(0) + '%' : '—', X.amc.length ? esc(X.amc[0][0]) + ' · of equity money' : '—'));
+  const rules = `<div class="rules">${X.rules.map(r => `<span class="rule ${r.nd ? 'nd' : r.ok ? 'ok' : 'warn'}" title="${esc(r.d)}">${r.nd ? '•' : r.ok ? '✓' : '⚠'} <b>${esc(r.t)}</b> · ${esc(r.d)}</span>`).join('')}</div>`;
+  const ASSET_COL = { Equity: '#005826', Hybrid: '#4f9a6d', Debt: '#934E32', 'Gold / Silver': '#F9B738', Other: '#8a7f8f' };
+  const assetBar = `<span class="capbar" style="width:100%;height:16px">${Object.entries(X.byAsset).map(([k, v]) => `<i style="width:${(v / X.total * 100).toFixed(2)}%;background:${ASSET_COL[k]}" title="${k} ${inr(v)}"></i>`).join('')}</span><div class="legend" style="margin-top:6px">${Object.entries(X.byAsset).map(([k, v]) => `<span><span class="sw" style="background:${ASSET_COL[k]}"></span>${k} ${(v / X.total * 100).toFixed(0)}% · ${inrS(v)}</span>`).join('')}</div>`;
+  const catBars = hbars(Object.entries(X.byCat).sort((a, b) => b[1] - a[1]).map(([k, v]) => ({ l: k, v: v / X.total * 100, sub: inrS(v), col: 'var(--secondary)' })));
+  const capRow = (lab, c) => c ? `<div class="szrow"><b>${lab}</b>${capBar(c, 200)}<span class="meta" style="margin:0">${capTxt(c)}</span></div>` : '';
+  const sizeCard = X.capP ? `${capRow('Client', X.capP)}${capRow('Index', X.capB)}<div class="legend" style="margin-top:6px">${CAPC.map(([, l, c]) => `<span><span class="sw" style="background:${c}"></span>${l}</span>`).join('')}</div><div class="meta">Share of the stocks looked through, by AMFI's size list. "Index" = the blended index below.</div>` : '<div class="na">—</div>';
+  const stockBars = X.top10 ? hbars(X.top10.map(x => ({ l: x.name, v: x.w, sub: `in ${x.n} of ${X.cov.length} funds · ${inrS(x.rs)}`, ref: X.bw ? X.bw.get(x.s) || 0 : null }))) : '<div class="na">—</div>';
+  const secBars = X.secP ? hbars(Object.entries(X.secP).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([k, v]) => { const b = X.secB ? X.secB[k] || 0 : null; return { l: k, v, ref: b, sub: isNum(b) ? `index ${b.toFixed(1)}% · ${pts(v - b)} pts` : '' }; }), { }) : '<div class="na">—</div>';
+  const mixTxt = X.mixB ? Object.entries(X.mixB).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${esc(k)} ${v.toFixed(0)}%`).join(' · ') : '';
+  const ovCard = X.cov.length >= 2 ? xrGrid(X.cov, X.ov, v => v.toFixed(0) + '%', ovBg, (a, b, c) => `#${a.no} & #${b.no}: ${c.n} stocks in common, ${c.o.toFixed(1)}% common weight`) : '<div class="meta">Needs at least two funds with holdings data.</div>';
+  const crCard = X.ex.length >= 2 ? xrGrid(X.ex, X.corr, v => v.toFixed(2), crBg, (a, b, c) => `#${a.no} & #${b.no}: correlation of extra returns ${c.toFixed(2)}`) : '<div class="meta">Needs at least two equity funds with an official index and 2+ years of NAVs.</div>';
+  const amcBars = hbars(X.amc.map(([a, p, v]) => ({ l: a, v: p, sub: inrS(v), col: p > 40 ? '#c98a00' : 'var(--dark)' })), { max: Math.max(50, ...X.amc.map(x => x[1])) });
+  const phTiles = X.ph ? `<div class="tiles small" style="grid-template-columns:repeat(auto-fit,minmax(118px,1fr))">${PHASE_DEFS.map(([k, l, tip]) => { const z = X.ph[k]; return `<div class="tile" style="${z ? heatBg(z.lead) : ''}" title="${esc(tip)}"><div class="k">${l}</div><div class="v">${z ? pts(z.lead) : '—'}</div><div class="s">${z ? `beat in ${z.beat.toFixed(0)}% of ${z.n} months` : 'under 12 months'}</div></div>`; }).join('')}</div><div class="meta">Lead in pts a year vs the same mix of index funds. Equity funds at today's weights, last ${X.phMonths} months (all ${X.phN} funds present in ${X.phFull} of them).</div>` : '<div class="meta">Needs equity funds with an official index.</div>';
+  const fRows = F.map(f => `<tr><td class="sk1">${f.no}</td><td class="fund sk2">${esc(f.name)}<span class="fund-meta">${esc(f.amc)}</span></td><td class="l">${esc(f.cat)}</td><td class="l">${f.asset}</td><td data-v="${f.val}">${inr(f.val)}</td><td data-v="${f.val / X.total * 100}">${(f.val / X.total * 100).toFixed(1)}%</td><td data-v="${isNum(f.as) ? f.as : ''}">${isNum(f.as) ? f.as.toFixed(0) + '%' : na}</td><td class="l">${f.hf ? `${esc(f.hf.d.split('-').reverse().join('/'))}${f.hf.eq < 99.5 ? ` · equity ${f.hf.eq.toFixed(0)}%` : ''}` : f.asset === 'Equity' || f.asset === 'Hybrid' ? '<span class="warn">not in holdings data</span>' : '<span class="na">n/a</span>'}</td></tr>`).join('');
+  $('xrOut').innerHTML = `<div class="panel">
+    <h3>Portfolio X-ray${client ? ' · ' + esc(client) : ''} <span class="sub">holdings as on ${esc(X.asof || '—')} · NAVs and index to ${fmtDate(M0)}</span></h3>
+    <div class="tiles">${T.join('')}</div>
+    <div class="ct">Rule checks <span class="ctsub">warnings, not blocks</span></div>${rules}
+    <div class="grid2">
+      <div class="card2"><div class="ct">Where the money is <span class="ctsub">by fund type and category</span></div>${assetBar}<div style="margin-top:10px">${catBars}</div></div>
+      <div class="card2"><div class="ct">Company size <span class="ctsub">look-through</span></div>${sizeCard}<div class="meta" style="margin-top:8px">${X.cov.length ? `Cash, debt and other non-stock items inside these funds: ${inrS(X.covVal - X.E)} (${((X.covVal - X.E) / X.covVal * 100).toFixed(1)}% of their value).` : ''}</div></div>
+    </div>
+    <div class="grid2 xsec">
+      <div class="card2"><div class="ct">Top 10 stocks <span class="ctsub">bar = client · line = blended index</span></div>${stockBars}</div>
+      <div class="card2"><div class="ct">Top sectors <span class="ctsub">top 3 = ${isNum(X.top3sec) ? X.top3sec.toFixed(0) + '%' : '—'} · line = blended index</span></div>${secBars}</div>
+    </div>
+    <div class="card2 xsec"><div class="ct">Fund-vs-fund overlap <span class="ctsub">% of each fund's stocks held in common · darker = more alike</span></div>${ovCard}</div>
+    <div class="card2 xsec"><div class="ct">Do the funds make the same bets? <span class="ctsub">correlation of each fund's monthly lead over its index, last 36 months · 1 = same bets, 0 = unrelated</span></div>${crCard}</div>
+    <div class="grid2 xsec">
+      <div class="card2"><div class="ct">Fund houses <span class="ctsub">share of equity money</span></div>${amcBars}${X.eqUnknown ? `<div class="meta">${inrS(X.eqUnknown)} in hybrid funds without holdings data is left out here.</div>` : ''}</div>
+      <div class="card2"><div class="ct">Market phases <span class="ctsub">last 10 years</span></div>${phTiles}</div>
+    </div>
+    <div class="ct xsec">Funds <span class="ctsub">click a heading to sort</span></div>
+    <div class="tablewrap"><table id="xrFunds"><thead><tr><th class="sk1 l">#</th><th class="sk2 l">Fund</th><th class="l">Category</th><th class="l">Type</th><th>Value ₹</th><th>Weight</th><th>Different from index<span class="sub">active share</span></th><th class="l">Holdings<span class="sub">as on</span></th></tr></thead><tbody>${fRows}</tbody></table></div>
+    <details style="margin-top:12px"><summary class="linkbtn" style="font-size:13px">How these numbers are worked out</summary><div class="method" style="margin-top:8px"><ul>
+      <li><b>Look-through:</b> each fund's latest AMC portfolio (as on ${esc(X.asof || '—')}) × the client's value in that fund × the fund's equity share. Weights are % of the equity looked through (${inrS(X.E)}).</li>
+      <li><b>Blended index:</b> each fund's own category index, weighted by the client's equity in that fund${mixTxt ? ` (${mixTxt})` : ''}. Hybrids use Nifty 500 for their equity part; sectoral funds use Nifty 500 as a broad reference only. Index weights are taken from ICICI Prudential index fund portfolios on the same date.</li>
+      <li><b>Different from index (active share):</b> ½ × Σ |client weight − index weight| over all stocks. ${isNum(X.as500) ? `Against Nifty 500 alone it is ${X.as500.toFixed(0)}%.` : ''}</li>
+      <li><b>Effective stocks:</b> 1 ÷ Σ(weight²). <b>Overlap:</b> Σ of the smaller weight of each stock held by both funds.</li>
+      <li><b>Same bets:</b> monthly (fund − its index) returns over 36 months, correlated between funds; needs 24+ months.</li>
+      <li><b>Not covered:</b> funds whose AMC is not in the holdings data, debt holdings (no free data for yield, duration or credit), and the hedged part of balanced-advantage funds (equity shown gross).</li>
+    </ul></div></details>
+  </div>`;
+  makeSortable($('xrFunds'));
+}
+
+window.FS = { rbsa, solveLinear, factorMix, phases, bets, scoreGroup, pctRanks, analyse, captures, riskStats, rolling3, cagr, monthlyRet, trailing, valAt, me, peerSeries, holdKey, findHoldings, loadTRI, loadHoldings, runCategories, runBacktest, get TRI() { return TRI; }, get HOLD() { return HOLD; }, get M0() { return M0; }, NAVS, get RESULTS() { return RESULTS; }, ensureMasterData, xrTokens, xrMatch, xrParseAOA, xrCompute, xrUniverse, XR };
 </script>
 </body>
 </html>

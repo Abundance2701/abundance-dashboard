@@ -180,3 +180,26 @@ Core 5 categories, Regular plans.
 
 ### Style-shift column removed — 13/11/2026
 "Style steady?" compared each fund's factor mix with its mix 3 years earlier. The indices themselves "shifted" just as much: Midcap 150 by 32 pts and Smallcap 250 by 35 pts (fund medians 39 and 28). So the column mostly measured market and model noise, not the fund, and it was removed.
+
+## Phase 3 — Portfolio X-ray (18/11/2026)
+
+**What was built:** a "Portfolio X-ray" page in `Fund_Selector.html`. Input: Excel/CSV upload, pasted rows, or funds added one by one (scheme name + current value). Names are matched to the AMFI fund list by word overlap; a match is accepted automatically only when the names share at least 80% of their words (Dice score); otherwise the advisor must pick the scheme from a short list. Unpicked rows are left out.
+
+**Independent check (Python, straight from `data/holdings_2026-09.json`):** test portfolio of 6 funds with holdings (PPFAS Flexi ₹5 L, HDFC Flexi ₹4 L, ICICI Commodities ₹3 L, Nippon Small ₹2.5 L, Nippon Growth Mid ₹1.5 L, HDFC Balanced Advantage ₹3 L):
+
+| Measure | Python | Tool |
+|---|---|---|
+| Equity looked through | ₹17,14,050 | ₹17.14 L |
+| Distinct stocks | 481 | 481 |
+| Effective number of stocks | 81.6 | 82 |
+| Top-10 stock weight | 26.1% | 26% |
+| Active share vs blended index | 43.7% | 44% |
+| Overlap, HDFC Flexi vs HDFC BAF | 50.31% | 50% |
+
+**Method notes:**
+- Weights are % of the equity looked through (fund value × fund equity %). Holdings in the file are already normalised to the fund's equity.
+- Blended index = each fund's category index (Tier-1 map), weighted by the client's equity in that fund. Hybrids use the index given in the holdings file (Nifty 500). Sectoral funds use Nifty 500 as a broad reference only.
+- Balanced advantage equity is gross (hedged positions are not netted). Debt holdings are not analysed.
+- Excess-return correlation: monthly (fund − own index TRI) over 36 months, with at least 24 common months needed.
+- Market phases: equity funds held at today's weights against the same weights in each fund's own index. Funds without data in a month are dropped from both sides for that month.
+- Rendering was checked at 1400 px and 390 px widths with mock NAV data. Live data was checked separately.
