@@ -1265,7 +1265,7 @@ function xrAssetOf(r) {
 async function xrUniverse() {
   if (XR.uni) return XR.uni;
   const data = await ensureMasterData();
-  XR.uni = data.filter(r => isActive(r) && !isETF(r)).map(r => ({ r, code: String(r.scheme_code), name: r.scheme_name, plan: planGroup(r), opt: /growth/i.test(r.scheme_option || '') ? 'G' : 'I', tok: xrTokens(r.scheme_name), aum: parseFloat(r.aaum_cr_quarterly_avg) || 0 }));
+  XR.uni = data.filter(r => isActive(r) && !isETF(r)).map(r => ({ r, code: String(r.scheme_code), name: r.scheme_name, plan: planGroup(r), opt: /growth/i.test(r.scheme_option || '') ? 'G' : 'I', tok: xrTokens(r.scheme_name), alt: (m => m ? xrTokens(r.scheme_name.split(/\s+/).slice(0, 2).join(' ') + ' ' + m[1]) : null)(String(r.scheme_name).match(/\((?:erstwhile|formerly(?: known as)?)\s+([^)]+)\)/i)), aum: parseFloat(r.aaum_cr_quarterly_avg) || 0 }));
   XR.byCode = new Map(XR.uni.map(u => [u.code, u]));
   const names = XR.uni.filter(u => u.opt === 'G').map(u => u.name).sort((a, b) => a.localeCompare(b));
   $('xrNames').innerHTML = names.map(n => `<option value="${esc(n)}">`).join('');
@@ -1275,8 +1275,8 @@ function xrMatch(raw) {
   const A = xrTokens(raw), plan = xrPlan(raw), opt = xrOpt(raw);
   if (!A.size) return { cands: [], code: null, st: 'no' };
   const sc = [];
-  for (const u of XR.uni) { let inter = 0; for (const w of A) if (u.tok.has(w)) inter++; if (!inter) continue;
-    const dice = 2 * inter / (A.size + u.tok.size); sc.push({ u, dice, s: dice + (u.plan === plan ? 0.08 : 0) + (u.opt === opt ? 0.05 : 0) + Math.min(u.aum, 1e5) / 1e9 }); }
+  const dc = T => { if (!T) return 0; let inter = 0; for (const w of A) if (T.has(w)) inter++; return 2 * inter / (A.size + T.size); };
+  for (const u of XR.uni) { const dice = Math.max(dc(u.tok), dc(u.alt)); if (!dice) continue; sc.push({ u, dice, s: dice + (u.plan === plan ? 0.08 : 0) + (u.opt === opt ? 0.05 : 0) + Math.min(u.aum, 1e5) / 1e9 }); }
   sc.sort((a, b) => b.s - a.s);
   const top = sc.slice(0, 8), best = top[0];
   if (!best || best.dice < 0.45) return { cands: top.map(x => x.u.code), code: null, st: 'no' };
