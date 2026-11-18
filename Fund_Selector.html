@@ -153,10 +153,10 @@
   .rule{border:1px solid var(--line); border-radius:999px; padding:5px 12px; font-size:12.5px; background:#fff;}
   .rule.ok{border-color:#9fd1b0; background:#eef8f1;} .rule.warn{border-color:#f3cf7a; background:#fff8e6;} .rule.nd{color:var(--muted);}
   .rule b{font-family:Montserrat,sans-serif; font-size:11.5px;}
-  .hbar{display:grid; grid-template-columns:minmax(120px,210px) 1fr 64px; align-items:center; gap:8px; font-size:12.5px; margin:4px 0;}
-  .hbar .tr{height:11px; background:#eef2ef; border-radius:6px; overflow:hidden; position:relative;}
+  .hbar{display:grid; grid-template-columns:minmax(0,42%) minmax(60px,1fr) 58px; align-items:center; gap:8px; font-size:12.5px; margin:4px 0;}
+  .hbar .dl{min-width:0;} .hbar .tr{height:11px; background:#eef2ef; border-radius:6px; overflow:hidden; position:relative;}
   .hbar .tr i{display:block; height:100%; border-radius:6px;}
-  .hbar .tr u{position:absolute; top:-2px; bottom:-2px; width:2px; background:var(--dark); text-decoration:none;}
+  .hbar .tr u{position:absolute; top:-2px; bottom:-2px; width:3px; border-radius:2px; background:var(--accent); box-shadow:0 0 0 1px #fff; text-decoration:none;}
   .hbar .val{text-align:right; font-weight:700;}
   .hbar .sm{display:block; font-size:10.5px; color:var(--muted); font-weight:400;}
   .xin td{vertical-align:middle;}
@@ -167,7 +167,7 @@
   .xsec{margin-top:16px;}
   .szrow{display:grid; grid-template-columns:52px 1fr; gap:2px 8px; align-items:center; margin:6px 0; font-size:12.5px;}
   .szrow .capbar{width:100% !important; height:13px;} .szrow .meta{grid-column:2;}
-  @media (max-width:760px){ .xgrid th.rl{max-width:140px;} .hbar{grid-template-columns:minmax(90px,130px) 1fr 54px;} }
+  @media (max-width:760px){ .xgrid th.rl{max-width:140px;} }
 </style>
 </head>
 <body>
@@ -1520,8 +1520,8 @@ function xrRender(X) {
       <div class="card2"><div class="ct">Company size <span class="ctsub">look-through</span></div>${sizeCard}<div class="meta" style="margin-top:8px">${X.cov.length ? `Cash, debt and other non-stock items inside these funds: ${inrS(X.covVal - X.E)} (${((X.covVal - X.E) / X.covVal * 100).toFixed(1)}% of their value).` : ''}</div></div>
     </div>
     <div class="grid2 xsec">
-      <div class="card2"><div class="ct">Top 10 stocks <span class="ctsub">bar = client · line = blended index</span></div>${stockBars}</div>
-      <div class="card2"><div class="ct">Top sectors <span class="ctsub">top 3 = ${isNum(X.top3sec) ? X.top3sec.toFixed(0) + '%' : '—'} · line = blended index</span></div>${secBars}</div>
+      <div class="card2"><div class="ct">Top 10 stocks <span class="ctsub">bar = client · gold tick = blended index</span></div>${stockBars}</div>
+      <div class="card2"><div class="ct">Top sectors <span class="ctsub">top 3 = ${isNum(X.top3sec) ? X.top3sec.toFixed(0) + '%' : '—'} · gold tick = blended index</span></div>${secBars}</div>
     </div>
     <div class="card2 xsec"><div class="ct">Fund-vs-fund overlap <span class="ctsub">% of each fund's stocks held in common · darker = more alike</span></div>${ovCard}</div>
     <div class="card2 xsec"><div class="ct">Do the funds make the same bets? <span class="ctsub">correlation of each fund's monthly lead over its index, last 36 months · 1 = same bets, 0 = unrelated</span></div>${crCard}</div>
