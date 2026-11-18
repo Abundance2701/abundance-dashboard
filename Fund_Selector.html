@@ -296,7 +296,9 @@
         <button class="ghost" id="xrPasteBtn" style="margin-top:6px">Read pasted rows</button></details>
       <div class="status" id="xrStatus"></div>
       <div id="xrInput" class="hide" style="margin-top:10px">
-        <div class="tablewrap"><table id="xrInTbl"></table></div>
+        <details id="xrInWrap" open><summary class="linkbtn" style="font-size:13.5px" id="xrInHead">Uploaded funds</summary>
+        <div class="tabs" id="xrInFilt" style="margin:8px 0"><button class="tab on" data-f="all">All</button><button class="tab" data-f="pick">Needs a pick</button><button class="tab" data-f="ok">Matched</button></div>
+        <div class="tablewrap"><table id="xrInTbl"></table></div></details>
         <div class="btnrow"><button class="primary" id="xrRunBtn">Run X-ray</button><span id="xrRunSt" class="selcount"></span><button class="ghost" id="xrClearBtn">Clear all</button><span class="selcount" id="xrInSum"></span></div>
       </div>
     </div>
@@ -1269,7 +1271,7 @@ loadTRI().then(() => setStatus(`Index data ready (latest ${DAILY && DAILY['NIFTY
 // Every number is computed from: the uploaded values, AMC monthly holdings (HOLD), index portfolios (HOLD.bench),
 // NSE TRI (TRI) and fund NAVs (NAVS). Missing data shows "—"; nothing is estimated.
 // =====================================================================================
-const XR = { rows: [], uni: null, byCode: null, last: null };
+const XR = { rows: [], uni: null, byCode: null, last: null, filt: 'all' };
 const xrNum = v => { if (typeof v === 'number') return v; const s = String(v == null ? '' : v).replace(/[₹,\s]/g, '').replace(/^Rs\.?/i, ''); const n = parseFloat(s); return isNaN(n) ? NaN : n; };
 const inr = v => isNum(v) ? '₹' + Math.round(v).toLocaleString('en-IN') : '—';
 const inrS = v => !isNum(v) ? '—' : v >= 1e7 ? '₹' + (v / 1e7).toFixed(2) + ' Cr' : v >= 1e5 ? '₹' + (v / 1e5).toFixed(2) + ' L' : inr(v);
@@ -1334,7 +1336,7 @@ function xrParseAOA(aoa) {
   if (cs < 0 || cv < 0) return null;
   const rows = []; let sec = '';
   for (let i = h + 1; i < aoa.length; i++) { const r = aoa[i] || [], s = r[cs];
-    if (!s || /^\s*(grand\s*)?(sub\s*)?total/i.test(String(s)) || /^\s*(grand\s*)?total/i.test(String(r[0] ?? ''))) continue;
+    if (!s || /^\s*(grand\s*)?(sub\s*)?total/i.test(String(s)) || /\btotal\s*:?\s*-?\s*$/i.test(String(s).trim()) || /^\s*(grand\s*)?total/i.test(String(r[0] ?? ''))) continue;
     const v = xrNum(r[cv]);
     if (isNaN(v) || v <= 0) { if (/^\s*(equity|debt|hybrid|others?|solution|index|fof|international|gold)\b.*-/i.test(String(s)) && r.filter(c => c != null && c !== '').length === 1) sec = String(s).trim(); continue; }
     rows.push({ raw: String(s).split(/\n/)[0].trim(), val: v, sec }); }
@@ -1375,8 +1377,12 @@ function xrRenderInput() {
   const stl = { ok: ['ok', 'Matched'], chk: ['chk', 'Please pick'], no: ['no', 'Not found'], man: ['ok', 'Picked'] };
   $('xrInTbl').innerHTML = `<thead><tr><th class="l">#</th><th class="l">As uploaded</th><th class="l">Matched scheme (AMFI list)</th><th class="l">Category</th><th class="c">Holdings</th><th>Value ₹</th><th></th></tr></thead><tbody>${XR.rows.map((r, i) => {
     const u = r.code ? XR.byCode.get(r.code) : null, hf = u ? findHoldings(u.name) : null, [c, t] = stl[r.st] || stl.no;
+    const need = !r.code; if ((XR.filt === 'pick' && !need) || (XR.filt === 'ok' && need)) return '';
     return `<tr class="xin"><td class="l">${i + 1}</td><td class="l" style="white-space:normal;max-width:260px">${esc(r.raw)}<br><span class="mstat ${c}">${t}</span></td><td class="l" style="white-space:normal;min-width:260px">${r.search ? `<input data-i="${i}" class="xrFind" list="xrNames" placeholder="Type to search, then pick" style="width:100%;max-width:440px">` : `<select data-i="${i}" class="xrSel">${opts(r)}</select>`}</td><td class="l">${u ? esc(normCat(u.r)) : na}</td><td class="c">${hf ? `<span class="up" title="AMC portfolio for ${esc(hf.d)}">✓</span>` : u && ['Equity', 'Hybrid'].includes(xrAssetOf(u.r)) ? '<span class="warn" title="This fund house is not in the holdings data yet">not in data</span>' : '<span class="na">n/a</span>'}</td><td><input data-i="${i}" class="xrVal" type="text" inputmode="decimal" value="${Math.round(r.val).toLocaleString('en-IN')}"></td><td><button class="linkbtn xrDel" data-i="${i}" title="Remove">✕</button></td></tr>`; }).join('')}</tbody>`;
   const tot = XR.rows.reduce((s, r) => s + (r.code ? r.val : 0), 0), un = XR.rows.filter(r => !r.code).length;
+  const np = XR.rows.filter(r => !r.code).length;
+  $('xrInHead').innerHTML = `Uploaded funds: ${XR.rows.length} rows · ${XR.rows.length - np} matched${np ? ` · <b class="warn">${np} need a pick</b>` : ''} (click to show or hide)`;
+  $('xrInFilt').querySelector('[data-f="pick"]').textContent = `Needs a pick (${np})`;
   $('xrInSum').innerHTML = `${XR.rows.length} rows · matched value ${inr(tot)}${un ? ` · <span class="warn">${un} not matched (left out until picked)</span>` : ''}`;
 }
 $('xrInTbl').addEventListener('change', e => {
@@ -1386,6 +1392,7 @@ $('xrInTbl').addEventListener('change', e => {
   if (e.target.classList.contains('xrSel')) { XR.rows[i].code = e.target.value || null; XR.rows[i].st = e.target.value ? 'man' : 'no'; xrRenderInput(); }
   if (e.target.classList.contains('xrVal')) { const v = xrNum(e.target.value); if (!isNaN(v) && v > 0) XR.rows[i].val = v; xrRenderInput(); }
 });
+$('xrInFilt').addEventListener('click', e => { const b = e.target.closest('[data-f]'); if (!b) return; XR.filt = b.dataset.f; $('xrInFilt').querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === b)); xrRenderInput(); });
 $('xrInTbl').addEventListener('click', e => { const b = e.target.closest('.xrDel'); if (!b) return; XR.rows.splice(+b.dataset.i, 1); xrRenderInput(); });
 $('xrFile').addEventListener('change', e => { const f = e.target.files[0]; if (f) xrHandleFile(f); e.target.value = ''; });
 $('xrPasteBtn').addEventListener('click', async () => {
@@ -1430,7 +1437,7 @@ async function xrRun() {
     const agg = new Map(); for (const r of use) agg.set(r.code, (agg.get(r.code) || 0) + r.val);
     await fetchNavs([...agg.keys()], (d, t) => say(`<span class="spinner"></span> Fetching NAV history… ${d} / ${t}`));
     XR.last = xrCompute(agg); xrRender(XR.last);
-    xrSt(`X-ray ready: ${agg.size} funds, ${inr(XR.last.total)}.`); rs.innerHTML = '✓ Done, see below'; $('xrOut').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    xrSt(`X-ray ready: ${agg.size} funds, ${inr(XR.last.total)}.`); rs.innerHTML = '✓ Done, see below'; $('xrInWrap').open = false; $('xrOut').scrollIntoView({ behavior: 'smooth', block: 'start' });
   } catch (e) { console.error(e); rs.innerHTML = ''; xrSt('Could not complete: ' + esc(e.message) + '. Nothing has been estimated; please retry.', true); }
   finally { btn.disabled = false; }
 }
@@ -1647,7 +1654,7 @@ function xrRender(X) {
   const vRows = vs.map(f => `<tr><td class="sk1">${f.no}</td><td class="fund sk2">${esc(f.short)}<span class="fund-meta">${esc(f.cat)} · ${esc(f.amc)}</span></td><td data-v="${f.val}">${inrS(f.val)}<span class="fund-meta">${(f.val / X.total * 100).toFixed(1)}%</span></td><td class="c" data-v="${order[f.verdict]}"><span class="vchip ${f.verdict}">${VLAB[f.verdict]}</span></td>
     <td class="why">${f.flags.map(x => `<span class="bad">${x.t}</span>`).join('')}${f.goods.map(x => `<span class="good">${x}</span>`).join('')}${f.notes.map(x => `<span class="info">${x}</span>`).join('')}</td>
     <td class="c"><input type="checkbox" class="xrEx" data-code="${f.code}"></td>
-    <td class="l"><select class="mv" data-code="${f.code}">${[`<option value="__spread">Spread across the rest</option>`, ...targets.filter(g => g !== f).map(g => `<option value="${g.code}"${xrDefaultTarget(X, f) === g.code ? ' selected' : ''}>#${g.no} ${esc(g.short)}</option>`)].join('')}</select></td></tr>`).join('');
+    <td class="l"><select class="mv hide" data-code="${f.code}">${[`<option value="__spread">Spread across the rest</option>`, ...targets.filter(g => g !== f).map(g => `<option value="${g.code}"${xrDefaultTarget(X, f) === g.code ? ' selected' : ''}>#${g.no} ${esc(g.short)}</option>`)].join('')}</select></td></tr>`).join('');
   // details (kept, collapsed)
   const ASSET_COL = { Equity: '#005826', Hybrid: '#4f9a6d', International: '#2b4c6f', Debt: '#934E32', 'Gold / Silver': '#F9B738', Other: '#8a7f8f' };
   const catBars = hbars(Object.entries(X.byCat).sort((a, b) => b[1] - a[1]).map(([k, v]) => ({ l: k, v: v / X.total * 100, sub: inrS(v), col: 'var(--secondary)' })));
@@ -1666,13 +1673,16 @@ function xrRender(X) {
       <div class="card2"><div class="ct">Has this mix beaten its index? <span class="ctsub">today's equity funds, at today's weights, over the last 10 years</span></div>${leadChart(R, 'This mix', 'its blended index')}<div class="meta">${X.phStart ? `All ${X.phN} equity funds have data from ${monY(X.phStart)}; before that, the mix is the funds that existed. ` : ''}Hybrid, international and funds without an official index are left out of this test. A record, not a forecast.</div></div>
       <div class="card2"><div class="ct">Whole portfolio, looked through <span class="ctsub">what the money actually owns</span></div>${wholeCard}</div>
     </div>
+    <div class="grid2 xsec">
+      <div class="card2"><div class="ct">By fund category <span class="ctsub">% of portfolio</span></div>${catBars}</div>
+      <div class="card2"><div class="ct">By fund house <span class="ctsub">% of equity money · over 40% in gold</span></div>${amcBars}</div>
+    </div>
     <div class="ct xsec">Fund by fund: keep, review or exit? <span class="ctsub">tick funds to exit, choose where the money goes, then test</span></div>
     <div class="meta" style="margin-top:0">Flags: <b>same job</b> = over ${XRT.ov}% of stocks shared, or lead over the index moving together (correlation ${XRT.corr}+) · <b>index-like</b> = under ${XRT.as}% different from its index · <b>weak record</b> = ahead in under ${XRT.weak}% of 3-year periods · <b>too small</b> = under ${XRT.tiny}% of the portfolio. Two flags, or too small = exit candidate. These are prompts; you decide.</div>
     <div class="tablewrap"><table id="xrVerd"><thead><tr><th class="sk1 l">#</th><th class="sk2 l">Fund</th><th>Value</th><th class="c">Verdict</th><th class="l">Why</th><th class="c">Exit?</th><th class="l">Move money to</th></tr></thead><tbody>${vRows}</tbody></table></div>
     <div class="btnrow"><button class="primary" id="xrSimBtn">Test: before vs after</button><button class="ghost" id="xrTickExit">Tick all exit candidates</button><span class="selcount">Phase 4 will suggest new funds to add.</span></div>
     <div id="xrSim" class="xsec"></div>
-    <details class="xsec"><summary class="linkbtn" style="font-size:13.5px">More detail: stocks, sectors, overlap and same-bets grids, fund houses, market phases, rule checks</summary>
-      <div class="xsec">${rules}</div>
+    <details class="xsec"><summary class="linkbtn" style="font-size:13.5px">More detail: stocks, sectors, overlap and same-bets grids, market phases, rule checks</summary>
       <div class="grid2 xsec">
         <div class="card2"><div class="ct">Top 10 stocks <span class="ctsub">bar = client · gold tick = blended index weight</span></div>${stockBars}</div>
         <div class="card2"><div class="ct">Top sectors <span class="ctsub">gold tick = blended index weight</span></div>${secBars}</div>
@@ -1681,7 +1691,7 @@ function xrRender(X) {
       <div class="card2 xsec"><div class="ct">Same bets <span class="ctsub">do two funds get ahead of (or fall behind) their index in the same months? 1 = always together, 0 = unrelated · last 36 months</span></div>${crCard}</div>
       <div class="grid2 xsec">
         <div class="card2"><div class="ct">In different markets <span class="ctsub">this mix vs its blended index</span></div>${phaseBars(X.ph, 'Mix')}</div>
-        <div class="card2"><div class="ct">Fund houses <span class="ctsub">share of equity money</span></div>${amcBars}<div class="ct" style="margin-top:14px">By fund category</div>${catBars}</div>
+        <div class="card2"><div class="ct">Rule checks</div>${rules}</div>
       </div>
       <div class="method xsec"><ul>
         <li><b>Blended index:</b> each fund's own category index, weighted by the client's equity in it${mixTxt ? ` (${mixTxt})` : ''}. Index weights from ICICI Prudential index-fund portfolios on the holdings date.</li>
@@ -1692,8 +1702,9 @@ function xrRender(X) {
     </details>
   </div>`;
   makeSortable($('xrVerd'));
+  $('xrVerd').addEventListener('change', e => { if (!e.target.classList.contains('xrEx')) return; const m = document.querySelector(`#xrVerd .mv[data-code="${e.target.dataset.code}"]`); m.classList.toggle('hide', !e.target.checked); });
   $('xrSimBtn').onclick = xrSimulate;
-  $('xrTickExit').onclick = () => { for (const f of F) { const cb = document.querySelector(`#xrVerd .xrEx[data-code="${f.code}"]`); if (cb) cb.checked = f.verdict === 'exit'; } };
+  $('xrTickExit').onclick = () => { for (const f of F) { const cb = document.querySelector(`#xrVerd .xrEx[data-code="${f.code}"]`); if (cb) cb.checked = f.verdict === 'exit'; const m = document.querySelector(`#xrVerd .mv[data-code="${f.code}"]`); if (m) m.classList.toggle('hide', !cb.checked); } };
 }
 
 window.FS = { rbsa, solveLinear, factorMix, phases, bets, scoreGroup, pctRanks, analyse, captures, riskStats, rolling3, cagr, monthlyRet, trailing, valAt, me, peerSeries, holdKey, findHoldings, loadTRI, loadHoldings, runCategories, runBacktest, get TRI() { return TRI; }, get HOLD() { return HOLD; }, get M0() { return M0; }, NAVS, get RESULTS() { return RESULTS; }, ensureMasterData, xrSimulate, leadChart, xrTokens, xrMatch, xrParseAOA, xrCompute, xrUniverse, XR };
