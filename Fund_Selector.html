@@ -1237,10 +1237,15 @@ const xrNum = v => { if (typeof v === 'number') return v; const s = String(v == 
 const inr = v => isNum(v) ? '₹' + Math.round(v).toLocaleString('en-IN') : '—';
 const inrS = v => !isNum(v) ? '—' : v >= 1e7 ? '₹' + (v / 1e7).toFixed(2) + ' Cr' : v >= 1e5 ? '₹' + (v / 1e5).toFixed(2) + ' L' : inr(v);
 const xrShort = n => { const p = String(n || '').split(/\s+[-–]\s+/)[0]; return p.replace(/\b(fund|scheme)\b/gi, '').replace(/\s+/g, ' ').trim() || String(n); };
-const XR_STOP = new Set('fund plan option scheme the of and mutual mf regular direct growth idcw dividend payout reinvestment reinvest investment sweep cumulative erstwhile formerly known as an open ended gr dir reg opt'.split(' '));
+const XR_STOP = new Set('fund plan option scheme the of and mutual mf regular direct idcw dividend payout reinvestment reinvest investment sweep cumulative erstwhile formerly known as an open ended gr dir reg opt'.split(' '));
 const XR_ALIAS = { absl: 'aditya birla sun life', abslmf: 'aditya birla sun life', mosl: 'motilal oswal', pru: 'prudential', ppfas: 'parag parikh', idfc: 'bandhan', bob: 'baroda bnp paribas', boi: 'bank of india' };
+function xrCore(s) {   // scheme name without plan/option tails: the part before the first " - " / "-" separator
+  const t = String(s || '').replace(/\b(large|mid|small|flexi|multi|micro)\s*-\s*cap/gi, '$1cap');
+  const seg = t.split(/\s*[-–]\s*/).map(x => x.trim()).filter(Boolean);
+  return (seg.length ? seg[0] : t).replace(/(\s+(regular|direct|plan|growth|idcw|option|dividend|payout|reinvestment|reinvest))+\s*$/i, '');
+}
 function xrTokens(s) {
-  let t = String(s || '').toLowerCase().replace(/\((?:formerly|erstwhile)[^)]*\)/g, ' ').replace(/&/g, ' and ').replace(/dividend yield/g, 'dividendyield')
+  let t = xrCore(s).toLowerCase().replace(/\((?:formerly|erstwhile)[^)]*\)/g, ' ').replace(/&/g, ' and ').replace(/dividend yield/g, 'dividendyield')
     .replace(/\b(large|mid|small|flexi|multi|micro)\s*-?\s*cap\b/g, '$1cap').replace(/[^a-z0-9 ]/g, ' ');
   const out = new Set();
   for (const w of t.split(/\s+/)) { if (!w || XR_STOP.has(w)) continue; if (XR_ALIAS[w]) XR_ALIAS[w].split(' ').forEach(x => out.add(x)); else out.add(w); }
@@ -1321,16 +1326,18 @@ async function xrHandleFile(f) {
 function xrRenderInput() {
   $('xrInput').classList.toggle('hide', !XR.rows.length);
   const opts = r => { const set = [...new Set([...(r.code ? [r.code] : []), ...r.cands])];
-    return (r.code ? '' : '<option value="">— pick the scheme —</option>') + set.map(c => { const u = XR.byCode.get(c); return u ? `<option value="${c}"${c === r.code ? ' selected' : ''}>${esc(u.name)}</option>` : ''; }).join(''); };
+    return (r.code ? '' : '<option value="">— pick the scheme —</option>') + set.map(c => { const u = XR.byCode.get(c); return u ? `<option value="${c}"${c === r.code ? ' selected' : ''}>${esc(u.name)}</option>` : ''; }).join('') + '<option value="__search">Search all funds…</option>'; };
   const stl = { ok: ['ok', 'Matched'], chk: ['chk', 'Please pick'], no: ['no', 'Not found'], man: ['ok', 'Picked'] };
   $('xrInTbl').innerHTML = `<thead><tr><th class="l">#</th><th class="l">As uploaded</th><th class="l">Matched scheme (AMFI list)</th><th class="l">Category</th><th class="c">Holdings</th><th>Value ₹</th><th></th></tr></thead><tbody>${XR.rows.map((r, i) => {
     const u = r.code ? XR.byCode.get(r.code) : null, hf = u ? findHoldings(u.name) : null, [c, t] = stl[r.st] || stl.no;
-    return `<tr class="xin"><td class="l">${i + 1}</td><td class="l" style="white-space:normal;max-width:260px">${esc(r.raw)}<br><span class="mstat ${c}">${t}</span></td><td class="l" style="white-space:normal;min-width:260px"><select data-i="${i}" class="xrSel">${opts(r)}</select></td><td class="l">${u ? esc(normCat(u.r)) : na}</td><td class="c">${hf ? `<span class="up" title="AMC portfolio for ${esc(hf.d)}">✓</span>` : u && ['Equity', 'Hybrid'].includes(xrAssetOf(u.r)) ? '<span class="warn" title="This fund house is not in the holdings data yet">not in data</span>' : '<span class="na">n/a</span>'}</td><td><input data-i="${i}" class="xrVal" type="text" inputmode="decimal" value="${Math.round(r.val).toLocaleString('en-IN')}"></td><td><button class="linkbtn xrDel" data-i="${i}" title="Remove">✕</button></td></tr>`; }).join('')}</tbody>`;
+    return `<tr class="xin"><td class="l">${i + 1}</td><td class="l" style="white-space:normal;max-width:260px">${esc(r.raw)}<br><span class="mstat ${c}">${t}</span></td><td class="l" style="white-space:normal;min-width:260px">${r.search ? `<input data-i="${i}" class="xrFind" list="xrNames" placeholder="Type to search, then pick" style="width:100%;max-width:440px">` : `<select data-i="${i}" class="xrSel">${opts(r)}</select>`}</td><td class="l">${u ? esc(normCat(u.r)) : na}</td><td class="c">${hf ? `<span class="up" title="AMC portfolio for ${esc(hf.d)}">✓</span>` : u && ['Equity', 'Hybrid'].includes(xrAssetOf(u.r)) ? '<span class="warn" title="This fund house is not in the holdings data yet">not in data</span>' : '<span class="na">n/a</span>'}</td><td><input data-i="${i}" class="xrVal" type="text" inputmode="decimal" value="${Math.round(r.val).toLocaleString('en-IN')}"></td><td><button class="linkbtn xrDel" data-i="${i}" title="Remove">✕</button></td></tr>`; }).join('')}</tbody>`;
   const tot = XR.rows.reduce((s, r) => s + (r.code ? r.val : 0), 0), un = XR.rows.filter(r => !r.code).length;
   $('xrInSum').innerHTML = `${XR.rows.length} rows · matched value ${inr(tot)}${un ? ` · <span class="warn">${un} not matched (left out until picked)</span>` : ''}`;
 }
 $('xrInTbl').addEventListener('change', e => {
   const i = +e.target.dataset.i; if (isNaN(i)) return;
+  if (e.target.classList.contains('xrSel') && e.target.value === '__search') { XR.rows[i].search = true; xrRenderInput(); const el = document.querySelector(`.xrFind[data-i="${i}"]`); if (el) el.focus(); return; }
+  if (e.target.classList.contains('xrFind')) { const u = XR.uni.find(x => x.name === e.target.value); if (!u) return; Object.assign(XR.rows[i], { code: u.code, cands: [u.code, ...XR.rows[i].cands], st: 'man', search: false }); xrRenderInput(); return; }
   if (e.target.classList.contains('xrSel')) { XR.rows[i].code = e.target.value || null; XR.rows[i].st = e.target.value ? 'man' : 'no'; xrRenderInput(); }
   if (e.target.classList.contains('xrVal')) { const v = xrNum(e.target.value); if (!isNaN(v) && v > 0) XR.rows[i].val = v; xrRenderInput(); }
 });
