@@ -16,7 +16,9 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, 'data', 'pe_monthly.json')
 BASE = 'https://www.niftyindices.com'
 PATHS = ['/Backpage/getpepbHistoricaldataDBtoString', '/Backpage.aspx/getpepbHistoricaldataDBtoString']
-INDICES = ['NIFTY 50', 'NIFTY 100', 'NIFTY 500', 'NIFTY MIDCAP 150', 'NIFTY SMALLCAP 250']
+INDICES = ['NIFTY 50', 'NIFTY 100', 'NIFTY 500', 'NIFTY MIDCAP 150', 'NIFTY SMALLCAP 250', 'NIFTY MIDCAP 100', 'NIFTY SMALLCAP 100']
+# NSE's valuation endpoint sometimes uses a shorter name; tried in order, stored under the first name
+ALIASES = {'NIFTY SMALLCAP 250': ['NIFTY SMALLCAP 250', 'NIFTY SMLCAP 250', 'Nifty Smallcap 250'], 'NIFTY SMALLCAP 100': ['NIFTY SMALLCAP 100', 'NIFTY SMLCAP 100'], 'NIFTY MIDCAP 100': ['NIFTY MIDCAP 100']}
 START_YEAR = 2005
 UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36'
 
@@ -100,7 +102,11 @@ def main():
             for p in ([path_ok] if path_ok else PATHS):
                 for attempt in range(2):
                     try:
-                        got = fetch(op, p, name, s, e); path_ok = p; break
+                        for alias in ALIASES.get(name, [name]):
+                            got = fetch(op, p, alias, s, e)
+                            if got:
+                                break
+                        path_ok = p; break
                     except Exception as ex:
                         errs.append(f'{y} {p}: {ex}'[:160]); time.sleep(2)
                 if got is not None:
