@@ -220,3 +220,50 @@ Core 5 categories, Regular plans.
 - **"Your calls"** (★ Prefer / ✕ Avoid) are saved in this browser (`abundance_fs_calls_v1`), keyed by the scheme's core name so Regular and Direct share one call. They apply in the X-ray and the builder, and can be exported or imported as JSON.
 - **X-ray change:** the fund-house limit now drops each house's *lowest-scored* keeper, instead of letting bigger categories claim the slots first. This fixes Nippon Growth Mid Cap (score 83) being merged while weaker Nippon funds were kept.
 - Checked with mock data at 1400 px and 390 px (no page overflow). The hand-off state was checked in the browser. Live data was tested separately.
+
+## Client review — replaces the X-ray verdicts and Phase 4 (19/11/2026)
+Phase 4 (Build portfolio) and the planned Phase 5 were dropped at the user's request. The X-ray became one review: target → where it stands → what to do → the funds.
+
+**Risk-profile bands** (proposed defaults, editable on screen; stored in the browser as `abundance_review_bands_v1`). Equity is % of the whole portfolio; large / mid / small are % of the Indian stocks the funds own (AMC holdings look-through). Midpoints add to 100.
+
+| Profile | Equity | Large | Mid | Small |
+|---|---|---|---|---|
+| Conservative | 20–40 | 68–82 | 13–23 | 3–11 |
+| Moderately conservative | 40–55 | 58–72 | 17–27 | 8–18 |
+| Moderate | 55–70 | 48–62 | 22–32 | 13–23 |
+| Moderately aggressive | 70–85 | 40–54 | 25–35 | 18–28 |
+| Aggressive | 85–100 | 33–47 | 27–37 | 23–33 |
+
+Suggested profile = age only (from the statement's date of birth): under 35 aggressive, 35–44 moderately aggressive, 45–54 moderate, 55–64 moderately conservative, 65+ conservative. The advisor changes it.
+
+**Fund status:** Act = behind its category TRI over both 1 and 2 years (month-end), or a fund-manager change in the last 6 months (from `data/fund_news.json`, when present). Watch = behind over 1 year only. Clutter = under 1% of the portfolio, a twin of a fund kept in the same job (over 50% common stock weight or same-bets correlation ≥ 0.7), or more funds in the job than Abundance usually holds (flexi, mid, small 2–3; large, large & mid 1–2; sectoral 1). Within a job, keepers are chosen in this order: favoured, then status, then share of 3-year periods ahead of the index, then value. Favoured funds are never clutter.
+
+**Plan rules:**
+- SIPs first (no tax, no exit load): stop SIPs in Act / Clutter funds and start them where the money is going.
+- Money from funds being exited goes where the allocation needs it: debt if equity is above its ceiling; else the short segment if theirs is over its ceiling; else the best fund doing the same job (twin kept, favoured, Fine, Watch).
+- Corrections only bring a band back to 2 points inside the edge it crossed (minimum tax), not to the middle.
+- Units are sold lot by lot from the detailed statement: long-term lots at a loss first, then long-term lots with the smallest gain per rupee. Units under a year old are never sold (20% tax on gains, and usually an exit load); they are listed with the date they turn long-term (purchase date + 1 year + 1 day).
+- Equity long-term gains are kept within ₹1,25,000 a financial year (Section 112A; unchanged by Budget 2026 for FY 2026-27), less what the advisor enters as already booked. Debt and other funds' gains are shown but not counted against that limit.
+
+**Statement parsing (Wealth Elite):** the detailed statement has, under each scheme, a "Sr. No." header and one row per transaction. Units still held are the rows whose "Abs. Rtn." is not "N.A." ("Remaining …" rows are part-sold lots). Their "Cur. Value" and "Gain / Loss" are used as they are. The latest "SIP Purchase" gives the SIP amount (Amount + stamp duty); a SIP counts as active if its last instalment was within 40 days of the statement date. Date of birth, client name and statement date come from the header rows.
+
+**Checks with a real client statement (Pinaki Chakraborty, 19/11/2026, 26 rows, 22 funds, ₹93.05 L):**
+- Every scheme's held lots add up to its "Cur. Value" (e.g. Kotak Large Cap ₹7,02,384; PGIM Flexi Cap ₹11,03,849).
+- The tool's lot picker was checked against a separate Python script reading the same file: Kotak Large Cap, tax-free sale this FY = ₹5,02,462 with ₹1,25,000 gain, and ₹1,00,501 left in units under a year old. Both gave identical figures.
+- Look-through: 100% of equity money looked through; large 49%, mid 27%, small 24% of stocks.
+- The summary statement (no lots) runs, and the plan says unit-level detail is missing.
+
+**Valuation back-test (small-cap lean):** month-end P/E (NSE, `data/pe_monthly.json`, new `scripts/pe_update.py` in the TRI workflow). Signal = Midcap 100 or Smallcap 100 P/E ÷ Nifty 100 P/E, as a percentile of its own history *up to that month* (5 years of history needed first). Outcome = the next 12/24/36 months' return of Midcap 150 or Smallcap 250 TRI minus Nifty 100 TRI, a year.
+
+| Test | Months | Rank correlation | Expensive (top fifth) | Middle | Cheap (bottom fifth) |
+|---|---|---|---|---|---|
+| Small, 12 months | 104 | −0.52 | −11.3 (n=16) | −0.5 | +25.2 (n=22) |
+| Small, 24 months | 92 | −0.66 | −13.0 (n=16) | +3.3 | +13.8 (n=22) |
+| Small, 36 months | 80 | −0.60 | −9.4 (n=16) | +6.4 | +9.9 (n=22) |
+| Mid, 12 months | 178 | −0.35 | +2.6 (n=88) | +10.0 | — (n=1) |
+| Mid, 24 months | 166 | −0.49 | +2.0 (n=76) | +9.1 | — (n=1) |
+| Mid, 36 months | 154 | −0.48 | +2.7 (n=68) | +8.6 | — (n=1) |
+
+- Small caps: dearer was consistently followed by worse relative returns; 75–88% of "expensive" months were followed by small caps lagging. **Used**, but only to aim at the lower or upper part of the small-cap band, never outside it.
+- Mid caps: the direction is the same but weaker. Mid caps' P/E has re-rated upward, so half the months count as "expensive", and they still beat large caps by 2–3 points a year. **Shown for information only.**
+- Caveat: the windows overlap, so there are only a few independent episodes (Smallcap 100 P/E starts in 2011). Treat this as a gentle lean, not a forecast.
