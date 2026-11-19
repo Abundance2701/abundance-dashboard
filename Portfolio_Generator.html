@@ -2751,9 +2751,12 @@ async function wdPick(){
   await wdDb('readwrite', st => st.put(WD.root, 'root'));
   wdPaint(); return true;
 }
+/* WorkDrive calls can hang forever when the WorkDrive app is closed, still syncing,
+   or the folder is online-only. Every call gets a time limit so the tool never sits silent. */
+const wdLimit = (p, ms) => Promise.race([p, new Promise((_, no) => setTimeout(() => no(Object.assign(new Error('slow'), { slow:true })), ms))]);
 async function wdPerm(){
-  let p = await WD.root.queryPermission({ mode:'readwrite' });
-  if(p !== 'granted') p = await WD.root.requestPermission({ mode:'readwrite' }).catch(()=> 'denied');
+  let p = await wdLimit(WD.root.queryPermission({ mode:'readwrite' }), 8000);
+  if(p !== 'granted') p = await wdLimit(WD.root.requestPermission({ mode:'readwrite' }), 60000).catch(e => { if(e && e.slow) throw e; return 'denied'; });
   return p === 'granted';
 }
 $('#wdChange').addEventListener('click', wdPick);
@@ -2763,31 +2766,43 @@ async function wdPrepare(){
   const nm = properName(S.name);
   if(!nm) return { why:'name' };
   if(!WD.root && !(await wdPick())) return { why:'cancel' };
-  if(!(await wdPerm())) return { why:'perm' };
+  try{ if(!(await wdPerm())) return { why:'perm' }; }
+  catch(e){ return { why: e && e.slow ? 'slow' : 'folder' }; }
   const folder = safeFile(nm);
   let file = fileStem() + '.pdf', dir;
-  try{ dir = await WD.root.getDirectoryHandle(folder, { create:true }); }
-  catch(e){ return { why:'folder' }; }
-  let exists = false; try{ await dir.getFileHandle(file); exists = true; }catch(e){}
-  if(exists && !confirm(`"${file}" is already in ${folder}'s folder.\n\nOK replaces it. Cancel keeps both and saves this one as a new copy.`)){
-    let n = 2; while(true){ const alt = `${fileStem()} (${n}).pdf`; try{ await dir.getFileHandle(alt); n++; }catch(e){ file = alt; break; } }
-  }
+  try{ dir = await wdLimit(WD.root.getDirectoryHandle(folder, { create:true }), 10000); }
+  catch(e){ return { why: e && e.slow ? 'slow' : 'folder' }; }
+  const has = async n => { try{ await wdLimit(dir.getFileHandle(n), 8000); return true; }catch(e){ if(e && e.slow) throw e; return false; } };
+  try{
+    if(await has(file) && !confirm(`"${file}" is already in ${folder}'s folder.\n\nOK replaces it. Cancel keeps both and saves this one as a new copy.`)){
+      let n = 2; while(await has(`${fileStem()} (${n}).pdf`)) n++;
+      file = `${fileStem()} (${n}).pdf`;
+    }
+  }catch(e){ return { why:'slow' }; }
   return { dir, folder, file };
 }
 async function wdWrite(prep, blob){
-  const fh = await prep.dir.getFileHandle(prep.file, { create:true }), w = await fh.createWritable();
-  await w.write(blob); await w.close();
+  const fh = await wdLimit(prep.dir.getFileHandle(prep.file, { create:true }), 10000);
+  const w = await wdLimit(fh.createWritable(), 10000);
+  await wdLimit(w.write(blob), 30000); await wdLimit(w.close(), 30000);
   return `${WD.root.name} / ${prep.folder} / ${prep.file}`;
 }
 const WD_WHY = {
   perm: 'The browser needs your OK to save into this folder. Try again and choose Allow.',
-  folder: 'Could not open the WorkDrive folder. It may have moved; use Change WorkDrive folder.'
+  folder: 'Could not open the WorkDrive folder. It may have moved; use Change WorkDrive folder.',
+  slow: 'WorkDrive is not responding. Check the WorkDrive app is open and signed in (and the Portfolios folder is set to stay on this computer), then try again.'
 };
 $('#optWD').addEventListener('click', async ()=>{
+  if(WD.busy) return;
+  WD.busy = true;
+  const hint = $('#wdHint'), keep = hint.textContent;
+  hint.classList.remove('warn'); hint.textContent = 'Opening your WorkDrive folder…';
   const prep = await wdPrepare();
+  WD.busy = false;
   if(prep.why){
     if(prep.why === 'name'){ wdPaint(); $('#cname').focus(); }
-    else if(WD_WHY[prep.why]){ $('#wdHint').textContent = WD_WHY[prep.why]; $('#wdHint').classList.add('warn'); if(prep.why==='folder') $('#wdMore').hidden = false; }
+    else if(WD_WHY[prep.why]){ hint.textContent = WD_WHY[prep.why]; hint.classList.add('warn'); if(prep.why !== 'perm') $('#wdMore').hidden = false; }
+    else hint.textContent = keep;
     return;
   }
   const say = showBusy();
@@ -3014,23 +3029,30 @@ async function sendMail(){
   const saveWD = WD.ok && $('#msWD').classList.contains('on');
   let prep = null;
   if(saveWD){
+    if(MAIL.opening) return;
+    MAIL.opening = true;
+    const btn = $('#msSend'), lbl = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Opening WorkDrive…';
     prep = await wdPrepare();
+    btn.disabled = false; btn.textContent = lbl; MAIL.opening = false;
     if(prep.why){
       if(prep.why === 'cancel') return;
-      toast(esc(WD_WHY[prep.why] || 'Could not open the WorkDrive folder.'), true, 8000); return;
+      const why = WD_WHY[prep.why] || 'Could not open the WorkDrive folder.';
+      if(!confirm(`${why}\n\nSend the email anyway, without saving to WorkDrive?`)) return;
+      prep = null;
     }
   }
   const who = [`To: ${to.join(', ')}`];
   if(cc.length) who.push(`Cc: ${cc.join(', ')}`);
   if(bcc.length) who.push(`Bcc: ${bcc.join(', ')}`);
-  if(!confirm(`Send "${subject}" with the portfolio PDF attached?\n\n${who.join('\n')}\n\nOpens with: ${greet}${saveWD ? '\nAlso saves to WorkDrive: ' + prep.folder + ' / ' + prep.file : ''}`)) return;
+  if(!confirm(`Send "${subject}" with the portfolio PDF attached?\n\n${who.join('\n')}\n\nOpens with: ${greet}${prep ? '\nAlso saves to WorkDrive: ' + prep.folder + ' / ' + prep.file : ''}`)) return;
 
   MAIL.busy = true; MAIL.saved = '';
   $('#mailsheet').classList.add('busy'); $('#msBusy').classList.add('on');
   const say = t => { $('#msBusyTxt').textContent = t; };
   try{
     let blob = await buildPdfBlob(say), saved = '', wdErr = false;
-    if(saveWD){
+    if(prep){
       say('Saving to WorkDrive…');
       try{ saved = MAIL.saved = await wdWrite(prep, blob); }catch(e){ wdErr = true; }
     }
