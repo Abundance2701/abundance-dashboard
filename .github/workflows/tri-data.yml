@@ -4,7 +4,7 @@ on:
     - cron: '40 13 * * 1-5'   # 19:10 IST on weekdays, after NSE publishes TRI
   push:
     branches: [main]
-    paths: ['scripts/tri_update.py', '.github/workflows/tri-data.yml']
+    paths: ['scripts/tri_update.py', 'scripts/pe_update.py', '.github/workflows/tri-data.yml']
   workflow_dispatch: {}
 permissions:
   contents: write
@@ -17,9 +17,12 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: '3.12' }
       - run: python scripts/tri_update.py
+      - name: Index P/E, P/B, dividend yield (month-end)
+        run: python scripts/pe_update.py
+        continue-on-error: true
       - name: Commit if changed
         run: |
           git config user.name "tri-data-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add data/tri_monthly.json data/tri_status.json data/tri_daily.json
+          git add data/tri_monthly.json data/tri_status.json data/tri_daily.json data/pe_monthly.json 2>/dev/null || git add data/tri_monthly.json data/tri_status.json data/tri_daily.json
           git diff --cached --quiet && echo "no change" || (git commit -m "Index TRI data $(date -u +%F)" && git pull --rebase -q && git push)
