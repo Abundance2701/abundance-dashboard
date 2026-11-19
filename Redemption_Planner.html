@@ -87,11 +87,20 @@ input[type=range]{accent-color:var(--primary);padding:0;border:0;background:none
 /* step 2: plan */
 .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin:0 0 10px}
 .legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
-.plan{display:grid;grid-template-columns:minmax(0,2.3fr) minmax(0,1.6fr) 72px 92px minmax(130px,1fr) 40px;column-gap:14px;align-items:center}
+.plan{display:grid;grid-template-columns:minmax(0,2fr) 92px 82px 82px minmax(0,1.3fr) 62px 64px minmax(124px,1fr) 38px;column-gap:12px;align-items:center}
+.plan .hd button{all:unset;cursor:pointer;display:inline-flex;gap:4px;align-items:center}
+.plan .hd button:focus-visible{outline:2px solid var(--accent)}
+.plan .hd .ar{font-size:10px;opacity:.35}.plan .hd.on .ar{opacity:1;color:var(--primary)}
+.grp{grid-column:1/-1;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--soft);border-radius:8px;padding:7px 12px;margin-top:14px;font:700 13px var(--f-head);color:var(--primary)}
+.grp span{font:400 13px var(--f-body);color:var(--ink)}
+.bt2{font-size:13px;line-height:1.35;font-variant-numeric:tabular-nums}.bt2 small{display:block;color:var(--muted);font-size:12px}
+.cv2{text-align:right;font-variant-numeric:tabular-nums;font-size:14.5px}
+.sortm{display:none}
 .plan .hd{font:700 11.5px var(--f-head);color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding:0 0 8px;border-bottom:1px solid var(--line)}
-.plan .hd.r{text-align:right}
+.plan .hd.r{text-align:right}.plan .hd.r button{justify-content:flex-end}
 .row{display:contents}
 .row>div{padding:12px 0;border-bottom:1px solid var(--line);min-width:0}
+@media (min-width:1041px){.row>div:not(.cfgc){align-self:stretch;display:flex;flex-direction:column;justify-content:center}.row>.num,.row>.cv2,.row>.scc{align-items:flex-end}.row>.cfgbc{align-items:flex-end}}
 .row.off>div:not(.cfgc){opacity:.5}
 .fn{font-weight:700;line-height:1.25}
 .fn small{display:block;font-weight:400;color:var(--muted);font-size:13px;margin-top:2px}
@@ -122,8 +131,16 @@ input[type=range]{accent-color:var(--primary);padding:0;border:0;background:none
 .tot{font:700 16px var(--f-head)} .tot small{font:400 14px var(--f-body);color:var(--muted);margin-left:6px}
 .pill{font:700 12.5px var(--f-head);padding:4px 10px;border-radius:999px;background:var(--soft);color:var(--primary)}
 .pill.warn{background:#F9B73840;color:var(--ink)}
-@media (max-width:860px){
+@media (max-width:1040px){
+  .sortm{display:flex;gap:8px;align-items:center;font-size:14px;margin-bottom:6px}
   .plan{grid-template-columns:1fr 1fr;column-gap:12px}
+  .row>.btc,.row>.ccc,.row>.vvc{display:flex;gap:6px;align-items:baseline;text-align:left}
+  .row>.btc{grid-column:1/-1}
+  .row>.btc::before{content:"Bought";font:700 11px var(--f-head);color:var(--muted)}
+  .row>.ccc::before{content:"Cost";font:700 11px var(--f-head);color:var(--muted)}
+  .row>.vvc::before{content:"Value";font:700 11px var(--f-head);color:var(--muted)}
+  .row>.vvc{justify-content:flex-end}
+  .bt2 small{display:inline;margin-left:4px}
   .plan .hd{display:none}
   .row>div{border-bottom:0;padding:4px 0}
   .row>.fnc{grid-column:1/-1;padding-top:14px;border-top:1px solid var(--line)}
@@ -243,6 +260,7 @@ tfoot td{font-weight:700;border-bottom:0;border-top:2px solid var(--line)}
         <span><i style="background:var(--ld)"></i>Within exit-load period</span>
         <span><i style="background:var(--lk)"></i>ELSS lock-in</span>
       </div>
+      <div class="sortm"><label for="sortSel">Sort by</label><select id="sortSel"><option value="redeem:-1">Redeem ₹ (high to low)</option><option value="value:-1">Value</option><option value="cost:-1">Cost</option><option value="bought:1">Bought (oldest first)</option><option value="xirr:1">XIRR (low to high)</option><option value="score:-1">Score</option><option value="name:1">Fund name</option></select></div>
       <div class="plan" id="plan"></div>
       <div class="foot">
         <div class="tot" id="tot"></div>
@@ -695,12 +713,39 @@ function reasons(f, r){
   if (Math.abs(r.amount - f.value) < 2 && !(sugg && sugg.why[f.id] === 'small')) out.push(['Full exit', 'w']);
   return out;
 }
+let sortK = 'redeem', sortD = -1;
+const COLS = [['name', 'Fund', 1], ['bought', 'Bought', 1], ['cost', 'Cost', -1], ['value', 'Value', -1], ['mix', 'FIFO mix', -1], ['xirr', 'XIRR', 1], ['score', 'Score', -1], ['redeem', 'Redeem ₹', -1], [null, '', 0]];
+const catOf = f => (f.category || 'Other').replace(/^equity\s*-\s*/i, '').replace(/\s*fund$/i, '').trim() || 'Other';
+const costOf = f => f.lots.reduce((s, l) => s + l.cost, 0);
+function sortVal(f, k){
+  switch (k){
+    case 'name': return f.short.toLowerCase();
+    case 'bought': return f.lots.length ? +f.lots[0].date : 0;
+    case 'cost': return costOf(f);
+    case 'value': return f.value || 0;
+    case 'mix': { const m = mixFor(f); return m.parts.lt / (f.value || 1); }
+    case 'xirr': return isFinite(f.xirr) ? f.xirr : Infinity;
+    case 'score': { const sc = sugg && sugg.scores[f.id]; return sc ? sc.score : -1; }
+    default: return plan[f.id] || 0;
+  }
+}
 function renderPlan(){
   const total = funds.reduce((s, f) => s + (f.value || 0), 0);
-  const h = ['Fund', 'Redeemable value · in FIFO order', 'XIRR', 'Score', 'Redeem ₹', ''];
-  let html = h.map((t, i) => `<div class="hd${i >= 2 && i <= 4 ? ' r' : ''}">${t}</div>`).join('');
-  const order = funds.slice().sort((a, b) => ((plan[b.id] || 0) - (plan[a.id] || 0)) || ((b.value || 0) - (a.value || 0)));
-  for (const f of order){
+  let html = COLS.map(([k, t, d], i) => { const right = i >= 2 && i <= 3 || i >= 5 && i <= 7;
+    if (!k) return '<div class="hd"></div>';
+    const on = k === sortK; return `<div class="hd${right ? ' r' : ''}${on ? ' on' : ''}"><button type="button" data-sort="${k}" aria-label="Sort by ${t}">${t}<span class="ar">${on ? (sortD > 0 ? '▲' : '▼') : '▼'}</span></button></div>`; }).join('');
+  const cats = []; funds.forEach(f => { const c = catOf(f); if (!cats.includes(c)) cats.push(c); });
+  const cmp = (a, b) => { const x = sortVal(a, sortK), y = sortVal(b, sortK); return (x < y ? -1 : x > y ? 1 : 0) * sortD || (b.value - a.value); };
+  for (const c of cats){
+    const fl = funds.filter(f => catOf(f) === c).sort(cmp);
+    const cv = fl.reduce((s, f) => s + f.value, 0), cr = fl.reduce((s, f) => s + (plan[f.id] || 0), 0);
+    html += `<div class="grp">${esc(c)} <span>${fl.length} fund${fl.length > 1 ? 's' : ''} · ${short(cv)} (${(cv / total * 100).toFixed(1)}%)<b data-grp="${esc(c)}">${cr ? ' · Redeem ' + rs(cr) : ''}</b></span></div>`;
+    for (const f of fl) html += rowHtml(f, total);
+  }
+  $('plan').innerHTML = html;
+  $('sortSel').value = sortK + ':' + sortD;
+}
+function rowHtml(f, total){
     const m = mixFor(f); const tv = f.value || 1;
     const bar = m.seq.map(s => `<i style="width:${(s.v / tv * 100).toFixed(2)}%;background:var(--${s.k})" title="${{ lt: 'Long-term, no exit load', st: 'Short-term', ld: 'Within exit-load period', lk: 'ELSS lock-in' }[s.k]}: ${rs(s.v)}"></i>`).join('');
     const sc = sugg && sugg.scores[f.id];
@@ -711,8 +756,12 @@ function renderPlan(){
     if (m.parts.st > 0) sub.push(`<span>ST ${short(m.parts.st)}</span>`);
     if (m.parts.ld > 0) sub.push(`<span>Load ${short(m.parts.ld)}</span>`);
     if (m.parts.lk > 0) sub.push(`<span>Locked ${short(m.parts.lk)}</span>`);
-    html += `<div class="row${f.exclude ? ' off' : ''}" data-id="${f.id}">
-      <div class="fnc"><div class="fn">${esc(f.short)}<small>${esc(f.category.replace(/^equity\s*-\s*/i, ''))} · Folio ${esc(f.folio)} · ${short(f.value)} (${pct.toFixed(1)}%)</small><small>Bought ${heldRange(f)}</small></div><div class="chips" data-chips></div></div>
+    const L = f.lots, d1 = L.length ? dmy(L[0].date) : '', d2 = L.length ? dmy(L[L.length - 1].date) : '';
+    return `<div class="row${f.exclude ? ' off' : ''}" data-id="${f.id}">
+      <div class="fnc"><div class="fn">${esc(f.short)}<small>Folio ${esc(f.folio)} · ${pct.toFixed(1)}% of portfolio</small></div><div class="chips" data-chips></div></div>
+      <div class="btc bt2">${d1}${d1 !== d2 ? `<small>to ${d2}</small><small>${L.length} lots</small>` : ''}</div>
+      <div class="ccc cv2">${short(costOf(f))}</div>
+      <div class="vvc cv2"><b>${short(f.value)}</b></div>
       <div class="mixc mix"><div class="bar">${bar}</div><div class="sub">${sub.join('')}</div></div>
       <div class="num xrc"><div class="xr">${isFinite(f.xirr) ? f.xirr.toFixed(1) + '%' : '—'}${!seasoned ? '<small>new · not scored</small>' : ''}</div></div>
       <div class="scc">${f.exclude ? '<span class="note" style="margin:0">Kept out</span>' : sc ? `<div class="sc" title="Tax ${Math.round(sc.tax)} · Exit load ${Math.round(sc.load)} · XIRR ${Math.round(sc.perf)}"><b>${Math.round(sc.score)}</b><div class="t"><i style="width:${sc.score}%"></i></div></div>` : '<span class="note" style="margin:0">—</span>'}</div>
@@ -727,10 +776,12 @@ function renderPlan(){
         <label class="ck"><input type="checkbox" data-k="exclude" ${f.exclude ? 'checked' : ''}>Don't redeem from this fund</label>
       </div>
     </div>`;
-  }
-  $('plan').innerHTML = html;
 }
+function setSort(k, d){ sortK = k; sortD = d; try{ localStorage.setItem('abundance-redemption-sort', k + ':' + d); }catch(e){} renderPlan(); recalc(); }
+try{ const v = (localStorage.getItem('abundance-redemption-sort') || '').split(':'); if (v[0]){ sortK = v[0]; sortD = +v[1] || -1; } }catch(e){}
+$('sortSel').addEventListener('change', e => { const [k, d] = e.target.value.split(':'); setSort(k, +d); });
 $('plan').addEventListener('click', e => {
+  const sb = e.target.closest('[data-sort]'); if (sb){ const k = sb.dataset.sort; const def = (COLS.find(c => c[0] === k) || [])[2] || -1; setSort(k, k === sortK ? -sortD : def); return; }
   const row = e.target.closest('.row'); if (!row) return; const f = funds[+row.dataset.id];
   if (e.target.closest('[data-cfg]')){ const b = e.target.closest('[data-cfg]'); const p = row.querySelector('[data-panel]'); const open = p.classList.toggle('hidden') === false; b.setAttribute('aria-expanded', open); }
   if (e.target.closest('[data-all]')){ plan[f.id] = RP.redeemable(f, rdate(), cfg()); f.fixed = true; row.querySelector('[data-amt]').value = inr(plan[f.id]); recalc(); }
@@ -762,9 +813,10 @@ function recalc(){
   // row decorations
   $('plan').querySelectorAll('.row').forEach(row => {
     const f = funds[+row.dataset.id], r = byId[f.id];
-    row.querySelector('[data-units]').textContent = r && r.slices.length ? 'From ' + lotRange(r) : '';
+    row.querySelector('[data-units]').textContent = r && r.slices.length ? 'Cost ' + short(r.cost) + ' · from ' + lotRange(r) : '';
     row.querySelector('[data-chips]').innerHTML = reasons(f, r).map(([t, k]) => k === 'fx' ? `<button class="chip fx" data-unfix type="button" title="Let the planner decide this amount again">${esc(t)}</button>` : `<span class="chip ${k}">${esc(t)}</span>`).join('');
   });
+  $('plan').querySelectorAll('[data-grp]').forEach(el => { const c = el.dataset.grp; const t = funds.filter(f => catOf(f) === c).reduce((s, f) => s + (plan[f.id] || 0), 0); el.textContent = t ? ' · Redeem ' + rs(t) : ''; });
   const diff = ev.total - target;
   $('tot').innerHTML = `Planned ${rs(ev.total)}<small>of ${rs(target)}</small> ` + (Math.abs(diff) < 1 ? '<span class="pill">Matches</span>' : diff > 0 && diff < 1000 ? `<span class="pill">Matches, +${rs(diff)} from rounding</span>` : `<span class="pill warn">${diff > 0 ? rs(diff) + ' over' : rs(-diff) + ' short'}</span>`);
   if (sugg && sugg.shortfall > 0) $('tot').innerHTML += ` <span class="pill warn">Only ${rs(target - sugg.shortfall)} can be redeemed with these settings</span>`;
@@ -824,6 +876,19 @@ function flags(ev){
 }
 
 /* ---------- downloads ---------- */
+async function saveBlob(blob, name, kind){
+  if (window.showSaveFilePicker){
+    try{
+      const ext = kind === 'pdf' ? '.pdf' : '.xlsx';
+      const h = await window.showSaveFilePicker({ suggestedName: name, id: 'abundance-redemption-' + kind,
+        types: [{ description: kind === 'pdf' ? 'PDF' : 'Excel workbook', accept: { [blob.type]: [ext] } }] });
+      const w = await h.createWritable(); await w.write(blob); await w.close();
+      status('Saved ' + h.name + '.'); return;
+    }catch(e){ if (e && e.name === 'AbortError') return; }
+  }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
 function fileBase(){ const d = rdate(); const nm = properName($('client').value) || 'Client';
   return `Redemption Plan ${String(d.getUTCDate()).padStart(2, '0')}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCFullYear()).slice(2)} - ${nm}`; }
 $('xls').addEventListener('click', async () => {
@@ -869,35 +934,67 @@ $('xls').addEventListener('click', async () => {
     ['Equity ST rate %', c.eqST], ['LT rate %', c.lt], ['Slab %', c.slab], ['Surcharge %', c.surcharge], ['Cess %', c.cess], ['LT exemption', inr(c.exemption)], ['Exemption already used', inr(c.exemptionUsed)],
     ['Weight: tax', +$('wTax').value], ['Weight: exit load', +$('wLoad').value], ['Weight: XIRR', +$('wPerf').value], ['Spread', $('band').selectedOptions[0].text], ['Full exit below', inr(pnum($('smallBelow').value))]], null);
   const buf = await wb.xlsx.writeBuffer();
-  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
-  a.download = fileBase() + ' (internal).xlsx'; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  await saveBlob(new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), fileBase() + ' (internal).xlsx', 'xlsx');
 });
 const rd1 = v => isFinite(v) ? Math.round(v) : '';
 
 const GREEN = [0, 88, 38], BROWN = [147, 78, 50], GOLD = [249, 183, 56], INK = [57, 41, 62], MUTE = [135, 132, 138], RULE = [216, 227, 220], PANEL = [243, 246, 244], ZEBRA = [250, 252, 250];
 const PW = 210, PH = 297, M = 18, BAND = 30;
 function setFonts(doc){
-  try{ ['Mont-R', 'Mont-B', 'Carl-R', 'Carl-B'].forEach(k => { doc.addFileToVFS(k + '.ttf', FONTS[k + '.ttf']); doc.addFont(k + '.ttf', k.startsWith('Mont') ? 'Mont' : 'Carl', k.endsWith('B') ? 'bold' : 'normal'); }); }catch(e){}
-  if (CAL.r && CAL.b){ try{ doc.addFileToVFS('Calibri-R.ttf', CAL.r); doc.addFont('Calibri-R.ttf', 'Carl', 'normal'); doc.addFileToVFS('Calibri-B.ttf', CAL.b); doc.addFont('Calibri-B.ttf', 'Carl', 'bold'); }catch(e){} }
+  const F0 = pdfFont();
+  try{ (F0 ? ['Mont-R', 'Mont-B'] : ['Mont-R', 'Mont-B', 'Carl-R', 'Carl-B']).forEach(k => { doc.addFileToVFS(k + '.ttf', FONTS[k + '.ttf']); doc.addFont(k + '.ttf', k.startsWith('Mont') ? 'Mont' : 'Carl', k.endsWith('B') ? 'bold' : 'normal'); }); }catch(e){}
+  const F = pdfFont(); if (F){ try{ doc.addFileToVFS('U-R.ttf', F.r); doc.addFont('U-R.ttf', 'Carl', 'normal'); doc.addFileToVFS('U-B.ttf', F.b); doc.addFont('U-B.ttf', 'Carl', 'bold'); }catch(e){} }
 }
 /* ---- optional: the user's own Calibri, kept only in this browser (IndexedDB) ---- */
-const CAL = { r: null, b: null };
 function idb(){ return new Promise((res, rej) => { const q = indexedDB.open('abundance-fonts', 1); q.onupgradeneeded = () => q.result.createObjectStore('f'); q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error); }); }
 async function idbGet(k){ const d = await idb(); return new Promise(res => { const q = d.transaction('f').objectStore('f').get(k); q.onsuccess = () => res(q.result || null); q.onerror = () => res(null); }); }
 async function idbPut(k, v){ const d = await idb(); return new Promise(res => { const t = d.transaction('f', 'readwrite'); v == null ? t.objectStore('f').delete(k) : t.objectStore('f').put(v, k); t.oncomplete = () => res(); t.onerror = () => res(); }); }
-function fontUI(){ const on = CAL.r && CAL.b; $('fontNote').textContent = on ? 'PDFs use your Calibri (saved in this browser).' : 'PDFs use Carlito, a free look-alike of Calibri. For true Calibri, pick calibri.ttf and calibrib.ttf from C:\\Windows\\Fonts (Mac: Microsoft Office fonts folder).';
-  $('fontBtn').textContent = on ? 'Replace Calibri' : 'Use my Calibri'; $('fontClr').classList.toggle('hidden', !on); }
-(async () => { try{ CAL.r = await idbGet('calibri-r'); CAL.b = await idbGet('calibri-b'); }catch(e){} fontUI(); })();
+const FONT = { calibri: { r: null, b: null, label: 'Calibri' }, aptosn: { r: null, b: null, label: 'Aptos Narrow' } };
+const pdfFont = () => ['calibri', 'aptosn'].map(k => FONT[k]).find(f => f.r && f.b) || null;
+// read family / style from a TTF's name table
+function ttfNames(buf){
+  const v = new DataView(buf); const n = v.getUint16(4); let off = -1;
+  for (let i = 0; i < n; i++){ const p = 12 + i * 16; if (String.fromCharCode(v.getUint8(p), v.getUint8(p + 1), v.getUint8(p + 2), v.getUint8(p + 3)) === 'name'){ off = v.getUint32(p + 8); break; } }
+  if (off < 0) return {};
+  const cnt = v.getUint16(off + 2), so = off + v.getUint16(off + 4), out = {};
+  for (let i = 0; i < cnt; i++){ const p = off + 6 + i * 12; const pid = v.getUint16(p), nid = v.getUint16(p + 6), len = v.getUint16(p + 8), o = v.getUint16(p + 10);
+    if (pid !== 3 || ![1, 2, 4, 16, 17].includes(nid) || out[nid]) continue;
+    let t = ''; for (let j = 0; j < len; j += 2) t += String.fromCharCode(v.getUint16(so + o + j)); out[nid] = t; }
+  return { family: out[16] || out[1] || '', style: out[17] || out[2] || '', full: out[4] || '' };
+}
+function hasRupee(buf){ // cmap format 4 lookup for U+20B9
+  try{ const v = new DataView(buf); const n = v.getUint16(4); let off = -1;
+    for (let i = 0; i < n; i++){ const p = 12 + i * 16; if (String.fromCharCode(v.getUint8(p), v.getUint8(p + 1), v.getUint8(p + 2), v.getUint8(p + 3)) === 'cmap'){ off = v.getUint32(p + 8); break; } }
+    const nt = v.getUint16(off + 2);
+    for (let i = 0; i < nt; i++){ const so = off + v.getUint32(off + 4 + i * 8 + 4); const fmt = v.getUint16(so);
+      if (fmt === 4){ const segX2 = v.getUint16(so + 6); for (let k = 0; k < segX2; k += 2){ const end = v.getUint16(so + 14 + k), st = v.getUint16(so + 16 + segX2 + k); if (0x20B9 >= st && 0x20B9 <= end) return true; } }
+      if (fmt === 12){ const ng = v.getUint32(so + 12); for (let k = 0; k < ng; k++){ const st = v.getUint32(so + 16 + k * 12), en = v.getUint32(so + 20 + k * 12); if (0x20B9 >= st && 0x20B9 <= en) return true; } } }
+  }catch(e){} return false;
+}
+function fontUI(){
+  const f = pdfFont();
+  $('fontNote').textContent = f ? `PDFs use your ${f.label} (saved in this browser).` : 'PDFs use Carlito, a free look-alike of Calibri. To use true Calibri (or Aptos Narrow), pick its regular and bold .ttf files once. Calibri: C:\\Windows\\Fonts\\calibri.ttf and calibrib.ttf.';
+  $('fontBtn').textContent = f ? 'Change font' : 'Use my Calibri / Aptos Narrow'; $('fontClr').classList.toggle('hidden', !f);
+}
+(async () => { try{ for (const k of ['calibri', 'aptosn']){ FONT[k].r = await idbGet(k + '-r'); FONT[k].b = await idbGet(k + '-b'); } }catch(e){} fontUI(); })();
 $('fontBtn').addEventListener('click', () => $('fontFile').click());
-$('fontClr').addEventListener('click', async () => { CAL.r = CAL.b = null; await idbPut('calibri-r', null); await idbPut('calibri-b', null); fontUI(); });
+$('fontClr').addEventListener('click', async () => { for (const k of ['calibri', 'aptosn']){ FONT[k].r = FONT[k].b = null; await idbPut(k + '-r', null); await idbPut(k + '-b', null); } fontUI(); });
 $('fontFile').addEventListener('change', async e => {
   const b64 = buf => { let s = '', u = new Uint8Array(buf); for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(s); };
-  for (const f of e.target.files){ const n = f.name.toLowerCase(); if (!/^calibri/.test(n)) continue;
-    const isBold = /^calibrib\.ttf$/.test(n) || /bold/.test(n) && !/italic/.test(n); const isReg = /^calibri\.ttf$/.test(n) || /regular/.test(n);
-    if (!isBold && !isReg) continue; const v = b64(await f.arrayBuffer());
-    if (isBold){ CAL.b = v; await idbPut('calibri-b', v); } else { CAL.r = v; await idbPut('calibri-r', v); } }
+  const msgs = [];
+  for (const file of e.target.files){
+    const buf = await file.arrayBuffer(); const nm = ttfNames(buf); const fam = (nm.family || '').toLowerCase(), sty = (nm.style || '').toLowerCase();
+    const key = fam === 'calibri' ? 'calibri' : /^aptos narrow$/.test(fam) ? 'aptosn' : null;
+    if (!key){ msgs.push(`${file.name}: not Calibri or Aptos Narrow (${nm.family || 'unknown'})`); continue; }
+    const slot = sty === 'regular' ? 'r' : sty === 'bold' ? 'b' : null;
+    if (!slot){ msgs.push(`${file.name}: ${nm.style} style not needed`); continue; }
+    if (!hasRupee(buf)) msgs.push(`${file.name}: this version has no ₹ symbol`);
+    const v = b64(buf); FONT[key][slot] = v; await idbPut(key + '-' + slot, v);
+  }
   e.target.value = ''; fontUI();
-  if (!(CAL.r && CAL.b)) $('fontNote').textContent = 'Need both files: calibri.ttf (regular) and calibrib.ttf (bold). Select them together.';
+  const half = ['calibri', 'aptosn'].map(k => FONT[k]).find(f => (f.r || f.b) && !(f.r && f.b));
+  if (half && !pdfFont()) msgs.push(`${half.label}: still need the ${half.r ? 'bold' : 'regular'} file`);
+  if (msgs.length) $('fontNote').textContent += ' ' + msgs.join('. ') + '.';
 });
 function band(doc, page, pages){
   const y = PH - BAND; doc.setFillColor(...GREEN); doc.rect(0, y, PW, BAND, 'F'); doc.setFillColor(...GOLD); doc.rect(0, y, PW, 1, 'F');
@@ -913,7 +1010,7 @@ function sectionHead(doc, y, text){
 }
 function label(doc, t, x, y, align){ doc.setFont('Carl', 'normal'); doc.setFontSize(8.5); doc.setTextColor(...MUTE); doc.text(t, x, y, { align: align || 'left' }); }
 function val(doc, t, x, y, size, col, bold, align){ doc.setFont('Carl', bold ? 'bold' : 'normal'); doc.setFontSize(size || 11); doc.setTextColor(...(col || INK)); doc.text(t, x, y, { align: align || 'left' }); }
-$('pdf').addEventListener('click', () => {
+$('pdf').addEventListener('click', async () => {
   const ev = lastEval; if (!ev) return; const c = cfg(), rd = rdate();
   const doc = new window.jspdf.jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' }); setFonts(doc);
   const lw = 40, lh = lw * 199 / 440; doc.addImage(LOGO, 'PNG', (PW - lw) / 2, 12, lw, lh);
@@ -963,7 +1060,7 @@ $('pdf').addEventListener('click', () => {
   const note = `Illustrative, based on NAV of ${dmy(nd || P.reportDate)}. Final amounts depend on the NAV on the redemption date. Units are redeemed oldest-first. Net in hand = redemption less exit load and estimated tax.`;
   doc.text(doc.splitTextToSize(note, PW - 2 * M), M, y);
   const n = doc.getNumberOfPages(); for (let i = 1; i <= n; i++){ doc.setPage(i); band(doc, i, n); }
-  doc.save(fileBase() + '.pdf');
+  saveBlob(doc.output('blob'), fileBase() + '.pdf', 'pdf');
 });
 const dash = n => Math.abs(n) < 0.5 ? '-' : inr(n);
 window.__rp = { get funds(){ return funds; }, get plan(){ return plan; }, get ev(){ return lastEval; }, load, RP };
