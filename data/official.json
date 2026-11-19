@@ -1,6 +1,104 @@
 {
- "updated": "2026-11-19T10:46:25Z",
+ "updated": "2026-11-19T19:02:11Z",
  "items": [
+  {
+   "src": "RBI",
+   "title": "Finances of Panchayati Raj Institutions",
+   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=64002",
+   "date": "2026-11-19",
+   "important": false
+  },
+  {
+   "src": "RBI",
+   "title": "Overseas Direct Investment for October 2026",
+   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=64001",
+   "date": "2026-11-19",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Securities of compulsory delisted companies made available on Dissemination Board of NSE",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77524.pdf",
+   "date": "2026-11-19",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of further issues of securities",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77523.pdf",
+   "date": "2026-11-19",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "SEBI direction in the matter of Mauria Udyog Ltd and 4 other scrips",
+   "url": "https://nsearchives.nseindia.com/content/circulars/INVG77522.zip",
+   "date": "2026-11-19",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of privately placed securities on the debt market segment of the Exchange",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77521.pdf",
+   "date": "2026-11-19",
+   "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Reminder for submission of Internal Audit Report for the half year ended September 30, 2026",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CMPL77520.pdf",
+   "date": "2026-11-19",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Applicability of Additional Surveillance Measure under IBC",
+   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77519.zip",
+   "date": "2026-11-19",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Applicability of Short-Term Additional Surveillance Measure (ST-ASM)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77518.zip",
+   "date": "2026-11-19",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Applicability of Additional Surveillance Measure (ASM)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77517.zip",
+   "date": "2026-11-19",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Mock trading on Saturday, November 21, 2026 - New version of NEAT+ 7.9.1",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CMTR77516.pdf",
+   "date": "2026-11-19",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Applicability of Enhanced Surveillance Measure (ESM)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77515.zip",
+   "date": "2026-11-19",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Change in name and symbol of UMIYA BUILDCON LIMITED",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77514.pdf",
+   "date": "2026-11-19",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Suspension of trading in Non-Convertible Securities (Privately Placed)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77513.pdf",
+   "date": "2026-11-19",
+   "important": false
+  },
   {
    "src": "NSE",
    "title": "Mock trading on Saturday, November 21, 2026 - New version of NEAT SLBM (1.3.4)",
@@ -17,6 +115,20 @@
   },
   {
    "src": "NSE",
+   "title": "Listing of further issue of Adani Enterprises Limited",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77510.pdf",
+   "date": "2026-11-19",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Revision in minimum application amount and Introduction of Daily and Weekly frequency for all Systematic transitions under certain schemes of Unifi mutual fund on NSE MF Invest platform",
+   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77508.zip",
+   "date": "2026-11-19",
+   "important": true
+  },
+  {
+   "src": "NSE",
    "title": "Mock session on Saturday, November 21, 2026 - New version of NEAT 1.5.6",
    "url": "https://nsearchives.nseindia.com/content/circulars/COM77507.pdf",
    "date": "2026-11-19",
@@ -24,8 +136,43 @@
   },
   {
    "src": "NSE",
+   "title": "Face Value Split - Interarch Building Solutions Limited (INTERARCH)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77506.pdf",
+   "date": "2026-11-19",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Temporary Suspension of fresh subscription under IDCW Options for certain schemes of Axis Mutual Fund on NSE MF Invest Platform",
+   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77505.zip",
+   "date": "2026-11-19",
+   "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Launch of Bajaj Finserv Business Cycle Fund on NSE MF Invest Platform",
+   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77503.pdf",
+   "date": "2026-11-19",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Merger of certain schemes of Tata Mutual Fund on NSE MF Invest Platform",
+   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77502.zip",
+   "date": "2026-11-19",
+   "important": true
+  },
+  {
+   "src": "NSE",
    "title": "Mock trading on Saturday, November 21, 2026 - New version of NEAT +7.9.1",
    "url": "https://nsearchives.nseindia.com/content/circulars/FAOP77501.pdf",
+   "date": "2026-11-19",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Suspension of trading in securities",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77500.pdf",
    "date": "2026-11-19",
    "important": false
   },
@@ -121,15 +268,15 @@
   ],
   "https://rbi.org.in/pressreleases_rss.xml": [
    10,
-   1
+   3
   ],
   "https://rbi.org.in/notifications_rss.xml": [
    10,
    10
   ],
   "https://nsearchives.nseindia.com/content/RSS/Circulars.xml": [
-   6,
-   6
+   25,
+   25
   ]
  },
  "errors": []
