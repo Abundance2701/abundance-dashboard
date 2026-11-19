@@ -28,6 +28,13 @@
   .appswitch{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px;}
   .appswitch button{background:#fff; border:1.5px solid var(--line); color:var(--dark); padding:8px 14px; font-size:12.5px;}
   .appswitch button.on{background:var(--dark); color:#fff; border-color:var(--dark);}
+  .appswitch .spacer{flex:1;}
+  .appswitch button.ref{background:#f1f2f1; color:#8a8590; border-color:#e3e5e3; font-weight:600;}
+  .appswitch button.ref.on{background:#8a8590; color:#fff; border-color:#8a8590;}
+  /* Fund Lab: table scrolls inside its card so the heading stays pinned */
+  #resultCard .tablewrap{max-height:calc(100vh - 120px); overflow:auto;}
+  #resultCard thead th{position:sticky; top:0; z-index:3;}
+  #resultCard thead th.sk1, #resultCard thead th.sk2{z-index:5;}
   .controls{display:flex; flex-wrap:wrap; gap:14px 18px; align-items:flex-end;}
   .field{display:flex; flex-direction:column; gap:6px;}
   .field label{font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--secondary);}
@@ -195,6 +202,88 @@
   .cb.on.p{background:#e3f3e8; color:var(--primary); border-color:#9fd1b0;} .cb.on.a{background:#f6e3de; color:var(--down); border-color:#e6b3a6;}
   .callsbox{margin:10px 0;} .lut td.l{white-space:normal;} .lut th{white-space:normal;} .lut td .up{font-weight:700;}
   .ba{font-size:14px;}
+  /* holdings workbench (ported from MF Screener) */
+  #appWb{--wb-q1:#1e7a45; --wb-q2:#8cc9a0; --wb-q3:#ec9a92; --wb-q4:#b8322a; --c-large:#005826; --c-mid:#4f9a6d; --c-small:#F9B738; --c-for:#934E32;}
+  #appWb .panel h2{margin:0; font-size:17px; color:var(--dark);}
+  .wb-head{display:flex; flex-wrap:wrap; justify-content:space-between; align-items:baseline; gap:6px 16px; margin-bottom:12px;}
+  .wb-hint{color:var(--muted); font-size:13px; max-width:75ch;}
+  .wb-bar{position:sticky; top:0; z-index:20; display:flex; flex-wrap:wrap; gap:8px 10px; align-items:center; background:#fff; border:1px solid var(--line); border-radius:10px; padding:10px 14px; margin-bottom:14px; box-shadow:0 6px 16px -12px rgba(0,0,0,.4);}
+  .wb-bar.open{position:relative;}
+  #appWb [hidden], #appScreener[hidden], #appWb[hidden]{display:none !important;}
+  .wb-bar .lbl{font:600 12px Montserrat, sans-serif; color:var(--muted); text-transform:uppercase; letter-spacing:.06em;}
+  .wb-bar .cat{font-weight:700; color:var(--primary);}
+  .wb-toggle{margin-left:auto; font:600 13px Calibri, sans-serif; border:1.5px solid var(--primary); color:var(--primary); background:#fff; border-radius:8px; padding:6px 12px; cursor:pointer;}
+  .wb-toggle:hover{background:#eef6f1;}
+  .wb-chip{font:inherit; font-size:13px; border:1px solid var(--primary); color:var(--primary); background:#fff; border-radius:999px; padding:3px 6px 3px 10px; display:inline-flex; gap:6px; align-items:center; cursor:pointer;}
+  .wb-chip b{font-weight:700;}
+  .wb-chip span{display:inline-grid; place-items:center; width:18px; height:18px; border-radius:50%; background:var(--primary); color:#fff; font-size:11px;}
+  .wb-pick{display:grid; gap:12px; border-top:1px solid var(--line); padding-top:12px; width:100%;}
+  .wb-pick .row{display:flex; flex-wrap:wrap; gap:8px; align-items:center;}
+  .wb-pick select, .wb-pick input[type=search]{font:inherit; font-size:14px; border:1px solid var(--line); border-radius:8px; padding:7px 10px; background:var(--bg); color:var(--dark);}
+  .wb-pick input[type=search]{flex:1 1 220px;}
+  .wb-grid{column-width:260px; column-gap:14px;}
+  .wb-grid label{break-inside:avoid; -webkit-column-break-inside:avoid;display:flex; gap:8px; align-items:flex-start; padding:5px 6px; border-radius:6px; cursor:pointer; font-size:14px; line-height:1.25;}
+  .wb-grid label:hover{background:#eef6f1;}
+  .wb-grid small{display:block; color:var(--muted); font-size:11.5px;}
+  .wb-grid input{margin-top:2px;}
+  .wb-tbl{overflow-x:auto;}
+  .wb-tbl table{border-collapse:collapse; width:100%; font-variant-numeric:tabular-nums; font-size:14px;}
+  .wb-tbl th, .wb-tbl td{padding:8px 10px; border-bottom:1px solid var(--line); text-align:left; vertical-align:middle;}
+  .wb-tbl thead th{font:600 11.5px Montserrat, sans-serif; letter-spacing:.04em; text-transform:uppercase; color:var(--muted);}
+  .wb-tbl tbody th{font-weight:700; color:var(--dark); white-space:nowrap; font-size:13.5px;}
+  .wb-tbl .num{text-align:right;}
+  #appWb .wb-tbl thead th{background:transparent !important; color:var(--muted) !important; position:static; border-bottom:2px solid var(--line);}
+  #appWb .wb-tbl tbody tr:hover td{background:transparent;}
+  #appWb .wb-tbl td, #appWb .wb-tbl th{white-space:normal;}
+  #appWb .wb-pill{justify-self:start;}
+  #appWb table.wb-fixed{table-layout:fixed;}
+  #appWb table.wb-fixed td, #appWb table.wb-fixed th{overflow-wrap:anywhere;}
+  #appWb th.sortable{cursor:pointer; user-select:none;}
+  #appWb th.sortable:hover{color:var(--primary) !important;}
+  #appWb th.sortable .ar{font-size:9px; margin-left:3px;}
+  .wb-fn{font:600 13px Montserrat, sans-serif; color:var(--dark); background:none; border:0; padding:0; text-align:left; cursor:pointer; text-decoration:underline; text-decoration-color:#b9cfc2; text-underline-offset:3px;}
+  .wb-fn:hover{color:var(--primary); text-decoration-color:var(--primary);}
+  .wb-sub{color:var(--muted); font-size:12px; font-weight:400; font-family:Calibri, sans-serif;}
+  .wb-pill{display:inline-block; border-radius:999px; padding:1px 9px; font-size:11.5px; font-weight:700; white-space:nowrap;}
+  .p-low{background:var(--wb-q3); color:#3b1210;} .p-mid{background:var(--accent); color:#3a2a00;} .p-high{background:var(--wb-q1); color:#fff;}
+  .wb-stack{display:flex; height:12px; border-radius:3px; overflow:hidden; min-width:120px; background:var(--line);}
+  .wb-stack i{display:block; height:100%;}
+  .wb-legend{display:flex; flex-wrap:wrap; gap:4px 14px; font-size:12px; color:var(--muted);}
+  .wb-legend i{display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:5px; vertical-align:-1px;}
+  .wb-asbar{position:relative; height:8px; background:var(--line); border-radius:4px; min-width:90px;}
+  .wb-asbar i{position:absolute; inset:0 auto 0 0; background:var(--primary); border-radius:4px;}
+  .wb-cols{display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 440px), 1fr)); gap:18px;}
+  .wb-cols > *{min-width:0;}
+  .wb-pairs{display:grid; gap:12px;}
+  .wb-pair{display:grid; grid-template-columns:minmax(0,1fr) 64px; gap:4px 14px; align-items:center; padding:12px 14px; border:1px solid var(--line); border-radius:10px; border-left-width:5px;}
+  .wb-pair .names{font:600 13.5px Montserrat, sans-serif; color:var(--dark);}
+  .wb-pair .names em{font-style:normal; color:var(--muted); font-weight:500; padding:0 4px;}
+  .wb-pair .big{font:800 22px Montserrat, sans-serif; text-align:right; grid-row:span 3;}
+  .wb-pair .meter{height:8px; border-radius:4px; background:var(--line); overflow:hidden;}
+  .wb-pair .meter i{display:block; height:100%;}
+  .wb-pair .say{font-size:13.5px;}
+  .wb-tilt{font-weight:700;}
+  .wb-empty{color:var(--muted); padding:14px; border:1px dashed var(--line); border-radius:8px;}
+  .wb-note{font-size:13px; color:var(--muted); display:grid; gap:6px;}
+  .wb-note b{color:var(--dark);}
+  .wb-warn{border-left:3px solid var(--accent); padding:8px 12px; background:#fff8e6; border-radius:4px; font-size:13.5px; margin-bottom:12px;}
+  .wb-chg b{color:var(--dark);}
+  .wb-chg .up{color:var(--up);} .wb-chg .dn{color:var(--down);}
+  .wb-ovsel{font:inherit; font-size:12px; border:1px solid var(--line); border-radius:6px; padding:2px 6px; max-width:220px;}
+  .wb-busy{position:fixed; left:50%; bottom:24px; transform:translateX(-50%); background:var(--dark); color:#fff; padding:10px 16px; border-radius:8px; font-size:13.5px; z-index:60; box-shadow:0 8px 20px rgba(0,0,0,.25);}
+  .wb-link{display:inline-block; margin:-6px 0 16px; padding:7px 12px; border-radius:8px; background:var(--primary); color:#fff; font-weight:600; font-size:13px; text-decoration:none; border:0; cursor:pointer; font-family:Calibri, sans-serif;}
+  .wb-link:hover{opacity:.9}
+
+  #appWb thead th{background:none !important; color:var(--muted); text-align:left; cursor:default; white-space:normal; position:static; padding:8px 10px;}
+  #appWb thead th.num, #appWb td.num{text-align:right;} #appWb thead th.sortable{cursor:pointer;}
+  #appWb tbody td, #appWb tbody th{text-align:left; white-space:normal; background:transparent !important;}
+  #appWb thead th:first-child, #appWb thead th:last-child{border-radius:0;}
+  /* client review v2 + portfolio builder */
+  .rvtg td, .rvtg th{padding:6px 8px;} .rvtg input.tgt{width:64px; min-width:0; padding:4px 6px; font-size:13.5px; text-align:right;}
+  .rvtg tfoot td{border-top:2px solid var(--line); background:#fff;}
+  .pbcat{margin:4px 0 10px;} .pbcat > b{font-size:13px; color:var(--secondary);}
+  .pbpair{display:flex; justify-content:space-between; gap:10px; font-size:13.5px; padding:4px 0; border-bottom:1px dashed #edf1ee;}
+  #pgFrame{width:100%; height:calc(100vh - 40px); min-height:880px; border:1px solid var(--line); border-radius:10px; background:#fff; display:block;}
   /* client review */
   .rv .card2{margin-bottom:12px; font-size:14.5px;} .rv .grid2{margin-bottom:0;}
   .gaprow{display:grid; grid-template-columns:78px minmax(120px,1fr) 46px minmax(150px,1.3fr); gap:10px; align-items:center; margin:7px 0; font-size:13.5px;}
@@ -224,11 +313,13 @@
 
   <div class="appswitch" id="pages">
     <button class="on" data-page="lab">Fund Lab</button>
-    <button data-page="bt">Back-test</button>
-    <button data-page="bench">Benchmarks &amp; data</button>
-    <button data-page="method">How it works</button>
     <button data-page="xray">Client review</button>
-    <button data-page="fav">Favoured funds</button>
+    <button data-page="build">Portfolio builder</button>
+    <button data-page="wb">Holdings Workbench</button>
+    <span class="spacer"></span>
+    <button class="ref" data-page="bt">Back-test</button>
+    <button class="ref" data-page="bench">Benchmarks &amp; data</button>
+    <button class="ref" data-page="method">How it works</button>
   </div>
 
   <!-- ===================== FUND LAB ===================== -->
@@ -311,21 +402,74 @@
 
   <!-- ===================== METHOD ===================== -->
   <section id="page-method" class="hide"><div class="panel method" id="methodBox"></div></section>
-  <!-- ===================== FAVOURED FUNDS ===================== -->
-  <section id="page-fav" class="hide">
-    <div class="panel">
-      <h3>Favoured funds <span class="sub">the funds Abundance prefers today, why, and every change with its date</span></h3>
-      <div class="controls">
-        <div class="field" style="flex:1 1 360px"><label>Add a fund</label><input type="text" id="favAddName" list="xrNames" placeholder="Start typing a scheme name" style="width:100%"></div>
-        <div class="field" style="flex:2 1 360px"><label>Why you favour it (one line)</label><input type="text" id="favAddWhy" placeholder="e.g. steady record, falls less in bad months, different from the index" style="width:100%"></div>
-        <button class="primary" id="favAddBtn">Add</button>
+  <!-- ===================== PORTFOLIO BUILDER ===================== -->
+  <section id="page-build" class="hide">
+    <div class="panel"><h3>Overlap of the funds you pick <span class="sub">updates as you pick funds in the Portfolio Generator below</span></h3><div id="pbOv"></div></div>
+    <iframe id="pgFrame" title="Portfolio Generator"></iframe>
+    <div class="meta" style="margin-top:6px"><a href="Portfolio_Generator.html" target="_blank" rel="noopener">Open the Portfolio Generator on its own page ↗</a></div>
+  </section>
+  <!-- ===================== HOLDINGS WORKBENCH ===================== -->
+  <section id="page-wb" class="hide">
+  <div class="meta" id="wbAsof" style="margin:-6px 0 8px"></div>
+  <div id="appWb">
+  <div class="wb-bar" id="wbBar">
+    <span class="lbl">Comparing</span>
+    <span class="cat" id="wbCatLbl"></span>
+    <span id="wbChips" style="display:contents"></span>
+    <button class="wb-toggle" id="wbToggle" type="button" aria-expanded="false">Change funds ▾</button>
+    <div class="wb-pick" id="wbPick" hidden>
+      <div class="row">
+        <label for="wbCat" class="wb-sub">Category</label>
+        <select id="wbCat"></select>
+        <input type="search" id="wbQ" placeholder="Search funds in this category…" aria-label="Search funds">
+        <button class="linkbtn" id="wbClear" type="button">Clear selection</button>
       </div>
-      <div class="status" id="favSt"></div>
-      <div id="favList" style="margin-top:12px"></div>
-      <div class="ct xsec">Change log <span class="ctsub">newest first · use it to explain changes to clients</span></div>
-      <div id="favLog"></div>
-      <div class="btnrow"><button class="ghost" id="favExp" style="padding:5px 12px;font-size:12.5px">Export</button><label class="ghost" style="padding:5px 12px;font-size:12.5px;border:1.5px solid var(--primary);border-radius:7px;color:var(--primary);font-family:Montserrat,sans-serif;font-weight:700;cursor:pointer">Import<input type="file" id="favImp" accept=".json" hidden></label><span class="selcount">Kept in this browser. Export to back it up or to share with the other computer; Import merges.</span></div>
+      <div class="wb-grid" id="wbList" role="group" aria-label="Funds"></div>
+      <div class="wb-hint">Pick up to 4 funds, then close this panel. Holdings come from each AMC's monthly portfolio disclosure; hybrid funds compare on their share portion only.</div>
     </div>
+  </div>
+
+  <div class="panel">
+    <div class="wb-head"><h2>Side by side</h2><div class="wb-legend" id="wbCapLegend"></div></div>
+    <div class="wb-tbl" id="wbSide"></div>
+  </div>
+
+  <div class="wb-cols">
+    <div class="panel">
+      <div class="wb-head"><h2>How much do they overlap?</h2><span class="wb-hint">Overlap = the part of each portfolio invested in the same stocks, at the same weight.</span></div>
+      <div id="wbOv"></div>
+    </div>
+    <div class="panel">
+      <div class="wb-head"><h2>Stocks they all hold</h2><span class="wb-hint" id="wbCommonHint"></span></div>
+      <div class="wb-tbl" id="wbCommon"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="wb-head"><h2>Sector bets vs the index</h2><span class="wb-hint" id="wbTiltHint"></span></div>
+    <div class="wb-tbl" id="wbTilt"></div>
+  </div>
+
+  <div class="panel">
+    <div class="wb-head"><h2 id="wbMapTitle">Every fund in the category</h2><span class="wb-hint">Click a column heading to sort. Click a fund name to open it in Fund Lab. Compare adds it above.</span></div>
+    <div class="wb-tbl" id="wbMap"></div>
+  </div>
+
+  <div class="panel wb-note">
+    <h3 style="margin:0">How to read this</h3>
+    <div><b>Active share</b>: how different the fund's stocks are from its index. 0% is an index copy, 100% shares nothing. Labels (Abundance rule of thumb, an assumption): below 40% <span class="wb-pill p-low">Moves closely with index</span>, 40–60% <span class="wb-pill p-mid">Moderately active</span>, above 60% <span class="wb-pill p-high">Highly active</span>.</div>
+    <div><b>Overlap</b>: for every stock two funds both own, take the smaller of the two weights and add these up. 40% overlap means 40% of the money sits in the same stocks in both funds.</div>
+    <div><b>Invested in shares</b>: the part of the fund's money in shares. The rest is cash, bonds, or shares hedged with derivatives (counted as not invested here).</div>
+    <div><b>Market cap</b>: the official AMFI list (Jan–Jun 2026 average market cap, in force Aug 2026–Jan 2027), the same list AMCs use in factsheets. A few new listings not on it are classed by index membership.</div>
+    <div><b>Weights</b>: stock weights (top 5, common holdings, top 10) are % of the whole fund, matching factsheets. Active share, overlap, market-cap mix and sector bets use the share portion only, so funds holding cash are compared fairly.</div>
+    <div><b>Index used</b>: Large Cap → Nifty 100, Mid Cap → Nifty Midcap 150, Small Cap → Nifty Smallcap 250, Large &amp; Mid → Nifty LargeMidcap 250, all others → Nifty 500. Index weights from ICICI Pru index fund holdings on 30/09/2026.</div>
+    <div><b>Source</b>: official AMC monthly portfolio disclosures; each fund shows its own date. Bandhan and HSBC are not included yet (their holdings files weren't available). Illustrative analysis for internal fund research, not a recommendation of any scheme.</div>
+  </div>
+</div>
+
+  <div class="overlay" id="overlay" hidden>
+    <div class="drawer"><div class="drawer-inner">
+  </div>
   </section>
   <!-- ===================== CLIENT REVIEW ===================== -->
   <section id="page-xray" class="hide">
@@ -542,10 +686,8 @@ function matchesCategory(row, catVal) {
 const PHASES = [
   { n: 1, t: 'Fund Lab', d: 'Official TRI benchmarks, rolling, capture, risk', s: 'done' },
   { n: 2, t: 'Scoring & back-test', d: 'Peer scores, style & bets, market phases', s: 'done' },
-  { n: 3, t: 'Client review', d: 'Risk-profile bands → gap → fund status → tax-aware plan', s: 'done' },
-  { n: 4, t: 'Favoured funds', d: 'Your list with reasons and a dated change log', s: 'done' },
-  { n: 5, t: 'Fund news check', d: 'Manager changes, mergers: monthly with the holdings refresh', s: 'next' },
-]
+  { n: 3, t: 'Client review', d: 'Your allocation targets vs the portfolio; what it owns', s: 'done' },
+];
 $('roadmap').innerHTML = PHASES.map(p => `<div class="phase ${p.s}"><span class="st">${p.s === 'done' ? '✓ Built' : p.s === 'next' ? 'Next up' : 'Planned'}</span><b>Phase ${p.n} · ${p.t}</b>${p.d}</div>`).join('');
 
 // =====================================================================================
@@ -1022,9 +1164,19 @@ function sortFunds(list, cols) {
     if (typeof x === 'string' || typeof y === 'string') return String(x || '').localeCompare(String(y || '')) * sortDir;
     if (!isNum(x) && !isNum(y)) return 0; if (!isNum(x)) return 1; if (!isNum(y)) return -1; return (x - y) * sortDir; });
 }
+// views that make sense for each kind of category (market phases, style and capture need an equity index)
+const HYB_CATS = new Set(['conservative_hybrid', 'balanced_hybrid', 'aggressive_hybrid', 'dynamic_asset', 'multi_asset', 'arbitrage', 'equity_savings']);
+function viewsFor(R, cat) {
+  if (R.equity || EQUITY_CATS.has(cat)) return ['ret', 'quart', 'cons', 'cap', 'risk', 'style', 'phase', 'score'];
+  if (HYB_CATS.has(cat)) return ['ret', 'quart', 'cons', 'cap', 'risk', 'score'];
+  return ['ret', 'quart', 'cons', 'risk', 'score'];   // debt, gold, index, FoF and others
+}
 function render() {
   const R = RESULTS[activeCat]; if (!R) return;
   $('resultCard').classList.remove('hide');
+  const okV = viewsFor(R, activeCat);
+  $('views').querySelectorAll('[data-view]').forEach(b => b.classList.toggle('hide', !okV.includes(b.dataset.view)));
+  if (!okV.includes(view)) { view = 'ret'; sortKey = null; $('views').querySelectorAll('[data-view]').forEach(x => x.classList.toggle('on', x.dataset.view === 'ret')); }
   $('catTabs').innerHTML = order.map(c => `<button class="cbtn ${c === activeCat ? 'on' : ''}" data-cat="${c}">${esc(RESULTS[c].label)}<span>${RESULTS[c].funds.length}</span></button>`).join('');
   $('leadWrap').classList.toggle('hide', view !== 'ret');
   $('qLegend').classList.toggle('hide', view !== 'quart');
@@ -1280,8 +1432,8 @@ $('methodBox').innerHTML = `<h3>How it works, simply</h3>
 <div class="card2"><div class="ct">Bets (holdings)</div>From each AMC's monthly portfolio, compared with the index's own portfolio on the same date: how different it is, company size, sectors and stocks it holds more or less of.</div>
 <div class="card2"><div class="ct">Market phases</div>Each of the last 120 months is tagged: did the index rise or fall; which size led (large, mid, small); which style led (value, quality, momentum, low-vol). Then: how did the fund do in each kind of month? NSE has no "growth" style index, so growth can't be tagged; momentum is the nearest relative but not the same.</div>
 <div class="card2"><div class="ct">Score</div>Rank among category peers (100 = best) on three things: beats the index often · earns well for its risk · falls less. Needs 5 years of history.</div>
-<div class="card2"><div class="ct">Client review</div><b>1 Target:</b> the risk profile sets bands for equity, and for large / mid / small within the stocks the funds own. <b>2 Where it stands:</b> each fund looked through to its stocks (AMC monthly portfolios). <b>3 What to do:</b> SIP changes first (no tax), then switches picked lot by lot (losses first, then long-term units with the smallest gain), keeping equity long-term gains inside the ₹1.25 L tax-free limit each financial year; units under a year old are left until they turn long-term. Moves only bring a band back to just inside its edge. <b>4 The funds:</b> Act = behind its index over 1 year and by over 1 pt a year over 2 years (or a manager change in the last 6 months); Watch = behind by over 1 pt over 1 year; smaller gaps count as level; Clutter = tiny, a twin of a fund kept, or more funds than you usually hold.</div>
-<div class="card2"><div class="ct">Favoured funds</div>Your preferred funds per category, with a one-line reason and a dated log of every change. The review sends money to favoured funds first and never calls them clutter. The list lives in this browser: Export / Import moves it between computers.</div>
+<div class="card2"><div class="ct">Client review</div>Upload the Wealth Elite statement. Pick the risk profile; the asset mix (equity, hybrid, debt, gold) and the equity split by category start from that profile's targets, which you can change and save. "Change" = rupees to add or take out to reach the target. "What the whole portfolio owns" looks every fund through to its stocks (AMC monthly portfolios): large, mid and small cap stocks in rupees and %.</div>
+<div class="card2"><div class="ct">Portfolio builder &amp; Holdings Workbench</div>The Portfolio Generator runs inside the builder; overlap of the funds picked in it (within each category and across the whole portfolio) comes from the same AMC holdings. The Workbench compares up to 4 funds of a category on holdings, overlap and sector bets.</div>
 <div class="card2"><div class="ct">Time-machine test</div>Go back to each October from 2014 to 2023, pick using only what was known then, and see what happened over the next 3 years. Result: no number picked future winners; falling less did tend to repeat.</div>
 </div>
 <h3>How accurate is this?</h3>
@@ -1311,7 +1463,7 @@ $('clearCatsBtn').addEventListener('click', () => { setSelected([]); customKeywo
 $('saveFavLink').addEventListener('click', () => { const vals = getSelected(); if (!vals.length) { setStatus('Select the categories you want as Favorites first.'); return; } setStatus(saveFavs(vals) ? `Favorites saved: ${vals.map(v => CAT_LABEL[v]).join(', ')}.` : 'Could not save Favorites in this browser.'); refreshFavBtn(); });
 $('resetFavLink').addEventListener('click', () => { try { localStorage.removeItem(FAV_KEY); } catch (e) {} refreshFavBtn(); setStatus('Favorites reset to Large, Flexi, Small, Mid, Large & Mid Cap.'); });
 refreshFavBtn();
-$('pages').addEventListener('click', e => { const b = e.target.closest('[data-page]'); if (!b) return; $('pages').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); ['lab', 'bt', 'bench', 'method', 'xray', 'fav'].forEach(p => $('page-' + p).classList.toggle('hide', p !== b.dataset.page)); if (b.dataset.page === 'bench') renderBench(); });
+$('pages').addEventListener('click', e => { const b = e.target.closest('[data-page]'); if (!b) return; $('pages').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); ['lab', 'bt', 'bench', 'method', 'xray', 'build', 'wb'].forEach(p => $('page-' + p).classList.toggle('hide', p !== b.dataset.page)); if (b.dataset.page === 'bench') renderBench(); });
 loadTRI().then(() => setStatus(`Index data ready (latest ${DAILY && DAILY['NIFTY 500'] ? fmtDate(DAILY['NIFTY 500'].at(-1).t) : fmtDate(M0)}). Pick categories, or press ★ Favorites.`)).catch(e => setStatus('Index data could not load: ' + e.message, true));
 
 // =====================================================================================
@@ -1429,7 +1581,7 @@ async function xrHandleFile(f) {
   if (!(await xrEnsureXLSX())) { xrSt('The Excel reader could not load. Check the internet connection, or paste the rows instead.', true); return; }
   let wb; try { wb = XLSX.read(await f.arrayBuffer(), { type: 'array' }); } catch (e) { xrSt(`Couldn't open ${esc(f.name)}. If it is password-protected or an old format, save it as .xlsx and try again.`, true); return; }
   for (const n of wb.SheetNames) { const p = xrParseAOA(XLSX.utils.sheet_to_json(wb.Sheets[n], { header: 1, raw: true, defval: null }));
-    if (p && p.rows.length) { XR.rows = []; XR.meta = p.meta; XR.hasLots = p.lots; RV.profile = null; RV.open = {}; if (p.meta.client && !$('xrClient').value.trim()) $('xrClient').value = p.meta.client; await xrLoadRows(p.rows, `${esc(f.name)} · sheet “${esc(n)}” · values from column “${esc(p.valCol)}”`); return; } }
+    if (p && p.rows.length) { XR.rows = []; XR.meta = p.meta; XR.hasLots = p.lots; RV.t = null; if (p.meta.client && !$('xrClient').value.trim()) $('xrClient').value = p.meta.client; await xrLoadRows(p.rows, `${esc(f.name)} · sheet “${esc(n)}” · values from column “${esc(p.valCol)}”`); return; } }
   xrSt(`Couldn't find a scheme-name column and a value column in ${esc(f.name)}. Check the header row and try again.`, true);
 }
 function xrRenderInput() {
@@ -1472,7 +1624,7 @@ $('xrAddBtn').addEventListener('click', async () => {
   XR.rows.push(exact ? { raw: name, val: v, code: exact.code, cands: [exact.code], st: 'man' } : { raw: name, val: v, ...xrMatch(name) });
   $('xrAddName').value = ''; $('xrAddAmt').value = ''; xrSt(''); xrRenderInput();
 });
-$('xrClearBtn').addEventListener('click', () => { XR.rows = []; XR.last = null; XR.meta = null; XR.hasLots = false; RV.profile = null; $('xrOut').innerHTML = ''; xrSt(''); xrRenderInput(); });
+$('xrClearBtn').addEventListener('click', () => { XR.rows = []; XR.last = null; XR.meta = null; XR.hasLots = false; RV.t = null; $('xrOut').innerHTML = ''; xrSt(''); xrRenderInput(); });
 $('pages').addEventListener('click', e => { const b = e.target.closest('[data-page="xray"]'); if (b && !XR.uni) { xrSt('<span class="spinner"></span>Loading the AMFI fund list (~9 MB, once per session)…'); xrUniverse().then(() => xrSt('Fund list ready. Upload a statement, paste rows, or add funds.')).catch(err => xrSt('The fund list could not load: ' + esc(err.message), true)); } });
 $('xrRunBtn').addEventListener('click', xrRun);
 
@@ -1500,7 +1652,6 @@ async function xrRun() {
     await fetchNavs([...agg.keys()], (d, t) => say(`<span class="spinner"></span> Fetching NAV history… ${d} / ${t}`));
     XR.last = xrCompute(agg);
     for (const f of XR.last.funds) { const rs = use.filter(r => r.code === f.code); f.lots = rs.every(r => r.lots) ? rs.flatMap(r => r.lots) : null; const sp = rs.map(r => r.sip).filter(Boolean).sort((a, b) => b.last - a.last); f.sip = sp.length ? { amt: sp.filter(x => x.active).reduce((s, x) => s + x.amt, 0) || sp[0].amt, last: sp[0].last, active: sp.some(x => x.active) } : null; }
-    await loadPE(); await loadNews();
     rvRender();
     xrSt(`Review ready: ${agg.size} funds, ${inr(XR.last.total)}.`); rs.innerHTML = '✓ Done, see below'; $('xrInWrap').open = false; $('xrOut').scrollIntoView({ behavior: 'smooth', block: 'start' });
   } catch (e) { console.error(e); rs.innerHTML = ''; xrSt('Could not complete: ' + esc(e.message) + '. Nothing has been estimated; please retry.', true); }
@@ -1624,432 +1775,316 @@ function xrGrid(list, M, fmt, bg, title) {
 }
 function closeModal() { $('modalBg').style.display = 'none'; }
 // =====================================================================================
-// CLIENT REVIEW (replaces the X-ray verdicts and the Phase 4 builder, 19/11/2026)
-// One question: is this portfolio right for this client, and what do we do next?
-//   1 Target  : risk profile → bands (equity %, and large / mid / small within Indian stocks); editable
-//   2 Gap     : today vs the bands (look-through of AMC holdings)
-//   3 Funds   : one status each: ★ Favoured · Fine · Watch · Act · Clutter
-//   4 Plan    : SIP changes first (no tax), then switches scheduled lot by lot inside the ₹1.25 L
-//               tax-free long-term gain limit of each financial year
-// Every number comes from the uploaded statement, AMC holdings, NSE TRI and NAVs. Missing data shows "—".
+// CLIENT REVIEW (19/11/2026, v2): you pick the risk profile and the targets; the page shows the portfolio against them
+// and what the whole portfolio owns (large / mid / small cap stocks). No automatic fund verdicts.
 // =====================================================================================
-const RV = { profile: null, booked: 0, spread: true, tilt: true, open: {} };
-const RV_GAP = 1;                           // a lag counts once it is over 1 pt a year (smaller gaps are noise)
-const RV_LT_LIMIT = 125000;                 // Section 112A exemption, FY 2026-27 (Budget 2026 left it unchanged)
-const PROFILES = [
-  ['C', 'Conservative'], ['MC', 'Moderately conservative'], ['M', 'Moderate'], ['MA', 'Moderately aggressive'], ['A', 'Aggressive']];
-const PLABEL = Object.fromEntries(PROFILES);
-// Proposed defaults (19/11/2026), editable on screen. eq = equity % of the whole portfolio;
-// L/M/S = large / mid / small cap as % of the Indian stocks the funds own (look-through). Midpoints add to 100.
-const BANDS_DEFAULT = {
-  C:  { eq: [20, 40],  L: [68, 82], M: [13, 23], S: [3, 11] },
-  MC: { eq: [40, 55],  L: [58, 72], M: [17, 27], S: [8, 18] },
-  M:  { eq: [55, 70],  L: [48, 62], M: [22, 32], S: [13, 23] },
-  MA: { eq: [70, 85],  L: [40, 54], M: [25, 35], S: [18, 28] },
-  A:  { eq: [85, 100], L: [33, 47], M: [27, 37], S: [23, 33] },
-};
-const BANDS_KEY = 'abundance_review_bands_v1';
-function getBands() { try { const b = JSON.parse(localStorage.getItem(BANDS_KEY)); if (b && b.A && b.C) return b; } catch (e) {} return JSON.parse(JSON.stringify(BANDS_DEFAULT)); }
-function saveBands(b) { try { localStorage.setItem(BANDS_KEY, JSON.stringify(b)); } catch (e) {} }
-// Suggested profile from age only (a starting point the advisor edits): under 35 A, 35–44 MA, 45–54 M, 55–64 MC, 65+ C
-function suggestProfile(age) { if (!isNum(age)) return null; return age < 35 ? 'A' : age < 45 ? 'MA' : age < 55 ? 'M' : age < 65 ? 'MC' : 'C'; }
-const SEG = { large_cap: 'L', mid_cap: 'M', small_cap: 'S' };
-const SEGL = { L: 'Large cap', M: 'Mid cap', S: 'Small cap' };
-const USUAL = { 'Large cap': [1, 2], 'Large & mid cap': [1, 2], 'Flexi & diversified': [2, 3], 'Mid cap': [2, 3], 'Small cap': [2, 3], 'Sectoral / thematic': [1, 1], 'Hybrid': [1, 2], 'International': [1, 1], 'Index funds': [1, 1], 'Debt': [1, 3], 'Gold & other': [1, 2] };
+const RV = { profile: 'M', t: null };
+const PROFILES = [['C', 'Conservative'], ['MC', 'Moderately conservative'], ['M', 'Moderate'], ['MA', 'Moderately aggressive'], ['A', 'Aggressive']];
+const ASSETS = ['Equity', 'Hybrid', 'Debt', 'Gold & other'];
+const EQJOBS = ['Large cap', 'Large & mid cap', 'Flexi & diversified', 'Mid cap', 'Small cap', 'Sectoral / thematic', 'Index funds', 'International'];
 const JOBS = { large_cap: 'Large cap', large_mid_cap: 'Large & mid cap', flexi_cap: 'Flexi & diversified', multi_cap: 'Flexi & diversified', focused: 'Flexi & diversified', value_contra: 'Flexi & diversified', dividend_yield: 'Flexi & diversified', elss: 'Flexi & diversified', mid_cap: 'Mid cap', small_cap: 'Small cap', sectoral_thematic: 'Sectoral / thematic' };
-const JOB_ORDER = ['Large cap', 'Large & mid cap', 'Flexi & diversified', 'Mid cap', 'Small cap', 'Sectoral / thematic', 'Index funds', 'Hybrid', 'International', 'Debt', 'Gold & other'];
-const jobOf = f => f.ck && JOBS[f.ck] ? JOBS[f.ck] : f.asset === 'Equity' ? 'Index funds' : f.asset === 'Hybrid' ? 'Hybrid' : f.asset === 'International' ? 'International' : f.asset === 'Debt' ? 'Debt' : 'Gold & other';
-const XRT = { ov: 50, corr: 0.7, tiny: 1 };
+const assetRow = f => f.asset === 'Equity' || f.asset === 'International' ? 'Equity' : f.asset === 'Hybrid' ? 'Hybrid' : f.asset === 'Debt' ? 'Debt' : 'Gold & other';
+const eqJob = f => f.asset === 'International' ? 'International' : f.ck && JOBS[f.ck] ? JOBS[f.ck] : 'Index funds';
+// Starting targets per profile (a proposal; change them on screen and press "Save as default")
+const TGT_DEFAULT = {
+  C:  { a: { Equity: 30, Hybrid: 10, Debt: 55, 'Gold & other': 5 },  e: { 'Large cap': 40, 'Large & mid cap': 15, 'Flexi & diversified': 35, 'Mid cap': 10, 'Small cap': 0 } },
+  MC: { a: { Equity: 45, Hybrid: 10, Debt: 40, 'Gold & other': 5 },  e: { 'Large cap': 30, 'Large & mid cap': 15, 'Flexi & diversified': 35, 'Mid cap': 15, 'Small cap': 5 } },
+  M:  { a: { Equity: 60, Hybrid: 10, Debt: 25, 'Gold & other': 5 },  e: { 'Large cap': 25, 'Large & mid cap': 15, 'Flexi & diversified': 30, 'Mid cap': 20, 'Small cap': 10 } },
+  MA: { a: { Equity: 75, Hybrid: 5, Debt: 15, 'Gold & other': 5 },   e: { 'Large cap': 20, 'Large & mid cap': 10, 'Flexi & diversified': 30, 'Mid cap': 22, 'Small cap': 18 } },
+  A:  { a: { Equity: 90, Hybrid: 0, Debt: 5, 'Gold & other': 5 },    e: { 'Large cap': 15, 'Large & mid cap': 10, 'Flexi & diversified': 30, 'Mid cap': 25, 'Small cap': 20 } },
+};
+const TGT_KEY = 'abundance_review_targets_v1';
+function getTargets() { try { const t = JSON.parse(localStorage.getItem(TGT_KEY)); if (t && t.A && t.C) return t; } catch (e) {} return JSON.parse(JSON.stringify(TGT_DEFAULT)); }
+function closeModal() { $('modalBg').style.display = 'none'; }
 
-// ---------- favoured funds (shared by the review and the Favoured funds page) ----------
-const FAVF_KEY = 'abundance_favoured_v1';
-function getFav() { try { const v = JSON.parse(localStorage.getItem(FAVF_KEY)); if (v && v.funds && v.log) return v; } catch (e) {} return { funds: {}, log: [] }; }
-function saveFav(v) { try { localStorage.setItem(FAVF_KEY, JSON.stringify(v)); return true; } catch (e) { return false; } }
-const favKey = n => holdKey(xrShort(n));
-const favOf = n => getFav().funds[favKey(n)] || null;
-function favAdd(name, code, job, reason) { const v = getFav(), k = favKey(name), d = fmtDate(Date.now());
-  v.funds[k] = { name: xrShort(name), full: name, code: code || null, job, since: d, reason: reason || '' }; v.log.unshift({ d, act: 'Added', name: xrShort(name), job, reason: reason || '' }); return saveFav(v); }
-function favRemove(k, reason) { const v = getFav(), f = v.funds[k]; if (!f) return; delete v.funds[k]; v.log.unshift({ d: fmtDate(Date.now()), act: 'Removed', name: f.name, job: f.job, reason: reason || '' }); saveFav(v); }
-(function migrateCalls() {   // one-time: earlier ★ Prefer marks become favoured funds
-  try { const old = JSON.parse(localStorage.getItem('abundance_fs_calls_v1') || 'null'); if (!old || localStorage.getItem('abundance_favoured_migrated')) return;
-    const v = getFav(); for (const [k, x] of Object.entries(old)) if (x && x.v === 'prefer' && !v.funds[k]) { v.funds[k] = { name: x.name, full: x.name, code: null, job: '', since: x.d || '', reason: 'Marked ★ Prefer earlier' }; v.log.push({ d: x.d || '', act: 'Added', name: x.name, job: '', reason: 'Marked ★ Prefer earlier (moved from “Your calls”)' }); }
-    saveFav(v); localStorage.setItem('abundance_favoured_migrated', '1'); } catch (e) {}
-})();
-
-// ---------- fund news (written monthly by the holdings refresh task; optional) ----------
-let NEWS = undefined;
-async function loadNews() { if (NEWS !== undefined) return NEWS; try { const r = await fetch('data/fund_news.json', { cache: 'no-cache' }); NEWS = r.ok ? await r.json() : null; } catch (e) { NEWS = null; } return NEWS; }
-const newsFor = f => NEWS && Array.isArray(NEWS.items) ? NEWS.items.filter(it => it.fund && holdKey(xrShort(it.fund)) === holdKey(f.short)) : [];
-
-// ---------- valuation: mid and small caps' P/E relative to large caps', against their own history ----------
-let PE = undefined;
-async function loadPE() { if (PE !== undefined) return PE; try { const r = await fetch('data/pe_monthly.json', { cache: 'no-cache' }); PE = r.ok ? await r.json() : null; } catch (e) { PE = null; } return PE; }
-function valuation() {
-  if (!PE || !PE.series) return null;
-  const big = PE.series['NIFTY 100'], out = { asof: null };
-  if (!big || big.length < 60) return null;
-  const bm = new Map(big.map(r => [r[0].slice(0, 7), r[1]]));
-  for (const [seg, nm] of [['M', 'NIFTY MIDCAP 100'], ['S', 'NIFTY SMALLCAP 100']]) {   // the longest P/E histories NSE publishes for mid and small caps
-    const s = PE.series[nm]; if (!s || s.length < 60) continue;
-    const rel = s.filter(r => bm.has(r[0].slice(0, 7))).map(r => ({ d: r[0], v: r[1] / bm.get(r[0].slice(0, 7)), pe: r[1], big: bm.get(r[0].slice(0, 7)) }));
-    if (rel.length < 60) continue;
-    const now = rel[rel.length - 1], hist = rel.map(x => x.v), below = hist.filter(v => v < now.v).length;
-    out[seg] = { idx: nm.replace('NIFTY', 'Nifty').replace('MIDCAP', 'Midcap').replace('SMALLCAP', 'Smallcap'), rel: now.v, pe: now.pe, big: now.big, pctile: below / hist.length * 100, from: rel[0].d, to: now.d, n: rel.length, med: median(hist) };
-    out.asof = now.d;
-  }
-  return out.M || out.S ? out : null;
-}
-// Tilt inside the band only (never outside), small caps only: expensive (top fifth of its own history) → aim at the lower part
-// of the band; cheap (bottom fifth) → the upper part. Back-test 19/11/2026 (VALIDATION.md): for small caps, rank correlation
-// of this percentile with the next 1–3 years' small-minus-large return was −0.52 to −0.66; expensive months were followed by
-// −9 to −13 pts a year. For mid caps the link was weaker (expensive months still +2 to +3 pts), so mid caps are not tilted.
-const TILT_ON = true;
-function tiltFor(seg, V) { if (!TILT_ON || seg !== 'S' || !V || !V[seg]) return 0; const p = V[seg].pctile; return p >= 80 ? -1 : p <= 20 ? 1 : 0; }
-
-// ---------- per-fund look-through: share of the fund's value in large / mid / small / foreign stocks ----------
-function fundMix(hf) {
-  if (!hf || !hf.h || !HOLD || !HOLD.stocks) return null;
-  const o = { L: 0, M: 0, S: 0, F: 0 }; for (const [s, w] of hf.h) { const c = HOLD.stocks[s] ? HOLD.stocks[s][3] : 'S'; o[c in o ? c : 'S'] += w / 100; }
-  return o;   // fractions of fund value; the rest is cash, debt and other
-}
-
-// ---------- the review itself ----------
-function rvBuild(X) {
-  const F = X.funds, fy = rvFY(XR.meta && XR.meta.asof ? XR.meta.asof : Date.now());
-  const V = valuation();
-  // asset split of the whole portfolio
-  let eq = 0, debt = 0, other = 0, hybUnknown = 0;
-  for (const f of F) {
-    if (f.asset === 'Equity' || f.asset === 'International') eq += f.val;
-    else if (f.asset === 'Hybrid') { if (f.hf && isNum(f.hf.eq)) { eq += f.val * f.hf.eq / 100; debt += f.val * (1 - f.hf.eq / 100); } else hybUnknown += f.val; }
-    else if (f.asset === 'Debt') debt += f.val; else other += f.val;
-  }
-  // per-fund mix and portfolio large / mid / small among Indian stocks
-  for (const f of F) { f.mix = fundMix(f.hf); f.seg = SEG[f.ck] || null; f.job = jobOf(f); }
-  const cap = rvCaps(F.map(f => [f, f.val]));
-  // statuses
-  for (const f of F) rvStatus(f, X);
-  rvClutter(X);
-  return { X, fy, V, eq, debt, other, hybUnknown, total: X.total, eqPct: eq / X.total * 100, cap };
-}
-function rvCaps(list) {   // list of [fund-like {mix}, ₹] → { L, M, S (% of Indian stocks), lms ₹, covered ₹ of equity value }
-  let L = 0, M = 0, S = 0, cov = 0, dom = 0;
-  for (const [f, v] of list) { if (!(f.asset === 'Equity' || f.asset === 'Hybrid')) continue; dom += f.asset === 'Hybrid' && f.hf && isNum(f.hf.eq) ? v * f.hf.eq / 100 : f.asset === 'Equity' ? v : 0;
-    if (!f.mix) continue; L += v * f.mix.L; M += v * f.mix.M; S += v * f.mix.S; cov += f.asset === 'Hybrid' && f.hf && isNum(f.hf.eq) ? v * f.hf.eq / 100 : v; }
-  const t = L + M + S; return t > 0 ? { L: L / t * 100, M: M / t * 100, S: S / t * 100, stocks: t, cov, dom } : { L: null, M: null, S: null, stocks: 0, cov, dom };
-}
-function rvStatus(f, X) {
-  f.st = null; f.why = []; f.facts = [];
-  const fav = favOf(f.name); f.fav = fav;
-  const arr = NAVS[f.code], judged = f.asset === 'Equity' && f.ck && TIER1[f.ck] && !TIER1[f.ck].broad && TRI.idx[f.benchKey] && arr && arr.length;
-  if (judged) {
-    const b = TRI.idx[f.benchKey].arr, idxName = HOLD_BENCH[f.benchKey] || f.benchKey;
-    f.l1 = isNum(cagr(arr, 1)) && isNum(cagr(b, 1)) ? cagr(arr, 1) - cagr(b, 1) : null;
-    f.l2 = isNum(cagr(arr, 2)) && isNum(cagr(b, 2)) ? cagr(arr, 2) - cagr(b, 2) : null;
-    f.l3 = isNum(cagr(arr, 3)) && isNum(cagr(b, 3)) ? cagr(arr, 3) - cagr(b, 3) : null;
-    f.idxName = idxName;
-    if (isNum(f.l1) && isNum(f.l2) && f.l1 < 0 && f.l2 <= -RV_GAP) { f.st = 'act'; f.why.push(`Behind ${idxName} TRI: 1 year ${pts(f.l1)} pts, 2 years ${pts(f.l2)} pts a year`); }
-    else if (isNum(f.l1) && f.l1 <= -RV_GAP) { f.st = 'watch'; f.why.push(`Behind ${idxName} TRI: 1 year ${pts(f.l1)} pts${isNum(f.l2) ? `, 2 years ${pts(f.l2)} pts a year` : ''}; act if it is still behind by over ${RV_GAP} pt a year at 2 years`); }
-    else if (isNum(f.l1) && f.l1 < 0) { f.st = 'fine'; f.why.push(`Level with ${idxName} TRI: 1 year ${pts(f.l1)} pts${isNum(f.l2) ? `, 2 years ${pts(f.l2)} pts a year` : ''}`); }
-    else if (!isNum(f.l1)) { f.st = 'fine'; f.why.push('Under 1 year of NAV history: too early to judge'); }
-    else { f.st = 'fine'; f.why.push(`Ahead of ${idxName} TRI over 1 year (${pts(f.l1)} pts)${isNum(f.l2) ? `, 2 years ${pts(f.l2)} pts a year` : ''}`); }
-  } else {
-    f.st = 'fine';
-    f.why.push(f.asset === 'Equity' && f.ck && TIER1[f.ck] && !TIER1[f.ck].broad ? 'NAV history not available: not judged' : f.asset === 'Debt' ? 'Debt fund: not judged against an index here' : f.asset === 'Hybrid' ? 'Hybrid: no free official index, not judged' : f.asset === 'International' ? 'International: not judged' : f.broad ? 'Sectoral / thematic: no matching sector index stored, not judged' : f.asset === 'Equity' ? 'Index or other equity fund: not judged against a category index' : 'Not judged');
-    f.notJudged = true;
-  }
-  for (const n of newsFor(f)) { const d = n.date ? new Date(n.date.split('/').reverse().join('-')) : null;
-    if (/manager/i.test(n.type || '') && d && Date.now() - d < 183 * DAY) { f.st = 'act'; f.why.unshift(`Fund manager change on ${esc(n.date)}: check whether the reason you hold it still stands`); }
-    f.facts.push(`⚑ ${esc(n.type || 'News')} ${esc(n.date || '')}: ${esc(n.text || '')}${n.url ? ` <a href="${esc(n.url)}" target="_blank" rel="noopener">source</a>` : ''}`); }
-  // facts for defending the choice (shown when the row is opened)
-  if (fav) f.facts.unshift(`★ On your favoured list since ${esc(fav.since)}${fav.reason ? ': ' + esc(fav.reason) : ''}`);
-  const R = f.an && f.an.roll;
-  if (R && R.n >= 24) f.facts.push(`Ahead of its index in ${R.hit.toFixed(0)}% of ${R.n} rolling 3-year periods (typical lead ${pts(R.med)} pts a year; worst ${pts(R.worst)})`);
-  if (f.an && isNum(f.an.downCap)) f.facts.push(`Down capture ${f.an.downCap.toFixed(0)} over 5 years: in falling months it lost ${f.an.downCap < 100 ? 'less' : 'more'} than its index`);
-  if (isNum(f.as)) f.facts.push(`${f.as.toFixed(0)}% different from its index (active share, holdings ${esc(X.asof || '')})`);
-  if (isNum(f.l3)) f.facts.push(`3-year return ${pts(f.l3)} pts a year vs its index`);
-}
-function rvClutter(X) {
-  const F = X.funds, tot = X.total;
-  // twins: same job and over 50% the same stocks, or the same bets (excess-return correlation ≥ 0.7)
-  const ovI = new Map(X.cov.map((f, i) => [f, i])), exI = new Map(X.ex.map((f, i) => [f, i]));
-  const ov = (a, b) => { const i = ovI.get(a), j = ovI.get(b); return i !== undefined && j !== undefined && X.ov && X.ov[i][j] ? X.ov[i][j].o : null; };
-  const cr = (a, b) => { const i = exI.get(a), j = exI.get(b); return i !== undefined && j !== undefined ? X.corr[i][j] : null; };
-  const rank = f => (f.fav ? 0 : 10) + ({ fine: 0, watch: 1, act: 2 }[f.st] || 0);
-  const hit = f => f.an && f.an.roll && f.an.roll.n >= 24 ? f.an.roll.hit : -1;   // share of 3-year periods ahead of its index
-  const jobs = {}; for (const f of F) (jobs[f.job] = jobs[f.job] || []).push(f);
-  for (const [job, fs] of Object.entries(jobs)) {
-    const ordered = [...fs].sort((a, b) => rank(a) - rank(b) || hit(b) - hit(a) || b.val - a.val);
-    const keep = [];
-    for (const f of ordered) {
-      if (f.st === 'act') continue;
-      const w = f.val / tot * 100;
-      if (!f.fav && w < XRT.tiny && fs.length > 1) { f.clutter = `Tiny: ${w.toFixed(1)}% of the portfolio`; continue; }
-      const tw = keep.find(k => (isNum(ov(f, k)) && ov(f, k) > XRT.ov) || (isNum(cr(f, k)) && cr(f, k) >= XRT.corr));
-      if (tw && !f.fav) { f.clutter = `Does the same job as ${tw.short} (${[isNum(ov(f, tw)) && ov(f, tw) > XRT.ov ? ov(f, tw).toFixed(0) + '% same stocks' : '', isNum(cr(f, tw)) && cr(f, tw) >= XRT.corr ? 'same bets ' + cr(f, tw).toFixed(2) : ''].filter(Boolean).join(', ')})`; f.twin = tw; continue; }
-      const hi = (USUAL[job] || [1, 3])[1];
-      if (!f.fav && keep.length >= hi && !['Debt', 'Gold & other'].includes(job)) { f.clutter = `More ${job.toLowerCase()} funds than you usually hold (${fs.length} vs ${(USUAL[job] || [1, 3]).join('–')})`; continue; }
-      keep.push(f);
-    }
-  }
-  for (const f of F) if (f.clutter && f.st !== 'act') { f.st = 'clutter'; f.why.unshift(f.clutter); }
-}
-
-// ---------- financial year, lots and tax ----------
-function rvFY(t) { const d = new Date(t), y = d.getUTCMonth() >= 3 ? d.getUTCFullYear() : d.getUTCFullYear() - 1; return { y, start: Date.UTC(y, 3, 1), end: Date.UTC(y + 1, 2, 31), label: `FY ${y}-${String((y + 1) % 100).padStart(2, '0')}` }; }
-const gainTxt = g => !isNum(g) ? '—' : Math.abs(g) < 0.5 ? '₹0' : g < 0 ? 'loss ' + inr(-g) : inr(g);
-const fyLabel = y => `FY ${y}-${String((y + 1) % 100).padStart(2, '0')}`;
-const taxClass = f => f.asset === 'Equity' || (f.asset === 'Hybrid' && f.hf && isNum(f.hf.eq) && f.hf.eq >= 65) ? 'eq' : 'other';
-// Sell up to ₹amt of fund f, oldest-gain-efficient first. Lots: { val, gain, days, date }. Returns pieces with gain and term.
-// Order: long-term lots at a loss first (they reduce taxable gains), then long-term lots with the smallest gain per ₹.
-// Units under a year old are never sold here (20% tax on gains, and usually an exit load): they are listed with the date they turn long-term.
-function rvPickLots(f, amt) {
-  const lots = (f.lotsLeft || []).filter(l => l.val > 0.5);
-  const loss = lots.filter(l => l.gain < 0 && l.lt), lt = lots.filter(l => l.gain >= 0 && l.lt).sort((a, b) => a.gain / a.val - b.gain / b.val);
-  const out = []; let left = amt;
-  for (const l of [...loss, ...lt]) { if (left <= 0.5) break; const take = Math.min(left, l.val), fr = take / l.val; out.push({ lot: l, val: take, gain: l.gain * fr, lt: l.lt }); left -= take; }
-  return out;
-}
-// ---------- the plan ----------
-function rvPlan(R) {
-  const X = R.X, F = X.funds, B = getBands()[RV.profile], V = R.V;
-  const moves = [];   // { from, to, toLabel, amt, why, prio }
-  const destIn = (job, seg, exclude) => {   // best place for money in a job (or a segment's category)
-    const pool = F.filter(f => f !== exclude && (seg ? f.seg === seg : f.job === job) && f.st !== 'act' && f.st !== 'clutter');
-    pool.sort((a, b) => (b.fav ? 1 : 0) - (a.fav ? 1 : 0) || ({ fine: 0, watch: 1 }[a.st] || 0) - ({ fine: 0, watch: 1 }[b.st] || 0) || b.val - a.val);
-    if (pool[0]) return { f: pool[0], label: pool[0].short };
-    const favs = Object.values(getFav().funds).filter(x => seg ? x.job === SEGL[seg] : x.job === job);
-    if (favs[0]) return { f: null, label: favs[0].name + ' (favoured, not yet held)', favName: favs[0].full || favs[0].name };
-    return { f: null, label: `a ${seg ? SEGL[seg].toLowerCase() : job.toLowerCase()} fund of your choice` };
-  };
-  // band targets: just inside the band (2 points in from the edge it crossed); tilt moves the aim within the band
-  const aim = (seg, cur) => { const [lo, hi] = B[seg]; const t = tiltFor(seg, V); if (isNum(cur) && cur > hi) return hi - 2 - (t < 0 ? (hi - lo) / 4 : 0); if (isNum(cur) && cur < lo) return lo + 2 + (t > 0 ? (hi - lo) / 4 : 0); return null; };
-  // simulate holdings as moves are added
-  const hold = new Map(F.map(f => [f, f.val])), extra = [];
-  const capNow = () => rvCaps([...hold].concat(extra.map(e => [e.f, e.v])));
-  const addMove = (from, d, amt, why, prio, all) => { amt = Math.min(amt, hold.get(from)); if (amt < 500) return 0;
-    moves.push({ from, to: d.f, toLabel: d.label, toDebt: !!d.debt, amt, all, why, prio }); hold.set(from, hold.get(from) - amt);
-    if (d.f) hold.set(d.f, (hold.get(d.f) || 0) + amt); else if (!d.debt && d.mix) extra.push({ f: { asset: 'Equity', mix: d.mix, hf: null }, v: amt }); return amt; };
-  const debtDest = (() => { const dd = F.filter(f => f.asset === 'Debt' && f.st !== 'act' && f.st !== 'clutter').sort((a, b) => b.val - a.val)[0]; return dd ? { f: dd, label: dd.short, debt: true } : { f: null, label: 'a debt fund of your choice', debt: true }; })();
-  const segDest = seg => { const d = destIn(SEGL[seg], seg, null); d.mix = d.f ? d.f.mix : (d.favName ? fundMix(findHoldings(d.favName)) : null); return d; };
-  const overSeg = () => { const c = capNow(); return isNum(c.L) ? ['S', 'M', 'L'].filter(s => c[s] > B[s][1] + 0.5).sort((x, y) => (c[y] - B[y][1]) - (c[x] - B[x][1]))[0] || null : null; };
-  const underSeg = over => { const c = capNow(); return ['L', 'M', 'S'].filter(s => s !== over).sort((x, y) => (c[x] - B[x][0]) - (c[y] - B[y][0]))[0]; };
-  // equity above its band: how much has to go to debt (to 2 points inside the ceiling)
-  const [elo, ehi] = B.eq; let eqOut = R.eqPct > ehi + 0.5 ? Math.round((R.eqPct - (ehi - 2)) / 100 * R.total / 1000) * 1000 : 0;
-  const eqMove = R.eqPct > ehi + 0.5 ? { dir: 'out', amt: eqOut } : R.eqPct < elo - 0.5 ? { dir: 'in', amt: Math.round(((elo + 2) - R.eqPct) / 100 * R.total / 1000) * 1000 } : null;
-  const eqWhy = `Equity at ${R.eqPct.toFixed(0)}% of the portfolio, above the ${PLABEL[RV.profile].toLowerCase()} ceiling of ${ehi}%`;
-  // 1. exits (Act first, then Clutter). Their money goes where the plan needs it most: debt if equity is too high,
-  //    else the segment that is short if theirs is over its ceiling, else the best fund doing the same job.
-  for (const st of ['act', 'clutter']) for (const f of F.filter(x => x.st === st).sort((a, b) => b.val - a.val)) {
-    const why = st === 'act' ? f.why[0] : f.clutter, prio = st === 'act' ? 1 : 3;
-    if (eqOut >= 10000 && f.asset === 'Equity') { const t = addMove(f, debtDest, Math.min(eqOut, f.val), why + ' · and ' + eqWhy.charAt(0).toLowerCase() + eqWhy.slice(1), prio, true); eqOut -= t; }
-    if (hold.get(f) < 500) continue;
-    const ov = f.seg && overSeg() === f.seg ? f.seg : null;
-    const d = ov ? segDest(underSeg(ov)) : (f.twin && f.twin.st !== 'clutter' && f.twin.st !== 'act' ? { f: f.twin, label: f.twin.short } : destIn(f.job, null, f));
-    addMove(f, d, hold.get(f), why, prio, true);
-  }
-  // 2. equity still above its band: trim the segment most over its ceiling (Watch funds first, favoured last)
-  const order = (a, b) => ({ watch: 0, fine: 1 }[a.st] ?? 2) - ({ watch: 0, fine: 1 }[b.st] ?? 2) || (a.fav ? 1 : 0) - (b.fav ? 1 : 0) || hold.get(b) - hold.get(a);
-  for (let guard = 0; eqOut >= 10000 && guard < 20; guard++) {
-    const c = capNow(), seg = isNum(c.L) ? ['S', 'M', 'L'].sort((x, y) => (c[y] - B[y][1]) - (c[x] - B[x][1]))[0] : null;
-    const src = [...hold].filter(([f, v]) => v >= 1000 && f.asset === 'Equity' && (!seg || f.seg === seg)).map(([f]) => f).sort(order)[0]
-      || [...hold].filter(([f, v]) => v >= 1000 && f.asset === 'Equity').map(([f]) => f).sort(order)[0];
-    if (!src) break; eqOut -= addMove(src, debtDest, Math.round(Math.min(eqOut, hold.get(src)) / 1000) * 1000, eqWhy, 2, false);
-  }
-  // 3. large / mid / small back inside the band (needs look-through for the funds involved)
-  const gaps = [];
-  for (let pass = 0; pass < 4; pass++) {
-    const c = capNow(), over = overSeg(); if (!over) break;
-    const toSeg = underSeg(over), d = segDest(toSeg);
-    const srcs = [...hold].filter(([f, v]) => v >= 1000 && f.seg === over && f.mix).map(([f]) => f).sort(order);
-    if (!srcs.length || !d.mix) { gaps.push(`${SEGL[over]} is ${c[over].toFixed(0)}% of the stocks, above the ${B[over][1]}% ceiling, but the amount to move can't be worked out: ${!srcs.length ? `no ${SEGL[over].toLowerCase()} fund with holdings data to sell from` : `the fund to buy (${d.label}) has no holdings data`}.`); break; }
-    const s = srcs[0], share = s.mix[over] - d.mix[over]; if (share <= 0.05) break;
-    const need = Math.round(Math.min((c[over] - (B[over][1] - 2)) / 100 * c.stocks / share, hold.get(s)) / 1000) * 1000; if (need < 1000) break;
-    addMove(s, d, need, `${SEGL[over]} at ${c[over].toFixed(0)}% of stocks, above the ${PLABEL[RV.profile].toLowerCase()} ceiling of ${B[over][1]}%`, 2, false);
-  }
-  // SIPs: stop in Act / Clutter funds and in the over-weight segment; start in the destination
-  const sips = [];
-  const sipOver = isNum(R.cap.L) ? ['S', 'M', 'L'].find(s => (R.cap[s] || 0) > B[s][1] + 0.5) : null;
-  for (const f of F.filter(x => x.sip && x.sip.active)) {
-    const mv = moves.find(m => m.from === f);
-    if (f.st === 'act' || f.st === 'clutter') sips.push({ f, amt: f.sip.amt, to: mv ? mv.toLabel : destIn(f.job, null, f).label, why: f.st === 'act' ? 'behind its index for 2 years' : 'clutter' });
-    else if (eqMove && eqMove.dir === 'out' && f.asset === 'Equity' && !mv) sips.push({ f, amt: f.sip.amt, to: null, why: 'equity is above its ceiling', keep: true });
-    else if (sipOver && f.seg === sipOver) { const toSeg = ['L', 'M', 'S'].filter(s => s !== sipOver).sort((a, b) => ((R.cap[a] || 0) - B[a][0]) - ((R.cap[b] || 0) - B[b][0]))[0]; sips.push({ f, amt: f.sip.amt, to: destIn(SEGL[toSeg], toSeg, null).label, why: `${SEGL[sipOver].toLowerCase()} is above its ceiling` }); }
-  }
-  if (eqMove && eqMove.dir === 'in') sips.push({ f: null, amt: null, to: 'equity funds', why: `equity at ${R.eqPct.toFixed(0)}% is below the ${elo}% floor: send new money and SIPs to equity first (no tax), before selling debt` });
-  // schedule the sales lot by lot inside each year's tax-free limit
-  const now = Date.now(); for (const f of F) f.lotsLeft = (f.lots || []).map(l => ({ ...l, lt: now >= l.ltOn }));
-  moves.sort((a, b) => a.prio - b.prio);
-  const years = []; const budget = y => y === R.fy.y ? Math.max(0, RV_LT_LIMIT - (RV.booked || 0)) : RV_LT_LIMIT;
-  const used = {}; const yr = y => { if (!used[y]) used[y] = { y, eqLT: 0, otherGain: 0, legs: [] }; return used[y]; };
-  const waitST = [];
-  for (const m of moves) {
-    const f = m.from;
-    if (!f.lots) { yr(R.fy.y).legs.push({ m, val: m.amt, gain: null, nolots: true }); continue; }
-    let left = m.amt, y = R.fy.y;
-    const picks = rvPickLots(f, left);
-    for (const p of picks) {
-      if (taxClass(f) !== 'eq' || !RV.spread) { const Y = yr(y); Y.legs.push({ m, val: p.val, gain: p.gain }); if (taxClass(f) === 'eq') Y.eqLT += Math.max(0, p.gain); else Y.otherGain += p.gain; p.lot.val -= p.val; p.lot.gain -= p.gain; left -= p.val; continue; }
-      let pv = p.val, pg = p.gain;
-      while (pv > 0.5) {
-        const Y = yr(y), room = budget(y) - Y.eqLT;
-        if (pg <= 0) { Y.legs.push({ m, val: pv, gain: pg }); Y.eqLT += pg; p.lot.val -= pv; p.lot.gain -= pg; left -= pv; pv = 0; break; }
-        if (room <= 1) { y++; if (y > R.fy.y + 15) break; continue; }
-        const fr = Math.min(1, room / pg), tv = pv * fr, tg = pg * fr;
-        Y.legs.push({ m, val: tv, gain: tg }); Y.eqLT += tg; p.lot.val -= tv; p.lot.gain -= tg; left -= tv; pv -= tv; pg -= tg;
-      }
-    }
-    const st = (f.lotsLeft || []).filter(l => l.val > 0.5 && !l.lt);
-    if (m.all && st.length) for (const l of st) waitST.push({ m, val: l.val, gain: l.gain, on: l.ltOn });
-  }
-  // group legs per year per move
-  const yearsOut = Object.values(used).sort((a, b) => a.y - b.y).map(Y => { const by = new Map(); for (const g of Y.legs) { const k = g.m; if (!by.has(k)) by.set(k, { m: k, val: 0, gain: 0, nolots: g.nolots }); const o = by.get(k); o.val += g.val; o.gain += g.gain || 0; } return { ...Y, rows: [...by.values()] }; });
-  return { moves, years: yearsOut, waitST, sips, gaps, eqMove, capAfter: capNow(), B };
-}
-
-// ---------- rendering ----------
-const STL = { fav: ['keep', '★ Favoured'], fine: ['keep', 'Fine'], watch: ['review', 'Watch'], act: ['exit', 'Act'], clutter: ['clut', 'Clutter'] };
-function bandBar(cur, lo, hi, aimV, max = 100) {
-  const p = v => Math.max(0, Math.min(100, v / max * 100)).toFixed(1);
-  const inB = isNum(cur) && cur >= lo - 0.5 && cur <= hi + 0.5;
-  return `<span class="bandbar"><span class="band" style="left:${p(lo)}%;width:${(p(hi) - p(lo)).toFixed(1)}%"></span>${isNum(aimV) ? `<span class="aim" style="left:${p(aimV)}%" title="aim ${aimV.toFixed(0)}%"></span>` : ''}${isNum(cur) ? `<span class="cur ${inB ? 'in' : 'out'}" style="left:${p(cur)}%"></span>` : ''}</span>`;
-}
 function rvRender() {
   const X = XR.last; if (!X) return;
-  const R = rvBuild(X), meta = XR.meta || {}, client = $('xrClient').value.trim() || meta.client || '';
-  const age = meta.dob ? Math.floor((Date.now() - meta.dob) / (365.25 * DAY)) : null, sug = suggestProfile(age);
-  if (!RV.profile) RV.profile = sug || 'M';
-  const B = getBands()[RV.profile], P = rvPlan(R), F = X.funds, c = R.cap;
-  const asIs = ['C', 'MC', 'M', 'MA', 'A'].find(k => { const b = getBands()[k]; return R.eqPct >= b.eq[0] - 0.5 && R.eqPct <= b.eq[1] + 0.5; });
-  const cnt = s => F.filter(f => (s === 'fav' ? f.fav : f.st === s)).length;
-  const exits = P.moves.filter(m => m.all).length, budgetNow = Math.max(0, RV_LT_LIMIT - (RV.booked || 0));
-  const usedNow = (P.years.find(y => y.y === R.fy.y) || { eqLT: 0 }).eqLT;
-  // tiles
-  const T = [
-    tile('Portfolio value', inrS(R.total), `${F.length} funds${client ? ' · ' + esc(client) : ''}`),
-    tile('Equity', R.eqPct.toFixed(0) + '%', `band ${B.eq[0]}–${B.eq[1]}% (${PLABEL[RV.profile].toLowerCase()})`, R.eqPct >= B.eq[0] - 0.5 && R.eqPct <= B.eq[1] + 0.5 ? 'good' : 'bad'),
-    tile('Funds needing action', cnt('act') + cnt('clutter'), `${cnt('act')} act · ${cnt('clutter')} clutter · ${cnt('watch')} watch`, cnt('act') + cnt('clutter') ? 'bad' : 'good'),
-    tile('Tax-free gains left', inrS(Math.max(0, budgetNow - usedNow)), `${R.fy.label} · after this plan`),
-  ];
-  // target card
-  const V = R.V, vline = s => V && V[s] ? `${V[s].idx} P/E ${V[s].pe.toFixed(1)} vs Nifty 100 ${V[s].big.toFixed(1)} (×${V[s].rel.toFixed(2)}): dearer than ${V[s].pctile.toFixed(0)}% of months since ${fmtDate(parseISO(V[s].from)).slice(3)}` : '';
-  const tS = tiltFor('S', V), lean = tS < 0 ? `<b>Lean:</b> small caps are expensive against their own history, so new money and corrections aim at the lower part of the small-cap band.` : tS > 0 ? `<b>Lean:</b> small caps are cheap against their own history, so new money and corrections aim at the upper part of the small-cap band.` : `<b>No lean:</b> small caps are in the normal range of their own history; the bands are used as they are.`;
-  const target = `<div class="card2"><div class="ct">1 · Target <span class="ctsub">the risk profile sets the bands; the market only nudges inside them</span></div>
-    <div class="controls" style="gap:10px 18px">
-      <div class="field"><label>Risk profile</label><select id="rvProf">${PROFILES.map(([k, l]) => `<option value="${k}"${k === RV.profile ? ' selected' : ''}>${l}${k === sug ? ' (suggested)' : ''}</option>`).join('')}</select></div>
-      <div class="meta" style="margin:0 0 8px;max-width:520px">${sug ? `Suggested from age ${age} (date of birth in the statement): under 35 aggressive, 35–44 moderately aggressive, 45–54 moderate, 55–64 moderately conservative, 65+ conservative.` : 'No date of birth in the statement, so no suggestion: pick the profile.'} The portfolio today sits in the ${asIs ? PLABEL[asIs].toLowerCase() : 'no'} equity band. <button class="linkbtn" id="rvBandsBtn">Edit bands</button></div>
-    </div>
-    <table class="mini plain bandt"><thead><tr><th class="l">Bands · ${esc(PLABEL[RV.profile])}</th><th>Low</th><th>High</th></tr></thead><tbody>
-      <tr><td class="l">Equity, % of portfolio</td><td>${B.eq[0]}%</td><td>${B.eq[1]}%</td></tr>
-      ${['L', 'M', 'S'].map(s => `<tr><td class="l">${SEGL[s]}, % of stocks held</td><td>${B[s][0]}%</td><td>${B[s][1]}%</td></tr>`).join('')}</tbody></table>
-    <div class="meta" style="margin-top:6px">${V ? `<b>Valuation (NSE P/E, ${fmtDate(parseISO(V.asof))}):</b> ${[vline('M'), vline('S')].filter(Boolean).join(' · ')}. <br>${lean} The lean never goes outside the band. Mid caps are shown for information only: in the back-test their valuation was a weaker guide.` : 'Valuation data (index P/E history) not loaded yet: the bands are used as they are.'}</div></div>`;
-  // gap card
-  const segRow = s => { const cur = c[s], [lo, hi] = B[s], after = P.capAfter[s]; const ok = isNum(cur) && cur >= lo - 0.5 && cur <= hi + 0.5;
-    return `<div class="gaprow"><span class="gl">${SEGL[s]}</span>${bandBar(cur, lo, hi, null, 100)}<span class="gv ${isNum(cur) ? (ok ? 'up' : 'down') : ''}">${isNum(cur) ? cur.toFixed(0) + '%' : '—'}</span><span class="gs">${isNum(cur) ? (ok ? 'inside the band' : cur > hi ? `${(cur - hi).toFixed(0)} pts above` : `${(lo - cur).toFixed(0)} pts below`) : ''}${isNum(after) && Math.abs(after - cur) > 0.5 ? ` · after the plan ${after.toFixed(0)}%` : ''}</span></div>`; };
-  const eqOk = R.eqPct >= B.eq[0] - 0.5 && R.eqPct <= B.eq[1] + 0.5;
-  const gap = `<div class="card2"><div class="ct">2 · Where it stands <span class="ctsub">green band = ${esc(PLABEL[RV.profile].toLowerCase())} range · dot = today</span></div>
-    <div class="gaprow"><span class="gl">Equity</span>${bandBar(R.eqPct, B.eq[0], B.eq[1], null)}<span class="gv ${eqOk ? 'up' : 'down'}">${R.eqPct.toFixed(0)}%</span><span class="gs">${inrS(R.eq)} equity · ${inrS(R.debt)} debt${R.other ? ' · ' + inrS(R.other) + ' gold / other' : ''}${R.hybUnknown ? ' · ' + inrS(R.hybUnknown) + ' hybrid, split unknown' : ''}</span></div>
-    ${['L', 'M', 'S'].map(segRow).join('')}
-    <div class="meta">Large / mid / small = what the equity funds actually own (AMC portfolios, ${esc(X.asof || '—')}), as % of Indian stocks held. Looked through: ${c.dom ? (c.cov / c.dom * 100).toFixed(0) : '—'}% of the equity money${c.dom - c.cov > 1 ? ` (${inrS(c.dom - c.cov)} in funds whose holdings are not in our data)` : ''}.${P.gaps.length ? '<br><span class="warn">' + P.gaps.map(esc).join('<br>') + '</span>' : ''}</div></div>`;
-  // plan card
-  const keepS = P.sips.filter(s => s.keep), sipLines = P.sips.filter(s => !s.keep).map(s => `<li>${s.f ? `<b>Stop the ${inr(s.amt)} SIP in ${esc(s.f.short)}</b> (${esc(s.why)}); ${P.eqMove && P.eqMove.dir === 'out' && s.f.asset === 'Equity' ? `${(() => { const dl = P.moves.find(m => m.toDebt) ? P.moves.find(m => m.toDebt).toLabel : 'a debt fund'; return s.to === dl ? `start it in <b>${esc(dl)}</b> (equity is above its band)` : `send it to <b>${esc(dl)}</b> until equity is back in its band, then to <b>${esc(s.to)}</b>`; })()}` : `start it in <b>${esc(s.to)}</b>`}.` : `<b>${esc(s.why)}</b>.`}</li>`);
-  if (keepS.length) sipLines.push(`<li><b>Equity is above its ceiling:</b> the other ${keepS.length} equity SIPs (${inr(keepS.reduce((t, s) => t + s.amt, 0))} a month) keep adding to it. Point some of them to debt until equity is back in the band.</li>`);
-  const yearBlock = Y => { const lim = Y.y === R.fy.y ? budgetNow : RV_LT_LIMIT;
-    return `<div class="planyr"><div class="pyh">${Y.y === R.fy.y ? `Now, ${fyLabel(Y.y)} (till 31/03/${Y.y + 1})` : `From 01/04/${Y.y} (${fyLabel(Y.y)})`}<span class="ctsub">equity long-term gains ${inr(Math.max(0, Math.round(Y.eqLT)))} of the ${inr(lim)} tax-free limit${Y.otherGain ? ` · other gains ${inr(Y.otherGain)} (taxed as per their own rules)` : ''}</span></div>
-      <ol class="fixes">${Y.rows.map(r => `<li>Switch <b>${inr(r.val)}</b> from <b>${esc(r.m.from.short)}</b> to <b>${esc(r.m.toLabel)}</b>${r.nolots ? ' <span class="warn">(no unit-level data: upload the detailed statement to check the gain)</span>' : ` · gain ${gainTxt(r.gain)}`}<span class="fund-meta">${esc(r.m.why || '')}${r.m.all ? '' : ' · part of the holding'}</span></li>`).join('')}</ol></div>`; };
-  const wait = P.waitST.length ? `<div class="planyr"><div class="pyh">Units under a year old <span class="ctsub">not sold: short-term gains are taxed at 20% and usually carry an exit load</span></div><ul class="fixes">${Object.values(P.waitST.reduce((o, w) => { const k = w.m.from.code; (o[k] = o[k] || { f: w.m.from, val: 0, on: w.on }).val += w.val; if (w.on > o[k].on) o[k].on = w.on; return o; }, {})).map(w => `<li>${esc(w.f.short)}: ${inr(w.val)} turns long-term in steps until ${fmtDate(w.on)}; switch them as they mature.</li>`).join('')}</ul></div>` : '';
-  const anyMoves = P.years.some(y => y.rows.length);
-  const plan = `<div class="card2 plan"><div class="ct">3 · What to do <span class="ctsub">${RV.spread ? 'switches spread so equity long-term gains stay inside the tax-free limit each year' : 'all switches now; tax shown'}</span></div>
-    <div class="controls" style="gap:8px 18px;margin-bottom:6px"><div class="field"><label>Equity LT gains already booked in ${R.fy.label}, ₹</label><input type="text" id="rvBooked" inputmode="numeric" value="${RV.booked ? Math.round(RV.booked).toLocaleString('en-IN') : ''}" placeholder="0" style="width:150px;min-width:0"></div>
-      <label class="checkline"><input type="checkbox" id="rvSpread"${RV.spread ? ' checked' : ''}> Stay inside the ₹1.25 L tax-free limit each year</label></div>
-    ${sipLines.length ? `<div class="planyr"><div class="pyh">First, SIPs <span class="ctsub">no tax, no exit load</span></div><ol class="fixes">${sipLines.join('')}</ol></div>` : ''}
-    ${anyMoves ? P.years.filter(y => y.rows.length).slice(0, 2).map(yearBlock).join('') : `<div class="meta">${P.moves.length ? '' : 'No switches needed: the funds and the mix fit the bands.'}</div>`}
-    ${(() => { const later = P.years.filter(y => y.rows.length).slice(2); if (!later.length) return ''; const v = later.reduce((t, Y) => t + Y.rows.reduce((u, r) => u + r.val, 0), 0), fs = [...new Set(later.flatMap(Y => Y.rows.map(r => r.m.from.short)))];
-      return `<div class="planyr"><div class="pyh">After that <span class="ctsub">${fyLabel(later[0].y)} to ${fyLabel(later[later.length - 1].y)}</span></div><div style="font-size:13.5px">${inr(v)} more from ${fs.map(esc).join(', ')}, at about ₹1.25 L of gains a year. Re-run the review each April: funds may recover and need no switch.</div></div>`; })()}
-    ${wait}
-    ${!RV.spread && P.years.length ? `<div class="meta">Tax at 12.5% on equity long-term gains above the limit: ${P.years.map(Y => `${fyLabel(Y.y)} ${inr(Math.max(0, Y.eqLT - (Y.y === R.fy.y ? budgetNow : RV_LT_LIMIT)) * 0.125)}`).join(' · ')} (before surcharge and cess).</div>` : ''}
-    <div class="meta">Units are picked lot by lot from the statement: long-term lots at a loss first, then long-term lots with the smallest gain per rupee. Values and gains are as on ${esc(meta.asofLabel || 'the statement date')}; they will move with NAVs. ${XR.hasLots ? '' : '<b class="warn">This statement has no unit-level detail, so gains could not be checked: upload the detailed Wealth Elite statement.</b>'}</div></div>`;
-  // funds card
-  const groups = JOB_ORDER.map(j => [j, F.filter(f => f.job === j)]).filter(([, a]) => a.length);
-  const row = f => { const [cl, lab] = f.fav && f.st !== 'act' ? STL.fav : STL[f.st]; const open = RV.open[f.code];
-    return `<tr class="rvr" data-code="${f.code}"><td class="l"><button class="favbtn${f.fav ? ' on' : ''}" data-n="${esc(f.name)}" data-c="${f.code}" data-j="${esc(f.job)}" title="${f.fav ? 'On your favoured list: click to remove' : 'Add to your favoured list'}">★</button><b class="fname rvOpen">${esc(f.short)}</b>${f.sip && f.sip.active ? ` <span class="pill">SIP ${inr(f.sip.amt)}</span>` : ''}<span class="fund-meta">${esc(f.why[0] || '')}</span></td>
-      <td class="c"><span class="vchip ${cl}">${lab}</span></td><td>${inrS(f.val)}<span class="fund-meta">${(f.val / R.total * 100).toFixed(1)}%</span></td>
-      <td class="${isNum(f.l1) ? (f.l1 >= 0 ? 'up' : 'down') : ''}">${isNum(f.l1) ? pts(f.l1) : na}</td><td class="${isNum(f.l2) ? (f.l2 >= 0 ? 'up' : 'down') : ''}">${isNum(f.l2) ? pts(f.l2) : na}</td>
-      <td>${f.an && f.an.roll && f.an.roll.n >= 24 ? f.an.roll.hit.toFixed(0) + '%' : na}</td><td>${f.an && isNum(f.an.downCap) ? f.an.downCap.toFixed(0) : na}</td><td>${isNum(f.as) ? f.as.toFixed(0) + '%' : na}</td></tr>
-      ${open ? `<tr class="rvwhy"><td colspan="8" class="l"><div class="why">${[...f.why.slice(1), ...f.facts].map(t => `<span class="info">${t}</span>`).join('') || '<span class="info">No more detail.</span>'}</div></td></tr>` : ''}`; };
-  const funds = `<div class="card2"><div class="ct">4 · The funds <span class="ctsub">click a name for the facts that back it · ★ = your favoured list</span></div>
-    <div class="tablewrap"><table class="mini lut rvt"><colgroup><col style="width:36%"><col style="width:10%"><col style="width:10%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:8%"><col style="width:9%"></colgroup>
-    <thead><tr><th class="l">Fund</th><th class="c">Status</th><th>Value</th><th>1-yr vs index<span class="sub">pts</span></th><th>2-yr vs index<span class="sub">pts a year</span></th><th>Ahead of index<span class="sub">% of 3-yr periods</span></th><th>Down capture<span class="sub">lower = falls less</span></th><th>Different from index</th></tr></thead>
-    <tbody>${groups.map(([j, fs]) => `<tr class="grp"><td colspan="8" class="l"><b>${esc(j)}</b> <span class="fund-meta" style="display:inline">${fs.length} fund${fs.length > 1 ? 's' : ''} · ${inrS(fs.reduce((s, f) => s + f.val, 0))}${USUAL[j] && !['Debt', 'Gold & other'].includes(j) ? ` · you usually hold ${USUAL[j][0] === USUAL[j][1] ? USUAL[j][0] : USUAL[j].join('–')}` : ''}</span></td></tr>${fs.map(row).join('')}`).join('')}</tbody></table></div>
-    <div class="meta">Act = behind its index (category TRI) over 1 year and by over ${RV_GAP} pt a year over 2 years, or a fund-manager change in the last 6 months. Watch = behind by over ${RV_GAP} pt over 1 year. Smaller gaps count as level. Clutter = under 1% of the portfolio, the same job as a fund kept (over ${XRT.ov}% same stocks, or same bets ${XRT.corr}+), or more funds in the category than you usually hold. Favoured funds are never marked clutter. Returns to ${fmtDate(M0)} (month-end).${NEWS && NEWS.asof ? ` Fund news checked to ${esc(NEWS.asof)}.` : ' Fund news: not checked yet.'}</div></div>`;
-  // detail
-  const S = HOLD.stocks, stockBars = X.top10 ? hbars(X.top10.map(x => ({ l: x.name, v: x.w, sub: `in ${x.n} of ${X.cov.length} funds · ${inrS(x.rs)}`, ref: X.bw ? X.bw.get(x.s) || 0 : null }))) : '<div class="na">—</div>';
-  const secBars = X.secP ? hbars(Object.entries(X.secP).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([k, v]) => { const b = X.secB ? X.secB[k] || 0 : null; return { l: k, v, ref: b, sub: isNum(b) ? `index ${b.toFixed(1)}% · ${pts(v - b)} pts` : '' }; })) : '<div class="na">—</div>';
+  const meta = XR.meta || {}, client = $('xrClient').value.trim() || meta.client || '', F = X.funds, T = X.total;
+  if (!RV.t) RV.t = JSON.parse(JSON.stringify(getTargets()[RV.profile]));
+  const t = RV.t;
+  // now
+  const nowA = Object.fromEntries(ASSETS.map(a => [a, 0])), cntA = Object.fromEntries(ASSETS.map(a => [a, 0]));
+  for (const f of F) { nowA[assetRow(f)] += f.val; cntA[assetRow(f)]++; }
+  const eqF = F.filter(f => assetRow(f) === 'Equity'), E = nowA.Equity;
+  const nowE = {}, cntE = {}; for (const f of eqF) { const j = eqJob(f); nowE[j] = (nowE[j] || 0) + f.val; cntE[j] = (cntE[j] || 0) + 1; }
+  const tgtEq = (t.a.Equity || 0) / 100 * T;
+  const sumA = ASSETS.reduce((s, a) => s + (+t.a[a] || 0), 0), jobs = EQJOBS.filter(j => nowE[j] || t.e[j]), sumE = jobs.reduce((s, j) => s + (+t.e[j] || 0), 0);
+  const chg = v => Math.abs(v) < 500 ? '<span class="na">—</span>' : `<b class="${v > 0 ? 'up' : 'down'}">${v > 0 ? '+' : '−'}${inrS(Math.abs(v))}</b>`;
+  const inp = (grp, k, v) => `<input class="tgt" type="number" min="0" max="100" step="1" data-g="${grp}" data-k="${esc(k)}" value="${isNum(+v) ? +v : 0}">`;
+  const assetRows = ASSETS.map(a => `<tr><td class="l">${a}${cntA[a] ? `<span class="fund-meta">${cntA[a]} fund${cntA[a] > 1 ? 's' : ''}</span>` : ''}</td><td>${inrS(nowA[a])}</td><td>${(nowA[a] / T * 100).toFixed(1)}%</td><td class="c">${inp('a', a, t.a[a])}</td><td>${chg((+t.a[a] || 0) / 100 * T - nowA[a])}</td></tr>`).join('');
+  const eqRows = jobs.map(j => `<tr><td class="l">${j}${cntE[j] ? `<span class="fund-meta">${cntE[j]} fund${cntE[j] > 1 ? 's' : ''}</span>` : ''}</td><td>${inrS(nowE[j] || 0)}</td><td>${E ? ((nowE[j] || 0) / E * 100).toFixed(1) + '%' : '—'}</td><td class="c">${inp('e', j, t.e[j] || 0)}</td><td>${chg((+t.e[j] || 0) / 100 * tgtEq - (nowE[j] || 0))}</td></tr>`).join('');
+  const addable = EQJOBS.filter(j => !jobs.includes(j));
+  const tbl = (head, rows, sum, foot) => `<div class="tablewrap"><table class="mini rvtg"><thead><tr><th class="l">${head}</th><th>Now</th><th>Now %</th><th class="c">Target %</th><th>Change</th></tr></thead><tbody>${rows}</tbody><tfoot><tr><td class="l"><b>Total</b></td><td></td><td></td><td class="c ${Math.abs(sum - 100) > 0.5 ? 'down' : ''}"><b>${sum}%</b>${Math.abs(sum - 100) > 0.5 ? '<span class="fund-meta">should be 100%</span>' : ''}</td><td>${foot || ''}</td></tr></tfoot></table></div>`;
+  // what the whole portfolio owns (look-through of AMC holdings; debt and gold funds as they are)
+  const W = X.whole || [], get = l => (W.find(x => x.l.startsWith(l)) || { v: 0 }).v;
+  const Ls = get('Large cap'), Ms = get('Mid cap'), Ss = get('Small cap'), Fs = get('Foreign'), stocks = Ls + Ms + Ss;
+  const parts = [['Large cap stocks', Ls, '#005826'], ['Mid cap stocks', Ms, '#4f9a6d'], ['Small cap stocks', Ss, '#F9B738'], ['Foreign stocks', Fs, '#934E32'], ['International funds', get('International'), '#2b4c6f'], ['Cash & bonds inside equity/hybrid funds', get('Cash'), '#b9c4bd'], ['Debt funds', nowA.Debt, '#7d8fa3'], ['Gold & other funds', nowA['Gold & other'], '#d9b46a'], ['Not looked through', get('Not looked'), '#e2dde4']].filter(x => x[1] > 0.5);
+  const tot = parts.reduce((s, x) => s + x[1], 0) || 1;
+  const capTile = (k, v) => tile(k, inrS(v), `${(v / T * 100).toFixed(1)}% of portfolio · ${stocks ? (v / stocks * 100).toFixed(0) : '—'}% of Indian stocks`);
+  const nl = W.find(x => x.l.startsWith('Not looked'));
+  const S = HOLD.stocks, stockBars = X.top10 ? hbars(X.top10.map(x => ({ l: x.name, v: x.w, sub: `in ${x.n} of ${X.cov.length} funds · ${inrS(x.rs)}` }))) : '<div class="na">—</div>';
   const amcBars = hbars(X.amc.map(([a, p, v]) => ({ l: a, v: p, sub: inrS(v), col: p > 40 ? '#c98a00' : 'var(--dark)' })), { max: Math.max(50, ...X.amc.map(x => x[1])) });
-  const ovCard = X.cov.length >= 2 ? xrGrid(X.cov, X.ov, v => v.toFixed(0) + '%', ovBg, (a, b, cc) => `#${a.no} & #${b.no}: ${cc.n} stocks in common, ${cc.o.toFixed(1)}% common weight`) : '<div class="meta">Needs at least two funds with holdings data.</div>';
-  const crCard = X.ex.length >= 2 ? xrGrid(X.ex, X.corr, v => v.toFixed(2), crBg, (a, b, cc) => `#${a.no} & #${b.no}: ${cc.toFixed(2)}`) : '<div class="meta">Needs at least two equity funds with 2+ years of NAVs.</div>';
+  const ovCard = X.cov.length >= 2 ? xrGrid(X.cov, X.ov, v => v.toFixed(0) + '%', ovBg, (a, b, c) => `#${a.no} & #${b.no}: ${c.n} stocks in common, ${c.o.toFixed(1)}% common weight`) : '<div class="meta">Needs two funds with holdings data.</div>';
   $('xrOut').innerHTML = `<div class="panel xr4 rv">
-    <h3>Client review${client ? ' · ' + esc(client) : ''} <span class="sub">statement ${esc(meta.asofLabel || '—')} · holdings ${esc(X.asof || '—')} · NAVs and index to ${fmtDate(M0)}</span></h3>
-    <div class="tiles">${T.join('')}</div>
-    <div class="grid2">${target}${gap}</div>
-    ${plan}
-    ${funds}
-    <details class="xsec"><summary class="linkbtn" style="font-size:13.5px">More detail: fund houses, top stocks, sectors, overlap and same-bets grids</summary>
-      <div class="grid2 xsec"><div class="card2"><div class="ct">By fund house <span class="ctsub">% of equity money · over 40% in gold</span></div>${amcBars}</div>
-        <div class="card2"><div class="ct">Different from index <span class="ctsub">whole equity portfolio vs its blended index</span></div><div style="font-size:26px;font-weight:800;font-family:Montserrat">${isNum(X.activeShare) ? X.activeShare.toFixed(0) + '%' : '—'}</div><div class="meta">Active share: 0% = a copy of the index. Aim for 40%+.</div></div></div>
-      <div class="grid2 xsec"><div class="card2"><div class="ct">Top 10 stocks <span class="ctsub">gold tick = blended index weight</span></div>${stockBars}</div>
-        <div class="card2"><div class="ct">Top sectors <span class="ctsub">gold tick = blended index weight</span></div>${secBars}</div></div>
+    <h3>Client review${client ? ' · ' + esc(client) : ''} <span class="sub">${inrS(T)} · ${F.length} funds · statement ${esc(meta.asofLabel || '—')} · holdings ${esc(X.asof || '—')}</span></h3>
+    <div class="controls" style="gap:10px 14px;margin-bottom:10px"><div class="field"><label>Risk profile</label><select id="rvProf">${PROFILES.map(([k, l]) => `<option value="${k}"${k === RV.profile ? ' selected' : ''}>${l}</option>`).join('')}</select></div>
+      <button class="ghost" id="rvSave" style="padding:7px 12px;font-size:12.5px">Save as default for ${esc(PROFILES.find(p => p[0] === RV.profile)[1])}</button><button class="linkbtn" id="rvReset">Reset to default</button></div>
+    <div class="grid2">
+      <div class="card2"><div class="ct">Asset mix</div>${tbl('Asset', assetRows, sumA)}</div>
+      <div class="card2"><div class="ct">Equity by category <span class="ctsub">% of equity · change at the equity target</span></div>${tbl('Category', eqRows, sumE)}${addable.length ? `<div class="btnrow" style="margin-top:6px"><select id="rvAddJob" style="min-width:0;font-size:13px;padding:4px 8px"><option value="">+ add a category</option>${addable.map(j => `<option>${j}</option>`).join('')}</select></div>` : ''}</div>
+    </div>
+    <div class="card2 xsec"><div class="ct">What the whole portfolio owns <span class="ctsub">funds looked through to their stocks</span></div>
+      <div class="tiles">${capTile('Large cap stocks', Ls)}${capTile('Mid cap stocks', Ms)}${capTile('Small cap stocks', Ss)}</div>
+      <span class="capbar" style="width:100%;height:16px">${parts.map(x => `<i style="width:${(x[1] / tot * 100).toFixed(2)}%;background:${x[2]}" title="${x[0]} ${inr(x[1])}"></i>`).join('')}</span>
+      <div class="legend" style="margin-top:8px">${parts.map(x => `<span><span class="sw" style="background:${x[2]}"></span>${x[0]} ${inrS(x[1])} (${(x[1] / tot * 100).toFixed(1)}%)</span>`).join('')}</div>
+      ${nl && nl.nl && nl.nl.length ? `<div class="meta">Not looked through (fund house not in the holdings data): ${nl.nl.map(f => esc(f.short)).join(', ')}.</div>` : ''}</div>
+    <details class="xsec"><summary class="linkbtn" style="font-size:13.5px">More detail: fund houses, overlap, top stocks</summary>
+      <div class="grid2 xsec"><div class="card2"><div class="ct">By fund house <span class="ctsub">% of equity money</span></div>${amcBars}</div>
+        <div class="card2"><div class="ct">Top 10 stocks <span class="ctsub">% of stocks held</span></div>${stockBars}</div></div>
       <div class="card2 xsec"><div class="ct">Fund-vs-fund overlap <span class="ctsub">% of stocks held in common</span></div>${ovCard}</div>
-      <div class="card2 xsec"><div class="ct">Same bets <span class="ctsub">1 = get ahead of / fall behind their index in the same months · last 36 months</span></div>${crCard}</div>
     </details></div>`;
-  $('rvProf').onchange = e => { RV.profile = e.target.value; rvRender(); };
-  $('rvBandsBtn').onclick = rvBandsEditor;
-  $('rvBooked').onchange = e => { const v = xrNum(e.target.value); RV.booked = isNaN(v) ? 0 : Math.max(0, v); rvRender(); };
-  $('rvSpread').onchange = e => { RV.spread = e.target.checked; rvRender(); };
+  $('rvProf').onchange = e => { RV.profile = e.target.value; RV.t = null; rvRender(); };
+  $('rvSave').onclick = () => { const all = getTargets(); all[RV.profile] = JSON.parse(JSON.stringify(RV.t)); try { localStorage.setItem(TGT_KEY, JSON.stringify(all)); $('rvSave').textContent = 'Saved ✓'; } catch (e) {} };
+  $('rvReset').onclick = () => { RV.t = JSON.parse(JSON.stringify(TGT_DEFAULT[RV.profile])); rvRender(); };
+  const add = $('rvAddJob'); if (add) add.onchange = e => { if (e.target.value) { RV.t.e[e.target.value] = 0; rvRender(); } };
 }
-$('xrOut').addEventListener('click', e => {
-  const fb = e.target.closest('.favbtn'); if (fb) { e.preventDefault(); favToggle(fb.dataset.n, fb.dataset.c, fb.dataset.j, () => rvRender()); return; }
-  const o = e.target.closest('.rvOpen'); if (o) { const c = o.closest('tr').dataset.code; RV.open[c] = !RV.open[c]; rvRender(); }
-});
-function favToggle(name, code, job, done) {
-  const cur = favOf(name);
-  $('modal').innerHTML = `<button class="close" onclick="closeModal()">×</button><h2>${cur ? 'Remove from' : 'Add to'} your favoured list</h2><div class="meta">${esc(xrShort(name))} · ${esc(job || '')}</div>
-    <div class="field" style="margin-top:10px"><label>${cur ? 'Why it is coming off' : 'Why you favour it'} (one line, kept in the dated log)</label><input type="text" id="favWhy" style="width:100%" placeholder="${cur ? 'e.g. manager left; lagging its index for 2 years' : 'e.g. steady record, falls less in bad months'}"></div>
-    <div class="btnrow"><button class="primary" id="favOk">${cur ? 'Remove' : 'Add'}</button><button class="ghost" onclick="closeModal()">Cancel</button></div>`;
-  $('modalBg').style.display = 'flex'; setTimeout(() => $('favWhy').focus(), 30);
-  $('favOk').onclick = () => { const why = $('favWhy').value.trim(); if (cur) favRemove(favKey(name), why); else favAdd(name, code, job, why); closeModal(); done && done(); };
-}
-function rvBandsEditor() {
-  const b = getBands();
-  $('modal').innerHTML = `<button class="close" onclick="closeModal()">×</button><h2>Risk-profile bands</h2><div class="meta">Saved in this browser and used for every client. Large / mid / small are % of the Indian stocks the funds hold. Proposed starting values; change them to match how Abundance invests.</div>
-    <div class="tablewrap"><table class="mini plain" id="bandEd"><thead><tr><th class="l">Profile</th><th>Equity low</th><th>Equity high</th><th>Large low</th><th>Large high</th><th>Mid low</th><th>Mid high</th><th>Small low</th><th>Small high</th></tr></thead><tbody>
-    ${PROFILES.map(([k, l]) => `<tr><td class="l">${l}</td>${['eq', 'L', 'M', 'S'].map(s => [0, 1].map(i => `<td><input type="number" min="0" max="100" step="1" data-k="${k}" data-s="${s}" data-i="${i}" value="${b[k][s][i]}" style="width:62px"></td>`).join('')).join('')}</tr>`).join('')}</tbody></table></div>
-    <div class="btnrow"><button class="primary" id="bandSave">Save</button><button class="ghost" id="bandReset">Back to defaults</button><button class="ghost" onclick="closeModal()">Cancel</button></div>`;
-  $('modalBg').style.display = 'flex';
-  $('bandSave').onclick = () => { const nb = getBands(); document.querySelectorAll('#bandEd input').forEach(i => { const v = parseFloat(i.value); if (isNum(v)) nb[i.dataset.k][i.dataset.s][+i.dataset.i] = v; }); saveBands(nb); closeModal(); rvRender(); };
-  $('bandReset').onclick = () => { try { localStorage.removeItem(BANDS_KEY); } catch (e) {} closeModal(); rvRender(); };
-}
+$('xrOut').addEventListener('change', e => { const i = e.target.closest('.tgt'); if (!i || !RV.t) return; const v = Math.max(0, Math.min(100, parseFloat(i.value) || 0)); RV.t[i.dataset.g][i.dataset.k] = v; rvRender(); });
 
-// ---------- Favoured funds page ----------
-async function renderFavPage() {
-  const v = getFav(), list = Object.entries(v.funds), by = {};
-  for (const [k, f] of list) (by[f.job || 'Not yet sorted'] = by[f.job || 'Not yet sorted'] || []).push([k, f]);
-  const jobs = [...JOB_ORDER, 'Not yet sorted'].filter(j => by[j]);
-  $('favList').innerHTML = list.length ? jobs.map(j => `<div class="card2 lineup"><div class="ct">${esc(j)} <span class="ctsub">${by[j].length}</span></div><table class="mini plain"><tbody>${by[j].map(([k, f]) => `<tr><td class="l" style="width:34%"><b>${esc(f.name)}</b></td><td class="l" style="white-space:normal">${esc(f.reason || '—')}</td><td class="l" style="width:12%">since ${esc(f.since || '—')}</td><td style="width:8%"><button class="linkbtn favDel" data-k="${esc(k)}" data-n="${esc(f.full || f.name)}" data-j="${esc(f.job)}">remove</button></td></tr>`).join('')}</tbody></table></div>`).join('') : '<div class="meta">No favoured funds yet. Add them here, or with ★ next to any fund in a client review.</div>';
-  $('favLog').innerHTML = v.log.length ? `<table class="mini plain"><thead><tr><th class="l">Date</th><th class="l">Change</th><th class="l">Fund</th><th class="l">Category</th><th class="l">Reason</th></tr></thead><tbody>${v.log.map(x => `<tr><td class="l">${esc(x.d)}</td><td class="l ${x.act === 'Added' ? 'up' : 'down'}">${esc(x.act)}</td><td class="l">${esc(x.name)}</td><td class="l">${esc(x.job || '—')}</td><td class="l" style="white-space:normal">${esc(x.reason || '—')}</td></tr>`).join('')}</tbody></table>` : '<div class="meta">No changes yet.</div>';
+// =====================================================================================
+// PORTFOLIO BUILDER: the Portfolio Generator inside this page, with overlap of the funds picked in it
+// The generator keeps its state in this browser (localStorage "ab_state"); this panel reads it and looks each fund up
+// in the AMC holdings. Overlap = for every stock two funds both own, the smaller of the two weights, added up.
+// =====================================================================================
+const PB = { sig: '' };
+function pbFind(name) {
+  if (!HOLD || !HOLD.funds.length || !name) return null;
+  const hit = findHoldings(name); if (hit) return hit;
+  const words = s => new Set(String(s).toLowerCase().replace(/\(.*?\)/g, ' ').replace(/&/g, ' and ').split(/[^a-z0-9]+/).filter(w => w && !/^(fund|plan|regular|direct|growth|option|idcw|the|of)$/.test(w)));
+  const A = words(String(name).split(/\s+-\s+/)[0]); let best = null, bs = 0;
+  for (const f of HOLD.funds) { const B = words(f.n), inter = [...A].filter(w => B.has(w)).length, j = inter / (A.size + B.size - inter); if (j > bs) { bs = j; best = f; } }
+  return bs >= 0.6 ? best : null;
 }
-$('favList').addEventListener('click', e => { const b = e.target.closest('.favDel'); if (b) favToggle(b.dataset.n, null, b.dataset.j, renderFavPage); });
-$('favAddBtn').addEventListener('click', async () => {
-  const name = $('favAddName').value.trim(); if (!name) return;
-  await xrUniverse(); const u = XR.uni.find(x => x.name === name); if (!u) { $('favSt').textContent = 'Pick the fund from the list as you type.'; return; }
-  const ck = catKeyOf(u.r), job = ck && JOBS[ck] ? JOBS[ck] : jobOf({ ck, asset: xrAssetOf(u.r) });
-  favAdd(u.name, u.code, job, $('favAddWhy').value.trim()); $('favAddName').value = ''; $('favAddWhy').value = ''; $('favSt').textContent = 'Added.'; renderFavPage();
-});
-$('favExp').addEventListener('click', () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(getFav(), null, 1)], { type: 'application/json' })); a.download = 'abundance-favoured-funds.json'; a.click(); });
-$('favImp').addEventListener('change', async e => { const f = e.target.files[0]; if (!f) return; try { const j = JSON.parse(await f.text()); if (!j.funds || !j.log) throw 0; const v = getFav(); Object.assign(v.funds, j.funds); const seen = new Set(v.log.map(x => JSON.stringify(x))); for (const x of j.log) if (!seen.has(JSON.stringify(x))) v.log.push(x); saveFav(v); renderFavPage(); $('favSt').textContent = 'Imported.'; } catch (err) { $('favSt').textContent = 'That file is not a favoured-funds export.'; } e.target.value = ''; });
-$('pages').addEventListener('click', e => { const b = e.target.closest('[data-page="fav"]'); if (b) { renderFavPage(); if (!XR.uni) xrUniverse().catch(() => {}); } });
+const pbOv = (a, b) => { const wb = new Map(b.h); let o = 0; for (const [s, w] of a.h) if (wb.has(s)) o += Math.min(w, wb.get(s)); return o; };
+const pbCol = v => v > 50 ? 'var(--down)' : v > 35 ? '#a06d00' : 'var(--up)';
+async function pbRender() {
+  let S = null; try { S = JSON.parse(localStorage.getItem('ab_state') || 'null'); } catch (e) {}
+  const rows = S ? [...(S.lump || []).map(r => ({ ...r, k: 'lump' })), ...(S.sip || []).map(r => ({ ...r, k: 'sip' }))].filter(r => r && r.name && r.name.trim()) : [];
+  const sig = JSON.stringify(rows.map(r => [r.name, r.cat, r.amt, r.k])); if (sig === PB.sig) return; PB.sig = sig;
+  await loadHoldings();
+  const by = new Map();
+  for (const r of rows) { const key = r.name.trim(); const o = by.get(key) || { name: key, cat: r.cat || '', lump: 0, sip: 0 }; o[r.k] += parseFloat(String(r.amt).replace(/[^\d.]/g, '')) || 0; if (!o.cat && r.cat) o.cat = r.cat; by.set(key, o); }
+  const funds = [...by.values()].map(f => ({ ...f, hf: pbFind(f.name), short: xrShort(f.name) }));
+  const box = $('pbOv');
+  if (!funds.length) { box.innerHTML = '<div class="meta">Pick funds in the Portfolio Generator below; their overlap shows here.</div>'; return; }
+  const withH = funds.filter(f => f.hf), noH = funds.filter(f => !f.hf && !/debt|liquid|gilt|bond|duration|money market|overnight|arbitrage|gold|silver|floater|credit/i.test(f.cat + ' ' + f.name));
+  // within each category
+  const cats = {}; for (const f of withH) (cats[f.cat || 'Other'] = cats[f.cat || 'Other'] || []).push(f);
+  const catHtml = Object.entries(cats).filter(([, a]) => a.length > 1).map(([c, a]) => { const pr = []; for (let i = 0; i < a.length; i++) for (let j = i + 1; j < a.length; j++) pr.push([a[i], a[j], pbOv(a[i].hf, a[j].hf)]);
+    return `<div class="pbcat"><b>${esc(c)}</b>${pr.sort((x, y) => y[2] - x[2]).map(([x, y, v]) => `<div class="pbpair"><span>${esc(x.short)} × ${esc(y.short)}</span><b style="color:${pbCol(v)}">${v.toFixed(0)}%</b></div>`).join('')}</div>`; }).join('') || '<div class="meta">No category has two funds yet.</div>';
+  // whole portfolio: every pair, plus the stock mix weighted by the amounts (lumpsum, else SIP)
+  let hi = null, n = 0, sum = 0; const M = withH.map((a, i) => withH.map((b, j) => { if (i === j) return null; const v = pbOv(a.hf, b.hf); if (j > i) { n++; sum += v; if (!hi || v > hi.v) hi = { a, b, v }; } return { o: v, n: 0 }; }));
+  const wt = f => f.lump || f.sip || 0, cap = { L: 0, M: 0, S: 0, F: 0 }; let cw = 0;
+  for (const f of withH) { const w = wt(f) * (isNum(f.hf.eq) ? f.hf.eq / 100 : 1); if (!w) continue; cw += w; for (const [s, x] of f.hf.h) { const c = HOLD.stocks[s] ? HOLD.stocks[s][3] : 'S'; cap[c in cap ? c : 'S'] += w * x / 100; } }
+  const capT = cap.L + cap.M + cap.S + cap.F;
+  const grid = withH.length >= 2 ? `<div class="tablewrap"><table class="xgrid"><thead><tr><th></th>${withH.map((f, i) => `<th title="${esc(f.name)}">${i + 1}</th>`).join('')}</tr></thead><tbody>${withH.map((a, i) => `<tr><th class="rl" title="${esc(a.name)}">${i + 1} ${esc(a.short)}</th>${withH.map((b, j) => i === j ? '<td class="self">—</td>' : `<td style="${ovBg(M[i][j].o)}">${M[i][j].o.toFixed(0)}%</td>`).join('')}</tr>`).join('')}</tbody></table></div>` : '';
+  box.innerHTML = `<div class="grid2">
+    <div class="card2"><div class="ct">Within each category</div>${catHtml}</div>
+    <div class="card2"><div class="ct">Whole portfolio</div>
+      ${hi ? `<div class="pbpair"><span>Highest: ${esc(hi.a.short)} × ${esc(hi.b.short)}</span><b style="color:${pbCol(hi.v)}">${hi.v.toFixed(0)}%</b></div><div class="pbpair"><span>Average of all ${n} pairs</span><b style="color:${pbCol(sum / n)}">${(sum / n).toFixed(0)}%</b></div>` : '<div class="meta">Needs two funds with holdings data.</div>'}
+      ${capT ? `<div class="pbpair"><span>Stocks owned: large · mid · small${cap.F ? ' · foreign' : ''}</span><b>${[cap.L, cap.M, cap.S, ...(cap.F ? [cap.F] : [])].map(v => (v / capT * 100).toFixed(0)).join(' · ')}%</b></div>` : ''}
+      ${grid}</div></div>
+    <div class="meta">Holdings ${esc(HOLD.asof || '—')}. Green up to 35%, amber 35–50%, red above 50%.${noH.length ? ` No holdings data: ${noH.map(f => esc(f.short)).join(', ')}.` : ''}</div>`;
+}
+function pbOpen() {
+  const fr = $('pgFrame'); if (!fr.getAttribute('src')) fr.setAttribute('src', 'Portfolio_Generator.html');
+  pbRender(); if (!PB.timer) PB.timer = setInterval(() => { if (!$('page-build').classList.contains('hide')) pbRender(); }, 2000);
+}
+window.addEventListener('storage', e => { if (e.key === 'ab_state' && !$('page-build').classList.contains('hide')) pbRender(); });
+$('pages').addEventListener('click', e => { if (e.target.closest('[data-page="build"]')) pbOpen(); if (e.target.closest('[data-page="wb"]')) wbOpen(); });
 
-window.FS = { rbsa, solveLinear, factorMix, phases, bets, scoreGroup, pctRanks, analyse, captures, riskStats, rolling3, cagr, monthlyRet, trailing, valAt, me, peerSeries, holdKey, findHoldings, loadTRI, loadHoldings, runCategories, runBacktest, get TRI() { return TRI; }, get HOLD() { return HOLD; }, get M0() { return M0; }, NAVS, get RESULTS() { return RESULTS; }, ensureMasterData, leadChart, rvBuild, rvPlan, rvPickLots, getBands, getFav, valuation, get RV() { return RV; }, xrTokens, xrMatch, xrParseAOA, xrCompute, xrUniverse, XR };
+// =====================================================================================
+// HOLDINGS WORKBENCH (ported from MF Screener; reads the same monthly holdings file as the rest of this page)
+// =====================================================================================
+let WB = null;
+async function wbOpen() {
+  if (WB) return;
+  try {
+    const ix = await (await fetch('data/holdings_index.json', { cache: 'no-cache' })).json();
+    const D = await (await fetch('data/' + ix.latest, { cache: 'no-cache' })).json();
+    WB = wbMake(D); $('wbAsof').textContent = 'Holdings as on ' + D.asof;
+  } catch (e) { $('wbAsof').textContent = 'Holdings data could not load: ' + e.message; }
+}
+function wbMake(D) { return (() => {
+  const S = D.stocks, F = D.funds;
+  const CAPS = [['L', 'Large', '--c-large'], ['M', 'Mid', '--c-mid'], ['S', 'Small', '--c-small'], ['F', 'Foreign', '--c-for']];
+  const ORDER = ['Large Cap', 'Large & Mid Cap', 'Mid Cap', 'Small Cap', 'Flexi Cap', 'Multi Cap', 'Focused', 'Value/Contra', 'ELSS', 'Balanced Advantage', 'Aggressive Hybrid', 'Multi Asset', 'Sector/Thematic'];
+  const g = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const fmt = (v, d = 1) => (Math.round(v * 10 ** d) / 10 ** d).toFixed(d);
+  const mdate = s => { const [y, m] = s.split('-'); return (m === '09' ? '30' : '31') + '/' + m + '/' + y; };
+  const SHORT = [[/^ICICI Prudential /i, 'ICICI Pru '], [/^Mahindra Manulife /i, 'Mahindra '], [/^Motilal Oswal /i, 'Motilal '], [/^Franklin India /i, 'Franklin '], [/^Canara Robeco /i, 'Canara '], [/^Mirae Asset /i, 'Mirae '], [/^Nippon India /i, 'Nippon '], [/^PGIM India /i, 'PGIM ']];
+  const short = n => SHORT.reduce((x, [r, t]) => x.replace(r, t), n.replace(/\s+Fund$/i, ''));
+  function norm(n) { return String(n).toLowerCase().replace(/&/g, ' and ').replace(/\(.*?\)/g, ' ').replace(/\b(fund|plan|the|erstwhile|formerly|known|as)\b/g, ' ').replace(/[^a-z0-9]+/g, '') }
+  F.forEach((f, i) => {
+    f.i = i; f.w = new Map(f.h.map(([s, w]) => [s, w])); f.key = norm(f.n);
+    const c = { L: 0, M: 0, S: 0, F: 0 }; f.h.forEach(([s, w]) => c[S[s][3]] = (c[S[s][3]] || 0) + w); f.cap = c;
+    const sec = {}; f.h.forEach(([s, w]) => sec[S[s][2]] = (sec[S[s][2]] || 0) + w); f.sec = sec;
+    f.k = Math.min(100, f.eq) / 100;   // equity weights → % of fund (as in factsheets)
+    f.top10 = f.h.slice(0, 10).reduce((a, [, w]) => a + w, 0) * f.k;
+  });
+  const BW = {}; for (const k in D.bench) { const sec = {}; D.bench[k].forEach(([s, w]) => sec[S[s][2]] = (sec[S[s][2]] || 0) + w); BW[k] = { sec } }
+  const overlap = (a, b) => { let o = 0; for (const [s, w] of a.w) { const v = b.w.get(s); if (v) o += Math.min(w, v) } return o };
+  const asLabel = v => v < 40 ? ['p-low', 'Moves closely with index'] : v <= 60 ? ['p-mid', 'Moderately active'] : ['p-high', 'Highly active'];
+  const OVL = v => v >= 50 ? ['var(--wb-q4)', 'Very high', 'They largely own the same stocks. Holding both adds little diversification.']
+    : v >= 35 ? ['var(--wb-q3)', 'High', 'A big part of the money is in the same stocks.']
+    : v >= 20 ? ['var(--wb-q2)', 'Moderate', 'Some common ground, but each brings different stocks.']
+    : ['var(--wb-q1)', 'Low', 'They own mostly different stocks. Good diversification.'];
+  const capBar = c => '<div class="wb-stack" role="img" aria-label="' + CAPS.map(([k, l]) => l + ' ' + fmt(c[k] || 0, 0) + '%').join(', ') + '">' + CAPS.map(([k, l, v]) => c[k] > 0 ? `<i style="width:${c[k]}%;background:var(${v})" title="${l} ${fmt(c[k], 1)}%"></i>` : '').join('') + '</div>';
+  const fnBtn = f => `<button type="button" class="wb-fn" data-open="${f.i}" title="Open in Fund Lab">${esc(f.n)}</button>`;
+
+  let cat = 'Flexi Cap', sel = [], open = false, ovRef = null, mapSort = ['as', 1], tiltSort = ['max', -1];
+  const cats = ORDER.filter(c => F.some(f => f.c === c));
+  g('wbCat').innerHTML = cats.map(c => `<option>${esc(c)}</option>`).join('');
+  g('wbCapLegend').innerHTML = CAPS.map(([k, l, v]) => `<span><i style="background:var(${v})"></i>${l}</span>`).join('');
+  const inCat = () => F.filter(f => f.c === cat);
+
+  function setOpen(v) { open = v; g('wbBar').classList.toggle('open', v); g('wbPick').hidden = !v; g('wbToggle').textContent = v ? 'Done ▴' : 'Change funds ▾'; g('wbToggle').setAttribute('aria-expanded', v); }
+  function pick(i) { if (sel.includes(i)) sel = sel.filter(x => x !== i); else if (sel.length < 4) sel.push(i); if (!sel.includes(ovRef)) ovRef = sel[0] ?? null; render() }
+
+  function renderPicker() {
+    g('wbCatLbl').textContent = cat;
+    g('wbChips').innerHTML = sel.map(i => `<button type="button" class="wb-chip" data-rm="${i}" aria-label="Remove ${esc(F[i].n)}"><b>${esc(short(F[i].n))}</b><span>×</span></button>`).join('') || '<span class="wb-sub">No funds selected yet</span>';
+    const q = norm(g('wbQ').value);
+    const L = inCat().filter(f => !q || f.key.includes(q)).sort((a, b) => a.n.localeCompare(b.n));
+    g('wbList').innerHTML = L.map(f => `<label><input type="checkbox" id="wbcb${f.i}" data-i="${f.i}" ${sel.includes(f.i) ? 'checked' : ''} ${!sel.includes(f.i) && sel.length >= 4 ? 'disabled' : ''}><span>${esc(f.n)}<small>${esc(f.a)} · ${mdate(f.d)}</small></span></label>`).join('') || '<div class="wb-empty">No fund matches that search.</div>';
+  }
+  function renderSide() {
+    if (!sel.length) { g('wbSide').innerHTML = '<div class="wb-empty">Click "Change funds" above and pick up to 4 funds to compare.</div>'; return }
+    const fs = sel.map(i => F[i]);
+    const row = (h, fn, tip) => `<tr><th scope="row" ${tip ? `title="${esc(tip)}"` : ''}>${h}</th>${fs.map(f => `<td>${fn(f)}</td>`).join('')}</tr>`;
+    const top3 = f => Object.entries(f.sec).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([s, w]) => `${esc(s)} <span class="wb-sub">${fmt(w, 0)}%</span>`).join('<br>');
+    const chg = f => {
+      if (!f.chg) return '<span class="wb-sub">Previous month not available yet</span>';
+      const nm = a => a.map(s => esc(S[s][1])).join(', ');
+      return `<div class="wb-chg"><b>${fmt(f.chg.turn, 0)}%</b> of the portfolio changed <span class="wb-sub">(${f.chg.turn < 6 ? 'small change' : f.chg.turn < 12 ? 'moderate' : 'large reshuffle'})</span>`
+        + (f.chg.new.length ? `<div><span class="up">New:</span> ${nm(f.chg.new.slice(0, 3))}</div>` : '')
+        + (f.chg.exit.length ? `<div><span class="dn">Exited:</span> ${nm(f.chg.exit.slice(0, 3))}</div>` : '')
+        + (f.chg.buy.length ? `<div><span class="up">Added most:</span> ${f.chg.buy.slice(0, 2).map(([s, v]) => esc(S[s][1]) + ' +' + fmt(v, 1)).join(', ')}</div>` : '')
+        + (f.chg.sell.length ? `<div><span class="dn">Cut most:</span> ${f.chg.sell.slice(0, 2).map(([s, v]) => esc(S[s][1]) + ' −' + fmt(-v, 1)).join(', ')}</div>` : '') + '</div>';
+    };
+    g('wbSide').innerHTML = `<table class="wb-fixed"><colgroup><col style="width:170px">${fs.map(() => `<col style="width:calc((100% - 170px) / ${fs.length})">`).join('')}</colgroup><thead><tr><th></th>${fs.map(f => `<th style="text-transform:none;letter-spacing:0">${fnBtn(f)}<div class="wb-sub">${esc(f.a)} · portfolio as on ${mdate(f.d)}</div></th>`).join('')}</tr></thead><tbody>
+    ${row('Active share', f => { const [c, l] = asLabel(f.as); return `<div style="display:grid;gap:4px"><span><b>${fmt(f.as)}%</b> <span class="wb-sub">vs ${esc(f.bm)}</span></span><div class="wb-asbar"><i style="width:${f.as}%"></i></div><span class="wb-pill ${c}">${l}</span></div>` }, 'How different the stocks are from the index')}
+    ${row('Market-cap mix', f => capBar(f.cap) + `<div class="wb-sub">Large ${fmt(f.cap.L || 0, 0)} · Mid ${fmt(f.cap.M || 0, 0)} · Small ${fmt(f.cap.S || 0, 0)}${f.cap.F ? ' · Foreign ' + fmt(f.cap.F, 0) : ''}</div>`)}
+    ${row('Number of stocks', f => `<b>${f.h.length}</b>`)}
+    ${row('Top 10 stocks weigh', f => `<b>${fmt(f.top10, 0)}%</b> <span class="wb-sub">${f.top10 > 55 ? 'concentrated' : f.top10 < 35 ? 'spread out' : 'typical'}</span>`)}
+    ${row('Invested in shares', f => `<b>${fmt(Math.min(100, f.eq), 0)}%</b><div class="wb-sub">${/Balanced Advantage|Aggressive Hybrid|Multi Asset/.test(f.c) ? 'gross: includes shares hedged with futures. Net equity is lower; see the factsheet' : f.eq >= 99.5 ? 'fully invested, cash under 1%' : fmt(100 - f.eq, 0) + '% in cash, bonds or hedged positions'}</div>`, 'Part of the money in shares; the rest is cash, bonds or shares hedged with derivatives')}
+    ${row('Biggest sectors', top3)}
+    ${row('Top 5 stocks', f => f.h.slice(0, 5).map(([s, w]) => `${esc(S[s][1])} <span class="wb-sub">${fmt(w * f.k, 2)}%</span>`).join('<br>'), '% of the fund, as in the factsheet')}
+    </tbody></table>`;
+  }
+  function renderOverlap() {
+    if (sel.length < 2) { g('wbOv').innerHTML = '<div class="wb-empty">Select at least two funds to see how much they overlap.</div>'; g('wbCommon').innerHTML = ''; g('wbCommonHint').textContent = ''; return }
+    const fs = sel.map(i => F[i]); const pairs = [];
+    for (let a = 0; a < fs.length; a++) for (let b = a + 1; b < fs.length; b++) pairs.push([fs[a], fs[b], overlap(fs[a], fs[b])]);
+    pairs.sort((x, y) => y[2] - x[2]);
+    g('wbOv').innerHTML = '<div class="wb-pairs">' + pairs.map(([a, b, v]) => {
+      const [col, lvl, say] = OVL(v); const common = [...a.w.keys()].filter(s => b.w.has(s)).length;
+      return `<div class="wb-pair" style="border-left-color:${col}"><div class="names">${esc(short(a.n))}<em>&amp;</em>${esc(short(b.n))}</div><div class="big" style="color:${v >= 35 ? 'var(--down)' : 'var(--primary)'}">${fmt(v, 0)}%</div>
+        <div class="meter"><i style="width:${Math.min(100, v)}%;background:${col}"></i></div>
+        <div class="say"><b>${lvl} overlap.</b> ${say} <span class="wb-sub">${common} stocks in common.</span></div></div>`
+    }).join('') + '</div>';
+    const all = [...fs[0].w.keys()].filter(s => fs.every(f => f.w.has(s)));
+    const rows = all.map(s => [s, Math.min(...fs.map(f => f.w.get(s)))]).sort((a, b) => b[1] - a[1]);
+    g('wbCommonHint').textContent = `${rows.length} stocks appear in all ${fs.length} funds`;
+    g('wbCommon').innerHTML = rows.length ? `<table><thead><tr><th>Stock</th>${fs.map(f => `<th class="num" style="text-transform:none;letter-spacing:0">${esc(short(f.n))}</th>`).join('')}</tr></thead><tbody>${rows.slice(0, 12).map(([s]) => `<tr><td>${esc(S[s][1])}<div class="wb-sub">${esc(S[s][2])}</div></td>${fs.map(f => { const v = f.w.get(s) * f.k; return `<td class="num">${v < 0.1 ? '&lt;0.1' : fmt(v, 2)}%</td>` }).join('')}</tr>`).join('')}</tbody></table>${rows.length > 12 ? `<div class="wb-sub">Showing the 12 largest of ${rows.length}.</div>` : ''}` : '<div class="wb-empty">These funds hold no stock in common.</div>';
+  }
+  function renderTilt() {
+    if (!sel.length) { g('wbTilt').innerHTML = '<div class="wb-empty">Choose funds to see their sector bets.</div>'; g('wbTiltHint').textContent = ''; return }
+    const fs = sel.map(i => F[i]); const bm = fs[0].bm; const B = BW[bm];
+    g('wbTiltHint').textContent = `Each fund's weight, and the gap vs ${bm}. Green = more than the index, red = less. Click a heading to sort (a fund heading twice sorts by its biggest bets).`;
+    const secs = new Set(Object.keys(B.sec)); fs.forEach(f => Object.keys(f.sec).forEach(s => secs.add(s)));
+    let L = [...secs].map(s => [s, Math.max(B.sec[s] || 0, ...fs.map(f => f.sec[s] || 0))]).filter(x => x[1] >= 0.5).sort((a, b) => b[1] - a[1]).slice(0, 20).map(x => x[0]);
+    const [tk, td] = tiltSort;
+    const tv = s => tk === 'sec' ? s.toLowerCase() : tk === 'bm' ? (B.sec[s] || 0) : tk.startsWith('g') ? ((F[+tk.slice(1)].sec[s] || 0) - (B.sec[s] || 0)) : (F[+tk.slice(1)].sec[s] || 0);
+    if (tk !== 'max') L.sort((a, b) => { const x = tv(a), y = tv(b); return (typeof x === 'string' ? x.localeCompare(y) : x - y) * td });
+    const ar = k => `<span class="ar">${tk === k ? (td === 1 ? '▲' : '▼') : ''}</span>`;
+    const cell = (v, b) => { const d = v - b; const c = d >= 3 ? 'var(--wb-q1)' : d >= 1 ? 'var(--primary)' : d <= -3 ? 'var(--wb-q4)' : d <= -1 ? 'var(--secondary)' : 'var(--muted)'; return `<td class="num">${fmt(v, 1)}% <span class="wb-tilt" style="color:${c}">${d >= 0 ? '+' : '−'}${fmt(Math.abs(d), 1)}</span></td>` };
+    g('wbTilt').innerHTML = `<table><thead><tr><th class="sortable" data-tsort="sec">Sector${ar('sec')}</th><th class="num sortable" data-tsort="bm">${esc(bm)}${ar('bm')}</th>${fs.map(f => `<th class="num sortable" data-tsort="w${f.i}" style="text-transform:none;letter-spacing:0" title="Click: sort by weight. Click again: by gap vs index.">${esc(short(f.n))}${ar('w' + f.i)}${ar('g' + f.i)}${tk === 'g' + f.i ? '<div class="wb-sub">by gap</div>' : ''}</th>`).join('')}</tr></thead><tbody>${L.map(s => `<tr><td>${esc(s)}</td><td class="num wb-sub">${fmt(B.sec[s] || 0, 1)}%</td>${fs.map(f => cell(f.sec[s] || 0, B.sec[s] || 0)).join('')}</tr>`).join('')}</tbody></table>`;
+  }
+  function renderMap() {
+    const ref = ovRef != null ? F[ovRef] : null;
+    const val = f => ({ n: f.n.toLowerCase(), as: f.as, st: f.h.length, t10: f.top10, L: f.cap.L || 0, ov: ref ? (f === ref ? -1 : overlap(ref, f)) : 0 })[mapSort[0]];
+    const L = inCat().slice().sort((a, b) => { const x = val(a), y = val(b); return (typeof x === 'string' ? x.localeCompare(y) : x - y) * mapSort[1] });
+    const sh = (k, label, cls = '') => `<th class="sortable ${cls}" data-sort="${k}" title="Sort">${label}<span class="ar">${mapSort[0] === k ? (mapSort[1] === 1 ? '▲' : '▼') : ''}</span></th>`;
+    g('wbMapTitle').textContent = 'Every ' + cat + ' fund';
+    const head = sel.length ? `Overlap with <select class="wb-ovsel" id="wbOvRef">${sel.map(i => `<option value="${i}" ${i === ovRef ? 'selected' : ''}>${esc(short(F[i].n))}</option>`).join('')}</select>` : 'Overlap';
+    g('wbMap').innerHTML = `<table><thead><tr>${sh('n', 'Fund')}${sh('as', 'Active share', 'num')}${sh('L', 'Market-cap mix')}${sh('st', 'Stocks', 'num')}${sh('t10', 'Top 10', 'num')}<th class="num ${ref ? 'sortable' : ''}" data-sort="ov" style="text-transform:none;letter-spacing:0">${head}<span class="ar">${mapSort[0] === 'ov' ? (mapSort[1] === 1 ? '▲' : '▼') : ''}</span></th><th></th></tr></thead><tbody>${L.map(f => {
+      const [c, l] = asLabel(f.as); const v = ref && f !== ref ? overlap(ref, f) : null;
+      const ovc = v === null ? (ref ? '<span class="wb-sub">this fund</span>' : '<span class="wb-sub">pick a fund</span>') : `<b style="color:${v >= 35 ? 'var(--down)' : 'var(--primary)'}">${fmt(v, 0)}%</b><div class="wb-sub">${OVL(v)[1].toLowerCase()}</div>`;
+      return `<tr><td>${fnBtn(f)}<div class="wb-sub">${esc(f.a)} · ${mdate(f.d)}</div></td><td class="num"><b>${fmt(f.as, 0)}%</b><div><span class="wb-pill ${c}">${l}</span></div></td><td>${capBar(f.cap)}</td><td class="num">${f.h.length}</td><td class="num">${fmt(f.top10, 0)}%</td><td class="num">${ovc}</td><td><button class="linkbtn" type="button" data-add="${f.i}">${sel.includes(f.i) ? 'Remove' : 'Compare'}</button></td></tr>`
+    }).join('')}</tbody></table>`;
+  }
+  function render() { renderPicker(); renderSide(); renderOverlap(); renderTilt(); renderMap(); try { localStorage.setItem('abundance_wb_v1', JSON.stringify({ cat, sel: sel.map(i => F[i].key) })) } catch (e) { } }
+
+  g('wbToggle').addEventListener('click', () => setOpen(!open));
+  g('wbCat').addEventListener('change', e => { cat = e.target.value; sel = sel.filter(i => F[i].c === cat); ovRef = sel[0] ?? null; g('wbQ').value = ''; render() });
+  g('wbQ').addEventListener('input', renderPicker);
+  g('wbClear').addEventListener('click', () => { sel = []; ovRef = null; render() });
+  g('appWb').addEventListener('change', e => { if (e.target.matches('#wbList input')) pick(+e.target.dataset.i); if (e.target.id === 'wbOvRef') { ovRef = +e.target.value; renderMap() } });
+  g('appWb').addEventListener('click', e => {
+    const rm = e.target.closest('[data-rm]'); if (rm) { pick(+rm.dataset.rm); return }
+    const ad = e.target.closest('[data-add]'); if (ad) { pick(+ad.dataset.add); return }
+    const op = e.target.closest('[data-open]'); if (op) { openInScreener(F[+op.dataset.open]); return }
+    const ts = e.target.closest('th[data-tsort]');
+    if (ts) { let k = ts.dataset.tsort; const [ck, cd] = tiltSort;
+      if (k.startsWith('w')) { const i = k.slice(1); tiltSort = ck === 'w' + i ? ['g' + i, -1] : ck === 'g' + i ? ['w' + i, 1] : ['w' + i, -1] }
+      else tiltSort = ck === k ? [k, -cd] : [k, k === 'sec' ? 1 : -1];
+      renderTilt(); return }
+    const so = e.target.closest('th[data-sort]'); if (so && !e.target.closest('select')) { const k = so.dataset.sort; if (k === 'ov' && ovRef == null) return; mapSort = mapSort[0] === k ? [k, -mapSort[1]] : [k, k === 'n' ? 1 : (k === 'ov' ? 1 : -1)]; renderMap() }
+  });
+
+  // ---- link to the screener ----
+  const baseName = n => norm(String(n).split(/\s+-\s+/)[0]);
+  function busy(msg) { let b = g('wbBusy'); if (!msg) { if (b) b.remove(); return } if (!b) { b = document.createElement('div'); b.id = 'wbBusy'; b.className = 'wb-busy'; document.body.appendChild(b) } b.textContent = msg }
+  async function openInScreener(f) {   // opens the fund in Fund Lab, with its whole category loaded
+    busy('Opening ' + f.n + ' in Fund Lab…');
+    try {
+      await xrUniverse(); const m = xrMatch(f.n), u = m.code ? XR.byCode.get(m.code) : (m.cands[0] ? XR.byCode.get(m.cands[0]) : null);
+      if (!u) { busy(); alertBox(`Couldn't find "${f.n}" in the AMFI list.`); return; }
+      const ck = catKeyOf(u.r); document.querySelector('[data-page="lab"]').click(); busy();
+      if (ck) { setSelected([ck]); await runCategories([ck]); }
+      const code = String(u.code), R = Object.values(RESULTS).find(R => R.funds.some(o => String(o.code) === code));
+      if (R) { activeCat = Object.keys(RESULTS).find(k => RESULTS[k] === R); render(); openDetail(code); }
+    } catch (e) { busy(); alertBox('Could not open it in Fund Lab: ' + e.message); }
+  }
+  function alertBox(msg) { const w = document.createElement('div'); w.className = 'wb-warn'; w.textContent = msg; g('appWb').prepend(w); setTimeout(() => w.remove(), 9000); w.scrollIntoView({ block: 'nearest' }) }
+  function findFund(name) {
+    const k = baseName(name);
+    let f = F.find(f => f.key === k) || F.find(f => f.key.startsWith(k) || k.startsWith(f.key));
+    if (!f) {
+      const tw = new Set(String(name).split(/\s+-\s+/)[0].toLowerCase().replace(/&/g, ' and ').split(/[^a-z0-9]+/).filter(w => w && w !== 'fund')); let best = 0;
+      for (const h of F) { const hw = new Set(h.n.toLowerCase().replace(/&/g, ' and ').split(/[^a-z0-9]+/).filter(w => w && w !== 'fund')); const inter = [...tw].filter(w => hw.has(w)).length; const j = inter / (tw.size + hw.size - inter); if (j > best) { best = j; f = h } }
+      if (best < 0.6) f = null;
+    }
+    return f;
+  }
+  function showFund(name) {
+    const f = findFund(name);
+    document.querySelector('[data-page="wb"]').click();
+    if (!f) { alertBox(`Holdings for "${String(name).split(/\s+-\s+/)[0]}" aren't in this month's data yet (its AMC may not be covered).`); return }
+    cat = f.c; if (!sel.includes(f.i)) { sel = sel.filter(i => F[i].c === cat); if (sel.length >= 4) sel.pop(); sel.unshift(f.i) } ovRef = f.i;
+    g('wbCat').value = cat; setOpen(false); render(); window.scrollTo({ top: 0 });
+  }
+  function has(name) { return !!findFund(name) }
+  // boot
+  let saved = null; try { saved = JSON.parse(localStorage.getItem('abundance_wb_v1')) } catch (e) { }
+  if (saved && cats.includes(saved.cat)) { cat = saved.cat; sel = (saved.sel || []).map(k => F.findIndex(f => f.key === k && f.c === cat)).filter(i => i >= 0) }
+  if (!sel.length) { cat = 'Flexi Cap'; sel = ['Parag Parikh Flexi Cap Fund', 'HDFC Flexi Cap Fund', 'Motilal Oswal Flexicap Fund'].map(n => F.findIndex(f => f.n === n)).filter(i => i >= 0) }
+  ovRef = sel[0] ?? null; g('wbCat').value = cat; setOpen(!sel.length); render();
+  return { showFund, has, asof: D.asof };
+})(); }
+
+window.FS = { rbsa, solveLinear, factorMix, phases, bets, scoreGroup, pctRanks, analyse, captures, riskStats, rolling3, cagr, monthlyRet, trailing, valAt, me, peerSeries, holdKey, findHoldings, loadTRI, loadHoldings, runCategories, runBacktest, get TRI() { return TRI; }, get HOLD() { return HOLD; }, get M0() { return M0; }, NAVS, get RESULTS() { return RESULTS; }, ensureMasterData, leadChart, get RV() { return RV; }, pbRender, pbFind, wbOpen, get WB() { return WB; }, xrTokens, xrMatch, xrParseAOA, xrCompute, xrUniverse, XR };
 </script>
 </body>
 </html>
