@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Carlito:wght@400;700&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <style>
@@ -825,25 +826,51 @@ function flags(ev){
 /* ---------- downloads ---------- */
 function fileBase(){ const d = rdate(); const nm = properName($('client').value) || 'Client';
   return `Redemption Plan ${String(d.getUTCDate()).padStart(2, '0')}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCFullYear()).slice(2)} - ${nm}`; }
-$('xls').addEventListener('click', () => {
-  const ev = lastEval; if (!ev) return; const c = cfg(), rd = rdate(), total = funds.reduce((s, f) => s + (f.value || 0), 0);
-  const wb = XLSX.utils.book_new();
-  const plan1 = [['Fund', 'Folio', 'Category', 'Tax treatment', 'Current value', '% of portfolio', '% of fund redeemed', 'XIRR %', 'XIRR scored?', 'Score', 'Tax score', 'Exit load score', 'XIRR score', 'Why', 'Redeem ₹', 'Approx units', 'Purchase dates redeemed', 'Cost', 'Gain', 'ST gain', 'LT gain', 'Exit load', 'Exit load %', 'Load days', 'Kept out']];
-  for (const f of funds){ const r = ev.rows.find(x => x.f.id === f.id); const sc = sugg && sugg.scores[f.id] || {};
-    plan1.push([f.short, f.folio, f.category, f.taxType, Math.round(f.value), +(f.value / total * 100).toFixed(2), r ? +(r.amount / f.value * 100).toFixed(1) : 0, isFinite(f.xirr) ? f.xirr : '', RP.ageDays(f, rd) >= 365 ? 'Yes' : 'No (new)', rd1(sc.score), rd1(sc.tax), rd1(sc.load), rd1(sc.perf),
-      f.fixed && r ? 'Set by you' : sugg && sugg.why[f.id] === 'small' ? 'Small holding exit' : r ? 'Spread' : '', r ? Math.round(r.amount) : 0, r ? +r.units.toFixed(3) : 0, r ? lotRange(r) : '', r ? Math.round(r.cost) : 0, r ? Math.round(r.gain) : 0, r ? Math.round(r.eqST + r.slab) : 0, r ? Math.round(r.eqLT + r.othLT) : 0, r ? Math.round(r.load) : 0, f.loadPct, f.loadDays, f.exclude ? 'Yes' : '']); }
-  plan1.push(['Total', '', '', '', Math.round(total), 100, '', '', '', '', '', '', '', '', Math.round(ev.total), '', '', Math.round(ev.rows.reduce((s, r) => s + r.cost, 0)), Math.round(ev.gain), Math.round(ev.buckets.eqST + ev.buckets.slab), Math.round(ev.buckets.eqLT + ev.buckets.othLT), Math.round(ev.load)]);
-  const lots = [['Fund', 'Folio', 'Purchase date', 'Days held', 'Term', 'Tax bucket', 'Units', 'Purchase NAV', 'Cost', 'Value', 'Gain', 'Exit load', 'Note']];
-  for (const r of ev.rows) for (const s of r.slices) lots.push([r.f.short, r.f.folio, dmy(s.lotDate), s.held, s.term, { eqST: 'Equity ST', eqLT: 'Equity LT', othLT: 'Other LT', slab: 'Slab' }[s.bucket], +s.units.toFixed(3), +s.purNav.toFixed(4), Math.round(s.cost), Math.round(s.value), Math.round(s.gain), Math.round(s.load), s.gfNote]);
-  const tx = [['Item', 'Amount']].concat(taxLines(ev, c).map(([k, v]) => [k.replace(/₹/g, 'Rs '), pnum(String(v).replace('−', '-'))]));
-  const st = [['Client', properName($('client').value)], ['Redemption date', dmy(rd)], ['Report date', dmy(P.reportDate)], ['Target amount', target], ['Tax year', RP.taxYear(rd)],
-    ['Equity ST rate %', c.eqST], ['LT rate %', c.lt], ['Slab %', c.slab], ['Surcharge %', c.surcharge], ['Cess %', c.cess], ['LT exemption', c.exemption], ['Exemption already used', c.exemptionUsed],
-    ['Weight: tax', +$('wTax').value], ['Weight: exit load', +$('wLoad').value], ['Weight: XIRR', +$('wPerf').value], ['Spread band', $('band').selectedOptions[0].text], ['Full exit below', pnum($('smallBelow').value)]];
-  const add = (aoa, n, w) => { const ws = XLSX.utils.aoa_to_sheet(aoa); ws['!cols'] = w.map(x => ({ wch: x })); XLSX.utils.book_append_sheet(wb, ws, n); };
-  add(plan1, 'Plan', [40, 16, 26, 10, 14, 10, 10, 8, 10, 8, 8, 8, 8, 16, 13, 12, 24, 13, 12, 12, 12, 10, 8, 8, 8]);
-  add(lots, 'FIFO lots', [40, 16, 13, 9, 6, 10, 12, 12, 12, 12, 12, 10, 14]);
-  add(tx, 'Tax', [40, 14]); add(st, 'Settings', [26, 18]);
-  XLSX.writeFile(wb, fileBase() + ' (internal).xlsx');
+$('xls').addEventListener('click', async () => {
+  const ev = lastEval; if (!ev) return; const c = cfg(), rd = rdate();
+  const INR = '[>=10000000]##\,##\,##\,##0;[>=100000]##\,##\,##0;##,##0';
+  const GAIN = '#,##0;-#,##0';
+  const wb = new ExcelJS.Workbook(); wb.creator = 'Abundance';
+  const G = 'FF005826', Z = 'FFF0F8FF', T = 'FFE6F0EA', LINE = 'FFDCE6EE';
+  // cols: [header, width, fmt]; rows: arrays; total: array or null
+  function sheet(name, title, cols, rows, total){
+    const ws = wb.addWorksheet(name, { views: [{ state: 'frozen', ySplit: 3 }], pageSetup: { orientation: 'landscape', paperSize: 9, fitToPage: true, fitToWidth: 1, fitToHeight: 0 } });
+    ws.columns = cols.map(c => ({ width: c[1] }));
+    ws.getCell('A1').value = title; ws.getCell('A1').font = { name: 'Calibri', size: 13, bold: true, color: { argb: G } };
+    const hr = ws.getRow(3); hr.values = cols.map(c => c[0]); hr.height = 20;
+    hr.eachCell(cell => { cell.font = { name: 'Calibri', bold: true, color: { argb: 'FFFFFFFF' } }; cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: G } };
+      cell.alignment = { vertical: 'middle', wrapText: true, horizontal: cell.col === 1 ? 'left' : 'center' }; });
+    rows.forEach((r, i) => { const row = ws.addRow(r);
+      row.eachCell({ includeEmpty: true }, (cell, ci) => { if (ci > cols.length) return; cell.font = { name: 'Calibri' };
+        if (i % 2 === 1) cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: Z } };
+        cell.border = { bottom: { style: 'thin', color: { argb: LINE } } };
+        const f = cols[ci - 1][2]; if (f) cell.numFmt = f; if (cols[ci - 1][3]) cell.alignment = { horizontal: cols[ci - 1][3] }; }); });
+    if (total){ const row = ws.addRow(total);
+      row.eachCell({ includeEmpty: true }, (cell, ci) => { if (ci > cols.length) return; cell.font = { name: 'Calibri', bold: true };
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: T } }; cell.border = { top: { style: 'medium', color: { argb: G } } };
+        const f = cols[ci - 1][2]; if (f) cell.numFmt = f; }); }
+    return ws;
+  }
+  const nm = properName($('client').value), sub = `${nm} · Redemption date ${dmy(rd)} · Tax Year ${RP.taxYear(rd)}`;
+  const R0 = v => Math.round(v);
+  sheet('Plan', 'Redemption Plan · ' + sub,
+    [['Fund', 40], ['Purchase dates redeemed', 24, null, 'center'], ['Folio', 16, null, 'center'], ['Cost', 13, INR], ['Current value', 14, INR], ['XIRR %', 9, '0.00'], ['Redeem ₹', 13, INR],
+     ['Gain', 12, GAIN], ['ST gain', 12, GAIN], ['LT gain', 12, GAIN], ['Exit load', 11, INR], ['Exit load %', 11, '0.0#', 'center'], ['Load days', 10, '0', 'center'], ['Kept out', 10, null, 'center']],
+    ev.rows.map(r => [r.f.short, lotRange(r), r.f.folio, R0(r.cost), R0(r.f.value), isFinite(r.f.xirr) ? r.f.xirr : null, R0(r.amount), R0(r.gain), R0(r.eqST + r.slab), R0(r.eqLT + r.othLT), R0(r.load), r.f.loadPct, r.f.loadDays, r.f.exclude ? 'Yes' : '']),
+    ['Total', '', '', R0(ev.rows.reduce((s, r) => s + r.cost, 0)), R0(ev.rows.reduce((s, r) => s + r.f.value, 0)), null, R0(ev.total), R0(ev.gain), R0(ev.buckets.eqST + ev.buckets.slab), R0(ev.buckets.eqLT + ev.buckets.othLT), R0(ev.load), null, null, '']);
+  const lots = []; for (const r of ev.rows) for (const x of r.slices) lots.push([r.f.short, r.f.folio, dmy(x.lotDate), x.held, x.term, { eqST: 'Equity ST', eqLT: 'Equity LT', othLT: 'Other LT', slab: 'Slab' }[x.bucket], +x.units.toFixed(3), +x.purNav.toFixed(4), R0(x.cost), R0(x.value), R0(x.gain), R0(x.load), x.gfNote]);
+  sheet('FIFO lots', 'Lots redeemed (oldest first) · ' + sub,
+    [['Fund', 36], ['Folio', 16, null, 'center'], ['Purchase date', 13, null, 'center'], ['Days held', 10, '0', 'center'], ['Term', 7, null, 'center'], ['Tax bucket', 12, null, 'center'], ['Units', 12, '#,##0.000'], ['Purchase NAV', 13, '#,##0.0000'],
+     ['Cost', 12, INR], ['Value', 12, INR], ['Gain', 12, GAIN], ['Exit load', 11, INR], ['Note', 14]], lots,
+    ['Total', '', '', null, '', '', null, null, R0(ev.rows.reduce((s, r) => s + r.cost, 0)), R0(ev.total), R0(ev.gain), R0(ev.load), '']);
+  const tl = taxLines(ev, c).filter(l => !/carry/i.test(l[0])).map(([k, v]) => [k.replace(/₹/g, 'Rs '), Math.abs(pnum(String(v).replace('−', '')))]);
+  sheet('Tax', 'Tax estimate · ' + sub, [['Item', 40], ['Amount (Rs)', 16, INR]], tl.slice(0, -1), tl[tl.length - 1]);
+  sheet('Settings', 'Settings used · ' + sub, [['Setting', 30], ['Value', 20, null, 'right']], [['Target amount', inr(target)], ['Report date', dmy(P.reportDate)],
+    ['Equity ST rate %', c.eqST], ['LT rate %', c.lt], ['Slab %', c.slab], ['Surcharge %', c.surcharge], ['Cess %', c.cess], ['LT exemption', inr(c.exemption)], ['Exemption already used', inr(c.exemptionUsed)],
+    ['Weight: tax', +$('wTax').value], ['Weight: exit load', +$('wLoad').value], ['Weight: XIRR', +$('wPerf').value], ['Spread', $('band').selectedOptions[0].text], ['Full exit below', inr(pnum($('smallBelow').value))]], null);
+  const buf = await wb.xlsx.writeBuffer();
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+  a.download = fileBase() + ' (internal).xlsx'; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
 });
 const rd1 = v => isFinite(v) ? Math.round(v) : '';
 
@@ -911,16 +938,16 @@ $('pdf').addEventListener('click', () => {
   y += 27;
   // fund table
   y = sectionHead(doc, y, 'FUND-WISE PLAN');
-  const body = ev.rows.map(r => [cleanName(r.f.name), lotRange(r).replace(' – ', ' to\n'), inr(r.amount), dash(r.eqST + r.slab), dash(r.eqLT + r.othLT), dash(r.load)]);
+  const body = ev.rows.map(r => [cleanName(r.f.name), inr(r.amount), dash(r.eqST + r.slab), dash(r.eqLT + r.othLT), dash(r.load)]);
   const ltG = ev.buckets.eqLT + ev.buckets.othLT, stG = ev.buckets.eqST + ev.buckets.slab;
   const tblStyle = { font: 'Carl', fontSize: 9.5, textColor: INK, cellPadding: { top: 2.2, bottom: 2.2, left: 3, right: 3 }, lineColor: RULE, lineWidth: { bottom: 0.2 } };
-  doc.autoTable({ startY: y, margin: { left: M, right: M, bottom: BAND + 10 }, head: [['Fund', 'Purchased', 'Amount (₹)', 'Short-term gain', 'Long-term gain', 'Exit load']], body,
-    foot: [['Total', '', inr(ev.total), dash(stG), dash(ltG), dash(ev.load)]], theme: 'plain', styles: tblStyle,
+  doc.autoTable({ startY: y, margin: { left: M, right: M, bottom: BAND + 10 }, head: [['Fund', 'Amount (₹)', 'Short-term gain', 'Long-term gain', 'Exit load']], body,
+    foot: [['Total', inr(ev.total), dash(stG), dash(ltG), dash(ev.load)]], theme: 'plain', styles: tblStyle,
     headStyles: { font: 'Carl', fontStyle: 'bold', fontSize: 8.5, textColor: GREEN, fillColor: [255, 255, 255], lineWidth: { bottom: 0.5 }, lineColor: GREEN },
     footStyles: { font: 'Carl', fontStyle: 'bold', textColor: INK, fillColor: PANEL },
     alternateRowStyles: { fillColor: ZEBRA }, rowPageBreak: 'avoid',
-    columnStyles: { 0: { cellWidth: 58 }, 1: { cellWidth: 24, halign: 'left', textColor: MUTE, fontSize: 8.5 }, 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' }, 5: { halign: 'right' } },
-    didParseCell: d => { if (d.section !== 'body' && d.column.index > 1) d.cell.styles.halign = 'right'; } });
+    columnStyles: { 0: { cellWidth: 70 }, 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' }, 5: { halign: 'right' } },
+    didParseCell: d => { if (d.section !== 'body' && d.column.index > 0) d.cell.styles.halign = 'right'; } });
   y = doc.lastAutoTable.finalY + 10;
   // tax computation
   const lines = taxLines(ev, c).filter(l => !/carry/i.test(l[0]));
@@ -933,7 +960,7 @@ $('pdf').addEventListener('click', () => {
   y = doc.lastAutoTable.finalY + 8;
   doc.setFont('Carl', 'normal'); doc.setFontSize(8); doc.setTextColor(...MUTE);
   const nd = funds.map(f => f.navDate).filter(Boolean).sort((a, b) => b - a)[0];
-  const note = `Illustrative, based on NAV of ${dmy(nd || P.reportDate)}. Final amounts depend on the NAV on the redemption date. Units are redeemed oldest-first, so the purchase dates show which investments are being redeemed. Net in hand = redemption less exit load and estimated tax.`;
+  const note = `Illustrative, based on NAV of ${dmy(nd || P.reportDate)}. Final amounts depend on the NAV on the redemption date. Units are redeemed oldest-first. Net in hand = redemption less exit load and estimated tax.`;
   doc.text(doc.splitTextToSize(note, PW - 2 * M), M, y);
   const n = doc.getNumberOfPages(); for (let i = 1; i <= n; i++){ doc.setPage(i); band(doc, i, n); }
   doc.save(fileBase() + '.pdf');
