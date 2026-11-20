@@ -3476,7 +3476,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
   /* one page per ticked job-loss scenario, after the comparison */
   const jobPages = c => (c.st.scen || []).filter(s => s.cmp && s.job && FP.jobLoss(c.d, c.st, s)).map(s => { const J = FP.jobLoss(c.d, c.st, s);
     const pr = (J.who === 'Self' ? c.d.self : c.d.spouse)?.gender, his = /^f/i.test(pr || '') ? 'Her' : /^m/i.test(pr || '') ? 'His' : 'Their';
-    const t = J.perm ? `If ${FP.esc(J.first)} Loses ${his} Job` : `If ${FP.esc(J.first)} Is Out of Work for ${J.months} Months`;
+    const nPerm = (c.st.scen || []).filter(x => x.cmp && x.job?.type === 'perm').length, t = J.perm ? `In case of Job Loss${nPerm > 1 ? ` · ${FP.esc(J.first)}` : ''}` : `If ${FP.esc(J.first)} Is Out of Work for ${J.months} Months`;
     return [FP.cp.page(c, 'whatif', t, J.perm ? 'No more salary: your investments pay the living costs first, till the end of the plan, and the goals get what is left.' : `Living costs come from savings until a new job${J.pct < 100 ? ` at ${J.pct}% of the salary` : ''}, and SIPs pause.`, FP.jobView(c.d, c.st, s, 1, 1), 'how'),
       FP.cp.page(c, 'whatif', t, '', FP.jobView(c.d, c.st, s, 1, 2))]; }).flat();
   FP.cp.parts.whatif = c => [...page(c), ...jobPages(c)];
