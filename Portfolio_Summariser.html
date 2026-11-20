@@ -205,7 +205,7 @@ select.guess{border-color:var(--accent)}
     <div class="hint" style="margin-top:10px" id="sipNote"></div>
   </section>
 
-  <div class="grid2 txv">
+  <div class="grid2">
     <section class="card" aria-labelledby="h-cat">
       <h2 id="h-cat">Category-wise total</h2>
       <div class="cat" id="cat"></div>
@@ -225,7 +225,7 @@ select.guess{border-color:var(--accent)}
     </div>
   </div>
 
-  <section class="card txv" aria-labelledby="h-f">
+  <section class="card" aria-labelledby="h-f">
     <div class="thead">
       <h2 id="h-f">Fund-wise total</h2>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -266,7 +266,7 @@ select.guess{border-color:var(--accent)}
     <div class="hint" style="margin-top:10px">Pick one or more categories to see only those funds; tap a selected one again to remove it. Share % is always of the full total. Categories are read from the fund name. Change any that look wrong; a gold outline marks funds the tool could not place. Your changes are remembered in this browser.</div>
   </section>
 
-  <section class="card summary txv" aria-labelledby="h-sum">
+  <section class="card summary" aria-labelledby="h-sum">
     <h2 id="h-sum">Summary</h2>
     <ul id="sum"></ul>
   </section>
@@ -438,6 +438,13 @@ function cleanFund(n){
 }
 const isActive=st=>/^(active|live|registered)\b/i.test(st);
 const sipCls=s=>isActive(s)?'on':/missed|pause|hold|pending/i.test(s)?'warn':'off';
+// the category chart, asset class, fund table and summary show the SIPs of the chosen box (one row per SIP, its status as the type)
+function sipFeed(){
+  const l=SIPS.filter(x=>isActive(x.status)===(sipView==='on'));
+  DATA=l.map(x=>({fund:cleanFund(x.fund),type:x.status,amt:isNaN(x.amt)?0:x.amt,units:0,date:x.date||null,client:x.client||''}));
+  TYPES={};DATA.forEach(r=>TYPES[r.type]=true);open.clear();catFilter.clear();
+  $('h-tt').textContent='SIP status';$('h-f').textContent=(sipView==='on'?'Active':'Inactive')+' SIPs by fund';$('h-cat').textContent=(sipView==='on'?'Active':'Inactive')+' SIPs by category';
+}
 function renderSIPs(){
   const has=SIPS.length>0;$('sipCard').hidden=!has;
   document.querySelectorAll('.txv').forEach(el=>el.hidden=has);   // a SIP file shows only the SIP view
@@ -446,7 +453,7 @@ function renderSIPs(){
   const act=SIPS.filter(x=>isActive(x.status)),ina=SIPS.filter(x=>!isActive(x.status)),sum=l=>l.reduce((t,x)=>t+(isNaN(x.amt)?0:x.amt),0);
   $('sipBoxes').innerHTML=`<button type="button" class="sbox ${sipView==='on'?'on':''}" data-v="on"><div class="k">Active SIPs</div><div class="v">${inr0(sum(act))}</div><div class="s">a month · ${act.length} ${SIPSRC==='we'?'fund':'SIP'}${act.length===1?'':'s'}</div></button>
     <button type="button" class="sbox off ${sipView==='off'?'on':''}" data-v="off"><div class="k">Inactive SIPs</div><div class="v">${inr0(sum(ina))}</div><div class="s">a month when running · ${ina.length} ${SIPSRC==='we'?'fund':'SIP'}${ina.length===1?'':'s'}</div></button>`;
-  $('sipBoxes').querySelectorAll('.sbox').forEach(b=>b.onclick=()=>{if(sipView!==b.dataset.v){sipView=b.dataset.v;sipF.clear();}renderSIPs();});
+  $('sipBoxes').querySelectorAll('.sbox').forEach(b=>b.onclick=()=>{if(sipView!==b.dataset.v){sipView=b.dataset.v;sipF.clear();sipFeed();render();}renderSIPs();});
   const base=sipView==='on'?act:ina,key=sipView==='on'?'cat':'status';
   // filter chips: category for active SIPs, status for inactive ones
   const g={};base.forEach(x=>{const o=g[x[key]]||(g[x[key]]={n:0,amt:0});o.n++;o.amt+=isNaN(x.amt)?0:x.amt;});
@@ -469,6 +476,8 @@ function renderSIPs(){
 }
 function load(rows,period,label,isSample,clientHint,sips,sipSrc){
   SIPS=sips||[];SIPSRC=sipSrc||'';sipView='on';sipF.clear();
+  if(SIPS.length){SIPS.forEach(x=>{x.name=cleanFund(x.fund);});sipFeed();rows=DATA;}
+  else{$('h-tt').textContent='Transaction types';$('h-f').textContent='Fund-wise total';$('h-cat').textContent='Category-wise total';}
   DATA=rows;TYPES={};rows.forEach(r=>{if(!(r.type in TYPES))TYPES[r.type]=true;});
   if(!period){const ds=rows.map(r=>r.date).filter(Boolean).sort((a,b)=>a-b);if(ds.length)period=fmtD(ds[0])+' – '+fmtD(ds[ds.length-1]);}
   PERIOD=period;open.clear();catFilter.clear();fq='';$('fq').value='';
@@ -605,9 +614,9 @@ function render(){
   const eq=ac.Equity||0;
   $('sum').innerHTML=total?[
     (clientName()?`Client: <strong>${esc(clientName())}</strong>.`:''),
-    `<strong>${rows.length}</strong> transactions totalling <strong>${inr(total)}</strong> across <strong>${fl.length}</strong> funds${PERIOD?` (${PERIOD})`:''}.`,
+    SIPS.length?`<strong>${rows.length}</strong> ${sipView==='on'?'active':'inactive'} SIP${rows.length===1?'':'s'} totalling <strong>${inr(total)}</strong> a month across <strong>${fl.length}</strong> funds.`:`<strong>${rows.length}</strong> transactions totalling <strong>${inr(total)}</strong> across <strong>${fl.length}</strong> funds${PERIOD?` (${PERIOD})`:''}.`,
     `Largest category: <strong>${esc(topC.cat)}</strong> at ${inr(topC.amt)} (${(topC.amt/total*100).toFixed(1)}%).`,
-    `Largest fund: <strong>${esc(topF.fund)}</strong> at ${inr(topF.amt)} over ${topF.n} transaction${topF.n>1?'s':''}.`,
+    `Largest fund: <strong>${esc(topF.fund)}</strong> at ${inr(topF.amt)}${SIPS.length?(topF.n>1?` (${topF.n} SIPs)`:''):` over ${topF.n} transaction${topF.n>1?'s':''}`}.`,
     `Equity share: <strong>${(eq/total*100).toFixed(1)}%</strong>${order.length>1?'; the rest is '+order.filter(k=>k!=='Equity').map(k=>`${k.toLowerCase()} ${(ac[k]/total*100).toFixed(1)}%`).join(', '):''}.`,
     fl.some(f=>f.cat==='Other')?`${fl.filter(f=>f.cat==='Other').length} fund(s) are marked Other. Set their category in the fund table.`:''
   ].filter(Boolean).map(s=>`<li>${s}</li>`).join(''):'<li>No transactions for the selected types.</li>';
