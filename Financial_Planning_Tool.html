@@ -2968,14 +2968,21 @@ Move              = target − today; every change is shown (under ₹1,000 coun
     if (over()) pg.classList.add('fit1'); if (over()) pg.classList.add('fit2'); });
   const draw = () => { q('#cpPages').innerHTML = FP.cp.build().join(''); fit(); const n = FP.cp.PARTS.filter(p => FP.cp.parts[p.id]).length; q('#cpMsg').textContent = n < FP.cp.PARTS.length ? `Parts ready: ${n} of ${FP.cp.PARTS.length}` : ''; };
   const overlay = () => { CUR = { doc: document, win: window, view }; FP.closeDrawer?.(); FP.closeModal?.(); view.hidden = false; draw(); view.scrollTop = 0; document.body.style.overflow = 'hidden'; };
-  FP.cp.open = () => {
-    const w = window.open('', 'fpClientPdf');   /* same tab each time: clicking again refreshes it */
+  FP.cp.tok = String(Date.now() + Math.random());
+  /* runs inside the preview tab (its own script, so it still works after the tool page reloads): if the tool was reloaded or closed,
+     its buttons would do nothing, so they hand the tab to the new tool page to rebuild, or say what to do */
+  const tabGuard = `window.__tok=${JSON.stringify(FP.cp.tok)};document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('#cpDl,#cpRe');if(!b)return;var o=window.opener,m=document.getElementById('cpMsg');
+    if(!o||o.closed||!o.FP){e.preventDefault();e.stopPropagation();m.textContent='The tool tab is closed. Open the tool and click Client PDF again.';return;}
+    if(!o.FP.cp||o.FP.cp.tok!==window.__tok){e.preventDefault();e.stopPropagation();m.textContent='The tool was reloaded: rebuilding this preview…';setTimeout(function(){o.FP.cp.open(window);},50);}},true);`;
+  FP.cp.open = wIn => {
+    const w = wIn && wIn.window === wIn && !wIn.closed ? wIn : window.open('', 'fpClientPdf');   /* same tab each time: clicking again refreshes it (or the tab hands itself over after a reload) */
     if (!w || w.closed) return overlay();
     const c = ctxOf(), head = [...document.querySelectorAll('link[rel="stylesheet"],link[rel="preconnect"],style')].map(n => n.outerHTML).join('');
     w.document.open();
     w.document.write(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Client PDF · ${FP.esc(c.names || 'Client')}</title>${head}<style>body{margin:0;background:#5b5560}#cpView{position:static;min-height:100vh;overflow:visible}</style></head>
       <body><div id="cpView" class="noprint"><div class="cpbar"><b>Client PDF · ${FP.esc(c.names || 'Client')}</b><span class="hint" id="cpMsg"></span><span class="sp"></span><button class="btn" id="cpRe" title="Rebuild from the tool's latest numbers">Refresh</button><button class="btn primary" id="cpDl">Download PDF</button><button class="btn" id="cpX">Close tab</button></div><div id="cpPages" class="zoom"></div></div></body></html>`);
     w.document.close();
+    const sc = w.document.createElement('script'); sc.textContent = tabGuard; w.document.body.appendChild(sc);
     CUR = { doc: w.document, win: w, view: w.document.getElementById('cpView') };
     draw(); w.focus();
     q('#cpDl').onclick = FP.cp.download; q('#cpX').onclick = () => w.close(); q('#cpRe').onclick = () => { CUR = { doc: w.document, win: w, view: w.document.getElementById('cpView') }; draw(); };
@@ -2997,7 +3004,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
        It opens in the client's WorkDrive folder (where the plan file is saved) when one is linked. */
     let h = null;
     if (W.showSaveFilePicker && W.self === W.top) {
-      try { const start = await FP.wdStart?.().catch(() => null);
+      try { const start = await Promise.race([FP.wdStart?.().catch(() => null), new Promise(ok => setTimeout(() => ok(null), 1200))]);
         h = await W.showSaveFilePicker({ suggestedName: name, id: 'fp-pdf', ...(start ? { startIn: start } : {}), types: [{ description: 'PDF', accept: { 'application/pdf': ['.pdf'] } }] }); }
       catch (e) { if (e?.name === 'AbortError') { done(); return; } h = null; }
     }
@@ -3880,7 +3887,9 @@ Move              = target − today; every change is shown (under ₹1,000 coun
       wdState = 'saved'; wdAt = Date.now(); wdErr = ''; dirty = false; wdShow(); return fh.name; }
     catch (e) { wdState = 'error'; wdErr = e.message || 'unknown error'; wdShow(); return false; }
   }
-  let wdBusy = Promise.resolve(); wdSave = (ask, onlyNew) => (wdBusy = wdBusy.then(() => wdWrite(ask, onlyNew)));
+  const within = (p, ms, why) => Promise.race([p, new Promise((_, no) => setTimeout(() => no(new Error(why || 'timeout')), ms))]);
+  FP.within = within;
+  let wdBusy = Promise.resolve(); wdSave = (ask, onlyNew) => (wdBusy = wdBusy.then(() => within(wdWrite(ask, onlyNew), ask ? 60000 : 15000, 'slow').catch(() => { wdState = 'error'; wdErr = 'WorkDrive folder did not respond'; wdShow(); return false; })));
   async function link() {
     try { root = await window.showDirectoryPicker({ id: 'fp-workdrive', mode: 'readwrite' }); }
     catch (e) { if (e?.name !== 'AbortError') msg('<span class="no">Could not link the folder: ' + FP.esc(e.message) + '</span>'); return; }
@@ -3908,6 +3917,7 @@ Move              = target − today; every change is shown (under ₹1,000 coun
     return `<h3>Open a client from WorkDrive</h3>
       ${wdList === 'ask' ? '<p>The browser needs your OK to read your WorkDrive folder.</p><button class="bt pri" id="wdRef">Allow and show clients</button>'
         : wdList === 'error' ? '<p class="no">Could not read the folder.</p><button class="bt" id="wdRef">Try again</button>'
+        : wdList === 'slow' ? '<p class="no">Your WorkDrive folder is not responding. Check that the Zoho WorkDrive app is running and synced, then try again.</p><button class="bt" id="wdRef">Try again</button>'
         : !L ? '<p class="hint">Loading your clients…</p>'
         : !L.length ? '<p class="hint">No clients saved in this folder yet. Upload a client\'s Excel and it will appear here.</p>'
         : `<div style="display:flex;gap:8px;align-items:center;margin:6px 0 10px"><input id="wdQ" type="search" placeholder="Search ${L.length} client${L.length > 1 ? 's' : ''}" style="flex:1;padding:8px 10px;border:1px solid #cfd8d2;border-radius:6px;font:inherit"><button class="bt" id="wdRef" title="Read the folder again">${wdBusyScan ? 'Refreshing…' : 'Refresh'}</button></div>
@@ -3921,20 +3931,22 @@ Move              = target − today; every change is shown (under ₹1,000 coun
     if (!root || wdBusyScan) return;
     if (!(await perm(ask))) { wdList = 'ask'; return renderPane(); }
     wdBusyScan = true; if (!Array.isArray(wdList)) wdList = null; renderPane();
-    try { const L = [];
+    const run = async () => { const L = [];
       for await (const [n, h] of root.entries()) { if (h.kind !== 'directory') continue; const F = [];
         for await (const [m, f] of h.entries()) if (f.kind === 'file' && /\.json$/i.test(m)) { try { F.push({ m, f, at: (await f.getFile()).lastModified }); } catch (e) { } }
         if (!F.length) continue; F.sort((a, b) => b.at - a.at);
         L.push({ name: n, files: F, main: F.find(x => / - \d{4}\.json$/i.test(x.m)) || F[0], at: F[0].at }); }
-      wdList = L.sort((a, b) => b.at - a.at); }
-    catch (e) { wdList = 'error'; }
+      return L.sort((a, b) => b.at - a.at); };
+    try { wdList = await within(run(), 25000, 'slow'); }
+    catch (e) { wdList = e.message === 'slow' ? 'slow' : 'error'; }
     wdBusyScan = false; renderPane();
   }
   async function wdOpen(i, k) {
     const r = Array.isArray(wdList) && wdList[i], f = r?.files[k]; if (!f) return;
     if (!(await perm(true))) return msg('<span class="no">The browser did not allow reading the folder.</span>');
-    if (dirty && !FP.base?.sample) { clearTimeout(wdT); await wdSave(false); }   /* the client on screen is saved before switching */
-    msg('Opening…'); opening = true; const ok = await restore(await f.f.getFile()).finally(() => { opening = false; }); if (!ok) return;
+    if (dirty && !FP.base?.sample) { clearTimeout(wdT); await within(wdSave(false), 8000).catch(() => 0); }   /* the client on screen is saved before switching (but a stuck save doesn't block opening) */
+    msg('Opening…'); opening = true; let file; try { file = await within(f.f.getFile(), 20000, 'slow'); } catch (e) { opening = false; return msg('<span class="no">WorkDrive did not hand over the file. Check that the Zoho WorkDrive app is running, then try again.</span>'); }
+    const ok = await restore(file).finally(() => { opening = false; }); if (!ok) return;
     clearTimeout(wdT); dirty = false; wdState = 'idle'; wdShow();   /* just opening doesn't rewrite the file */
     if (FP.pane === 'clientsPanel') FP.closeDrawer(); FP.toast?.(`Opened ${r.name}`);
   }
