@@ -119,6 +119,13 @@ th[aria-sort=ascending] .ar,th[aria-sort=descending] .ar{opacity:1;color:#F9B738
 .frow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .flab{font:700 12px var(--f-head);letter-spacing:.07em;text-transform:uppercase;color:var(--muted);min-width:72px}
 .chip.sm{padding:4px 10px;font-size:12px}
+.sipbox{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.sbox{text-align:left;border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:14px 16px;cursor:pointer;font:inherit;color:var(--ink)}
+.sbox .k{font:700 12px var(--f-head);text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.sbox .v{font:800 28px var(--f-head);margin:4px 0 2px}
+.sbox .s{font-size:13px;color:var(--muted)}
+.sbox.on{border-color:var(--primary);background:#eef6f1}.sbox.on .v{color:var(--primary)}
+.sbox.off.on{border-color:#934E32;background:#f8efe9}.sbox.off.on .v{color:#934E32}
 .st{display:inline-block;border-radius:999px;padding:2px 9px;font:700 11.5px var(--f-head);white-space:nowrap}
 .st.on{background:#e3f3e8;color:#005826}.st.warn{background:#fff1cc;color:#8a5a00}.st.off{background:#f1eef3;color:#6b5a72}
 .chip .dot{width:8px;height:8px}
@@ -128,6 +135,7 @@ th[aria-sort=ascending] .ar,th[aria-sort=descending] .ar{opacity:1;color:#F9B738
 .linkbtn{all:unset;cursor:pointer;color:var(--primary);font:700 13px var(--f-head)}
 .linkbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .linkbtn[hidden]{display:none}
+.txv[hidden],#sipCard[hidden]{display:none !important}
 tfoot tr.all td{background:transparent;font-weight:400;color:var(--muted);border-top:1px solid var(--line)}
 .empty td{text-align:center;color:var(--muted);padding:18px}
 th.l,td.l{text-align:left}
@@ -178,7 +186,7 @@ select.guess{border-color:var(--accent)}
     </div>
   </section>
 
-  <section class="kpis" aria-label="Totals">
+  <section class="kpis txv" aria-label="Totals">
     <div class="kpi big"><div class="k">Total amount</div><div class="v" id="kTot">–</div></div>
     <div class="kpi"><div class="k">Transactions</div><div class="v" id="kTx">–</div></div>
     <div class="kpi"><div class="k">Funds</div><div class="v" id="kFunds">–</div></div>
@@ -187,15 +195,16 @@ select.guess{border-color:var(--accent)}
   </section>
 
   <section class="card" id="sipCard" aria-labelledby="h-sip" hidden>
-    <div class="thead"><h2 id="h-sip">SIPs</h2><span class="hint" id="sipNote"></span></div>
-    <div class="chips" id="sipChips" style="margin-bottom:12px"></div>
+    <div class="sipbox" id="sipBoxes"></div>
+    <div class="thead" style="margin-top:14px"><h2 id="h-sip">SIPs</h2></div>
     <div class="tbl"><table>
       <thead><tr><th class="l ns">Fund</th><th class="l ns">Folio</th><th class="l ns">Status</th><th class="ns">SIP amount</th><th class="ns">Last instalment</th><th class="ns">Instalments</th></tr></thead>
       <tbody id="sipTb"></tbody><tfoot id="sipTf"></tfoot>
     </table></div>
+    <div class="hint" style="margin-top:10px" id="sipNote"></div>
   </section>
 
-  <div class="grid2">
+  <div class="grid2 txv">
     <section class="card" aria-labelledby="h-cat">
       <h2 id="h-cat">Category-wise total</h2>
       <div class="cat" id="cat"></div>
@@ -215,7 +224,7 @@ select.guess{border-color:var(--accent)}
     </div>
   </div>
 
-  <section class="card" aria-labelledby="h-f">
+  <section class="card txv" aria-labelledby="h-f">
     <div class="thead">
       <h2 id="h-f">Fund-wise total</h2>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -256,12 +265,12 @@ select.guess{border-color:var(--accent)}
     <div class="hint" style="margin-top:10px">Pick one or more categories to see only those funds; tap a selected one again to remove it. Share % is always of the full total. Categories are read from the fund name. Change any that look wrong; a gold outline marks funds the tool could not place. Your changes are remembered in this browser.</div>
   </section>
 
-  <section class="card summary" aria-labelledby="h-sum">
+  <section class="card summary txv" aria-labelledby="h-sum">
     <h2 id="h-sum">Summary</h2>
     <ul id="sum"></ul>
   </section>
 
-  <p class="foot">Amounts are summed as they appear in the report (like SUMIF). Redemptions are added, not subtracted; untick them under Transaction types to see purchases alone.</p>
+  <p class="foot txv">Amounts are summed as they appear in the report (like SUMIF). Redemptions are added, not subtracted; untick them under Transaction types to see purchases alone.</p>
 </main>
 
 <script>
@@ -388,9 +397,15 @@ function parseWE(aoa){
     if(/^\s*(equity|debt|hybrid|solution|other|index|fof|international|gold|commodit)/i.test(t)&&/-/.test(t)&&r.filter(c=>c!=null&&c!=='').length===1)sec=t.trim();
   }
   if(!rows.length)return null;
-  // SIP status from instalment dates (this statement has no SIP status column)
-  const ref=asof||new Date(), sips=schemes.filter(x=>x.sip.length).map(x=>{x.sip.sort((p,q)=>p.d-q.d);const last=x.sip[x.sip.length-1],gap=Math.round((ref-last.d)/864e5);
-    return {fund:x.fund,folio:x.folio,amt:last.amt,last:last.d,n:x.sip.length,status:gap<=45?'Active':gap<=100?'Missed recent instalments':'Stopped',gap};});
+  // SIPs from instalment dates (the statement has no SIP status column). A fund can run several SIPs together, so a
+  // fund's SIP = all instalments in the 24 days up to its latest one (two instalments of one monthly SIP are ~30 days apart).
+  // Active = last instalment within 45 days of the statement date; otherwise inactive, at the amount it last ran at.
+  const ref=asof||new Date(),sips=[];
+  for(const x of schemes.filter(y=>y.sip.length)){
+    x.sip.sort((p,q)=>p.d-q.d);const last=x.sip[x.sip.length-1].d,gap=Math.round((ref-last)/864e5);
+    const amt=x.sip.filter(i=>i.d>last-24*864e5).reduce((t,i)=>t+i.amt,0);
+    sips.push({fund:x.fund,folio:x.folio,n:x.sip.length,amt,last,status:gap<=45?'Active':'Stopped'});
+  }
   const ds=rows.map(r=>r.date).filter(Boolean).sort((p,q)=>p-q);
   return {rows,period:ds.length?fmtD(ds[0])+' – '+fmtD(ds[ds.length-1]):'',client,sips,sipSrc:'we',asof};
 }
@@ -405,24 +420,25 @@ function parseSIPReg(aoa){
     sips.push({fund:String(s).trim(),folio:ci.folio>=0?String(r[ci.folio]??''):'',amt:num(r[ci.amt]),status:String(r[ci.st]??'').trim()||'Unknown',last:ci.last>=0?toDate(r[ci.last]):null,start:ci.start>=0?toDate(r[ci.start]):null,n:ci.n>=0?num(r[ci.n]):NaN,client:ci.cl>=0&&r[ci.cl]?properName(r[ci.cl]):''});}
   return sips.length?{rows:[],period:'',client:(sips.find(x=>x.client)||{}).client||'',sips,sipSrc:'reg'}:null;
 }
-let SIPS=[],SIPSRC='',sipFilter=new Set();
-const sipCls=s=>/^active|live|registered/i.test(s)?'on':/missed|pause|hold|pending/i.test(s)?'warn':'off';
+let SIPS=[],SIPSRC='',sipView='on';
+const isActive=st=>/^(active|live|registered)\b/i.test(st);
+const sipCls=s=>isActive(s)?'on':/missed|pause|hold|pending/i.test(s)?'warn':'off';
 function renderSIPs(){
-  $('sipCard').hidden=!SIPS.length;if(!SIPS.length)return;
-  const by={};SIPS.forEach(x=>{const o=by[x.status]||(by[x.status]={n:0,amt:0});o.n++;o.amt+=isNaN(x.amt)?0:x.amt;});
-  const order=Object.keys(by).sort((a,b)=>(sipCls(a)==='on'?0:sipCls(a)==='warn'?1:2)-(sipCls(b)==='on'?0:sipCls(b)==='warn'?1:2)||by[b].n-by[a].n);
-  [...sipFilter].forEach(s=>{if(!by[s])sipFilter.delete(s);});
-  $('sipChips').innerHTML=`<button class="chip sm" data-s="" aria-pressed="${!sipFilter.size}">All <small>${SIPS.length}</small></button>`+order.map(s=>`<button class="chip sm" data-s="${esc(s)}" aria-pressed="${sipFilter.has(s)}">${esc(s)} <small>${by[s].n} · ${inr0(by[s].amt)}</small></button>`).join('');
-  $('sipChips').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{const s=b.dataset.s;if(!s)sipFilter.clear();else sipFilter.has(s)?sipFilter.delete(s):sipFilter.add(s);renderSIPs();});
-  const list=SIPS.filter(x=>!sipFilter.size||sipFilter.has(x.status)).sort((a,b)=>order.indexOf(a.status)-order.indexOf(b.status)||(b.amt||0)-(a.amt||0));
-  $('sipTb').innerHTML=list.map(x=>`<tr><td class="l fund">${esc(x.fund)}</td><td class="l">${esc(x.folio||'–')}</td><td class="l"><span class="st ${sipCls(x.status)}">${esc(x.status)}</span></td><td>${isNaN(x.amt)?'–':inr0(x.amt)}</td><td>${x.last?fmtD(x.last):'–'}</td><td>${isNaN(x.n)?'–':x.n}</td></tr>`).join('')||'<tr class="empty"><td colspan="6">No SIPs with this status.</td></tr>';
-  const tot=list.reduce((a,x)=>a+(isNaN(x.amt)?0:x.amt),0);
-  $('sipTf').innerHTML=`<tr><td class="l">${list.length} SIP${list.length===1?'':'s'}</td><td></td><td></td><td>${inr0(tot)}</td><td></td><td></td></tr>`;
-  $('sipNote').textContent=SIPSRC==='we'?'Status from instalment dates: Active = last instalment within 45 days of the statement; Missed recent instalments = 46–100 days; Stopped = over 100 days. Upload the BSE SIP registration report for the exact status (cancelled, paused, auto-cancelled).':'Status as given in the report.';
+  const has=SIPS.length>0;$('sipCard').hidden=!has;
+  document.querySelectorAll('.txv').forEach(el=>el.hidden=has);   // a SIP file shows only the SIP view
+  if(!has)return;
+  const act=SIPS.filter(x=>isActive(x.status)),ina=SIPS.filter(x=>!isActive(x.status)),sum=l=>l.reduce((t,x)=>t+(isNaN(x.amt)?0:x.amt),0);
+  $('sipBoxes').innerHTML=`<button type="button" class="sbox ${sipView==='on'?'on':''}" data-v="on"><div class="k">Active SIPs</div><div class="v">${inr0(sum(act))}</div><div class="s">a month · ${act.length} fund${act.length===1?'':'s'}</div></button>
+    <button type="button" class="sbox off ${sipView==='off'?'on':''}" data-v="off"><div class="k">Inactive SIPs</div><div class="v">${inr0(sum(ina))}</div><div class="s">a month when running · ${ina.length} fund${ina.length===1?'':'s'}</div></button>`;
+  $('sipBoxes').querySelectorAll('.sbox').forEach(b=>b.onclick=()=>{sipView=b.dataset.v;renderSIPs();});
+  const list=(sipView==='on'?act:ina).sort((a,b)=>(b.amt||0)-(a.amt||0));
+  $('h-sip').textContent=sipView==='on'?'Active SIPs':'Inactive SIPs';
+  $('sipTb').innerHTML=list.map(x=>`<tr><td class="l fund">${esc(x.fund)}</td><td class="l">${esc(x.folio||'–')}</td><td class="l"><span class="st ${sipCls(x.status)}">${esc(x.status)}</span></td><td>${isNaN(x.amt)?'–':inr0(x.amt)}</td><td>${x.last?fmtD(x.last):'–'}</td><td>${isNaN(x.n)?'–':x.n}</td></tr>`).join('')||'<tr class="empty"><td colspan="6">None.</td></tr>';
+  $('sipTf').innerHTML=`<tr><td class="l">Total</td><td></td><td></td><td>${inr0(sum(list))}</td><td></td><td></td></tr>`;
+  $('sipNote').textContent=SIPSRC==='we'?'From the Wealth Elite statement: a SIP is active if its last instalment is within 45 days of the statement date. Amounts add up every SIP running in the fund (some funds have two). A SIP that never deducted an instalment, or one in a scheme no longer held, is not in this statement; the BSE SIP registration report shows those, with the exact status (cancelled, paused, auto-cancelled).':'Status as given in the report. Active = Active/Live/Registered; everything else is inactive.';
 }
-
 function load(rows,period,label,isSample,clientHint,sips,sipSrc){
-  SIPS=sips||[];SIPSRC=sipSrc||'';sipFilter.clear();
+  SIPS=sips||[];SIPSRC=sipSrc||'';sipView='on';
   DATA=rows;TYPES={};rows.forEach(r=>{if(!(r.type in TYPES))TYPES[r.type]=true;});
   if(!period){const ds=rows.map(r=>r.date).filter(Boolean).sort((a,b)=>a-b);if(ds.length)period=fmtD(ds[0])+' – '+fmtD(ds[ds.length-1]);}
   PERIOD=period;open.clear();catFilter.clear();fq='';$('fq').value='';
