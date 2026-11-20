@@ -155,6 +155,7 @@
   .xgrid th{background:none !important; color:var(--muted); font-family:Montserrat,sans-serif; font-size:10.5px; font-weight:700; padding:3px 4px; text-align:center; cursor:default; text-transform:none; letter-spacing:0;}
   .xgrid th.rl{text-align:left; color:var(--dark); font-family:Calibri,sans-serif; font-size:12.5px; font-weight:600; white-space:nowrap; max-width:240px; overflow:hidden; text-overflow:ellipsis; position:sticky; left:0; background:#fff !important; z-index:1;}
   .xgrid td{width:46px; min-width:46px; height:30px; text-align:center; vertical-align:middle; border-radius:5px; border:none !important; padding:2px; font-weight:700; color:var(--dark); white-space:nowrap;}
+  .xgrid td.blank{background:none !important;}
   .xgrid td.self{background:#f1f1f1 !important; color:#c4c0c6; font-weight:400;}
   .rules{display:flex; flex-wrap:wrap; gap:8px; margin:4px 0 14px;}
   .rule{border:1px solid var(--line); border-radius:999px; padding:5px 12px; font-size:12.5px; background:#fff;}
@@ -281,6 +282,7 @@
   /* client review v2 + portfolio builder */
   .rvtg td, .rvtg th{padding:6px 8px;} .rvtg input.tgt{width:64px; min-width:0; padding:4px 6px; font-size:13.5px; text-align:right;}
   .rvtg tfoot td{border-top:2px solid var(--line); background:#fff;}
+  .pgbtn{display:inline-block; background:var(--primary); color:#fff; text-decoration:none; font-family:Montserrat,sans-serif; font-weight:700; font-size:13.5px; padding:9px 16px; border-radius:7px;} .pgbtn:hover{background:var(--primary-soft);}
   .pbcat{margin:4px 0 10px;} .pbcat > b{font-size:13px; color:var(--secondary);}
   .pbpair{display:flex; justify-content:space-between; gap:10px; font-size:13.5px; padding:4px 0; border-bottom:1px dashed #edf1ee;}
   #pgFrame{width:100%; height:calc(100vh - 40px); min-height:880px; border:1px solid var(--line); border-radius:10px; background:#fff; display:block;}
@@ -309,13 +311,12 @@
     <div class="tagline">Designing Portfolio. Delivering Peace.<br><a href="index.html">← Dashboard</a></div>
   </div>
 
-  <div class="panel" style="padding:12px 16px"><div class="roadmap" id="roadmap"></div></div>
 
   <div class="appswitch" id="pages">
     <button class="on" data-page="lab">Fund Lab</button>
-    <button data-page="xray">Client review</button>
-    <button data-page="build">Portfolio builder</button>
     <button data-page="wb">Holdings Workbench</button>
+    <button data-page="build">Portfolio builder</button>
+    <button data-page="xray">Client review</button>
     <span class="spacer"></span>
     <button class="ref" data-page="bt">Back-test</button>
     <button class="ref" data-page="bench">Benchmarks &amp; data</button>
@@ -404,9 +405,10 @@
   <section id="page-method" class="hide"><div class="panel method" id="methodBox"></div></section>
   <!-- ===================== PORTFOLIO BUILDER ===================== -->
   <section id="page-build" class="hide">
-    <div class="panel"><h3>Overlap of the funds you pick <span class="sub">updates as you pick funds in the Portfolio Generator below</span></h3><div id="pbOv"></div></div>
-    <iframe id="pgFrame" title="Portfolio Generator"></iframe>
-    <div class="meta" style="margin-top:6px"><a href="Portfolio_Generator.html" target="_blank" rel="noopener">Open the Portfolio Generator on its own page ↗</a></div>
+    <div class="panel"><h3>Overlap of the funds you pick <span class="sub">updates as you pick funds in the Portfolio Generator</span></h3>
+      <div class="btnrow" style="margin:0 0 12px"><a class="pgbtn" href="Portfolio_Generator.html" target="_blank" rel="noopener">Open Portfolio Generator ↗</a></div>
+      <div id="pbOv"></div></div>
+    <details id="pgWrap"><summary class="linkbtn" style="font-size:13.5px">Show the Portfolio Generator on this page</summary><iframe id="pgFrame" title="Portfolio Generator" style="margin-top:8px"></iframe></details>
   </section>
   <!-- ===================== HOLDINGS WORKBENCH ===================== -->
   <section id="page-wb" class="hide">
@@ -683,12 +685,6 @@ function matchesCategory(row, catVal) {
 // =====================================================================================
 // Build plan (kept on screen so the next phase is never forgotten)
 // =====================================================================================
-const PHASES = [
-  { n: 1, t: 'Fund Lab', d: 'Official TRI benchmarks, rolling, capture, risk', s: 'done' },
-  { n: 2, t: 'Scoring & back-test', d: 'Peer scores, style & bets, market phases', s: 'done' },
-  { n: 3, t: 'Client review', d: 'Your allocation targets vs the portfolio; what it owns', s: 'done' },
-];
-$('roadmap').innerHTML = PHASES.map(p => `<div class="phase ${p.s}"><span class="st">${p.s === 'done' ? '✓ Built' : p.s === 'next' ? 'Next up' : 'Planned'}</span><b>Phase ${p.n} · ${p.t}</b>${p.d}</div>`).join('');
 
 // =====================================================================================
 // Yardsticks
@@ -1770,8 +1766,8 @@ function hbars(items, opt = {}) {   // items: {l, v, sub, ref, col}
 }
 const ovBg = v => `background:rgba(249,183,56,${(0.08 + 0.85 * Math.min(1, v / 60)).toFixed(2)})`;
 const crBg = v => v >= 0 ? `background:rgba(43,76,111,${(0.06 + 0.8 * Math.min(1, v)).toFixed(2)});${v > 0.55 ? 'color:#fff' : ''}` : `background:rgba(147,78,50,${(0.06 + 0.5 * Math.min(1, -v)).toFixed(2)})`;
-function xrGrid(list, M, fmt, bg, title) {
-  return `<div class="tablewrap"><table class="xgrid"><thead><tr><th></th>${list.map(f => `<th title="${esc(f.name)}">#${f.no}</th>`).join('')}</tr></thead><tbody>${list.map((a, i) => `<tr><th class="rl" title="${esc(a.name)}">#${a.no} ${esc(a.short)}</th>${list.map((b, j) => { const c = M[i][j]; if (i === j) return '<td class="self">—</td>'; if (c === null || c === undefined) return `<td>${na}</td>`; const v = typeof c === 'object' ? c.o : c; return `<td style="${bg(v)}" title="${esc(title(a, b, c))}">${fmt(v)}</td>`; }).join('')}</tr>`).join('')}</tbody></table></div>`;
+function xrGrid(list, M, fmt, bg, title) {   // each pair once (lower triangle, no diagonal)
+  return `<div class="tablewrap"><table class="xgrid"><thead><tr><th></th>${list.slice(0, -1).map(f => `<th title="${esc(f.name)}">#${f.no}</th>`).join('')}</tr></thead><tbody>${list.slice(1).map((a, r) => { const i = r + 1; return `<tr><th class="rl" title="${esc(a.name)}">#${a.no} ${esc(a.short)}</th>${list.slice(0, -1).map((b, j) => { if (j >= i) return '<td class="blank"></td>'; const c = M[i][j]; if (c === null || c === undefined) return `<td>${na}</td>`; const v = typeof c === 'object' ? c.o : c; return `<td style="${bg(v)}" title="${esc(title(a, b, c))}">${fmt(v)}</td>`; }).join('')}</tr>`; }).join('')}</tbody></table></div>`;
 }
 function closeModal() { $('modalBg').style.display = 'none'; }
 // =====================================================================================
@@ -1886,7 +1882,7 @@ async function pbRender() {
   const wt = f => f.lump || f.sip || 0, cap = { L: 0, M: 0, S: 0, F: 0 }; let cw = 0;
   for (const f of withH) { const w = wt(f) * (isNum(f.hf.eq) ? f.hf.eq / 100 : 1); if (!w) continue; cw += w; for (const [s, x] of f.hf.h) { const c = HOLD.stocks[s] ? HOLD.stocks[s][3] : 'S'; cap[c in cap ? c : 'S'] += w * x / 100; } }
   const capT = cap.L + cap.M + cap.S + cap.F;
-  const grid = withH.length >= 2 ? `<div class="tablewrap"><table class="xgrid"><thead><tr><th></th>${withH.map((f, i) => `<th title="${esc(f.name)}">${i + 1}</th>`).join('')}</tr></thead><tbody>${withH.map((a, i) => `<tr><th class="rl" title="${esc(a.name)}">${i + 1} ${esc(a.short)}</th>${withH.map((b, j) => i === j ? '<td class="self">—</td>' : `<td style="${ovBg(M[i][j].o)}">${M[i][j].o.toFixed(0)}%</td>`).join('')}</tr>`).join('')}</tbody></table></div>` : '';
+  const grid = withH.length >= 2 ? `<div class="tablewrap" style="margin-top:8px"><table class="xgrid"><thead><tr><th></th>${withH.slice(0, -1).map((f, i) => `<th title="${esc(f.name)}">${i + 1}</th>`).join('')}</tr></thead><tbody>${withH.slice(1).map((a, r) => { const i = r + 1; return `<tr><th class="rl" title="${esc(a.name)}">${i + 1} ${esc(a.short)}</th>${withH.slice(0, -1).map((b, j) => j >= i ? '<td class="blank"></td>' : `<td style="${ovBg(M[i][j].o)}" title="${esc(a.short)} × ${esc(b.short)}">${M[i][j].o.toFixed(0)}%</td>`).join('')}</tr>`; }).join('')}</tbody></table></div><div class="meta">${withH.slice(0, 1).map(f => `1 = ${esc(f.short)}.`).join('')}</div>` : '';
   box.innerHTML = `<div class="grid2">
     <div class="card2"><div class="ct">Within each category</div>${catHtml}</div>
     <div class="card2"><div class="ct">Whole portfolio</div>
@@ -1896,9 +1892,9 @@ async function pbRender() {
     <div class="meta">Holdings ${esc(HOLD.asof || '—')}. Green up to 35%, amber 35–50%, red above 50%.${noH.length ? ` No holdings data: ${noH.map(f => esc(f.short)).join(', ')}.` : ''}</div>`;
 }
 function pbOpen() {
-  const fr = $('pgFrame'); if (!fr.getAttribute('src')) fr.setAttribute('src', 'Portfolio_Generator.html');
   pbRender(); if (!PB.timer) PB.timer = setInterval(() => { if (!$('page-build').classList.contains('hide')) pbRender(); }, 2000);
 }
+$('pgWrap').addEventListener('toggle', () => { const fr = $('pgFrame'); if ($('pgWrap').open && !fr.getAttribute('src')) fr.setAttribute('src', 'Portfolio_Generator.html'); });
 window.addEventListener('storage', e => { if (e.key === 'ab_state' && !$('page-build').classList.contains('hide')) pbRender(); });
 $('pages').addEventListener('click', e => { if (e.target.closest('[data-page="build"]')) pbOpen(); if (e.target.closest('[data-page="wb"]')) wbOpen(); });
 
