@@ -1,194 +1,75 @@
 {
- "updated": "2026-11-19T19:02:11Z",
+ "updated": "2026-11-20T10:33:15Z",
  "items": [
   {
    "src": "RBI",
-   "title": "Finances of Panchayati Raj Institutions",
-   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=64002",
-   "date": "2026-11-19",
-   "important": false
-  },
-  {
-   "src": "RBI",
-   "title": "Overseas Direct Investment for October 2026",
-   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=64001",
-   "date": "2026-11-19",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Securities of compulsory delisted companies made available on Dissemination Board of NSE",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77524.pdf",
-   "date": "2026-11-19",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of further issues of securities",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77523.pdf",
-   "date": "2026-11-19",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "SEBI direction in the matter of Mauria Udyog Ltd and 4 other scrips",
-   "url": "https://nsearchives.nseindia.com/content/circulars/INVG77522.zip",
-   "date": "2026-11-19",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of privately placed securities on the debt market segment of the Exchange",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77521.pdf",
-   "date": "2026-11-19",
+   "title": "Reserve Bank issues Foreign Exchange Management (Export and Import of Goods and Services) (Second Amendment) Regulations, 2026",
+   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=64009",
+   "date": "2026-11-20",
    "important": true
   },
   {
    "src": "NSE",
-   "title": "Reminder for submission of Internal Audit Report for the half year ended September 30, 2026",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CMPL77520.pdf",
-   "date": "2026-11-19",
+   "title": "Member Interface Testing of Two-way portability across Clearing Corporations - Software as a Service (SaaS) Model",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CMPT77530.pdf",
+   "date": "2026-11-20",
    "important": false
   },
   {
    "src": "NSE",
-   "title": "Applicability of Additional Surveillance Measure under IBC",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77519.zip",
-   "date": "2026-11-19",
+   "title": "Member Interface Testing of Two-way portability across Clearing Corporations- Software as a Service (SaaS) Model",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CD77529.pdf",
+   "date": "2026-11-20",
    "important": false
   },
   {
    "src": "NSE",
-   "title": "Applicability of Short-Term Additional Surveillance Measure (ST-ASM)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77518.zip",
+   "title": "Revised MWPL, Participant, Institutional & Non-Institutional Client Limits for SMLMAH",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CMPT77525.pdf",
+   "date": "2026-11-20",
+   "important": false
+  },
+  {
+   "src": "SEBI",
+   "title": "SEBI hosts IOSCO’s Asia-Pacific Regional Committee Regulatory Roundtable on Market Infrastructure Institutions",
+   "url": "https://www.sebi.gov.in/media-and-notifications/press-releases/nov-2026/sebi-hosts-iosco-s-asia-pacific-regional-committee-regulatory-roundtable-on-market-infrastructure-institutions_105848.html",
    "date": "2026-11-19",
    "important": false
   },
   {
-   "src": "NSE",
-   "title": "Applicability of Additional Surveillance Measure (ASM)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77517.zip",
-   "date": "2026-11-19",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Mock trading on Saturday, November 21, 2026 - New version of NEAT+ 7.9.1",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CMTR77516.pdf",
-   "date": "2026-11-19",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Applicability of Enhanced Surveillance Measure (ESM)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77515.zip",
-   "date": "2026-11-19",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Change in name and symbol of UMIYA BUILDCON LIMITED",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77514.pdf",
-   "date": "2026-11-19",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Suspension of trading in Non-Convertible Securities (Privately Placed)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77513.pdf",
-   "date": "2026-11-19",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Mock trading on Saturday, November 21, 2026 - New version of NEAT SLBM (1.3.4)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SLBS77512.pdf",
-   "date": "2026-11-19",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Mock trading on Saturday, November 21, 2026 - No new version release",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CD77511.pdf",
-   "date": "2026-11-19",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of further issue of Adani Enterprises Limited",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77510.pdf",
-   "date": "2026-11-19",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Revision in minimum application amount and Introduction of Daily and Weekly frequency for all Systematic transitions under certain schemes of Unifi mutual fund on NSE MF Invest platform",
-   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77508.zip",
-   "date": "2026-11-19",
+   "src": "SEBI",
+   "title": "Review of Margin Framework for Commodity Derivatives Segment",
+   "url": "https://www.sebi.gov.in/legal/circulars/nov-2026/review-of-margin-framework-for-commodity-derivatives-segment_105799.html",
+   "date": "2026-11-17",
    "important": true
   },
   {
-   "src": "NSE",
-   "title": "Mock session on Saturday, November 21, 2026 - New version of NEAT 1.5.6",
-   "url": "https://nsearchives.nseindia.com/content/circulars/COM77507.pdf",
-   "date": "2026-11-19",
+   "src": "SEBI",
+   "title": "Notice of Attachment dated November 16, 2026 issued under RC No. 9309 of 2026 drawn against Ms. Arihant Securities (Proprietor Pravin Kumar Jain) in the matter of Betala Global Securities Limited",
+   "url": "https://www.sebi.gov.in/enforcement/recovery-proceedings/nov-2026/notice-of-attachment-dated-november-16-2026-issued-under-rc-no-9309-of-2026-drawn-against-ms-arihant-securities-proprietor-pravin-kumar-jain-in-the-matter-of-betala-global-securities-limited_105847.html",
+   "date": "2026-11-16",
    "important": false
   },
   {
-   "src": "NSE",
-   "title": "Face Value Split - Interarch Building Solutions Limited (INTERARCH)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77506.pdf",
-   "date": "2026-11-19",
+   "src": "SEBI",
+   "title": "Notice of Attachment dated November 16, 2026 issued under RC No. 9308 of 2026 drawn against Niranjan D Agarwal in the matter of Kalahridhaan Trendz Limited",
+   "url": "https://www.sebi.gov.in/enforcement/recovery-proceedings/nov-2026/notice-of-attachment-dated-november-16-2026-issued-under-rc-no-9308-of-2026-drawn-against-niranjan-d-agarwal-in-the-matter-of-kalahridhaan-trendz-limited_105846.html",
+   "date": "2026-11-16",
    "important": false
   },
   {
-   "src": "NSE",
-   "title": "Temporary Suspension of fresh subscription under IDCW Options for certain schemes of Axis Mutual Fund on NSE MF Invest Platform",
-   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77505.zip",
-   "date": "2026-11-19",
+   "src": "SEBI",
+   "title": "SEBI Constitutes a Sub-Group of PMAC to Review Specified Provisions of the SEBI (ICDR) Regulations, 2018",
+   "url": "https://www.sebi.gov.in/media-and-notifications/press-releases/nov-2026/sebi-constitutes-a-sub-group-of-pmac-to-review-specified-provisions-of-the-sebi-icdr-regulations-2018_105790.html",
+   "date": "2026-11-16",
    "important": true
   },
   {
-   "src": "NSE",
-   "title": "Launch of Bajaj Finserv Business Cycle Fund on NSE MF Invest Platform",
-   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77503.pdf",
-   "date": "2026-11-19",
+   "src": "SEBI",
+   "title": "Inauguration of SEBI’s Pavilion at the IITF, 2026 by Chairman, SEBI",
+   "url": "https://www.sebi.gov.in/media-and-notifications/press-releases/nov-2026/inauguration-of-sebi-s-pavilion-at-the-iitf-2026-by-chairman-sebi_105775.html",
+   "date": "2026-11-15",
    "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Merger of certain schemes of Tata Mutual Fund on NSE MF Invest Platform",
-   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77502.zip",
-   "date": "2026-11-19",
-   "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Mock trading on Saturday, November 21, 2026 - New version of NEAT +7.9.1",
-   "url": "https://nsearchives.nseindia.com/content/circulars/FAOP77501.pdf",
-   "date": "2026-11-19",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Suspension of trading in securities",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77500.pdf",
-   "date": "2026-11-19",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Suspension of trading in units-on account of redemption",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77499.pdf",
-   "date": "2026-11-19",
-   "important": false
-  },
-  {
-   "src": "RBI",
-   "title": "Premature redemption under Sovereign Gold Bond (SGB) Scheme - Redemption Price for premature redemption of SGB 2020-21 Series II due on November 19, 2026",
-   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63996",
-   "date": "2026-11-18",
-   "important": true
   },
   {
    "src": "RBI",
@@ -263,20 +144,20 @@
  ],
  "counts": {
   "https://www.sebi.gov.in/sebirss.xml": [
-   0,
-   0
+   30,
+   6
   ],
   "https://rbi.org.in/pressreleases_rss.xml": [
    10,
-   3
+   1
   ],
   "https://rbi.org.in/notifications_rss.xml": [
    10,
    10
   ],
   "https://nsearchives.nseindia.com/content/RSS/Circulars.xml": [
-   25,
-   25
+   5,
+   4
   ]
  },
  "errors": []
