@@ -426,13 +426,21 @@ function parseSIPReg(aoa){
   return sips.length?{rows:[],period:'',client:(sips.find(x=>x.client)||{}).client||'',sips,sipSrc:'reg'}:null;
 }
 let SIPS=[],SIPSRC='',sipView='on',sipF=new Set(),sipSort=['amt',-1];
+// Fund name only, in proper case: "UTI FLEXI CAP FUND-REGULAR PLAN-GROWTH" → "UTI Flexi Cap Fund"
+const UPPER=new Set(['UTI','HDFC','SBI','ICICI','DSP','PGIM','LIC','HSBC','IDBI','ITI','JM','NJ','ELSS','ETF','FOF','PSU','ESG','MNC','US','IT','BNP','IDFC','ABSL','PPFAS']);
+function cleanFund(n){
+  let t=String(n||'').replace(/\(.*?\)/g,' ').replace(/regular\s*growth|direct\s*growth/ig,' ').replace(/[-–_]/g,' ')
+    .replace(/\b(regular|direct|plan|growth|option|idcw|dividend|payout|reinvestment|reinvest|cumulative|reg|dir|gr)\b/ig,' ').replace(/\s+/g,' ').trim();
+  t=t.toLowerCase().replace(/\b([a-z])/g,c=>c.toUpperCase()).replace(/\b[A-Za-z]+\b/g,w=>UPPER.has(w.toUpperCase())?w.toUpperCase():w).replace(/\bAnd\b/g,'and').replace(/\bOf\b/g,'of');
+  return t||String(n||'');
+}
 const isActive=st=>/^(active|live|registered)\b/i.test(st);
 const sipCls=s=>isActive(s)?'on':/missed|pause|hold|pending/i.test(s)?'warn':'off';
 function renderSIPs(){
   const has=SIPS.length>0;$('sipCard').hidden=!has;
   document.querySelectorAll('.txv').forEach(el=>el.hidden=has);   // a SIP file shows only the SIP view
   if(!has)return;
-  SIPS.forEach(x=>x.cat=catOf(x.fund));
+  SIPS.forEach(x=>{x.cat=catOf(x.fund);x.name=cleanFund(x.fund);});
   const act=SIPS.filter(x=>isActive(x.status)),ina=SIPS.filter(x=>!isActive(x.status)),sum=l=>l.reduce((t,x)=>t+(isNaN(x.amt)?0:x.amt),0);
   $('sipBoxes').innerHTML=`<button type="button" class="sbox ${sipView==='on'?'on':''}" data-v="on"><div class="k">Active SIPs</div><div class="v">${inr0(sum(act))}</div><div class="s">a month · ${act.length} ${SIPSRC==='we'?'fund':'SIP'}${act.length===1?'':'s'}</div></button>
     <button type="button" class="sbox off ${sipView==='off'?'on':''}" data-v="off"><div class="k">Inactive SIPs</div><div class="v">${inr0(sum(ina))}</div><div class="s">a month when running · ${ina.length} ${SIPSRC==='we'?'fund':'SIP'}${ina.length===1?'':'s'}</div></button>`;
@@ -446,15 +454,15 @@ function renderSIPs(){
   $('sipChips').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{const k=b.dataset.k;if(!k)sipF.clear();else sipF.has(k)?sipF.delete(k):sipF.add(k);renderSIPs();});
   // sortable table
   const dl=SIPSRC==='we'?'Last instalment':'Start date';
-  const cols=[['fund','Fund',1],['cat','Category',1],['folio','Folio',1],['status','Status',1],['amt','SIP amount',0],['date',dl,0]].concat(SIPSRC==='reg'?[['freq','Frequency',1]]:[]);
+  const cols=[['name','Fund',1],['cat','Category',1],['folio','Folio',1],['status','Status',1],['amt','SIP amount',0]].concat(SIPSRC==='we'?[['date',dl,0]]:[]);
   $('sipTh').innerHTML='<tr>'+cols.map(([k,l,left])=>`<th class="${left?'l':''}" data-sk="${k}" aria-sort="${sipSort[0]===k?(sipSort[1]<0?'descending':'ascending'):'none'}"><button type="button">${l}<span class="ar">${sipSort[0]===k?(sipSort[1]<0?'▼':'▲'):'↕'}</span></button></th>`).join('')+'</tr>';
   $('sipTh').querySelectorAll('th').forEach(th=>th.querySelector('button').onclick=()=>{const k=th.dataset.sk;sipSort=sipSort[0]===k?[k,-sipSort[1]]:[k,['amt','date'].includes(k)?-1:1];renderSIPs();});
   const val=(x,k)=>k==='amt'?(isNaN(x.amt)?-1:x.amt):k==='date'?(x.date?+x.date:0):String(x[k]||'').toLowerCase();
-  const list=base.filter(x=>!sipF.size||sipF.has(x[key])).sort((p,q)=>{const a=val(p,sipSort[0]),b=val(q,sipSort[0]);return (typeof a==='string'?a.localeCompare(b):a-b)*sipSort[1]||p.fund.localeCompare(q.fund);});
+  const list=base.filter(x=>!sipF.size||sipF.has(x[key])).sort((p,q)=>{const a=val(p,sipSort[0]),b=val(q,sipSort[0]);return (typeof a==='string'?a.localeCompare(b):a-b)*sipSort[1]||p.name.localeCompare(q.name);});
   $('h-sip').textContent=sipView==='on'?'Active SIPs':'Inactive SIPs';
   $('sipCount').textContent=list.length!==base.length?`Showing ${list.length} of ${base.length}`:'';
-  $('sipTb').innerHTML=list.map(x=>`<tr><td class="l fund">${esc(x.fund)}</td><td class="l">${esc(x.cat)}</td><td class="l">${esc(x.folio||'–')}</td><td class="l"><span class="st ${sipCls(x.status)}">${esc(x.status)}</span></td><td>${isNaN(x.amt)?'–':inr0(x.amt)}</td><td>${x.date?fmtD(x.date):'–'}</td>${SIPSRC==='reg'?`<td class="l">${esc(x.freq||'–')}</td>`:''}</tr>`).join('')||`<tr class="empty"><td colspan="${cols.length}">None.</td></tr>`;
-  $('sipTf').innerHTML=`<tr><td class="l">Total${list.length!==base.length?' (filtered)':''}</td><td></td><td></td><td></td><td>${inr0(sum(list))}</td><td></td>${SIPSRC==='reg'?'<td></td>':''}</tr>`;
+  $('sipTb').innerHTML=list.map(x=>`<tr><td class="l fund" title="${esc(x.fund)}">${esc(x.name)}</td><td class="l">${esc(x.cat)}</td><td class="l">${esc(x.folio||'–')}</td><td class="l"><span class="st ${sipCls(x.status)}">${esc(x.status)}</span></td><td>${isNaN(x.amt)?'–':inr0(x.amt)}</td>${SIPSRC==='we'?`<td>${x.date?fmtD(x.date):'–'}</td>`:''}</tr>`).join('')||`<tr class="empty"><td colspan="${cols.length}">None.</td></tr>`;
+  $('sipTf').innerHTML=`<tr><td class="l">Total${list.length!==base.length?' (filtered)':''}</td><td></td><td></td><td></td><td>${inr0(sum(list))}</td>${SIPSRC==='we'?'<td></td>':''}</tr>`;
   $('sipNote').textContent=SIPSRC==='we'?'From the Wealth Elite statement: a SIP is active if its last instalment is within 45 days of the statement date. Amounts add up every SIP running in the fund. A SIP that never deducted an instalment, or one in a scheme no longer held, is not in this statement; the BSE SIP registration report shows those with their exact status.':'From the SIP registration report: Active SIPs are those with status Active; every other status is inactive. Categories are read from the fund name.';
 }
 function load(rows,period,label,isSample,clientHint,sips,sipSrc){
