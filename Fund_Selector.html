@@ -302,6 +302,93 @@
   .rvt tr.grp td{background:#f1f5f2 !important; padding-top:9px;} .rvt tr.rvwhy td{background:#fffdf6 !important;} .rvt .why{max-width:none;}
   .favbtn{font-size:14px; padding:0 5px; margin-right:6px; border:1px solid var(--line); background:#fff; color:#c9c2cc; border-radius:5px; line-height:20px;} .favbtn.on{color:#c98a00; border-color:#f3cf7a; background:#fff8e6;}
   @media (max-width:760px){ .gaprow{grid-template-columns:64px 1fr 40px;} .gaprow .gs{grid-column:1/-1;} }
+  .seg{display:inline-flex; border:1.5px solid var(--line); border-radius:7px; overflow:hidden;}
+  .seg button{border:none; border-radius:0; background:#fff; padding:5px 10px; font-size:11.5px; color:var(--dark);}
+  .seg button.on{background:var(--dark); color:#fff;}
+  /* ===== money flow ===== */
+  #page-flow{--buy:#2a7d4f; --sell:#d0761f; --buy-soft:#e3f1e8; --sell-soft:#fbeadb;}
+  
+  #page-flow .panel h2{margin:0; font-size:17px; color:var(--dark);}
+  .fl-titlerow{display:flex; flex-wrap:wrap; justify-content:space-between; align-items:flex-end; gap:10px 20px; margin-bottom:14px;}
+  .fl-h{font-size:20px !important; color:var(--primary) !important;}
+  .fl-sub{color:var(--secondary); font-weight:600; font-size:13.5px; margin-top:3px;}
+  .fl-catpick{display:flex; align-items:center; gap:8px;} .fl-catpick label{font:700 11.5px Montserrat, sans-serif; text-transform:uppercase; letter-spacing:.04em; color:var(--secondary);}
+  .fl-catpick select{min-width:200px;}
+  .fl-tiles{display:grid; grid-template-columns:repeat(4,1fr); gap:10px;}
+  .fl-tile{background:var(--bg); border-radius:10px; padding:10px 12px; display:flex; flex-direction:column; gap:2px; min-width:0;}
+  .fl-tile .k{font:700 10.5px Montserrat, sans-serif; text-transform:uppercase; letter-spacing:.04em; color:var(--secondary);}
+  .fl-tile .v{font:800 22px Montserrat, sans-serif; color:var(--dark); white-space:nowrap;}
+  .fl-tile .v small{font-size:12px; font-weight:600; color:var(--muted);}
+  .fl-tile .s{font-size:12.5px; color:var(--muted);}
+  .fl-capbars{display:grid; grid-template-columns:44px 1fr 46px; gap:3px 6px; align-items:center; font-size:12px; margin-top:2px;}
+  .fl-capbars i{display:block; height:9px; border-radius:0 3px 3px 0; background:var(--buy);}
+  .fl-say{font-size:15px; line-height:1.55; margin:14px 0 0; color:var(--dark);}
+  .fl-say b.buy{color:var(--buy);} .fl-say b.sell{color:#b3591a;}
+  /* sector rows */
+  .fl-sec{display:grid; grid-template-columns:minmax(150px,1.3fr) minmax(220px,2.2fr) 74px 74px minmax(170px,1.4fr); gap:6px 12px; align-items:center;}
+  .fl-sec.hd{font:700 10.5px Montserrat, sans-serif; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); padding:0 8px 6px; border-bottom:2px solid var(--line);}
+  .fl-sec.hd .r{text-align:right;}
+  .fl-row{border-bottom:1px solid var(--line); cursor:pointer; padding:7px 8px; border-radius:6px;}
+  .fl-row:hover{background:#f4f9f6;} .fl-row:focus-visible{outline:2px solid var(--primary);}
+  .fl-row .nm{font-weight:700; font-size:14px;}
+  .fl-row .num{text-align:right; font-variant-numeric:tabular-nums; font-size:13.5px;}
+  .fl-bar{position:relative; height:22px;}
+  .fl-bar .axis{position:absolute; left:50%; top:-3px; bottom:-3px; width:1px; background:#9a93a0;}
+  .fl-bar .b{position:absolute; top:3px; height:16px;}
+  .fl-bar .b.buy{left:50%; background:var(--buy); border-radius:0 4px 4px 0;}
+  .fl-bar .b.sell{right:50%; background:var(--sell); border-radius:4px 0 0 4px;}
+  .fl-bar .lbl{position:absolute; top:2px; font-size:12.5px; font-weight:700; white-space:nowrap; font-variant-numeric:tabular-nums; color:var(--dark);}
+  .fl-idx{display:grid; grid-template-columns:repeat(4,1fr); gap:4px; font-size:12px; text-align:right; font-variant-numeric:tabular-nums;}
+  .fl-idx span{white-space:nowrap;} .fl-idx .up{color:var(--primary);} .fl-idx .dn{color:#b3591a;}
+  .fl-idx.hdr span{font-weight:700;}
+  .fl-detail{grid-column:1/-1; display:grid; grid-template-columns:1fr 1fr; gap:6px 24px; padding:8px 4px 4px; font-size:13px; cursor:default;}
+  .fl-detail h4{margin:0 0 2px; font:700 11px Montserrat, sans-serif; text-transform:uppercase; letter-spacing:.04em;}
+  .fl-detail h4.buy{color:var(--buy);} .fl-detail h4.sell{color:#b3591a;}
+  .fl-detail .tag{color:var(--muted); font-size:12px;}
+  .fl-idxnote{font-size:12px; color:var(--muted); margin-top:8px;}
+  .tagpill{display:inline-block; font-size:11px; font-weight:700; padding:1px 7px; border-radius:999px; margin-left:6px; vertical-align:1px;}
+  .tagpill.dip{background:var(--buy-soft); color:var(--primary);} .tagpill.cut{background:var(--sell-soft); color:#8a4512;}
+  /* stock lists */
+  .fl-cols{display:grid; grid-template-columns:1fr 1fr; gap:14px 20px;}
+  .fl-colh{margin:0 0 6px; font:700 12px Montserrat, sans-serif; text-transform:uppercase; letter-spacing:.05em;}
+  .fl-colh.buy{color:var(--buy);} .fl-colh.sell{color:#b3591a;}
+  .fl-filters{display:flex; flex-wrap:wrap; gap:8px 14px; align-items:center;}
+  .fl-ipo{padding-bottom:0 !important; font-size:13px !important;}
+  .fl-st{display:grid; grid-template-columns:minmax(0,1fr) 92px 78px 58px; gap:4px 8px; align-items:center; padding:6px 6px; border-bottom:1px solid var(--line); cursor:pointer; border-radius:6px;}
+  .fl-st:hover{background:#f4f9f6;}
+  .fl-st.hd{cursor:default; font:700 10.5px Montserrat, sans-serif; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); border-bottom:2px solid var(--line);} .fl-st.hd:hover{background:none;}
+  .fl-st .n{font-weight:600; font-size:13.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .fl-st .n small{font-weight:400; color:var(--muted); margin-left:4px; font-size:11.5px;}
+  .fl-st .r{text-align:right; font-variant-numeric:tabular-nums; font-size:13px; white-space:nowrap;}
+  .fl-st .amt{position:relative; text-align:right; font-weight:700; font-size:13px; font-variant-numeric:tabular-nums;}
+  .fl-st .amt i{position:absolute; right:0; top:50%; transform:translateY(-50%); height:16px; border-radius:3px; opacity:.22; z-index:0;}
+  .fl-st .amt span{position:relative; z-index:1; padding-right:4px;}
+  .fl-st .ud{font-size:12.5px;} .fl-st .ud .u{color:var(--primary); font-weight:700;} .fl-st .ud .d{color:#b3591a; font-weight:700;}
+  .fl-who{grid-column:1/-1; font-size:12.5px; display:grid; grid-template-columns:1fr 1fr; gap:4px 18px; padding:4px 2px 6px; cursor:default;}
+  .fl-who div{display:flex; justify-content:space-between; gap:8px;} .fl-who div span:first-child{overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .fl-who h4{margin:2px 0; font:700 10.5px Montserrat, sans-serif; text-transform:uppercase; letter-spacing:.04em; color:var(--muted);}
+  .fl-mini{display:grid; grid-template-columns:minmax(0,1fr) 70px 80px; gap:4px 8px; padding:6px 4px; border-bottom:1px solid var(--line); font-size:13.5px;}
+  .fl-mini .r{text-align:right; font-variant-numeric:tabular-nums;}
+  .fl-mini.hd{font:700 10.5px Montserrat, sans-serif; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); border-bottom:2px solid var(--line);}
+  @media (max-width:900px){ .fl-tiles{grid-template-columns:repeat(2,1fr);} .fl-cols{grid-template-columns:1fr;} .fl-sec{grid-template-columns:minmax(110px,1fr) minmax(150px,2fr) 64px; } .fl-sec .hide-sm{display:none;} }
+  .fl-loading{padding:30px; text-align:center; color:var(--muted);}
+  /* notable fund moves */
+  .mv-head{display:grid; gap:2px; margin:4px 0 14px; background:var(--bg); border-radius:10px; padding:8px 10px;}
+  .mv-hl{display:grid; grid-template-columns:62px minmax(0,1fr) 120px 90px; gap:8px; align-items:center; font-size:13.5px; padding:4px 0; border-bottom:1px dashed var(--line);}
+  .mv-hl:last-child{border-bottom:none;}
+  .mv-s{overflow:hidden; text-overflow:ellipsis; white-space:nowrap;} .mv-in{color:var(--muted); font-size:12.5px;}
+  .mv-w{text-align:right; font-variant-numeric:tabular-nums; font-size:12.5px;} .mv-cr{text-align:right; font-variant-numeric:tabular-nums; font-weight:700; font-size:12.5px;}
+  .mv-cr.buy{color:var(--buy);} .mv-cr.sell{color:#b3591a;}
+  .mv-pill{display:inline-block; text-align:center; font:700 10px Montserrat, sans-serif; text-transform:uppercase; letter-spacing:.04em; padding:2px 6px; border-radius:999px; min-width:44px;}
+  .mv-pill.buy{background:var(--buy-soft); color:var(--primary);} .mv-pill.sell{background:var(--sell-soft); color:#8a4512;}
+  .mv-cat{margin:14px 0 6px; font-size:14.5px; color:var(--primary);} .mv-cat .wb-hint{font-weight:400; margin-left:6px;}
+  .mv-grid{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px;}
+  .mv-card{border:1px solid var(--line); border-radius:10px; padding:9px 11px; display:flex; flex-direction:column; gap:4px; min-width:0;}
+  .mv-fn{font-weight:700; font-size:13.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .mv-meta{color:var(--muted); font-size:12px;}
+  .mv-line{display:grid; grid-template-columns:52px minmax(0,1fr); gap:6px; align-items:baseline; font-size:12.5px;}
+  .mv-line .mv-pill{min-width:0;} .mv-line small{color:var(--muted);}
+  @media (max-width:900px){ .mv-grid{grid-template-columns:1fr;} .mv-hl{grid-template-columns:54px minmax(0,1fr) 90px;} .mv-hl .mv-cr{display:none;} }
 </style>
 </head>
 <body>
@@ -315,6 +402,7 @@
   <div class="appswitch" id="pages">
     <button class="on" data-page="lab">Fund Lab</button>
     <button data-page="wb">Holdings Workbench</button>
+    <button data-page="flow">Money flow</button>
     <button data-page="build">Portfolio builder</button>
     <button data-page="xray">Client review</button>
     <span class="spacer"></span>
@@ -322,6 +410,66 @@
     <button class="ref" data-page="bench">Benchmarks &amp; data</button>
     <button class="ref" data-page="method">How it works</button>
   </div>
+
+  <!-- ===================== MONEY FLOW ===================== -->
+  <section id="page-flow" class="hide">
+  <div class="panel fl-loading" id="flLoad"><span class="spinner"></span> Loading last month's fund holdings…</div>
+  <div id="flBody" class="hide">
+  <div class="panel fl-hero">
+    <div class="fl-titlerow">
+      <div>
+        <h2 class="fl-h">Where fund managers put money</h2>
+        <div class="fl-sub" id="flSub"></div>
+      </div>
+      <div class="fl-catpick"><label for="flCat">Show for</label><select id="flCat"></select></div>
+    </div>
+    <div class="fl-tiles" id="flTiles"></div>
+    <p class="fl-say" id="flSay"></p>
+  </div>
+
+  <div class="panel">
+    <div class="wb-head"><h2>Notable fund moves</h2><span class="wb-hint">What the largest funds in each category changed: new stocks, full exits, and the biggest adds and cuts. Weights are % of the fund. Pick a category above to switch.</span></div>
+    <div id="flMoves"></div>
+  </div>
+
+  <div class="panel">
+    <div class="wb-head"><h2>Sectors: bought vs sold</h2><span class="wb-hint">Net buying by active funds in rupees. “% of holdings” puts it in proportion. Click a sector to see the stocks behind it.</span></div>
+    <div id="flSectors"></div>
+    <div class="fl-idxnote" id="flIdxNote"></div>
+  </div>
+
+  <div class="panel">
+    <div class="wb-head"><h2>Stocks: most bought and most sold</h2>
+      <div class="fl-filters" role="group" aria-label="Filter stocks">
+        <span class="seg" id="flCapSeg"><button data-c="" class="on">All</button><button data-c="Large">Large</button><button data-c="Mid">Mid</button><button data-c="Small">Small</button></span>
+        <label class="checkline fl-ipo"><input type="checkbox" id="flIpo" checked> Include new listings (IPOs)</label>
+      </div>
+    </div>
+    <div class="fl-cols">
+      <div><h3 class="fl-colh buy">Most bought</h3><div id="flBuy"></div></div>
+      <div><h3 class="fl-colh sell">Most sold</h3><div id="flSell"></div></div>
+    </div>
+    <div class="wb-hint" style="margin-top:8px">Click a stock to see which funds bought or sold it.</div>
+  </div>
+
+  <div class="fl-cols">
+    <div class="panel"><div class="wb-head"><h2>New bets</h2><span class="wb-hint">Stocks the most funds bought for the first time.</span></div><div id="flNew"></div></div>
+    <div class="panel"><div class="wb-head"><h2>Full exits</h2><span class="wb-hint">Stocks the most funds sold completely.</span></div><div id="flExit"></div></div>
+  </div>
+
+  <div class="panel wb-note">
+    <h3 style="margin:0">How this is worked out</h3>
+    <div><b>What counts as buying</b>: for each fund, the number of shares it held at the end of the month minus the number a month earlier, multiplied by the share price at month-end. Using share counts (not weights) means a stock that simply rose in price does not look “bought”.</div>
+    <div><b>Which funds</b>: actively managed equity and hybrid funds (large, mid, small, flexi, multi cap, focused, value/contra, ELSS, sector/thematic, aggressive hybrid, multi-asset) that appear in both months. Index funds, ETFs, debt, arbitrage and balanced-advantage funds are left out: their trades follow an index or a formula, not a manager's view. Totals are therefore lower than figures quoted in the press, which usually include every scheme.</div>
+    <div><b>New listings</b>: companies that listed during the month have no official size class yet, so they are shown separately from large / mid / small. They are valued at the month-end price, so a listing-day gain makes the amount look larger than what funds actually paid.</div>
+    <div><b>Notable fund moves</b>: the six largest funds in each category (by equity held), among the fund houses covered. “Turnover” = the smaller of buying and selling that month, as % of the fund's equity.</div>
+    <div><b>Money coming in</b>: when investors add money, managers must buy something, so most sectors show buying in a month of strong inflows. The useful signal is the <i>relative</i> picture: which sectors got more than their share, and which were sold even though money was coming in.</div>
+    <div><b>Price move</b>: change in the month-end share price, from the funds' own valuations. Sector index returns (1M–1Y) come from the NAVs of index funds/ETFs tracking that index (AMFI data).</div>
+    <div><b>Corporate actions</b>: share splits and bonuses are detected (same ratio across nearly all holders) and adjusted. <span id="flCA"></span></div>
+    <div><b>Coverage</b>: <span id="flCov"></span> Illustrative analysis for internal research, not a recommendation to buy or sell any security.</div>
+  </div>
+  </div>
+  </section>
 
   <!-- ===================== FUND LAB ===================== -->
   <section id="page-lab">
@@ -1459,7 +1607,7 @@ $('clearCatsBtn').addEventListener('click', () => { setSelected([]); customKeywo
 $('saveFavLink').addEventListener('click', () => { const vals = getSelected(); if (!vals.length) { setStatus('Select the categories you want as Favorites first.'); return; } setStatus(saveFavs(vals) ? `Favorites saved: ${vals.map(v => CAT_LABEL[v]).join(', ')}.` : 'Could not save Favorites in this browser.'); refreshFavBtn(); });
 $('resetFavLink').addEventListener('click', () => { try { localStorage.removeItem(FAV_KEY); } catch (e) {} refreshFavBtn(); setStatus('Favorites reset to Large, Flexi, Small, Mid, Large & Mid Cap.'); });
 refreshFavBtn();
-$('pages').addEventListener('click', e => { const b = e.target.closest('[data-page]'); if (!b) return; $('pages').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); ['lab', 'bt', 'bench', 'method', 'xray', 'build', 'wb'].forEach(p => $('page-' + p).classList.toggle('hide', p !== b.dataset.page)); if (b.dataset.page === 'bench') renderBench(); });
+$('pages').addEventListener('click', e => { const b = e.target.closest('[data-page]'); if (!b) return; $('pages').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); ['lab', 'bt', 'bench', 'method', 'xray', 'build', 'wb', 'flow'].forEach(p => $('page-' + p).classList.toggle('hide', p !== b.dataset.page)); if (b.dataset.page === 'bench') renderBench(); if (b.dataset.page === 'flow') FLOW.open(); });
 loadTRI().then(() => setStatus(`Index data ready (latest ${DAILY && DAILY['NIFTY 500'] ? fmtDate(DAILY['NIFTY 500'].at(-1).t) : fmtDate(M0)}). Pick categories, or press ★ Favorites.`)).catch(e => setStatus('Index data could not load: ' + e.message, true));
 
 // =====================================================================================
@@ -2079,6 +2227,216 @@ function wbMake(D) { return (() => {
   ovRef = sel[0] ?? null; g('wbCat').value = cat; setOpen(!sel.length); render();
   return { showFund, has, asof: D.asof };
 })(); }
+
+// =====================================================================================
+// MONEY FLOW — what active fund managers bought and sold last month (data/flows_index.json → data/flows_YYYY-MM.json)
+// =====================================================================================
+const FLOW = (() => {
+  let D = null, loading = null;
+  const g = id => document.getElementById(id);
+  const MON = 'Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec'.split(' ');
+  const mlabel = ym => { const [y, m] = ym.split('-'); return MON[+m - 1] + ' ' + y; };
+  const mend = ym => { const [y, m] = ym.split('-').map(Number); const d = new Date(Date.UTC(y, m, 0)); return String(d.getUTCDate()).padStart(2, '0') + '/' + String(m).padStart(2, '0') + '/' + y; };
+  const inr = v => { const x = Math.round(Math.abs(v)); const s = x.toString(); const l3 = s.slice(-3), rest = s.slice(0, -3); return (v < 0 ? '−' : '') + '₹' + (rest ? rest.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + ',' : '') + l3 + ' cr'; };
+  const sg = (v, d = 1) => v == null ? '—' : (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(d) + '%';
+  const pc = v => v > 0 && v < 0.05 ? '<0.1%' : (Math.round(v * 10) / 10).toFixed(1) + '%';
+  const ALL_AMCS = ['HDFC', 'NIPPON', 'SBI', 'ICICI', 'PPFAS', 'DSP', 'MIRAE', 'HELIOS', 'PGIM', 'CANARA', 'TATA', 'BARODA', 'WHITEOAK', 'INVESCO', 'AXIS', 'KOTAK', 'FRANKLIN', 'MOTILAL', 'MAHINDRA', 'QUANT', 'ABSL', 'BAJAJ', 'EDELWEISS', 'SUNDARAM', 'UTI', 'BANDHAN', 'HSBC'];
+  const CAT_ORDER_FL = ['Large Cap', 'Large & Mid Cap', 'Mid Cap', 'Small Cap', 'Flexi Cap', 'Multi Cap', 'Focused', 'Value/Contra', 'ELSS', 'Sector/Thematic', 'Aggressive Hybrid', 'Multi Asset'];
+  const CAT_LBL = { 'Value/Contra': 'Value / Contra', 'Sector/Thematic': 'Sector / Thematic', 'Multi Asset': 'Multi Asset Allocation' };
+  const MOVE_DEFAULT = ['Flexi Cap', 'Large Cap', 'Mid Cap', 'Small Cap'];
+  let cat = '', capF = '', ipo = true, openSec = null, openStock = null;
+  try { const s = JSON.parse(localStorage.getItem('abundance_flow_v1') || '{}'); cat = s.cat || ''; capF = s.cap || ''; } catch (e) { }
+  const save = () => { try { localStorage.setItem('abundance_flow_v1', JSON.stringify({ cat, cap: capF })) } catch (e) { } };
+
+  // ---- sector index returns, from index fund / ETF NAVs (AMFI via the same API as the Fund Lab)
+  const IDX = {
+    'Banks': ['Nifty Bank', /nifty bank (index|etf|bees)|bank ?bees|nifty bank$/],
+    'Finance (NBFC, insurance, AMCs)': ['Nifty Financial Services', /nifty financial services (index|etf)|nifty financial services$/],
+    'IT & Tech': ['Nifty IT', /nifty it (index|etf)|it ?bees|nifty it$/],
+    'Pharma & Healthcare': ['Nifty Healthcare', /nifty healthcare (index|etf)|nifty pharma (index|etf)|pharma ?bees/],
+    'Autos & auto parts': ['Nifty Auto', /nifty auto (index|etf)/],
+    'FMCG & Food': ['Nifty FMCG', /nifty fmcg (index|etf)/],
+    'Consumer (retail, durables, leisure)': ['Nifty India Consumption', /nifty india consumption (index|etf)/],
+    'Capital goods & Defence': ['Nifty India Defence', /nifty india defence (index|etf)/],
+    'Power & Utilities': ['Nifty Energy', /nifty energy (index|etf)|nifty power/],
+    'Oil & Energy': ['Nifty Oil & Gas', /nifty oil (&|and) gas (index|etf)/],
+    'Metals & Mining': ['Nifty Metal', /nifty metal (index|etf)/],
+    'Cement & Construction': ['Nifty Realty', /nifty realty (index|etf)/],
+    'Transport & Logistics': ['Nifty India Transport & Logistics', /transportation (&|and) logistics (index|etf)/],
+    'Telecom': null, 'Chemicals & Fertilisers': null, 'Others': null,
+  };
+  const BROAD = [['Nifty 50', /nifty 50 index/], ['Nifty Midcap 150', /midcap 150 index/], ['Nifty Smallcap 250', /smallcap 250 index/]];
+  let IR = null, irState = 'idle';
+  async function loadIndexReturns() {
+    if (irState !== 'idle') return; irState = 'loading'; renderSectors(); renderTiles();
+    try {
+      const data = await ensureMasterData();
+      const pick = re => {
+        const c = data.filter(r => isActive(r) && r.scheme_option !== 'IDCW' && (r.scheme_plan === 'Direct' || /etf|bees/i.test(r.scheme_name)) && re.test(normName(r.scheme_name)) && !/fund of fund|fof/.test(normName(r.scheme_name)));
+        c.sort((a, b) => (parseFloat(b.aaum_cr_quarterly_avg) || 0) - (parseFloat(a.aaum_cr_quarterly_avg) || 0));
+        return c[0] || null;
+      };
+      const want = [];
+      for (const v of Object.values(IDX)) if (v) { const r = pick(v[1]); if (r) want.push([v[0], r]); }
+      for (const [lbl, re] of BROAD) { const r = pick(re); if (r) want.push([lbl, r]); }
+      const resp = await fetchVia(`${API_BASE}/nav?schemes=${want.map(w => w[1].scheme_code).join(',')}`, 'json');
+      const list = resp.schemes ? resp.schemes : [resp], byCode = {};
+      for (const s of list) if (s && s.data) byCode[String(s.scheme_code)] = s.data.map(p => ({ t: parseISO(p.date), nav: parseFloat(p.nav) })).filter(p => p.nav > 0).sort((a, b) => a.t - b.t);
+      IR = {};
+      for (const [lbl, r] of want) {
+        const a = byCode[String(r.scheme_code)]; if (!a || a.length < 30) continue;
+        const last = a[a.length - 1];
+        const back = mo => { const d = new Date(last.t); const t = Date.UTC(d.getUTCFullYear(), d.getUTCMonth() - mo, d.getUTCDate()); const p = navOnOrBefore(a, t, 7); return p ? (last.nav / p.nav - 1) * 100 : null; };
+        IR[lbl] = { m1: back(1), m3: back(3), m6: back(6), y1: back(12), name: r.scheme_name, asof: last.t };
+      }
+      irState = 'done';
+    } catch (e) { irState = 'error'; }
+    renderSectors(); renderTiles();
+  }
+
+  // ---- views
+  const groups = () => !cat ? D.groups.map(x => ({ ...x })) : D.groups.map(x => ({ ...x, flow: (x.byCat || {})[cat] || 0, flow_pct: null })).sort((a, b) => b.flow - a.flow);
+  const stocks = () => {
+    let L = D.stocks.map(s => cat ? { ...s, flow: (s.byCat || {})[cat] || 0 } : s).filter(s => Math.abs(s.flow) >= (cat ? 3 : 10));
+    if (capF) L = L.filter(s => s.cap === capF && !s.ipo);
+    if (!ipo) L = L.filter(s => !s.ipo);
+    return L;
+  };
+  const caps = () => D.caps_ex_ipo || D.caps;
+  function renderTiles() {
+    const net = cat ? (D.cat_flow[cat] || 0) : D.net, C = caps();
+    const capRows = ['Large', 'Mid', 'Small'].map(k => [k, C[k] ? C[k].flow_pct : 0]);
+    const mx = Math.max(...capRows.map(c => Math.abs(c[1])), 0.01);
+    const n50 = IR && IR['Nifty 50'];
+    g('flTiles').innerHTML = `
+      <div class="fl-tile"><span class="k">Net bought${cat ? ' · ' + esc(CAT_LBL[cat] || cat) + ' funds' : ''}</span><span class="v">${inr(net)}</span><span class="s">${cat ? (D.cat_schemes[cat] || 0) + ' schemes' : 'bought ' + inr(D.gross_buy) + ' · sold ' + inr(-D.gross_sell)}</span></div>
+      <div class="fl-tile"><span class="k">Funds covered</span><span class="v">${D.schemes}<small> schemes</small></span><span class="s">${D.amcs.length} AMCs, active equity &amp; hybrid</span></div>
+      <div class="fl-tile"><span class="k">New money by size of company</span>
+        <div class="fl-capbars">${capRows.map(([k, v]) => `<span>${k}</span><i style="width:${Math.max(2, Math.abs(v) / mx * 100)}%;${v < 0 ? 'background:var(--sell)' : ''}" title="${k} caps: net buying = ${v.toFixed(2)}% of what funds already held"></i><span class="r">${sg(v, 2)}</span>`).join('')}</div>
+        <span class="s">% of holdings${C.IPO ? ` · plus <b>${inr(C.IPO.flow)}</b> into new listings` : ''}</span></div>
+      <div class="fl-tile"><span class="k">Market over the month</span><span class="v">${n50 && n50.m1 != null ? sg(n50.m1) : '…'}</span><span class="s">${n50 ? 'Nifty 50 · last 1 month to ' + fmtDate(n50.asof) : irState === 'error' ? 'index data unavailable' : 'loading index data…'}</span></div>`;
+  }
+  function renderSay() {
+    const G = groups(), net = cat ? (D.cat_flow[cat] || 0) : D.net;
+    const pos = G.filter(x => x.flow > 0).slice(0, 2), neg = G.filter(x => x.flow < 0).sort((a, b) => a.flow - b.flow).slice(0, 2);
+    const who = cat ? `${esc(CAT_LBL[cat] || cat)} fund managers` : 'Fund managers';
+    const nm = x => `<b class="${x.flow > 0 ? 'buy' : 'sell'}">${esc(x.group.replace(/ \(.*\)/, ''))}</b> (${inr(x.flow)}${x.ret != null ? ', price ' + sg(x.ret) : ''})`;
+    let s = `${who} ${net >= 0 ? 'net bought' : 'net sold'} <b>${inr(Math.abs(net))}</b> of shares in ${mlabel(D.cur)}. `;
+    if (pos.length) s += `Most went into ${pos.map(nm).join(' and ')}. `;
+    if (neg.length) s += `They cut ${neg.map(nm).join(' and ')}${net > 0 ? ' — despite money coming in' : ''}.`;
+    if (!cat) {
+      const C = caps(), ord = ['Large', 'Mid', 'Small'].filter(k => C[k] && C[k].flow_pct != null).sort((a, b) => C[b].flow_pct - C[a].flow_pct);
+      if (ord.length === 3 && C[ord[0]].flow_pct > C[ord[2]].flow_pct * 1.8) s += ` Relative to what they already held, ${ord[0].toLowerCase()} caps got the most (${sg(C[ord[0]].flow_pct, 2)} vs ${ord[2].toLowerCase()} caps ${sg(C[ord[2]].flow_pct, 2)}).`;
+      if (C.IPO && C.IPO.flow > Math.abs(net) * 0.15) s += ` A big slice went into new listings: <b>${inr(C.IPO.flow)}</b>.`;
+    }
+    g('flSay').innerHTML = s;
+  }
+  function tagFor(x) {
+    if (cat || x.ret == null || x.flow_pct == null) return '';
+    const avg = D.net / (D.aum_prev || 1) * 100;
+    if (x.flow > 0 && x.flow_pct > avg * 1.5 && x.ret <= -3) return '<span class="tagpill dip" title="Funds bought more than average while prices fell">Bought the dip</span>';
+    if (x.flow < 0 && x.ret <= -3) return '<span class="tagpill cut" title="Funds sold while prices were falling">Sold into the fall</span>';
+    if (x.flow < 0 && x.ret > 2) return '<span class="tagpill cut" title="Funds sold after prices rose">Booked profits</span>';
+    return '';
+  }
+  function renderSectors() {
+    if (!D) return;
+    const G = groups(), mx = Math.max(...G.map(x => Math.abs(x.flow)), 1);
+    const idxCell = x => {
+      const m = IDX[x.group]; if (!m) return '<div class="fl-idx"><span>—</span><span>—</span><span>—</span><span>—</span></div>';
+      const r = IR && IR[m[0]];
+      if (!r) return `<div class="fl-idx"><span>${irState === 'loading' ? '…' : '—'}</span><span></span><span></span><span></span></div>`;
+      const c = v => `<span class="${v == null ? '' : v >= 0 ? 'up' : 'dn'}">${sg(v)}</span>`;
+      return `<div class="fl-idx" title="${esc(m[0])} via ${esc(r.name)}">${c(r.m1)}${c(r.m3)}${c(r.m6)}${c(r.y1)}</div>`;
+    };
+    g('flSectors').innerHTML = `<div class="fl-sec hd"><span>Sector</span><span style="text-align:center">◀ sold · net ₹ crore · bought ▶</span><span class="r">% of holdings</span><span class="r hide-sm">Price in month</span><span class="hide-sm"><div class="fl-idx hdr"><span>1M</span><span>3M</span><span>6M</span><span>1Y</span></div><div style="text-align:right;font-weight:400;text-transform:none;letter-spacing:0">sector index</div></span></div>` +
+      G.map(x => {
+        const w = Math.abs(x.flow) / mx * 48, buy = x.flow >= 0;
+        const lbl = `<span class="lbl" style="${buy ? `left:calc(50% + ${w}% + 4px)` : `right:calc(50% + ${w}% + 4px)`}">${buy ? '+' : ''}${inr(x.flow).replace(' cr', '')}</span>`;
+        const open = openSec === x.group;
+        const det = open ? `<div class="fl-detail" onclick="event.stopPropagation()"><div><h4 class="buy">Most bought</h4>${(x.top_buys || []).map(esc).join('<br>') || '<span class="tag">none</span>'}</div><div><h4 class="sell">Most sold</h4>${(x.top_sells || []).map(esc).join('<br>') || '<span class="tag">none</span>'}</div>${x.wt_prev != null ? `<div class="tag" style="grid-column:1/-1">Share of all fund money in this sector: ${x.wt_prev.toFixed(1)}% → ${x.wt_cur.toFixed(1)}% (includes the price move)</div>` : ''}</div>` : '';
+        return `<div class="fl-sec fl-row" tabindex="0" data-sec="${esc(x.group)}" aria-expanded="${open}"><span class="nm">${esc(x.group)}${tagFor(x)}</span>
+          <div class="fl-bar" title="${esc(x.group)}: net ${inr(x.flow)}"><span class="axis"></span><span class="b ${buy ? 'buy' : 'sell'}" style="width:${w}%"></span>${lbl}</div>
+          <span class="num">${x.flow_pct == null ? '—' : sg(x.flow_pct, 1)}</span><span class="num hide-sm">${sg(x.ret)}</span><span class="hide-sm">${idxCell(x)}</span>${det}</div>`;
+      }).join('');
+    const pend = Object.values(IDX).filter(v => v && IR && !IR[v[0]]).map(v => v[0]);
+    g('flIdxNote').textContent = irState === 'done' ? `Sector index returns to ${IR['Nifty 50'] ? fmtDate(IR['Nifty 50'].asof) : 'latest NAV'}, from index fund/ETF NAVs (hover a cell for the fund used).${pend.length ? ' No index fund found for: ' + pend.join(', ') + '.' : ''}` : irState === 'error' ? 'Sector index returns could not be loaded right now (data source unavailable).' : 'Loading sector index returns…';
+  }
+  function stockRow(s, side) {
+    const w = Math.abs(s.flow) / side.mx * 100, open = openStock === s.isin + side.k;
+    const capLbl = s.ipo ? 'New listing' : s.cap;
+    const who = open ? `<div class="fl-who" onclick="event.stopPropagation()"><div style="display:block"><h4>Bought by</h4>${(s.top_buy || []).map(([n, v, t]) => `<div><span>${esc(n)}${t === 'new' ? ' <small>(new)</small>' : ''}</span><span>${inr(v)}</span></div>`).join('') || '—'}</div><div style="display:block"><h4>Sold by</h4>${(s.top_sell || []).map(([n, v, t]) => `<div><span>${esc(n)}${t === 'exit' ? ' <small>(exited)</small>' : ''}</span><span>${inr(v)}</span></div>`).join('') || '—'}</div></div>` : '';
+    return `<div class="fl-st" tabindex="0" data-st="${s.isin + side.k}"><span class="n" title="${esc(s.name)} · ${esc(s.ind)}">${esc(s.name)}<small>${capLbl}</small></span>
+      <span class="amt"><i style="width:${Math.max(4, w)}%;background:var(${s.flow >= 0 ? '--buy' : '--sell'})"></i><span>${inr(s.flow).replace(' cr', '')}</span></span>
+      <span class="r ud" title="Funds that added (incl. new) vs cut (incl. exits)">${cat ? '' : `<span class="u">▲${s.buyers}</span> <span class="d">▼${s.sellers}</span>`}</span>
+      <span class="r" title="Share price change in the month">${s.ipo ? 'IPO' : sg(s.ret)}</span>${who}</div>`;
+  }
+  function renderStocks() {
+    const L = stocks();
+    const B = L.filter(s => s.flow > 0).sort((a, b) => b.flow - a.flow).slice(0, 15), S = L.filter(s => s.flow < 0).sort((a, b) => a.flow - b.flow).slice(0, 15);
+    const mx = Math.max(...B.map(s => s.flow), ...S.map(s => -s.flow), 1);
+    const hd = `<div class="fl-st hd"><span>Stock</span><span class="r">₹ crore</span><span class="r">${cat ? '' : 'Funds'}</span><span class="r">Price</span></div>`;
+    g('flBuy').innerHTML = hd + (B.map(s => stockRow(s, { mx, k: 'b' })).join('') || '<div class="wb-hint">None</div>');
+    g('flSell').innerHTML = hd + (S.map(s => stockRow(s, { mx, k: 's' })).join('') || '<div class="wb-hint">None</div>');
+    const base = D.stocks.filter(s => (!capF || (s.cap === capF && !s.ipo)) && (ipo || !s.ipo));
+    const N = base.filter(s => s.new >= 2).sort((a, b) => b.new - a.new || b.flow - a.flow).slice(0, 10);
+    const X = base.filter(s => s.exit >= 2).sort((a, b) => b.exit - a.exit || a.flow - b.flow).slice(0, 10);
+    const mini = (L, k, lbl) => `<div class="fl-mini hd"><span>Stock</span><span class="r">${lbl}</span><span class="r">Net ₹ cr</span></div>` + (L.map(s => `<div class="fl-mini"><span title="${esc(s.ind)}">${esc(s.name)} <small style="color:var(--muted)">${s.ipo ? 'New listing' : s.cap}</small></span><span class="r"><b>${s[k]}</b></span><span class="r">${inr(s.flow).replace(' cr', '')}</span></div>`).join('') || '<div class="wb-hint">None</div>');
+    g('flNew').innerHTML = mini(N, 'new', 'Funds'); g('flExit').innerHTML = mini(X, 'exit', 'Funds');
+  }
+
+  // ---- notable fund moves (largest funds per category)
+  const KIND = { new: ['New', 'buy'], exit: ['Exit', 'sell'], add: ['Added', 'buy'], trim: ['Cut', 'sell'] };
+  function renderMoves() {
+    const FM = D.fund_moves;
+    if (!FM) { g('flMoves').innerHTML = '<div class="wb-hint">Not available for this month.</div>'; return; }
+    const cats = cat && FM.funds.some(f => f.c === cat) ? [cat] : MOVE_DEFAULT;
+    const H = FM.headlines.filter(h => cats.includes(h.c)).slice(0, 8);
+    const head = H.length ? `<div class="mv-head">${H.map(h => `<div class="mv-hl"><span class="mv-pill ${KIND[h.k][1]}">${KIND[h.k][0]}</span><span class="mv-s"><b>${esc(h.s)}</b> <span class="mv-in">in ${esc(h.f)}</span></span><span class="mv-w">${pc(h.w0)} → <b>${pc(h.w1)}</b></span><span class="mv-cr ${h.cr >= 0 ? 'buy' : 'sell'}">${inr(h.cr)}</span></div>`).join('')}</div>` : '';
+    const line = (L, k, show) => L.length ? `<div class="mv-line"><span class="mv-pill ${KIND[k][1]}">${KIND[k][0]}</span><span>${L.map(m => `${esc(m.s)} <small>${show(m)}</small>`).join(', ')}</span></div>` : '';
+    const card = f => `<div class="mv-card"><div class="mv-fn" title="${esc(f.n)}">${esc(f.n)}</div><div class="mv-meta">${inr(f.eq).replace(' cr', ' cr in stocks')}${f.churn != null ? ` · turnover ${f.churn}% this month` : ''}</div>
+      ${line(f.new.slice(0, 3), 'new', m => pc(m.w1))}${line(f.exit.slice(0, 3), 'exit', m => 'was ' + pc(m.w0))}
+      ${line(f.add.slice(0, 2), 'add', m => '+' + inr(m.cr).replace(' cr', ''))}${line(f.trim.slice(0, 2), 'trim', m => inr(m.cr).replace(' cr', ''))}
+      ${!f.new.length && !f.exit.length && !f.add.length && !f.trim.length ? '<div class="wb-hint">No meaningful changes.</div>' : ''}</div>`;
+    g('flMoves').innerHTML = head + cats.map(c => {
+      const L = FM.funds.filter(f => f.c === c); if (!L.length) return '';
+      return `<h3 class="mv-cat">${esc(CAT_LBL[c] || c)} <span class="wb-hint">${L.length} largest funds covered</span></h3><div class="mv-grid">${L.map(card).join('')}</div>`;
+    }).join('');
+  }
+  function render() { renderTiles(); renderSay(); renderSectors(); renderStocks(); renderMoves(); }
+
+  // ---- boot (on first open)
+  function boot() {
+    g('flSub').textContent = `Change in holdings from ${mend(D.prev)} to ${mend(D.cur)} · actively managed equity & hybrid funds`;
+    const cats = CAT_ORDER_FL.filter(c => D.cat_schemes[c]);
+    g('flCat').innerHTML = `<option value="">All active funds</option>` + cats.map(c => `<option value="${esc(c)}">${esc(CAT_LBL[c] || c)} funds (${D.cat_schemes[c]})</option>`).join('');
+    if (cat && !cats.includes(cat)) cat = ''; g('flCat').value = cat;
+    g('flCapSeg').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.c === capF));
+    g('flCat').addEventListener('change', e => { cat = e.target.value; openSec = openStock = null; save(); render(); });
+    g('flCapSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; capF = b.dataset.c; g('flCapSeg').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); save(); renderStocks(); });
+    g('flIpo').addEventListener('change', e => { ipo = e.target.checked; renderStocks(); });
+    const tog = (e, attr, getter, setter, fn) => { const r = e.target.closest(`[${attr}]`); if (!r) return; const v = r.getAttribute(attr); setter(getter() === v ? null : v); fn(); };
+    g('flSectors').addEventListener('click', e => tog(e, 'data-sec', () => openSec, v => openSec = v, renderSectors));
+    g('flSectors').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tog(e, 'data-sec', () => openSec, v => openSec = v, renderSectors) } });
+    ['flBuy', 'flSell'].forEach(id => { g(id).addEventListener('click', e => tog(e, 'data-st', () => openStock, v => openStock = v, renderStocks)); g(id).addEventListener('keydown', e => { if (e.key === 'Enter') tog(e, 'data-st', () => openStock, v => openStock = v, renderStocks) }); });
+    g('flCA').textContent = D.corp_actions.length ? 'This month: ' + D.corp_actions.map(([n, r]) => `${n} (×${r})`).join(', ') + '.' : 'None this month.';
+    const miss = ALL_AMCS.filter(a => !D.amcs.includes(a));
+    g('flCov').textContent = `${D.amcs.length} fund houses with both months' files.${miss.length ? ' Not included this month: ' + miss.join(', ') + '.' : ''}`;
+    g('flBody').classList.remove('hide'); g('flLoad').classList.add('hide');
+    render();
+  }
+  async function open() {
+    if (D) { if (irState === 'idle') loadIndexReturns(); return; }
+    if (!loading) loading = (async () => {
+      try {
+        const ix = await (await fetch('data/flows_index.json', { cache: 'no-cache' })).json();
+        D = await (await fetch('data/' + ix.latest, { cache: 'no-cache' })).json();
+        boot(); loadIndexReturns();
+      } catch (e) { g('flLoad').innerHTML = 'Money-flow data could not be loaded (' + esc(e.message) + ').'; loading = null; }
+    })();
+  }
+  return { open };
+})();
 
 window.FS = { rbsa, solveLinear, factorMix, phases, bets, scoreGroup, pctRanks, analyse, captures, riskStats, rolling3, cagr, monthlyRet, trailing, valAt, me, peerSeries, holdKey, findHoldings, loadTRI, loadHoldings, runCategories, runBacktest, get TRI() { return TRI; }, get HOLD() { return HOLD; }, get M0() { return M0; }, NAVS, get RESULTS() { return RESULTS; }, ensureMasterData, leadChart, get RV() { return RV; }, pbRender, pbFind, wbOpen, get WB() { return WB; }, xrTokens, xrMatch, xrParseAOA, xrCompute, xrUniverse, XR };
 </script>
