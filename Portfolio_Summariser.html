@@ -429,8 +429,10 @@ let SIPS=[],SIPSRC='',sipView='on',sipF=new Set(),sipSort=['amt',-1];
 // Fund name only, in proper case: "UTI FLEXI CAP FUND-REGULAR PLAN-GROWTH" → "UTI Flexi Cap Fund"
 const UPPER=new Set(['UTI','HDFC','SBI','ICICI','DSP','PGIM','LIC','HSBC','IDBI','ITI','JM','NJ','ELSS','ETF','FOF','PSU','ESG','MNC','US','IT','BNP','IDFC','ABSL','PPFAS']);
 function cleanFund(n){
-  let t=String(n||'').replace(/\(.*?\)/g,' ').replace(/regular\s*growth|direct\s*growth/ig,' ').replace(/[-–_]/g,' ')
-    .replace(/\b(regular|direct|plan|growth|option|idcw|dividend|payout|reinvestment|reinvest|cumulative|reg|dir|gr)\b/ig,' ').replace(/\s+/g,' ').trim();
+  let t=String(n||'').replace(/\(.*?\)/g,' ').replace(/[-–_]/g,' ').replace(/\s+/g,' ').trim();
+  const m=t.match(/^(.*?\bfunds?(?:\s+of\s+funds?)?)(?=\s|$|regular|direct)/i);   // keep the name up to "Fund"; plan/option words follow it
+  t=m?m[1]:t.replace(/regular\s*growth|direct\s*growth/ig,' ').replace(/\b(regular|direct|plan|growth|option|idcw|dividend|payout|reinvestment|reinvest|cumulative|reg|dir|gr)\b\s*$/ig,' ');
+  t=t.replace(/\b(regular|direct)\s+plan\b.*$/i,'').replace(/\s+/g,' ').trim();
   t=t.toLowerCase().replace(/\b([a-z])/g,c=>c.toUpperCase()).replace(/\b[A-Za-z]+\b/g,w=>UPPER.has(w.toUpperCase())?w.toUpperCase():w).replace(/\bAnd\b/g,'and').replace(/\bOf\b/g,'of');
   return t||String(n||'');
 }
