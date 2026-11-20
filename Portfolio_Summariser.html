@@ -196,7 +196,8 @@ select.guess{border-color:var(--accent)}
 
   <section class="card" id="sipCard" aria-labelledby="h-sip" hidden>
     <div class="sipbox" id="sipBoxes"></div>
-    <div class="thead" style="margin-top:14px"><h2 id="h-sip">SIPs</h2><span class="hint" id="sipCount"></span></div>
+    <div id="sipGraphs" style="margin-top:14px"></div>
+    <div class="thead" style="margin-top:14px"><h2 id="h-sip">SIPs</h2><div style="display:flex;gap:10px;align-items:center"><span class="hint" id="sipCount"></span><button class="btn ghost" id="sipCopy" type="button">Copy for Excel</button></div></div>
     <div class="filters"><div class="frow"><span class="flab" id="sipFlab">Category</span><div class="chips" id="sipChips"></div></div></div>
     <div class="tbl"><table>
       <thead id="sipTh"></thead>
@@ -205,7 +206,8 @@ select.guess{border-color:var(--accent)}
     <div class="hint" style="margin-top:10px" id="sipNote"></div>
   </section>
 
-  <div class="grid2">
+  <div id="gridHome"></div>
+  <div class="grid2" id="graphs">
     <section class="card" aria-labelledby="h-cat">
       <h2 id="h-cat">Category-wise total</h2>
       <div class="cat" id="cat"></div>
@@ -225,7 +227,7 @@ select.guess{border-color:var(--accent)}
     </div>
   </div>
 
-  <section class="card" aria-labelledby="h-f">
+  <section class="card txv" aria-labelledby="h-f">
     <div class="thead">
       <h2 id="h-f">Fund-wise total</h2>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -425,7 +427,14 @@ function parseSIPReg(aoa){
       date:ci.start>=0?toDate(r[ci.start]):null,end:ci.end>=0?toDate(r[ci.end]):null,freq:ci.freq>=0?String(r[ci.freq]??'').trim():'',client:ci.cl>=0&&r[ci.cl]?properName(r[ci.cl]):''});}
   return sips.length?{rows:[],period:'',client:(sips.find(x=>x.client)||{}).client||'',sips,sipSrc:'reg'}:null;
 }
-let SIPS=[],SIPSRC='',sipView='on',sipF=new Set(),sipSort=['amt',-1];
+let SIPS=[],SIPSRC='',sipView='on',sipF=new Set(),sipSort=['amt',-1],SIPLIST=[];
+$('sipCopy').onclick=async()=>{
+  const l=SIPLIST,tot=l.reduce((t,x)=>t+(isNaN(x.amt)?0:x.amt),0),cn=properName($('client').value);
+  let t=(cn?`Client\t${cn}\n`:'')+`${sipView==='on'?'Active':'Inactive'} SIPs\n\nFund\tCategory\tFolio\tStatus\tSIP amount\n`+l.map(x=>[x.name,x.cat,x.folio||'',x.status,isNaN(x.amt)?'':x.amt].join('\t')).join('\n')+`\nTotal\t\t\t\t${tot}`;
+  const b=$('sipCopy');try{await navigator.clipboard.writeText(t);b.textContent='Copied. Paste into Excel';}
+  catch(e){const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');b.textContent='Copied. Paste into Excel';}catch(_){b.textContent='Copy failed';}ta.remove();}
+  setTimeout(()=>b.textContent='Copy for Excel',2500);
+};
 // Fund name only, in proper case: "UTI FLEXI CAP FUND-REGULAR PLAN-GROWTH" → "UTI Flexi Cap Fund"
 const UPPER=new Set(['UTI','HDFC','SBI','ICICI','DSP','PGIM','LIC','HSBC','IDBI','ITI','JM','NJ','ELSS','ETF','FOF','PSU','ESG','MNC','US','IT','BNP','IDFC','ABSL','PPFAS']);
 function cleanFund(n){
@@ -447,7 +456,9 @@ function sipFeed(){
 }
 function renderSIPs(){
   const has=SIPS.length>0;$('sipCard').hidden=!has;
-  document.querySelectorAll('.txv').forEach(el=>el.hidden=has);   // a SIP file shows only the SIP view
+  document.querySelectorAll('.txv').forEach(el=>el.hidden=has);   // SIP files: the SIP boxes and table replace the totals row and the fund table
+  // the charts sit between the SIP boxes and the SIP table on SIP files, and in their usual place otherwise
+  const gr=$('graphs');if(has){if(gr.parentElement!==$('sipGraphs'))$('sipGraphs').appendChild(gr);}else if(gr.previousElementSibling!==$('gridHome'))$('gridHome').after(gr);
   if(!has)return;
   SIPS.forEach(x=>{x.cat=catOf(x.fund);x.name=cleanFund(x.fund);});
   const act=SIPS.filter(x=>isActive(x.status)),ina=SIPS.filter(x=>!isActive(x.status)),sum=l=>l.reduce((t,x)=>t+(isNaN(x.amt)?0:x.amt),0);
@@ -472,6 +483,7 @@ function renderSIPs(){
   $('sipCount').textContent=list.length!==base.length?`Showing ${list.length} of ${base.length}`:'';
   $('sipTb').innerHTML=list.map(x=>`<tr><td class="l fund" title="${esc(x.fund)}">${esc(x.name)}</td><td class="l">${esc(x.cat)}</td><td class="l">${esc(x.folio||'–')}</td><td class="l"><span class="st ${sipCls(x.status)}">${esc(x.status)}</span></td><td>${isNaN(x.amt)?'–':inr0(x.amt)}</td>${SIPSRC==='we'?`<td>${x.date?fmtD(x.date):'–'}</td>`:''}</tr>`).join('')||`<tr class="empty"><td colspan="${cols.length}">None.</td></tr>`;
   $('sipTf').innerHTML=`<tr><td class="l">Total${list.length!==base.length?' (filtered)':''}</td><td></td><td></td><td></td><td>${inr0(sum(list))}</td>${SIPSRC==='we'?'<td></td>':''}</tr>`;
+  SIPLIST=list;
   $('sipNote').textContent=SIPSRC==='we'?'From the Wealth Elite statement: a SIP is active if its last instalment is within 45 days of the statement date. Amounts add up every SIP running in the fund. A SIP that never deducted an instalment, or one in a scheme no longer held, is not in this statement; the BSE SIP registration report shows those with their exact status.':'From the SIP registration report: Active SIPs are those with status Active; every other status is inactive. Categories are read from the fund name.';
 }
 function load(rows,period,label,isSample,clientHint,sips,sipSrc){
