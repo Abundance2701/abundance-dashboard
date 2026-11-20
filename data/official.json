@@ -1,10 +1,129 @@
 {
- "updated": "2026-11-20T10:33:15Z",
+ "updated": "2026-11-20T18:38:51Z",
  "items": [
+  {
+   "src": "RBI",
+   "title": "Reserve Bank of India – Bulletin Weekly Statistical Supplement – Extract",
+   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=64013",
+   "date": "2026-11-20",
+   "important": false
+  },
   {
    "src": "RBI",
    "title": "Reserve Bank issues Foreign Exchange Management (Export and Import of Goods and Services) (Second Amendment) Regulations, 2026",
    "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=64009",
+   "date": "2026-11-20",
+   "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Reminder for submission of Risk Based Supervision data for the period April 01, 2026 - September 30, 2026",
+   "url": "https://nsearchives.nseindia.com/content/circulars/INSP77560.pdf",
+   "date": "2026-11-20",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Compliance with the guidelines on 'Safer participation of Retail Investors in Algorithmic trading' issued by SEBI and Exchanges - Tech-savvy Retail Investors",
+   "url": "https://nsearchives.nseindia.com/content/circulars/INSP77559.pdf",
+   "date": "2026-11-20",
+   "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Revised list of Approved Securities and Banks",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CMPT77558.zip",
+   "date": "2026-11-20",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Change in Collateral Timings",
+   "url": "https://nsearchives.nseindia.com/content/circulars/EGR77552.pdf",
+   "date": "2026-11-20",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of further issues of securities",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77545.pdf",
+   "date": "2026-11-20",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of Equity Shares of Blue Cloud Softech Solutions Limited (New Listing)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77544.zip",
+   "date": "2026-11-20",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of privately placed securities on the debt market segment of the Exchange",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77542.pdf",
+   "date": "2026-11-20",
+   "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Exclusion of Futures and Options contracts on GODFRYPHLP",
+   "url": "https://nsearchives.nseindia.com/content/circulars/FAOP77541.pdf",
+   "date": "2026-11-20",
+   "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of privately placed securities on capital market segment",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77540.pdf",
+   "date": "2026-11-20",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Applicability of Short-Term Additional Surveillance Measure (ST-ASM)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77539.zip",
+   "date": "2026-11-20",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Applicability of Additional Surveillance Measure (ASM)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77538.zip",
+   "date": "2026-11-20",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of units issued by Aditya Birla Sun Life AMC Limited [Aditya Birla Sun Life Fixed Maturity Plan - Series VC (114 days)]",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77536.pdf",
+   "date": "2026-11-20",
+   "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Change in name and symbol of Lorenzini Apparels Limited",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77535.pdf",
+   "date": "2026-11-20",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Applicability of Enhanced Surveillance Measure (ESM)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77534.zip",
+   "date": "2026-11-20",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Reminder for Submission of Half Yearly Networth Certificate as on September 30, 2026",
+   "url": "https://nsearchives.nseindia.com/content/circulars/COMP77532.pdf",
+   "date": "2026-11-20",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Non-Business Day for certain schemes of Mutual Fund on NSE MF Invest Platform for November 2026",
+   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77531.zip",
    "date": "2026-11-20",
    "important": true
   },
@@ -24,51 +143,30 @@
   },
   {
    "src": "NSE",
+   "title": "Launch of Bandhan Nifty Commodities Index Fund NFO on NSE MF Invest Platform",
+   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77527.pdf",
+   "date": "2026-11-20",
+   "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Suspension of trading in Non-Convertible Securities (Privately Placed)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77526.pdf",
+   "date": "2026-11-20",
+   "important": false
+  },
+  {
+   "src": "NSE",
    "title": "Revised MWPL, Participant, Institutional & Non-Institutional Client Limits for SMLMAH",
    "url": "https://nsearchives.nseindia.com/content/circulars/CMPT77525.pdf",
    "date": "2026-11-20",
    "important": false
   },
   {
-   "src": "SEBI",
-   "title": "SEBI hosts IOSCO’s Asia-Pacific Regional Committee Regulatory Roundtable on Market Infrastructure Institutions",
-   "url": "https://www.sebi.gov.in/media-and-notifications/press-releases/nov-2026/sebi-hosts-iosco-s-asia-pacific-regional-committee-regulatory-roundtable-on-market-infrastructure-institutions_105848.html",
-   "date": "2026-11-19",
-   "important": false
-  },
-  {
-   "src": "SEBI",
-   "title": "Review of Margin Framework for Commodity Derivatives Segment",
-   "url": "https://www.sebi.gov.in/legal/circulars/nov-2026/review-of-margin-framework-for-commodity-derivatives-segment_105799.html",
-   "date": "2026-11-17",
-   "important": true
-  },
-  {
-   "src": "SEBI",
-   "title": "Notice of Attachment dated November 16, 2026 issued under RC No. 9309 of 2026 drawn against Ms. Arihant Securities (Proprietor Pravin Kumar Jain) in the matter of Betala Global Securities Limited",
-   "url": "https://www.sebi.gov.in/enforcement/recovery-proceedings/nov-2026/notice-of-attachment-dated-november-16-2026-issued-under-rc-no-9309-of-2026-drawn-against-ms-arihant-securities-proprietor-pravin-kumar-jain-in-the-matter-of-betala-global-securities-limited_105847.html",
-   "date": "2026-11-16",
-   "important": false
-  },
-  {
-   "src": "SEBI",
-   "title": "Notice of Attachment dated November 16, 2026 issued under RC No. 9308 of 2026 drawn against Niranjan D Agarwal in the matter of Kalahridhaan Trendz Limited",
-   "url": "https://www.sebi.gov.in/enforcement/recovery-proceedings/nov-2026/notice-of-attachment-dated-november-16-2026-issued-under-rc-no-9308-of-2026-drawn-against-niranjan-d-agarwal-in-the-matter-of-kalahridhaan-trendz-limited_105846.html",
-   "date": "2026-11-16",
-   "important": false
-  },
-  {
-   "src": "SEBI",
-   "title": "SEBI Constitutes a Sub-Group of PMAC to Review Specified Provisions of the SEBI (ICDR) Regulations, 2018",
-   "url": "https://www.sebi.gov.in/media-and-notifications/press-releases/nov-2026/sebi-constitutes-a-sub-group-of-pmac-to-review-specified-provisions-of-the-sebi-icdr-regulations-2018_105790.html",
-   "date": "2026-11-16",
-   "important": true
-  },
-  {
-   "src": "SEBI",
-   "title": "Inauguration of SEBI’s Pavilion at the IITF, 2026 by Chairman, SEBI",
-   "url": "https://www.sebi.gov.in/media-and-notifications/press-releases/nov-2026/inauguration-of-sebi-s-pavilion-at-the-iitf-2026-by-chairman-sebi_105775.html",
-   "date": "2026-11-15",
+   "src": "NSE",
+   "title": "Listing of Equity Shares of Mitsu Chem Plast Limited (New Listing)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77504.zip",
+   "date": "2026-11-20",
    "important": false
   },
   {
@@ -144,20 +242,20 @@
  ],
  "counts": {
   "https://www.sebi.gov.in/sebirss.xml": [
-   30,
-   6
+   0,
+   0
   ],
   "https://rbi.org.in/pressreleases_rss.xml": [
    10,
-   1
+   2
   ],
   "https://rbi.org.in/notifications_rss.xml": [
    10,
    10
   ],
   "https://nsearchives.nseindia.com/content/RSS/Circulars.xml": [
-   5,
-   4
+   35,
+   33
   ]
  },
  "errors": []
