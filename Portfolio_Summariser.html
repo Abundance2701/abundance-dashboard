@@ -119,6 +119,8 @@ th[aria-sort=ascending] .ar,th[aria-sort=descending] .ar{opacity:1;color:#F9B738
 .frow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .flab{font:700 12px var(--f-head);letter-spacing:.07em;text-transform:uppercase;color:var(--muted);min-width:72px}
 .chip.sm{padding:4px 10px;font-size:12px}
+.st{display:inline-block;border-radius:999px;padding:2px 9px;font:700 11.5px var(--f-head);white-space:nowrap}
+.st.on{background:#e3f3e8;color:#005826}.st.warn{background:#fff1cc;color:#8a5a00}.st.off{background:#f1eef3;color:#6b5a72}
 .chip .dot{width:8px;height:8px}
 .chip[aria-pressed=true] .dot{box-shadow:0 0 0 1.5px #fff}
 .fsearch{flex:1;min-width:180px;max-width:340px;font:15px var(--f-body);color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 14px}
@@ -152,7 +154,7 @@ select.guess{border-color:var(--accent)}
   <div class="drop" id="drop">
     <div class="txt">
       <strong>Upload a transaction report</strong>
-      <div class="sub">Drop an .xlsx, .xls or .csv anywhere on this page, or choose a file. It needs a Scheme Name and an Amount column. The file stays on your device.</div>
+      <div class="sub">Drop an .xlsx, .xls or .csv anywhere on this page, or choose a file: a transaction report, a Wealth Elite portfolio statement, or a SIP registration report. The file stays on your device.</div>
     </div>
     <input type="file" id="file" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" class="vh">
     <button type="button" class="btn" id="pick">Choose file</button>
@@ -182,6 +184,15 @@ select.guess{border-color:var(--accent)}
     <div class="kpi"><div class="k">Funds</div><div class="v" id="kFunds">–</div></div>
     <div class="kpi"><div class="k">Categories</div><div class="v" id="kCats">–</div></div>
     <div class="kpi"><div class="k">Period</div><div class="v" id="kPer" style="font-size:16px">–</div></div>
+  </section>
+
+  <section class="card" id="sipCard" aria-labelledby="h-sip" hidden>
+    <div class="thead"><h2 id="h-sip">SIPs</h2><span class="hint" id="sipNote"></span></div>
+    <div class="chips" id="sipChips" style="margin-bottom:12px"></div>
+    <div class="tbl"><table>
+      <thead><tr><th class="l ns">Fund</th><th class="l ns">Folio</th><th class="l ns">Status</th><th class="ns">SIP amount</th><th class="ns">Last instalment</th><th class="ns">Instalments</th></tr></thead>
+      <tbody id="sipTb"></tbody><tfoot id="sipTf"></tfoot>
+    </table></div>
   </section>
 
   <div class="grid2">
@@ -356,7 +367,62 @@ function parseAOA(aoa){
   return {rows,period:m?m[1]+' – '+m[2]:'',client:hint?properName(hint):''};
 }
 
-function load(rows,period,label,isSample,clientHint){
+// ---- Wealth Elite "Live Portfolio" statement: each scheme row is followed by a "Sr. No." header and its transactions ----
+function parseWE(aoa){
+  const hi=aoa.findIndex(r=>r&&/^\s*scheme name\s*$/i.test(String(r[0]??''))&&r.some(c=>/cur\.?\s*val/i.test(String(c??''))));
+  if(hi<0)return null;
+  let asof=null,client='';
+  for(let i=0;i<hi;i++)for(const c of aoa[i]||[]){const t=String(c??'');let m;
+    if((m=t.match(/as on\s+(\d{2})\/(\d{2})\/(\d{4})/i)))asof=new Date(Date.UTC(+m[3],m[2]-1,+m[1]));}
+  if(aoa[1]&&aoa[1][0]&&/\([A-Z]{5}\d{4}[A-Z]\)/.test(String(aoa[1][0])))client=properName(String(aoa[1][0]).replace(/\(.*\)/,''));
+  const rows=[],schemes=[];let cur=null,lc=null,sec='';
+  for(let i=hi+1;i<aoa.length;i++){const r=aoa[i]||[],a=r[0];
+    if(/^\s*sr\.?\s*no/i.test(String(a??''))){const hd=r.map(c=>String(c??'').toLowerCase().trim()),f=re=>hd.findIndex(c=>re.test(c));
+      lc={type:f(/transaction/),date:f(/^date/),amt:f(/^amount/),sd:f(/^sd/),units:f(/^units/)};continue;}
+    if(typeof a==='number'&&cur&&lc){const typ=String(r[lc.type]??'').trim().replace(/\bS\s*T\s*P\b/i,'STP').replace(/\s+/g,' ');if(/^remaining\b/i.test(typ))continue;   // "Remaining …" rows repeat part of an earlier lot
+      const amt=num(r[lc.amt]),d=toDate(r[lc.date]);if(isNaN(amt))continue;
+      rows.push({fund:cur.fund,type:typ||'Unspecified',amt,units:num(r[lc.units])||0,date:d,client});
+      if(/^sip purchase$/i.test(typ)&&d)cur.sip.push({d,amt:amt+(lc.sd>=0?(num(r[lc.sd])||0):0)});continue;}
+    const t=String(a??'');
+    if(/folio\s*:/i.test(t)){const ln=t.split(/\n/).map(x=>x.trim());cur={fund:ln[0].replace(/\(SIP\)/i,'').replace(/\s+/g,' ').trim(),folio:(ln.find(x=>/^folio/i.test(x))||'').replace(/^folio\s*:\s*/i,''),sec,sip:[]};schemes.push(cur);lc=null;continue;}
+    if(/^\s*(equity|debt|hybrid|solution|other|index|fof|international|gold|commodit)/i.test(t)&&/-/.test(t)&&r.filter(c=>c!=null&&c!=='').length===1)sec=t.trim();
+  }
+  if(!rows.length)return null;
+  // SIP status from instalment dates (this statement has no SIP status column)
+  const ref=asof||new Date(), sips=schemes.filter(x=>x.sip.length).map(x=>{x.sip.sort((p,q)=>p.d-q.d);const last=x.sip[x.sip.length-1],gap=Math.round((ref-last.d)/864e5);
+    return {fund:x.fund,folio:x.folio,amt:last.amt,last:last.d,n:x.sip.length,status:gap<=45?'Active':gap<=100?'Missed recent instalments':'Stopped',gap};});
+  const ds=rows.map(r=>r.date).filter(Boolean).sort((p,q)=>p-q);
+  return {rows,period:ds.length?fmtD(ds[0])+' – '+fmtD(ds[ds.length-1]):'',client,sips,sipSrc:'we',asof};
+}
+// ---- SIP registration report (BSE StAR MF XSIP style): one row per SIP with a Status column ----
+function parseSIPReg(aoa){
+  let h=-1;for(let i=0;i<Math.min(aoa.length,40);i++){const r=(aoa[i]||[]).map(c=>String(c??'').toLowerCase());
+    if(r.some(c=>/status/.test(c))&&r.some(c=>/scheme/.test(c))&&r.some(c=>/inst|amount|amt/.test(c))){h=i;break;}}
+  if(h<0)return null;
+  const hd=aoa[h].map(c=>String(c??'').toLowerCase().trim()),col=(re,not)=>hd.findIndex(c=>re.test(c)&&!(not&&not.test(c)));
+  const ci={st:col(/status/),sc:col(/scheme\s*name|scheme/),amt:col(/inst.*(amt|amount)|sip\s*amount|amount|amt/),start:col(/start/),last:col(/end|cease|last/),folio:col(/folio/),n:col(/no\.?\s*of\s*inst|installments?$|instalments?$/),cl:col(/investor\s*name|client\s*name|holder\s*name|^name$/)};
+  const sips=[];for(let i=h+1;i<aoa.length;i++){const r=aoa[i]||[],s=r[ci.sc];if(!s||/total/i.test(String(r[0]??'')))continue;
+    sips.push({fund:String(s).trim(),folio:ci.folio>=0?String(r[ci.folio]??''):'',amt:num(r[ci.amt]),status:String(r[ci.st]??'').trim()||'Unknown',last:ci.last>=0?toDate(r[ci.last]):null,start:ci.start>=0?toDate(r[ci.start]):null,n:ci.n>=0?num(r[ci.n]):NaN,client:ci.cl>=0&&r[ci.cl]?properName(r[ci.cl]):''});}
+  return sips.length?{rows:[],period:'',client:(sips.find(x=>x.client)||{}).client||'',sips,sipSrc:'reg'}:null;
+}
+let SIPS=[],SIPSRC='',sipFilter=new Set();
+const sipCls=s=>/^active|live|registered/i.test(s)?'on':/missed|pause|hold|pending/i.test(s)?'warn':'off';
+function renderSIPs(){
+  $('sipCard').hidden=!SIPS.length;if(!SIPS.length)return;
+  const by={};SIPS.forEach(x=>{const o=by[x.status]||(by[x.status]={n:0,amt:0});o.n++;o.amt+=isNaN(x.amt)?0:x.amt;});
+  const order=Object.keys(by).sort((a,b)=>(sipCls(a)==='on'?0:sipCls(a)==='warn'?1:2)-(sipCls(b)==='on'?0:sipCls(b)==='warn'?1:2)||by[b].n-by[a].n);
+  [...sipFilter].forEach(s=>{if(!by[s])sipFilter.delete(s);});
+  $('sipChips').innerHTML=`<button class="chip sm" data-s="" aria-pressed="${!sipFilter.size}">All <small>${SIPS.length}</small></button>`+order.map(s=>`<button class="chip sm" data-s="${esc(s)}" aria-pressed="${sipFilter.has(s)}">${esc(s)} <small>${by[s].n} · ${inr0(by[s].amt)}</small></button>`).join('');
+  $('sipChips').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{const s=b.dataset.s;if(!s)sipFilter.clear();else sipFilter.has(s)?sipFilter.delete(s):sipFilter.add(s);renderSIPs();});
+  const list=SIPS.filter(x=>!sipFilter.size||sipFilter.has(x.status)).sort((a,b)=>order.indexOf(a.status)-order.indexOf(b.status)||(b.amt||0)-(a.amt||0));
+  $('sipTb').innerHTML=list.map(x=>`<tr><td class="l fund">${esc(x.fund)}</td><td class="l">${esc(x.folio||'–')}</td><td class="l"><span class="st ${sipCls(x.status)}">${esc(x.status)}</span></td><td>${isNaN(x.amt)?'–':inr0(x.amt)}</td><td>${x.last?fmtD(x.last):'–'}</td><td>${isNaN(x.n)?'–':x.n}</td></tr>`).join('')||'<tr class="empty"><td colspan="6">No SIPs with this status.</td></tr>';
+  const tot=list.reduce((a,x)=>a+(isNaN(x.amt)?0:x.amt),0);
+  $('sipTf').innerHTML=`<tr><td class="l">${list.length} SIP${list.length===1?'':'s'}</td><td></td><td></td><td>${inr0(tot)}</td><td></td><td></td></tr>`;
+  $('sipNote').textContent=SIPSRC==='we'?'Status from instalment dates: Active = last instalment within 45 days of the statement; Missed recent instalments = 46–100 days; Stopped = over 100 days. Upload the BSE SIP registration report for the exact status (cancelled, paused, auto-cancelled).':'Status as given in the report.';
+}
+
+function load(rows,period,label,isSample,clientHint,sips,sipSrc){
+  SIPS=sips||[];SIPSRC=sipSrc||'';sipFilter.clear();
   DATA=rows;TYPES={};rows.forEach(r=>{if(!(r.type in TYPES))TYPES[r.type]=true;});
   if(!period){const ds=rows.map(r=>r.date).filter(Boolean).sort((a,b)=>a-b);if(ds.length)period=fmtD(ds[0])+' – '+fmtD(ds[ds.length-1]);}
   PERIOD=period;open.clear();catFilter.clear();fq='';$('fq').value='';
@@ -369,7 +435,7 @@ function load(rows,period,label,isSample,clientHint){
   $('clientPick').hidden=CLIENTS.length<2;
   $('clientSel').innerHTML=`<option value="">All clients (${CLIENTS.length})</option>`+CLIENTS.map(c=>`<option>${esc(c)}</option>`).join('');
   const st=$('status');st.className='status'+(isSample?' sample':'');st.textContent=label;
-  render();
+  render();renderSIPs();
 }
 
 
@@ -388,10 +454,15 @@ async function handleFile(f){
   try{wb=XLSX.read(await f.arrayBuffer(),{type:'array'});}
   catch(e){err(`Couldn't open ${f.name}. If it is password-protected or an old format, open it in Excel, save as .xlsx, and try again.`);return;}
   for(const n of wb.SheetNames){
-    const p=parseAOA(XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:true,defval:null}));
+    const aoa=XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:true,defval:null});
+    const we=parseWE(aoa);
+    if(we){load(we.rows,we.period,`Showing ${f.name} · Wealth Elite portfolio statement · ${we.rows.length} transactions and ${we.sips.length} SIPs read`,false,we.client,we.sips,we.sipSrc);return;}
+    const p=parseAOA(aoa);
     if(p&&p.rows.length){load(p.rows,p.period,`Showing ${f.name} · sheet “${n}” · ${p.rows.length} transactions read`,false,p.client);return;}
+    const sr=parseSIPReg(aoa);
+    if(sr){load(sr.rows,'',`Showing ${f.name} · SIP registration report · ${sr.sips.length} SIPs read`,false,sr.client,sr.sips,sr.sipSrc);return;}
   }
-  err(`Couldn't find a Scheme Name and Amount column in ${f.name}. Check that the header row has both, then upload again.`);
+  err(`Couldn't read ${f.name}. It needs a transaction report (Scheme Name and Amount columns), a Wealth Elite portfolio statement, or a SIP registration report (Scheme and Status columns).`);
 }
 function handleText(t,label){
   const aoa=t.replace(/\r/g,'').split('\n').filter(l=>l.trim()).map(l=>l.split('\t').map(c=>{c=c.trim().replace(/^"(.*)"$/,'$1');return c===''?null:c;}));
