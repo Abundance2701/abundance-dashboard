@@ -3513,6 +3513,9 @@ Move              = target − today; every change is shown (under ₹1,000 coun
     const rows = [...C.lifeP.map(p => ['Life cover (term)', E(p.first), p.rec, p.have]), ['Health cover', `Family of ${C.members}`, C.hRec, C.hCover],
       ...(E1.length ? [['Personal accident', E1.map(p => E(p.first)).join(' & '), C.paRec, C.pa], ['Critical illness', E1.map(p => E(p.first)).join(' & '), C.ciRec, C.ci]] : [])].filter(r => r[2] > 0 || r[3] > 0);   /* nothing needed and nothing held: row left out */
     const lifeAdd = C.lifeP.reduce((s, p) => s + p.gap, 0);
+    /* a summary card: the amount to add, or "Covered" (in green) with what is held against what is needed */
+    const card = (short, l, add, have, need, how) => short ? `<div><span>${l} to add</span><b style="color:var(--brown)">${S(add)}</b><small>${how} · have ${S(have)} of ${S(need)}</small></div>`
+      : `<div class="hero"><span>${l}</span><b>Covered</b><small>Have ${S(have)} · need ${S(need)}</small></div>`;
     return [FP.cp.page(c, 'protect', 'Protecting your family', 'Insurance keeps the plan going if something unexpected happens.',
       `<table class="ct gt">
         <thead><tr><th>Cover</th><th>For</th><th>Needed</th><th>You have</th><th>To add</th></tr></thead><tbody>
@@ -3521,9 +3524,9 @@ Move              = target − today; every change is shown (under ₹1,000 coun
       ${C.review.length ? `<h3 class="st" style="margin-top:22px">Policies to review</h3><table class="ct gt"><thead><tr><th>Policy</th><th>Insured</th><th>Why</th></tr></thead><tbody>
         ${C.review.map(x => `<tr><td>${E(x.company)}</td><td>${E(/^self$/i.test(x.insured) ? (c.d.self?.first || 'You') : /^spouse$/i.test(x.insured) ? (c.d.spouse?.first || 'Spouse') : x.insured)}</td><td>${E(x.why)}</td></tr>`).join('')}</tbody></table>` : ''}
       <h3 class="st" style="margin-top:22px">Summary</h3>
-      <div class="kp" style="grid-template-columns:repeat(3,1fr)"><div class="${lifeAdd > 1 ? '' : 'hero'}"><span>Life cover to add</span><b style="${lifeAdd > 1 ? 'color:var(--brown)' : ''}">${lifeAdd > 1 ? S(lifeAdd) : 'None'}</b><small>${E1.length > 1 ? 'For both earners' : 'Term insurance'}</small></div>
-        <div><span>Health cover to add</span><b style="${C.hGap > 1 ? 'color:var(--brown)' : ''}">${C.hGap > 1 ? S(C.hGap) : 'None'}</b><small>Family floater or super top-up</small></div>
-        <div><span>Policies to review</span><b>${C.review.length}</b><small>${C.review.length ? 'Low cover for the premium, or stopped' : 'All fine'}</small></div></div>`, 'shield')];
+      <div class="kp" style="grid-template-columns:repeat(3,1fr)">${card(lifeAdd > 1, 'Life cover', lifeAdd, C.lifeP.reduce((s, p) => s + p.have, 0), C.lifeP.reduce((s, p) => s + p.rec, 0), C.lifeP.length > 1 ? 'Term insurance, for both' : 'Term insurance')}
+        ${card(C.hGap > 1, 'Health cover', C.hGap, C.hCover, C.hRec, 'Family floater or super top-up')}
+        <div><span>Policies to review</span><b>${C.review.length || 'All fine'}</b><small>${C.review.length ? 'Low cover for the premium, or stopped' : 'Nothing to change'}</small></div></div>`, 'shield')];
   };
 
   /* ---------- Your action plan ---------- */
