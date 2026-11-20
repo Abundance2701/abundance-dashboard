@@ -201,7 +201,7 @@ table.bulk tr.del>td{opacity:.45;text-decoration:line-through}table.bulk td.calc
 .scctl{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px 18px;background:var(--tint);border-radius:8px;padding:12px 14px}
 .scctl label{display:flex;flex-direction:column;font-size:13px;color:var(--muted);gap:3px}
 .scctl input,.scctl select{border:1px solid var(--line);border-radius:6px;padding:5px 8px;background:var(--paper);color:var(--ink);font:14px var(--fb)}
-.scctl .row{display:flex;gap:8px;align-items:center}.scctl .row input{width:70px}.scctl .row input.money{width:130px}.scctl .row select{padding:4px 6px;font-size:13px}.scctl .chk{flex-direction:row;gap:6px;align-items:center;color:var(--ink)}
+td.ovc .ovb{margin-left:6px;text-decoration:none;opacity:.45;font-size:13px}td.ovc:hover .ovb,td.ovc .ovb:focus{opacity:1}td.ovc .ovn{line-height:1.35}td.ovc input.ovi{width:130px;text-align:right;border:1px solid var(--green);border-radius:6px;padding:4px 8px;font:inherit}.scctl .row{display:flex;gap:8px;align-items:center}.scctl .row input{width:70px}.scctl .row input.money{width:130px}.scctl .row select{padding:4px 6px;font-size:13px}.scctl .chk{flex-direction:row;gap:6px;align-items:center;color:var(--ink)}
 table.sc{font-size:13.5px}table.sc th{min-width:96px}table.sc td:first-child{min-width:150px}table.sc th .note{display:block;font:400 12px var(--fb);text-transform:none;letter-spacing:0;color:var(--muted)}
 td.best{box-shadow:inset 0 -3px var(--gold)}
 @media print{.kpi.hasref .l::after,th .si{display:none}td.hasref,.kpi.hasref .v{color:inherit}}
@@ -2119,16 +2119,16 @@ Need in year y      = household × (1 + inflation)^y + premiums + EMIs of loans 
       /* Needs: loans + goals still to build + family's living cost (their share) until they would have retired − investments not used by any goal */
       const rr = (1 + i) / (1 + inf) - 1, yrs = o['yrs' + w] ?? N, liv = cf.living * 12 * share, livPV = yrs > 0 ? liv * (rr ? (1 - Math.pow(1 + rr, -yrs)) / rr * (1 + rr) : yrs) : 0;
       const needs = E ? Math.max(loans * share + goalGap * share + livPV - spare * share, 0) : 0;
-      const rec = up(Math.max(hlv, needs));
-      return { w, name: p.name, first: p.first || p.name, age: FP.age(p.dob), ry: o['ry' + w] || ry, paidUp, E, N, yrs, share, pols, have, hlv, needs, livPV, liv, rec, gap: Math.max(rec - have, 0), stated: w === 'Self' ? d.other.lifeSelf : d.other.lifeSpouse };
+      const recCalc = up(Math.max(hlv, needs)), ov = +(o.recOv || {})[w] || 0, rec = ov > 0 ? ov : recCalc;
+      return { recCalc, recSet: ov > 0, show: E > 0 || ov > 0, w, name: p.name, first: p.first || p.name, age: FP.age(p.dob), ry: o['ry' + w] || ry, paidUp, E, N, yrs, share, pols, have, hlv, needs, livPV, liv, rec, gap: Math.max(rec - have, 0), stated: w === 'Self' ? d.other.lifeSelf : d.other.lifeSpouse };
     });
     const members = [d.self, d.spouse].filter(Boolean).length + kids, hCover = d.health.reduce((s, x) => s + (x.cover || 0), 0);
-    const hRec = Math.max(o.healthMin, o.healthPer * members), extra = d.general || [];
+    const hRecCalc = Math.max(o.healthMin, o.healthPer * members), hSet = +o.hRecOv > 0, hRec = hSet ? +o.hRecOv : hRecCalc, extra = d.general || [];
     const has = re => extra.filter(x => re.test(x.type + ' ' + x.kind + ' ' + x.company)).reduce((s, x) => s + (x.cover || 0), 0);
     const review = d.life.filter(x => x.type !== 'Term' && x.annual > 0 && x.sa < 10 * x.annual).map(x => ({ ...x, why: `Cover is only ${(x.sa / x.annual).toFixed(1)}× the yearly premium` }))
       .concat(d.life.filter(x => /stop/i.test(x.mode)).map(x => ({ ...x, why: 'Premiums stopped: check paid-up value and whether cover still runs' })));
     const earners = people.filter(p => p.E > 0);
-    return { o, people, earners, members, hCover, hRec, hGap: Math.max(hRec - hCover, 0), pa: has(/accident|\bpa\b/i), ci: has(/critical|\bci\b/i), paRec: o.paBy === 'amt' ? up(o.paAmt) : up(earners.reduce((s, p) => s + p.E, 0) * o.pa), ciRec: o.ciBy === 'amt' ? up(o.ciAmt) : up(earners.reduce((s, p) => s + p.E, 0) * o.ci), review, parents: d.others.length, loans, goalGap, spare };
+    return { o, people, earners, lifeP: people.filter(p => p.show), members, hCover, hRec, hRecCalc, hSet, hGap: Math.max(hRec - hCover, 0), pa: has(/accident|\bpa\b/i), ci: has(/critical|\bci\b/i), paRec: o.paBy === 'amt' ? up(o.paAmt) : up(earners.reduce((s, p) => s + p.E, 0) * o.pa), ciRec: o.ciBy === 'amt' ? up(o.ciAmt) : up(earners.reduce((s, p) => s + p.E, 0) * o.ci), review, parents: d.others.length, loans, goalGap, spare };
   };
 
   FP.sec.insurance = {
@@ -2140,8 +2140,10 @@ Need in year y      = household × (1 + inflation)^y + premiums + EMIs of loans 
       const byInp = (k, l) => { const amt = o[k + 'By'] === 'amt'; return `<label>${l}<span class="row">${amt ? `<input data-io="${k}Amt" type="text" inputmode="decimal" class="money" data-raw="${o[k + 'Amt']}" value="${FP.inrx(o[k + 'Amt'])}">` : `<input data-io="${k}" type="number" step="any" value="${o[k]}">`}<select data-ioby="${k}" aria-label="${l} as"><option value="x"${amt ? '' : ' selected'}>× yearly income</option><option value="amt"${amt ? ' selected' : ''}>₹ amount</option></select></span></label>`; };
       const inp = (k, l, v, suf = '', money) => `<label>${l}<span class="row">${money ? `<input data-io="${k}" type="text" inputmode="decimal" class="money" data-raw="${v}" value="${FP.inrx(v)}">` : `<input data-io="${k}" type="number" step="any" value="${v}">`}${suf}</span></label>`;
       const life = C.people;
+      /* a figure you can type over: ✎ to edit; "use calculated" goes back to the tool's number */
+      const ovCell = (k, v, calc, set) => `<td class="n ovc"><span class="ovv">${FP.inr(v)}</span><button class="link ovb noprint" data-ovk="${k}" title="Type your own figure" aria-label="Type your own figure">✎</button>${set ? `<span class="note ovn">Your figure<br><button class="link" data-ovr="${k}">Use calculated ${FP.short(calc)}</button></span>` : ''}</td>`;
       el.innerHTML = `
-      <div class="kpis">${life.filter(p => p.E > 0).map(p => FP.kpi(`Life cover · ${FP.esc(p.first)}`, FP.short(p.rec), p.gap > 0 ? `Has ${FP.short(p.have)} · add ${FP.short(p.gap)}` : `Has ${FP.short(p.have)} · enough`, 1)).join('')}
+      <div class="kpis">${life.filter(p => p.show).map(p => FP.kpi(`Life cover · ${FP.esc(p.first)}`, FP.short(p.rec), p.gap > 0 ? `Has ${FP.short(p.have)} · add ${FP.short(p.gap)}` : `Has ${FP.short(p.have)} · enough`, 1)).join('')}
         ${FP.kpi('Health cover', FP.short(C.hRec), C.hGap > 0 ? `Has ${FP.short(C.hCover)} · add ${FP.short(C.hGap)}` : `Has ${FP.short(C.hCover)} · enough`)}</div>
       <div class="grid2">
         <div><h3>Life cover: needed vs held</h3><div class="chartbox" style="height:${Math.max(150, life.length * 70 + 50)}px"><canvas id="insBar" role="img" aria-label="Life and health cover needed against cover held"></canvas></div>
@@ -2155,16 +2157,16 @@ Need in year y      = household × (1 + inflation)^y + premiums + EMIs of loans 
           <tr data-k="liv"><td>Family's household cost until retirement<span class="note">${life.filter(p => p.E).map(p => `${FP.esc(p.first)}: ${p.yrs} yrs (to ${p.ry || '—'})`).join(' · ')}. After that the retirement corpus pays.</span></td>${life.map(p => `<td class="n">${FP.inr(p.livPV)}</td>`).join('')}</tr>
           <tr data-k="spare"><td>less Investments not used by goals</td>${life.map(p => `<td class="n">−${FP.inr(C.spare * p.share)}</td>`).join('')}</tr>
           <tr data-k="needs"><td><b>B. Needs-based</b></td>${life.map(p => `<td class="n">${FP.inr(p.needs)}</td>`).join('')}</tr>
-          <tr class="tot" data-k="rec"><td>Recommended (higher of A and B)</td>${life.map(p => `<td class="n">${FP.inr(p.rec)}</td>`).join('')}</tr>
+          <tr class="tot" data-k="rec"><td>Recommended${life.some(p => p.recSet) ? '' : ' (higher of A and B)'}${life.some(p => p.recSet) ? '<span class="note">Higher of A and B, or your figure</span>' : ''}</td>${life.map(p => ovCell('life:' + p.w, p.rec, p.recCalc, p.recSet)).join('')}</tr>
           <tr data-k="have"><td>Cover held now${life.some(p => p.paidUp.length) ? `<span class="note">Not counted, premiums stopped: ${life.flatMap(p => p.paidUp.map(x => `${FP.esc(x.company)} ${FP.short(x.sa)}`)).join(', ')}</span>` : ''}</td>${life.map(p => `<td class="n">${FP.inr(p.have)}</td>`).join('')}</tr>
           <tr data-k="gap"><td><b>Cover to add</b></td>${life.map(p => `<td class="n"><b style="color:${p.gap ? 'var(--brown)' : 'var(--good)'}">${p.gap ? FP.inr(p.gap) : 'None'}</b></td>`).join('')}</tr></tbody></table></div>
-          ${life.some(p => !p.E) ? `<p class="hint">${life.filter(p => !p.E).map(p => FP.esc(p.first)).join(', ')} has no earned income in the data, so no cover is calculated. Rent and interest continue after a death, so they are not counted.</p>` : ''}
+          ${life.some(p => !p.show) ? `<p class="hint">${life.filter(p => !p.show).map(p => FP.esc(p.first)).join(', ')} has no earned income in the data, so no cover is calculated (✎ to set one). Rent and interest continue after a death, so they are not counted.</p>` : ''}
           <p class="hint">Each person's share of loans, goals and living cost follows their share of earned income. Term insurance is the cheapest way to add cover.</p></div>
       </div>
       <div class="grid2">
         <div><h3>Health cover</h3><div class="tbl"><table><tbody>
           <tr data-k="members"><td>Family members to cover</td><td class="n">${C.members}</td></tr>
-          <tr data-k="hrec"><td>Recommended family floater<span class="note">${FP.short(o.healthPer)} a person, at least ${FP.short(o.healthMin)}</span></td><td class="n">${FP.inr(C.hRec)}</td></tr>
+          <tr data-k="hrec"><td>Recommended family floater<span class="note">${FP.short(o.healthPer)} a person, at least ${FP.short(o.healthMin)}</span></td>${ovCell('health', C.hRec, C.hRecCalc, C.hSet)}</tr>
           <tr data-k="hhave"><td>Cover held now${d.health.length ? `<span class="note">${d.health.map(x => `${FP.esc(x.company)} · ${FP.esc(x.type)}`).join('; ')}</span>` : ''}</td><td class="n">${FP.inr(C.hCover)}</td></tr>
           <tr class="tot"><td>To add</td><td class="n">${C.hGap ? FP.inr(C.hGap) : 'None'}</td></tr></tbody></table></div>
           <p class="hint">${C.hGap ? 'A super top-up is usually the cheapest way to add this.' : 'Cover is in line with the family size.'}${C.parents ? ' Parents are best covered by a separate policy, so their claims don\'t use up the family cover.' : ''}</p></div>
@@ -2184,11 +2186,17 @@ Needs         = share × (loans + goals still to build − unused investments) +
                 real rate = (1 + ${o.disc}%) ÷ (1 + inflation) − 1
 Recommended   = MAX(HLV, Needs), rounded up to ₹5 L
 Health        = MAX(minimum floater, per person × family members)</div></details>`;
+      const setOv = (k, v) => FP.set(s => { const o2 = { ...(s.ins || {}) }; if (k === 'health') { if (v > 0) o2.hRecOv = v; else delete o2.hRecOv; } else { const w = k.split(':')[1], m = { ...(o2.recOv || {}) }; if (v > 0) m[w] = v; else delete m[w]; o2.recOv = m; } s.ins = o2; });
+      el.querySelectorAll('[data-ovr]').forEach(b => b.onclick = () => setOv(b.dataset.ovr, 0));
+      el.querySelectorAll('[data-ovk]').forEach(b => b.onclick = () => { const k = b.dataset.ovk, td = b.closest('td'), p = k === 'health' ? null : life.find(x => 'life:' + x.w === k), cur = p ? p.rec : C.hRec, calc = p ? p.recCalc : C.hRecCalc;
+        td.innerHTML = `<input class="money ovi" type="text" inputmode="decimal" value="${FP.inrx(cur)}" aria-label="Your figure"><span class="note">Enter to save · Esc to cancel</span>`; const i = td.querySelector('input'); i.focus(); i.select(); let done = false;
+        const fin = keep => { if (done) return; done = true; if (!keep) return FP.render(); const v = Math.round(FP.num(i.value)); setOv(k, v > 0 && Math.abs(v - calc) >= 1 ? v : 0); };
+        i.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); fin(true); } else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); fin(false); } }; i.onblur = () => fin(true); });
       el.querySelectorAll('[data-ioby]').forEach(x => x.onchange = () => { const k = x.dataset.ioby, rec = FP.calc.ins(FP.d, FP.st)[k + 'Rec'] || 0;
         FP.set(s => { const cur = { ...DEF, ...(s.ins || {}) }; s.ins = { ...(s.ins || {}), [k + 'By']: x.value }; if (x.value === 'amt' && !cur[k + 'Amt']) s.ins[k + 'Amt'] = rec; }); });   /* switching to an amount starts from today's recommendation */
       el.querySelectorAll('[data-iob]').forEach(x => x.onchange = () => FP.set(s => { s.ins = { ...(s.ins || {}), [x.dataset.iob]: x.checked }; }));
       el.querySelectorAll('[data-io]').forEach(x => x.onchange = () => FP.set(s => { s.ins = { ...(s.ins || {}), [x.dataset.io]: x.classList.contains('money') ? FP.num(x.value) : +x.value }; }));
-      const L = [...life.filter(p => p.E).map(p => 'Life · ' + p.first), 'Health'], held = [...life.filter(p => p.E).map(p => Math.min(p.have, p.rec)), Math.min(C.hCover, C.hRec)], add = [...life.filter(p => p.E).map(p => p.gap), C.hGap];
+      const L = [...life.filter(p => p.show).map(p => 'Life · ' + p.first), 'Health'], held = [...life.filter(p => p.show).map(p => Math.min(p.have, p.rec)), Math.min(C.hCover, C.hRec)], add = [...life.filter(p => p.show).map(p => p.gap), C.hGap];
       FP.chart('insBar', { type: 'bar', data: { labels: L, datasets: [{ label: 'Cover held', data: held, backgroundColor: '#1E7A46', borderRadius: 4, barThickness: 22 }, { label: 'Cover to add', data: add, backgroundColor: '#A3502F', borderRadius: 4, barThickness: 22 }] },
         options: { indexAxis: 'y', maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => `${c.dataset.label}: ${FP.short(c.raw)}` } } }, scales: { x: { stacked: true, grid: { color: '#e8eef1' }, ticks: { callback: v => FP.short(v) } }, y: { stacked: true, grid: { display: false } } } } });
     }
@@ -3502,9 +3510,9 @@ Move              = target − today; every change is shown (under ₹1,000 coun
   const protect = c => {
     const C = FP.calc.ins(c.d, c.st), E1 = C.earners;
     const add = (n, h) => n - h > 1 ? `<span class="gap">${S(n - h)}</span>` : '<span class="ok">Enough</span>';
-    const rows = [...E1.map(p => ['Life cover (term)', E(p.first), p.rec, p.have]), ['Health cover', `Family of ${C.members}`, C.hRec, C.hCover],
+    const rows = [...C.lifeP.map(p => ['Life cover (term)', E(p.first), p.rec, p.have]), ['Health cover', `Family of ${C.members}`, C.hRec, C.hCover],
       ...(E1.length ? [['Personal accident', E1.map(p => E(p.first)).join(' & '), C.paRec, C.pa], ['Critical illness', E1.map(p => E(p.first)).join(' & '), C.ciRec, C.ci]] : [])].filter(r => r[2] > 0 || r[3] > 0);   /* nothing needed and nothing held: row left out */
-    const lifeAdd = E1.reduce((s, p) => s + p.gap, 0);
+    const lifeAdd = C.lifeP.reduce((s, p) => s + p.gap, 0);
     return [FP.cp.page(c, 'protect', 'Protecting your family', 'Insurance keeps the plan going if something unexpected happens.',
       `<table class="ct gt">
         <thead><tr><th>Cover</th><th>For</th><th>Needed</th><th>You have</th><th>To add</th></tr></thead><tbody>
