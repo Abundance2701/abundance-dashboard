@@ -1964,11 +1964,21 @@ function rvRender() {
   const Ls = get('Large cap'), Ms = get('Mid cap'), Ss = get('Small cap'), Fs = get('Foreign'), stocks = Ls + Ms + Ss;
   const parts = [['Large cap stocks', Ls, '#005826'], ['Mid cap stocks', Ms, '#4f9a6d'], ['Small cap stocks', Ss, '#F9B738'], ['Foreign stocks', Fs, '#934E32'], ['International funds', get('International'), '#2b4c6f'], ['Cash & bonds inside equity/hybrid funds', get('Cash'), '#b9c4bd'], ['Debt funds', nowA.Debt, '#7d8fa3'], ['Gold & other funds', nowA['Gold & other'], '#d9b46a'], ['Not looked through', get('Not looked'), '#e2dde4']].filter(x => x[1] > 0.5);
   const tot = parts.reduce((s, x) => s + x[1], 0) || 1;
-  const capTile = (k, v) => tile(k, inrS(v), `${(v / T * 100).toFixed(1)}% of portfolio · ${stocks ? (v / stocks * 100).toFixed(0) : '—'}% of Indian stocks`);
+  const capTile = (k, v) => tile(k, stocks ? (v / stocks * 100).toFixed(0) + '%' : '—', `of Indian stocks held · ${inrS(v)} (${(v / T * 100).toFixed(1)}% of portfolio)`);
   const nl = W.find(x => x.l.startsWith('Not looked'));
   const S = HOLD.stocks, stockBars = X.top10 ? hbars(X.top10.map(x => ({ l: x.name, v: x.w, sub: `in ${x.n} of ${X.cov.length} funds · ${inrS(x.rs)}` }))) : '<div class="na">—</div>';
   const amcBars = hbars(X.amc.map(([a, p, v]) => ({ l: a, v: p, sub: inrS(v), col: p > 40 ? '#c98a00' : 'var(--dark)' })), { max: Math.max(50, ...X.amc.map(x => x[1])) });
-  const ovCard = X.cov.length >= 2 ? xrGrid(X.cov, X.ov, v => v.toFixed(0) + '%', ovBg, (a, b, c) => `#${a.no} & #${b.no}: ${c.n} stocks in common, ${c.o.toFixed(1)}% common weight`) : '<div class="meta">Needs two funds with holdings data.</div>';
+  const ovCard = X.cov.length >= 2 ? xrGrid(X.cov, X.ov, v => v.toFixed(0) + '%', ovBg, (a, b, c) => `${a.short} × ${b.short}: ${c.n} stocks in common, ${c.o.toFixed(1)}% common weight`) : '<div class="meta">Needs two funds with holdings data.</div>';
+  // overlap: within each category only pairs above the 35% norm are listed (with many funds, every pair would be too many)
+  const OVL = 35, ovIdx = new Map(X.cov.map((f, i) => [f, i])), ovOf = (a, b) => X.ov[ovIdx.get(a)][ovIdx.get(b)].o;
+  const byJ = {}; for (const f of X.cov) if (assetRow(f) === 'Equity') (byJ[eqJob(f)] = byJ[eqJob(f)] || []).push(f);
+  const catOv = EQJOBS.filter(j => byJ[j] && byJ[j].length > 1).map(j => { const a = byJ[j], pr = []; for (let i = 0; i < a.length; i++) for (let k = i + 1; k < a.length; k++) pr.push([a[i], a[k], ovOf(a[i], a[k])]);
+    pr.sort((x, y) => y[2] - x[2]); const hi = pr.filter(x => x[2] > OVL), lo = pr.length - hi.length;
+    return `<div class="pbcat"><b>${j}</b> <span class="fund-meta" style="display:inline">${a.length} funds · ${pr.length} pair${pr.length > 1 ? 's' : ''}</span>${hi.map(([x, y, v]) => `<div class="pbpair"><span>${esc(x.short)} × ${esc(y.short)}</span><b style="color:${pbCol(v)}">${v.toFixed(0)}%</b></div>`).join('')}${hi.length && !lo ? '' : `<div class="pbpair" style="color:var(--muted)"><span>${hi.length ? `${lo} other pair${lo === 1 ? '' : 's'} under ${OVL}%` : `All under ${OVL}% (highest ${esc(pr[0][0].short)} × ${esc(pr[0][1].short)})`}</span><span>${hi.length ? '' : pr[0][2].toFixed(0) + '%'}</span></div>`}</div>`; }).join('') || '<div class="meta">No category has two funds with holdings data.</div>';
+  let pHi = null, pN = 0, pSum = 0, pOver = 0; X.cov.forEach((a, i) => X.cov.forEach((b, k) => { if (k <= i) return; const v = X.ov[i][k].o; pN++; pSum += v; if (v > OVL) pOver++; if (!pHi || v > pHi.v) pHi = { a, b, v }; }));
+  const AS = X.activeShare, wholeOv = `${isNum(AS) ? `<div class="tiles small" style="margin:0 0 8px">${tile('Active share', AS.toFixed(0) + '%', 'different from the blended index')}${tile('Overlap with index', (100 - AS).toFixed(0) + '%', 'same stocks, same weight as the index')}</div>` : ''}
+    ${pHi ? `<div class="pbpair"><span>Highest: ${esc(pHi.a.short)} × ${esc(pHi.b.short)}</span><b style="color:${pbCol(pHi.v)}">${pHi.v.toFixed(0)}%</b></div><div class="pbpair"><span>Average of all ${pN} pairs</span><b style="color:${pbCol(pSum / pN)}">${(pSum / pN).toFixed(0)}%</b></div><div class="pbpair"><span>Pairs above ${OVL}%</span><b>${pOver} of ${pN}</b></div>` : '<div class="meta">Needs two funds with holdings data.</div>'}
+    <div class="meta">Blended index = each fund's own index, weighted by the money in it. Full grid under "More detail".</div>`;
   $('xrOut').innerHTML = `<div class="panel xr4 rv">
     <h3>Client review${client ? ' · ' + esc(client) : ''} <span class="sub">${inrS(T)} · ${F.length} funds · statement ${esc(meta.asofLabel || '—')} · holdings ${esc(X.asof || '—')}</span></h3>
     <div class="controls" style="gap:10px 14px;margin-bottom:10px"><div class="field"><label>Risk profile</label><select id="rvProf">${PROFILES.map(([k, l]) => `<option value="${k}"${k === RV.profile ? ' selected' : ''}>${l}</option>`).join('')}</select></div>
@@ -1977,6 +1987,8 @@ function rvRender() {
       <div class="card2"><div class="ct">Asset mix</div>${tbl('Asset', assetRows, sumA)}</div>
       <div class="card2"><div class="ct">Equity by category <span class="ctsub">% of equity · change at the equity target</span></div>${tbl('Category', eqRows, sumE)}${addable.length ? `<div class="btnrow" style="margin-top:6px"><select id="rvAddJob" style="min-width:0;font-size:13px;padding:4px 8px"><option value="">+ add a category</option>${addable.map(j => `<option>${j}</option>`).join('')}</select></div>` : ''}</div>
     </div>
+    <div class="grid2 xsec"><div class="card2"><div class="ct">Overlap within each category <span class="ctsub">pairs above ${OVL}% listed</span></div>${catOv}</div>
+      <div class="card2"><div class="ct">Whole portfolio vs the index</div>${wholeOv}</div></div>
     <div class="card2 xsec"><div class="ct">What the whole portfolio owns <span class="ctsub">funds looked through to their stocks</span></div>
       <div class="tiles">${capTile('Large cap stocks', Ls)}${capTile('Mid cap stocks', Ms)}${capTile('Small cap stocks', Ss)}</div>
       <span class="capbar" style="width:100%;height:16px">${parts.map(x => `<i style="width:${(x[1] / tot * 100).toFixed(2)}%;background:${x[2]}" title="${x[0]} ${inr(x[1])}"></i>`).join('')}</span>
