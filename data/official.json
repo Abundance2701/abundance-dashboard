@@ -1,173 +1,26 @@
 {
- "updated": "2026-11-21T10:15:13Z",
+ "updated": "2026-11-23T11:18:14Z",
  "items": [
   {
    "src": "RBI",
-   "title": "Reserve Bank of India – Bulletin Weekly Statistical Supplement – Extract",
-   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=64013",
-   "date": "2026-11-20",
-   "important": false
+   "title": "RBI issues Draft Amendment Directions for ‘Preventive Safeguards for Electronic Banking Transactions (EBTs)’",
+   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=64026",
+   "date": "2026-11-23",
+   "important": true
   },
   {
    "src": "RBI",
-   "title": "Reserve Bank issues Foreign Exchange Management (Export and Import of Goods and Services) (Second Amendment) Regulations, 2026",
-   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=64009",
-   "date": "2026-11-20",
+   "title": "RBI releases 2026 list of Domestic Systemically Important Banks (D-SIBs)",
+   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=64025",
+   "date": "2026-11-23",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of units issued by Edelweiss Asset Management Limited (Edelweiss Nifty Energy ETF)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77562.pdf",
+   "date": "2026-11-23",
    "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Reminder for submission of Risk Based Supervision data for the period April 01, 2026 - September 30, 2026",
-   "url": "https://nsearchives.nseindia.com/content/circulars/INSP77560.pdf",
-   "date": "2026-11-20",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Compliance with the guidelines on 'Safer participation of Retail Investors in Algorithmic trading' issued by SEBI and Exchanges - Tech-savvy Retail Investors",
-   "url": "https://nsearchives.nseindia.com/content/circulars/INSP77559.pdf",
-   "date": "2026-11-20",
-   "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Revised list of Approved Securities and Banks",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CMPT77558.zip",
-   "date": "2026-11-20",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Change in Collateral Timings",
-   "url": "https://nsearchives.nseindia.com/content/circulars/EGR77552.pdf",
-   "date": "2026-11-20",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of further issues of securities",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77545.pdf",
-   "date": "2026-11-20",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of Equity Shares of Blue Cloud Softech Solutions Limited (New Listing)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77544.zip",
-   "date": "2026-11-20",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of privately placed securities on the debt market segment of the Exchange",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77542.pdf",
-   "date": "2026-11-20",
-   "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Exclusion of Futures and Options contracts on GODFRYPHLP",
-   "url": "https://nsearchives.nseindia.com/content/circulars/FAOP77541.pdf",
-   "date": "2026-11-20",
-   "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of privately placed securities on capital market segment",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77540.pdf",
-   "date": "2026-11-20",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Applicability of Short-Term Additional Surveillance Measure (ST-ASM)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77539.zip",
-   "date": "2026-11-20",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Applicability of Additional Surveillance Measure (ASM)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77538.zip",
-   "date": "2026-11-20",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of units issued by Aditya Birla Sun Life AMC Limited [Aditya Birla Sun Life Fixed Maturity Plan - Series VC (114 days)]",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77536.pdf",
-   "date": "2026-11-20",
-   "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Change in name and symbol of Lorenzini Apparels Limited",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77535.pdf",
-   "date": "2026-11-20",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Applicability of Enhanced Surveillance Measure (ESM)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77534.zip",
-   "date": "2026-11-20",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Reminder for Submission of Half Yearly Networth Certificate as on September 30, 2026",
-   "url": "https://nsearchives.nseindia.com/content/circulars/COMP77532.pdf",
-   "date": "2026-11-20",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Non-Business Day for certain schemes of Mutual Fund on NSE MF Invest Platform for November 2026",
-   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77531.zip",
-   "date": "2026-11-20",
-   "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Member Interface Testing of Two-way portability across Clearing Corporations - Software as a Service (SaaS) Model",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CMPT77530.pdf",
-   "date": "2026-11-20",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Member Interface Testing of Two-way portability across Clearing Corporations- Software as a Service (SaaS) Model",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CD77529.pdf",
-   "date": "2026-11-20",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Launch of Bandhan Nifty Commodities Index Fund NFO on NSE MF Invest Platform",
-   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77527.pdf",
-   "date": "2026-11-20",
-   "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Suspension of trading in Non-Convertible Securities (Privately Placed)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77526.pdf",
-   "date": "2026-11-20",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Revised MWPL, Participant, Institutional & Non-Institutional Client Limits for SMLMAH",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CMPT77525.pdf",
-   "date": "2026-11-20",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of Equity Shares of Mitsu Chem Plast Limited (New Listing)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77504.zip",
-   "date": "2026-11-20",
-   "important": false
   },
   {
    "src": "RBI",
@@ -254,8 +107,8 @@
    10
   ],
   "https://nsearchives.nseindia.com/content/RSS/Circulars.xml": [
-   35,
-   33
+   2,
+   1
   ]
  },
  "errors": []
