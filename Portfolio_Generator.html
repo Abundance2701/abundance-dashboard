@@ -164,6 +164,10 @@ body.pdfdrag::after{content:"Drop the saved portfolio PDF to open it";position:f
 .ms-busy .sp2{width:26px;height:26px;margin:0 auto 10px;border:3px solid var(--line);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite;}
 .ms-busy .msg{font-size:13.5px;color:var(--ink-2);line-height:1.45;}
 #mailsheet.busy .ms-body,#mailsheet.busy .ms-foot{display:none;}
+.ms-greet{display:flex;gap:8px;}
+.ms-greet input{flex:0 0 38%;min-width:0;}
+.ms-greet select{flex:1;min-width:0;}
+.ms-hint{font-weight:400;color:var(--ink-3);font-size:11.5px;}
 .ms-wd{border-top:none;padding-top:0;margin-bottom:6px;}
 .ms-wd small{word-break:break-word;}
 
@@ -580,7 +584,8 @@ body.exporting #viewer{display:block !important;position:fixed;left:-10000px;top
       <div class="field" id="msCcF" hidden><label for="msCc">Cc</label><input class="inp" type="text" id="msCc" placeholder="Separate with commas" autocomplete="off" spellcheck="false"></div>
       <div class="field" id="msBccF" hidden><label for="msBcc">Bcc</label><input class="inp" type="text" id="msBcc" placeholder="Separate with commas" autocomplete="off" spellcheck="false"></div>
       <div class="field"><label for="msSubj">Subject</label><input class="inp" type="text" id="msSubj"></div>
-      <div class="field"><label for="msGreet">Greeting</label><select class="inp" id="msGreet"></select></div>
+      <div class="field"><label for="msGreet">Greeting <span class="ms-hint">type the name you call them by</span></label>
+        <div class="ms-greet"><input class="inp" id="msGName" type="text" placeholder="Name" autocomplete="off" spellcheck="false" aria-label="Name used in the greeting"><select class="inp" id="msGreet"></select></div></div>
       <div class="field">
         <label for="msBody">Message <button class="ms-link" id="msReset" type="button">Reset to template</button></label>
         <textarea class="inp" id="msBody" spellcheck="true"></textarea>
@@ -2858,39 +2863,58 @@ function firstName(n){
   const t = String(n||'').split(/\s+/).filter(w => w.replace(/\./g,'').length > 1);
   return t[0] || String(n||'').trim();
 }
-function greetOptions(name){
-  const f = firstName(name);
-  return f ? [`Hello, ${f}.`, 'Hello, sir.', "Hello, ma'am.", `Hello, ${f} sir.`, `Hello, ${f} ma'am.`]
-           : ['Hello, sir.', "Hello, ma'am."];
+/* Greeting = a style + the name typed in the Name box.
+   CRM Gender narrows the styles: Male → sir only, Female → ma'am only; unknown → all. */
+const GSTYLE = {
+  name:     n => `Hello, ${n}.`,
+  sir:      () => 'Hello, sir.',
+  maam:     () => "Hello, ma'am.",
+  namesir:  n => `Hello, ${n} sir.`,
+  namemaam: n => `Hello, ${n} ma'am.`
+};
+const NEEDS_NAME = { name:1, namesir:1, namemaam:1 };
+function greetStyles(){
+  const g = MAIL.contact && MAIL.contact.gender;
+  if(g === 'Male') return ['sir','name','namesir'];
+  if(g === 'Female') return ['maam','name','namemaam'];
+  return ['name','sir','maam','namesir','namemaam'];
 }
+function greetText(style, name){
+  name = String(name||'').trim();
+  if(NEEDS_NAME[style] && !name) return style === 'namesir' ? 'Hello, sir.' : style === 'namemaam' ? "Hello, ma'am." : 'Hello.';
+  return (GSTYLE[style] || GSTYLE.name)(name);
+}
+/* remembered per email on this computer: { s: style, n: name } (older saves were plain text: ignored) */
 const greetMem = () => { try{ return JSON.parse(store.get('pg_greet') || '{}') || {}; }catch(e){ return {}; } };
-/* CRM "Greeting" field: Sir / Ma'am / Name / Name Sir / Name Ma'am (or a full phrase) */
-function crmGreet(v, name){
-  v = String(v||'').trim(); const f = firstName(name);
-  if(!v) return '';
-  if(/^(dear|hi|hello)\b/i.test(v)) return v;
-  if(/^sir$/i.test(v)) return 'Hello, sir.';
-  if(/^ma.?am$/i.test(v)) return "Hello, ma'am.";
-  if(/^name\s*sir$/i.test(v)) return `Hello, ${f} sir.`;
-  if(/^name\s*ma.?am$/i.test(v)) return `Hello, ${f} ma'am.`;
-  if(/^name$/i.test(v)) return `Hello, ${f}.`;
+/* CRM "Greeting" field: Sir / Ma'am / Name / Name Sir / Name Ma'am → a style */
+function crmStyle(v){
+  v = String(v||'').trim();
+  if(/^sir$/i.test(v)) return 'sir';
+  if(/^ma.?am$/i.test(v)) return 'maam';
+  if(/^name\s*sir$/i.test(v)) return 'namesir';
+  if(/^name\s*ma.?am$/i.test(v)) return 'namemaam';
+  if(/^name$/i.test(v)) return 'name';
   return '';
 }
-function paintGreet(pick){
-  const sel = $('#msGreet'), opts = greetOptions(properName(S.name));
-  if(pick && !opts.includes(pick)) opts.unshift(pick);
-  sel.innerHTML = opts.map(o => `<option>${esc(o)}</option>`).join('');
-  sel.value = pick || opts[0];
+function paintGreet(){
+  const sel = $('#msGreet'), ok = greetStyles(), name = $('#msGName').value;
+  if(!ok.includes(MAIL.gstyle)) MAIL.gstyle = ok[0];
+  sel.innerHTML = ok.map(k => `<option value="${k}">${esc(greetText(k, name))}</option>`).join('');
+  sel.value = MAIL.gstyle;
 }
-/* remembered choice for this email (this computer) → CRM Greeting → CRM Gender (sir / ma'am) → first name */
-function greetFor(email){
-  const mem = email ? greetMem()[email.toLowerCase()] : '';
-  if(mem && greetOptions(properName(S.name)).includes(mem)) return mem;
-  const c = MAIL.contact;
-  if(!c) return '';
-  return crmGreet(c.greeting, S.name)
-    || (c.gender === 'Male' ? 'Hello, sir.' : c.gender === 'Female' ? "Hello, ma'am." : '');
+/* remembered choice for this email → CRM Greeting field → CRM Gender default → name */
+function setGreetFor(email){
+  const m = email ? greetMem()[String(email).toLowerCase()] : null;
+  if(m && typeof m === 'object'){
+    if(m.n) $('#msGName').value = m.n;
+    MAIL.gstyle = m.s || '';
+  } else {
+    MAIL.gstyle = crmStyle(MAIL.contact && MAIL.contact.greeting);
+  }
+  paintGreet();
 }
+$('#msGName').addEventListener('input', paintGreet);
+$('#msGreet').addEventListener('change', e => { MAIL.gstyle = e.target.value; });
 
 async function mailApi(path, init){
   init = init || {};
@@ -2932,7 +2956,7 @@ function useContact(c, others){
     b.onclick = () => showPicks([c, ...others]);
     f.appendChild(b);
   }
-  paintGreet(greetFor(c.email));
+  setGreetFor(c.email);
 }
 function showPicks(list){
   const f = $('#msFind'), pk = $('#msPick');
@@ -2983,7 +3007,9 @@ function openMail(){
   $('#msKey').hidden = true; $('#msKeyIn').value = '';
   $('#msForget').hidden = !MAIL.key;
   MAIL.contact = null;
-  paintGreet('');
+  $('#msGName').value = firstName(nm);
+  MAIL.gstyle = '';
+  paintGreet();
   $('#mailsheet').classList.remove('busy'); $('#msBusy').classList.remove('on');
   $('#scrim').classList.add('on'); $('#mailsheet').classList.add('on');
   findClient();
@@ -3023,7 +3049,9 @@ async function sendMail(){
   const subject = $('#msSubj').value.trim() || MAIL_SUBJECT;
   const text = $('#msBody').value.trim();
   if(!text){ toast('The message is empty.', true); return; }
-  const greet = $('#msGreet').value;
+  const gname = $('#msGName').value.trim(), gstyle = $('#msGreet').value;
+  if(NEEDS_NAME[gstyle] && !gname){ toast('Type the name to use in the greeting, or pick sir / ma\'am.', true); $('#msGName').focus(); return; }
+  const greet = greetText(gstyle, gname);
 
   /* WorkDrive needs this click for its folder permission, so prepare it before anything else */
   const saveWD = WD.ok && $('#msWD').classList.contains('on');
@@ -3064,7 +3092,7 @@ async function sendMail(){
       body: JSON.stringify({ to: to.join(','), cc: cc.join(','), bcc: bcc.join(','), subject,
         html: mailHtml(greet, text), fileName: mailFileName(), pdfBase64: await blobB64(blob) })
     });
-    const mem = greetMem(); to.forEach(e => mem[e.toLowerCase()] = greet); store.set('pg_greet', JSON.stringify(mem));
+    const mem = greetMem(); to.forEach(e => mem[e.toLowerCase()] = { s: gstyle, n: gname }); store.set('pg_greet', JSON.stringify(mem));
     MAIL.busy = false; closeMail();
     toast(`Sent to <b>${esc(to.join(', '))}</b>. It is in your Zoho Mail Sent folder.`
       + (saved ? `<br>Saved to WorkDrive: <b>${esc(saved)}</b>` : '')
@@ -3087,7 +3115,7 @@ $('#msReset').addEventListener('click', () => { $('#msBody').value = MAIL_TEMPLA
 $('#msAddCc').addEventListener('click', () => { $('#msCcF').hidden = false; $('#msCc').focus(); });
 $('#msAddBcc').addEventListener('click', () => { $('#msBccF').hidden = false; $('#msBcc').focus(); });
 $('#msForget').addEventListener('click', () => { forgetKey(); $('#msForget').hidden = true; showKey('Passcode removed from this computer.'); });
-$('#msTo').addEventListener('change', () => { const g = greetFor(mailSplit($('#msTo').value)[0]); if(g) paintGreet(g); });
+$('#msTo').addEventListener('change', () => { const e = mailSplit($('#msTo').value)[0]; if(e && greetMem()[e.toLowerCase()]) setGreetFor(e); });
 function unlockMail(){
   const v = $('#msKeyIn').value.trim(); if(!v) return;
   MAIL.key = v; store.set('pg_mailkey', v);
