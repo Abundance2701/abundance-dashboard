@@ -1,6 +1,34 @@
 {
- "updated": "2026-11-23T11:18:14Z",
+ "updated": "2026-11-23T22:05:34Z",
  "items": [
+  {
+   "src": "RBI",
+   "title": "Governor, Reserve Bank of India meets Managing Directors & Chief Executive Officers of select NBFCs, HFCs and Industry Representatives in Mumbai on November 23, 2026",
+   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=64032",
+   "date": "2026-11-23",
+   "important": true
+  },
+  {
+   "src": "RBI",
+   "title": "Governor, Reserve Bank of India meets Chairpersons and Managing Directors & Chief Executive Officers of select UCBs and Industry Representatives in Mumbai on November 23, 2026",
+   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=64031",
+   "date": "2026-11-23",
+   "important": false
+  },
+  {
+   "src": "RBI",
+   "title": "Premature redemption under Sovereign Gold Bond (SGB) Scheme - Redemption Price for premature redemption of SGB 2021-22 Series I due on November 25, 2026",
+   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=64030",
+   "date": "2026-11-23",
+   "important": true
+  },
+  {
+   "src": "RBI",
+   "title": "Reserve Bank (Securitisation Transactions) Amendment Directions, 2026",
+   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=64028",
+   "date": "2026-11-23",
+   "important": false
+  },
   {
    "src": "RBI",
    "title": "RBI issues Draft Amendment Directions for ‘Preventive Safeguards for Electronic Banking Transactions (EBTs)’",
@@ -16,11 +44,151 @@
    "important": false
   },
   {
+   "src": "RBI",
+   "title": "Reserve Bank of India (All India Financial Institutions - Securitisation Transactions) Amendment Directions, 2026",
+   "url": "https://www.rbi.org.in/scripts/NotificationUser.aspx?Id=13756&Mode=0",
+   "date": "2026-11-23",
+   "important": false
+  },
+  {
+   "src": "RBI",
+   "title": "Reserve Bank of India (Non-Banking Financial Companies - Securitisation Transactions) Amendment Directions, 2026",
+   "url": "https://www.rbi.org.in/scripts/NotificationUser.aspx?Id=13755&Mode=0",
+   "date": "2026-11-23",
+   "important": false
+  },
+  {
+   "src": "RBI",
+   "title": "Reserve Bank of India (Small Finance Banks - Securitisation Transactions) Amendment Directions, 2026",
+   "url": "https://www.rbi.org.in/scripts/NotificationUser.aspx?Id=13754&Mode=0",
+   "date": "2026-11-23",
+   "important": false
+  },
+  {
+   "src": "RBI",
+   "title": "Reserve Bank of India (Commercial Banks - Securitisation Transactions) Amendment Directions, 2026",
+   "url": "https://www.rbi.org.in/scripts/NotificationUser.aspx?Id=13753&Mode=0",
+   "date": "2026-11-23",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Revised list of Cross Margin Eligible Exchange Traded Funds (ETFs)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CMPT77579.pdf",
+   "date": "2026-11-23",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Applicable MWPL, TM, FII/FPI & MF limits for Introduction of Two Individual Securities",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CMPT77578.pdf",
+   "date": "2026-11-23",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of further issues of securities",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77577.pdf",
+   "date": "2026-11-23",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of Equity Shares of Oneclick Logistics India Limited on Capital Market Segment (Main Board) pursuant to migration from SME Emerge platform",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77576.zip",
+   "date": "2026-11-23",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of privately placed securities on the debt market segment of the Exchange",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77574.pdf",
+   "date": "2026-11-23",
+   "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Trade for Trade",
+   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77573.zip",
+   "date": "2026-11-23",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of privately placed securities on capital market segment",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77571.pdf",
+   "date": "2026-11-23",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Applicability of Short-Term Additional Surveillance Measure (ST-ASM)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77570.zip",
+   "date": "2026-11-23",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Applicability of Additional Surveillance Measure (ASM)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77569.zip",
+   "date": "2026-11-23",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Permanent discontinuation of SIP and STP Facilities in certain schemes of Edelweiss Mutual Fund on NSE MF Invest Platform",
+   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77568.zip",
+   "date": "2026-11-23",
+   "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Merger of certain schemes of Union Mutual Fund on NSE MF Invest Platform",
+   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77567.zip",
+   "date": "2026-11-23",
+   "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Launch Invesco India Financial Services Debt Fund NFO on NSE MF Invest Platform",
+   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77566.pdf",
+   "date": "2026-11-23",
+   "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Launch Quant Nifty Next 50 Index Fund NFO on NSE MF Invest Platform",
+   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77565.pdf",
+   "date": "2026-11-23",
+   "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Launch Baroda BNP Paribas Balanced Hybrid Fund NFO on NSE MF Invest Platform",
+   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77564.pdf",
+   "date": "2026-11-23",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Applicability of Enhanced Surveillance Measure (ESM)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77563.zip",
+   "date": "2026-11-23",
+   "important": false
+  },
+  {
    "src": "NSE",
    "title": "Listing of units issued by Edelweiss Asset Management Limited (Edelweiss Nifty Energy ETF)",
    "url": "https://nsearchives.nseindia.com/content/circulars/CML77562.pdf",
    "date": "2026-11-23",
    "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Introduction of Futures & Options Contracts on Two Individual Securities",
+   "url": "https://nsearchives.nseindia.com/content/circulars/FAOP77549.zip",
+   "date": "2026-11-23",
+   "important": false
   },
   {
    "src": "RBI",
@@ -63,34 +231,6 @@
    "url": "https://www.rbi.org.in/scripts/NotificationUser.aspx?Id=13747&Mode=0",
    "date": "2026-10-27",
    "important": false
-  },
-  {
-   "src": "RBI",
-   "title": "Re-organisation of districts in the NCT of Delhi – Assignment and Review of Lead Bank Responsibility",
-   "url": "https://www.rbi.org.in/scripts/NotificationUser.aspx?Id=13746&Mode=0",
-   "date": "2026-10-27",
-   "important": false
-  },
-  {
-   "src": "RBI",
-   "title": "Delegation of Compounding of certain Contraventions under FEMA, 1999 to Regional Offices of the Reserve Bank",
-   "url": "https://www.rbi.org.in/scripts/NotificationUser.aspx?Id=13745&Mode=0",
-   "date": "2026-10-23",
-   "important": true
-  },
-  {
-   "src": "RBI",
-   "title": "Reserve Bank of India (Commercial Banks – Forthcoming Instructions) Second Amendment Directions, 2026",
-   "url": "https://www.rbi.org.in/scripts/NotificationUser.aspx?Id=13744&Mode=0",
-   "date": "2026-10-23",
-   "important": false
-  },
-  {
-   "src": "RBI",
-   "title": "Reserve Bank of India (Commercial Banks – Prudential Norms on Capital Adequacy) Eleventh Amendment Directions, 2026",
-   "url": "https://www.rbi.org.in/scripts/NotificationUser.aspx?Id=13743&Mode=0",
-   "date": "2026-10-23",
-   "important": true
   }
  ],
  "counts": {
@@ -100,15 +240,15 @@
   ],
   "https://rbi.org.in/pressreleases_rss.xml": [
    10,
-   2
+   6
   ],
   "https://rbi.org.in/notifications_rss.xml": [
    10,
    10
   ],
   "https://nsearchives.nseindia.com/content/RSS/Circulars.xml": [
-   2,
-   1
+   20,
+   18
   ]
  },
  "errors": []
