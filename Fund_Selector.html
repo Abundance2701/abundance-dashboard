@@ -518,6 +518,7 @@ body.dragging #dropVeil{display:flex}
           <button class="tab" data-view="risk">Risk</button>
           <button class="tab" data-view="style">Style &amp; bets</button>
           <button class="tab" data-view="phase">Market phases</button>
+          <button class="tab" data-view="cost">Cost &amp; yield</button>
           <button class="tab" data-view="score">Score</button>
         </div>
         <div style="display:flex;gap:14px;align-items:center">
@@ -916,6 +917,17 @@ async function loadHoldings() {
   } catch (e) { console.warn('Holdings file not available', e); HOLD = { funds: [], byKey: new Map(), bench: {}, stocks: [] }; }
   return HOLD;
 }
+// ---- expense ratio (AMFI TER, data/ter.json, refreshed by the "Expense ratio (TER) data" GitHub workflow) and debt YTM (data/ytm.json, AMC monthly portfolios)
+let TER = null, YTM = null;
+async function loadCostData() {
+  if (TER) return;
+  const get = async f => { try { const r = await fetch('data/' + f, { cache: 'no-cache' }); return r.ok ? await r.json() : null; } catch (e) { return null; } };
+  const [t, y] = await Promise.all([get('ter.json'), get('ytm.json')]);
+  TER = { asof: t && t.asof, by: new Map() }; if (t) for (const r of t.rows) { const k = holdKey(r.n); TER.by.set(k, TER.by.has(k) ? null : r); }
+  YTM = { asof: y && y.asof, by: new Map() }; if (y) for (const r of y.rows) YTM.by.set(holdKey(r.n), r);
+}
+const terOf = name => TER && TER.by.get(holdKey(name)) || null;
+const ytmOf = name => YTM && YTM.by.get(holdKey(name)) || null;
 function holdKey(name) {
   return String(name || '').toLowerCase().replace(/\(.*?\)/g, ' ').replace(/&/g, ' and ')
     .replace(/\b(fund|plan|growth|option|regular|direct|the|scheme|cumulative|erstwhile|formerly|known|as)\b/g, ' ').replace(/[^a-z0-9]/g, '');
@@ -1276,6 +1288,19 @@ function columns(v, R) {
     { k: 'capRatio', label: 'Capture ratio', sub: 'up ÷ down, above 1 is good', cell: o => cell(o.capRatio, f2, isNum(o.capRatio) ? (o.capRatio >= 1 ? 'up' : 'down') : ''), sort: o => o.capRatio, y: () => '1.00' },
     { k: 'beta', label: 'Beta', sub: '1 = moves with index', cell: o => cell(o.beta, f2), sort: o => o.beta, y: () => '1.00' },
   ];
+  if (v === 'cost') {
+    const reg = R.plan === 'Regular', debt = !R.equity && !EQUITY_CATS.has(R.ck) && !HYB_CATS.has(R.ck);
+    const ter = o => { const t = terOf(o.name); return t ? (reg ? t.reg : t.dir) : null; }, ter2 = o => { const t = terOf(o.name); return t ? (reg ? t.dir : t.reg) : null; };
+    const ytm = o => { const y = ytmOf(o.name); return y ? y.ytm : null; }, net = o => isNum(ytm(o)) && isNum(ter(o)) ? ytm(o) - ter(o) : null;
+    const f2p = z => z.toFixed(2) + '%';
+    const cols = [
+      { k: 'ter', label: 'Expense ratio', sub: R.plan + ' plan, % a year', asc: true, cell: o => cell(ter(o), f2p), sort: ter },
+      { k: 'ter2', label: 'Expense ratio', sub: (reg ? 'Direct' : 'Regular') + ' plan, for reference', asc: true, cell: o => cell(ter2(o), f2p), sort: ter2 }];
+    if (debt && YTM && YTM.by.size) cols.push(
+      { k: 'ytm', label: 'YTM', sub: 'portfolio yield to maturity', grp: true, cell: o => cell(ytm(o), f2p), sort: ytm },
+      { k: 'nytm', label: 'Net YTM', sub: 'YTM minus ' + R.plan + ' expense ratio', cell: o => isNum(net(o)) ? `<b>${f2p(net(o))}</b>` : na, sort: net });
+    return cols;
+  }
   if (v === 'risk') return [
     { k: 'sd', label: 'Volatility', sub: '% a year', asc: true, cell: o => cell(o.sd, f1), sort: o => o.sd, y: () => cell(y.sd, f1) },
     { k: 'mdd', label: 'Max fall', sub: 'in window', cell: o => cell(o.mdd, pct, 'down'), sort: o => o.mdd, y: () => cell(y.mdd, pct, 'down') },
@@ -1320,9 +1345,9 @@ function sortFunds(list, cols) {
 // views that make sense for each kind of category (market phases, style and capture need an equity index)
 const HYB_CATS = new Set(['conservative_hybrid', 'balanced_hybrid', 'aggressive_hybrid', 'dynamic_asset', 'multi_asset', 'arbitrage', 'equity_savings']);
 function viewsFor(R, cat) {
-  if (R.equity || EQUITY_CATS.has(cat)) return ['ret', 'quart', 'cons', 'cap', 'risk', 'style', 'phase', 'score'];
-  if (HYB_CATS.has(cat)) return ['ret', 'quart', 'cons', 'cap', 'risk', 'score'];
-  return ['ret', 'quart', 'cons', 'risk', 'score'];   // debt, gold, index, FoF and others
+  if (R.equity || EQUITY_CATS.has(cat)) return ['ret', 'quart', 'cons', 'cap', 'risk', 'style', 'phase', 'cost', 'score'];
+  if (HYB_CATS.has(cat)) return ['ret', 'quart', 'cons', 'cap', 'risk', 'cost', 'score'];
+  return ['ret', 'quart', 'cons', 'risk', 'cost', 'score'];   // debt, gold, index, FoF and others
 }
 function render() {
   const R = RESULTS[activeCat]; if (!R) return;
@@ -1348,6 +1373,7 @@ function render() {
   else if (view === 'quart') when = `calendar years; ${new Date(M0).getUTCFullYear()} is to <b>${fmtDate(M0)}</b>`;
   else if (view === 'cons') when = `3-year periods ending up to <b>${fmtDate(M0)}</b>`;
   else if (view === 'style') when = `holdings <b>${HOLD && HOLD.asof ? esc(HOLD.asof) : '—'}</b> · style from <b>${fmtDate(me(36))} – ${fmtDate(M0)}</b>`;
+  else if (view === 'cost') when = `expense ratio: AMFI, <b>${TER && TER.asof ? fmtDate(Date.parse(TER.asof)) : (TER ? 'not loaded yet' : 'loading…')}</b>` + ((R.equity || EQUITY_CATS.has(R.ck) || HYB_CATS.has(R.ck)) ? '' : ` · YTM: AMC monthly portfolios, <b>${YTM && YTM.asof ? esc(YTM.asof) : 'not added yet'}</b>`);
   else if (view === 'phase') when = `<b>${fmtDate(me(120))} – ${fmtDate(M0)}</b>`;
   else when = `last ${winLabel(R.W)}, <b>${fmtDate(me(R.W))} – ${fmtDate(M0)}</b>`;
   $('meta').innerHTML = `<b>${esc(R.label)}</b> · ${R.plan} · ${funds.length} funds · vs <b>${esc(R.yardLabel)}</b> · ${when}`;
@@ -1359,7 +1385,7 @@ function render() {
   notes.push('“—” = not enough data. ⚠ = differs from AMFI\'s official figures (hover).');
   $('foot').innerHTML = notes.join(' · ');
 }
-$('views').addEventListener('click', e => { const b = e.target.closest('[data-view]'); if (!b) return; view = b.dataset.view; sortKey = view === 'score' ? 'score' : null; sortDir = -1; $('views').querySelectorAll('[data-view]').forEach(x => x.classList.toggle('on', x === b)); render(); });
+$('views').addEventListener('click', e => { const b = e.target.closest('[data-view]'); if (!b) return; view = b.dataset.view; sortKey = view === 'score' ? 'score' : null; sortDir = -1; $('views').querySelectorAll('[data-view]').forEach(x => x.classList.toggle('on', x === b)); if (view === 'cost' && !TER) loadCostData().then(render); render(); });
 $('catTabs').addEventListener('click', e => { const b = e.target.closest('[data-cat]'); if (!b) return; activeCat = b.dataset.cat; render(); });
 $('showLead').addEventListener('change', e => { showLead = e.target.checked; render(); });
 $('tbl').addEventListener('click', e => {

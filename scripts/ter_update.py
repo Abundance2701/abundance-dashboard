@@ -8,7 +8,7 @@ H = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
      'Accept': 'application/json, text/plain, */*', 'Referer': B + '/ter-of-mf-schemes'}
 def raw(path, **q):
     req = urllib.request.Request(B + path + '?' + urllib.parse.urlencode(q), headers=H)
-    with urllib.request.urlopen(req, timeout=180) as r: return r.read()
+    with urllib.request.urlopen(req, timeout=90) as r: return r.read()
 get = lambda path, **q: json.loads(raw(path, **q).decode('utf-8', 'replace'))
 t = datetime.date.today(); fy = f"{t.year}-{t.year+1}" if t.month >= 4 else f"{t.year-1}-{t.year}"
 m = get('/api/populate-ter-month', year=fy)[0]['MonthNumber']
