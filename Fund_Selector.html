@@ -394,6 +394,10 @@
   .mv-line{display:grid; grid-template-columns:52px minmax(0,1fr); gap:6px; align-items:baseline; font-size:12.5px;}
   .mv-line .mv-pill{min-width:0;} .mv-line small{color:var(--muted);}
   @media (max-width:900px){ .mv-grid{grid-template-columns:1fr;} .mv-hl{grid-template-columns:54px minmax(0,1fr) 90px;} .mv-hl .mv-cr{display:none;} }
+#dropVeil{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;background:rgba(240,248,255,.82);backdrop-filter:blur(2px);pointer-events:none}
+#dropVeil div{border:3px dashed #005826;border-radius:22px;padding:46px 70px;background:#fff;text-align:center;box-shadow:0 12px 40px rgba(57,41,62,.18);font-family:Montserrat,sans-serif;color:#005826}
+#dropVeil b{display:block;font-size:24px;margin-bottom:6px} #dropVeil span{font-family:Calibri,'Segoe UI',sans-serif;font-size:15px;color:#39293E}
+body.dragging #dropVeil{display:flex}
 </style>
 </head>
 <body>
@@ -1731,7 +1735,7 @@ async function xrHandleFile(f) {
   if (!(await xrEnsureXLSX())) { xrSt('The Excel reader could not load. Check the internet connection, or paste the rows instead.', true); return; }
   let wb; try { wb = XLSX.read(await f.arrayBuffer(), { type: 'array' }); } catch (e) { xrSt(`Couldn't open ${esc(f.name)}. If it is password-protected or an old format, save it as .xlsx and try again.`, true); return; }
   for (const n of wb.SheetNames) { const p = xrParseAOA(XLSX.utils.sheet_to_json(wb.Sheets[n], { header: 1, raw: true, defval: null }));
-    if (p && p.rows.length) { XR.rows = []; XR.meta = p.meta; XR.hasLots = p.lots; RV.t = null; if (p.meta.client && !$('xrClient').value.trim()) $('xrClient').value = p.meta.client; await xrLoadRows(p.rows, `${esc(f.name)} · sheet “${esc(n)}” · values from column “${esc(p.valCol)}”`); return; } }
+    if (p && p.rows.length) { const hadReview = !!$('xrOut').innerHTML.trim(); XR.rows = []; XR.meta = p.meta; XR.hasLots = p.lots; RV.t = null; $('xrOut').innerHTML = ''; $('xrClient').value = p.meta.client || ''; await xrLoadRows(p.rows, `${esc(f.name)} · sheet “${esc(n)}” · values from column “${esc(p.valCol)}”`); if (hadReview && XR.rows.length && XR.rows.every(r => r.st === 'ok' || r.st === 'man')) xrRun(); return; } }
   xrSt(`Couldn't find a scheme-name column and a value column in ${esc(f.name)}. Check the header row and try again.`, true);
 }
 function xrRenderInput() {
@@ -1759,6 +1763,16 @@ $('xrInTbl').addEventListener('change', e => {
 $('xrInFilt').addEventListener('click', e => { const b = e.target.closest('[data-f]'); if (!b) return; XR.filt = b.dataset.f; $('xrInFilt').querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === b)); xrRenderInput(); });
 $('xrInTbl').addEventListener('click', e => { const b = e.target.closest('.xrDel'); if (!b) return; XR.rows.splice(+b.dataset.i, 1); xrRenderInput(); });
 $('xrFile').addEventListener('change', e => { const f = e.target.files[0]; if (f) xrHandleFile(f); e.target.value = ''; });
+// drop a statement anywhere on the page: faded screen while dragging; a new file replaces the one loaded and re-runs the review
+let dragDepth = 0;
+const hasFiles = e => e.dataTransfer && [...(e.dataTransfer.types || [])].includes('Files');
+window.addEventListener('dragenter', e => { if (!hasFiles(e)) return; e.preventDefault(); dragDepth++; document.body.classList.add('dragging'); });
+window.addEventListener('dragover', e => { if (!hasFiles(e)) return; e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; });
+window.addEventListener('dragleave', e => { if (!hasFiles(e)) return; dragDepth = Math.max(0, dragDepth - 1); if (!dragDepth) document.body.classList.remove('dragging'); });
+window.addEventListener('drop', e => { if (!hasFiles(e)) return; e.preventDefault(); dragDepth = 0; document.body.classList.remove('dragging');
+  const f = e.dataTransfer.files[0]; if (!f) return;
+  const tab = document.querySelector('[data-page="xray"]'); if (tab && !tab.classList.contains('on')) tab.click();
+  xrHandleFile(f); });
 $('xrPasteBtn').addEventListener('click', async () => {
   const t = $('xrPaste').value; if (!t.trim()) return;
   const aoa = t.replace(/\r/g, '').split('\n').filter(l => l.trim()).map(l => (l.includes('\t') ? l.split('\t') : parseCSVLine(l)).map(c => { c = c.trim().replace(/^"(.*)"$/, '$1'); return c === '' ? null : c; }));
@@ -2475,5 +2489,6 @@ const FLOW = (() => {
 
 window.FS = { rbsa, solveLinear, factorMix, phases, bets, scoreGroup, pctRanks, analyse, captures, riskStats, rolling3, cagr, monthlyRet, trailing, valAt, me, peerSeries, holdKey, findHoldings, loadTRI, loadHoldings, runCategories, runBacktest, get TRI() { return TRI; }, get HOLD() { return HOLD; }, get M0() { return M0; }, NAVS, get RESULTS() { return RESULTS; }, ensureMasterData, leadChart, get RV() { return RV; }, pbRender, pbFind, wbOpen, get WB() { return WB; }, xrTokens, xrMatch, xrParseAOA, xrCompute, xrUniverse, XR };
 </script>
+<div id="dropVeil"><div><b>Drop the file here</b><span>The Wealth Elite statement opens in Client review, replacing the one loaded now</span></div></div>
 </body>
 </html>
