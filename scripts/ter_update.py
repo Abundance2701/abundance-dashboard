@@ -13,22 +13,23 @@ get = lambda path, **q: json.loads(raw(path, **q).decode('utf-8', 'replace'))
 t = datetime.date.today(); fy = f"{t.year}-{t.year+1}" if t.month >= 4 else f"{t.year-1}-{t.year}"
 m = get('/api/populate-ter-month', year=fy)[0]['MonthNumber']
 q = dict(MF_ID='All', Month=m, strCat='-1', strType='-1')
-first = get('/api/populate-te-rdata-revised', **q, pageSize=100, page=1)
-meta = first.get('meta', {}); print('meta', meta)
+import time
+def fetch(size, p):
+    for k in range(6):
+        try: return get('/api/populate-te-rdata-revised', **q, pageSize=size, page=p)
+        except Exception as e:
+            err = e; time.sleep(min(60, 5 * 2 ** k) if '429' in str(e) else 3)
+    print('page failed', p, err); return None
+# biggest page the API will give, so there are few calls (AMFI rate-limits with HTTP 429)
+for size in (5000, 2000, 1000, 500, 100):
+    first = fetch(size, 1)
+    if first and len(first.get('data') or []) >= min(size, (first.get('meta') or {}).get('total', size)): break
+meta = first.get('meta', {}); print('meta', meta, 'pageSize', size)
 recs = list(first['data']); pages = meta.get('pageCount', 1)
-seen1 = json.dumps(recs[:1])
-p2 = get('/api/populate-te-rdata-revised', **q, pageSize=100, page=2)['data']
-if json.dumps(p2[:1]) == seen1:
-    sys.exit('paging by "page" does not work')
-recs += p2
-from concurrent.futures import ThreadPoolExecutor
-def page(p):
-    for k in range(4):
-        try: return get('/api/populate-te-rdata-revised', **q, pageSize=100, page=p)['data']
-        except Exception as e: err = e
-    print('page failed', p, err); return []
-with ThreadPoolExecutor(8) as ex:
-    for d in ex.map(page, range(3, pages + 1)): recs += d
+for p in range(2, pages + 1):
+    d = fetch(size, p)
+    if d is None: sys.exit(f'page {p} failed; old file kept')
+    recs += d['data']; time.sleep(1)
 print('records', len(recs), 'of', meta.get('total'))
 latest = {}
 for r in recs:
