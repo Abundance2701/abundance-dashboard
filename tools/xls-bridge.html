@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>xls bridge</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script></head>
+<body>
+<script>
+// Helper for data refreshes: a page on another site sends an Excel file (ArrayBuffer) by postMessage;
+// this page reads it with SheetJS (works for old .xls too) and sends back every sheet as rows.
+addEventListener('message', e => {
+  const d = e.data || {};
+  if (!d.xlsBridge) return;
+  try {
+    const wb = XLSX.read(d.buf, { type: 'array' });
+    const sheets = wb.SheetNames.map(n => ({ name: n, rows: XLSX.utils.sheet_to_json(wb.Sheets[n], { header: 1, defval: '', raw: true }) }));
+    e.source.postMessage({ xlsBridge: true, id: d.id, sheets }, '*');
+  } catch (err) { e.source.postMessage({ xlsBridge: true, id: d.id, error: String(err) }, '*'); }
+});
+parent.postMessage({ xlsBridgeReady: true }, '*');
+</script>
+</body></html>
