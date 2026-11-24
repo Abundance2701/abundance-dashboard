@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-23T22:05:34Z",
+ "updated": "2026-11-24T12:57:20Z",
  "items": [
   {
    "src": "RBI",
@@ -74,7 +74,7 @@
   {
    "src": "NSE",
    "title": "Revised list of Cross Margin Eligible Exchange Traded Funds (ETFs)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CMPT77579.pdf",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CMPT77580.pdf",
    "date": "2026-11-23",
    "important": false
   },
@@ -247,8 +247,8 @@
    10
   ],
   "https://nsearchives.nseindia.com/content/RSS/Circulars.xml": [
-   20,
-   18
+   21,
+   19
   ]
  },
  "errors": []
