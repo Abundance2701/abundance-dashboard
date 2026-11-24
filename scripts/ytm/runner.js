@@ -1,0 +1,38 @@
+window.__zipEntries = function(buf){ const dv=new DataView(buf), u8=new Uint8Array(buf); let e=buf.byteLength-22; while(e>0&&dv.getUint32(e,true)!==0x06054b50)e--;
+ const n=dv.getUint16(e+10,true); let p=dv.getUint32(e+16,true); const files={};
+ for(let i=0;i<n;i++){const m=dv.getUint16(p+10,true),cs=dv.getUint32(p+20,true),fl=dv.getUint16(p+28,true),xl=dv.getUint16(p+30,true),cl=dv.getUint16(p+32,true),lo=dv.getUint32(p+42,true);
+  const name=new TextDecoder().decode(u8.subarray(p+46,p+46+fl)); files[name]={m,cs,lo}; p+=46+fl+xl+cl;}
+ const bytes=async name=>{const f=files[name]; if(!f)return null; const lo=f.lo, d=lo+30+dv.getUint16(lo+26,true)+dv.getUint16(lo+28,true); const raw=u8.subarray(d,d+f.cs);
+  if(f.m===0)return raw.slice().buffer; return await new Response(new Blob([raw]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer();};
+ return {names:Object.keys(files), bytes}; };
+window.__calc = function(sheets, fallbackName){ const RE=/\b(liquid|overnight|money market|ultra short|low duration|short (term|duration))\b/i, ISIN=/^IN[A-Z0-9]{9}\d$/; const out=[];
+ for(const s of sheets){ const R=s.rows.map(r=>Array.from(r||[],v=>v==null?'':v)); let name=''; for(const r of R.slice(0,10)){const i=r.findIndex(v=>typeof v=='string'&&/scheme name/i.test(v)); if(i>=0){name=r.slice(i+1).find(v=>typeof v=='string'&&v.trim())||''; if(!name){const m=r[i].match(/scheme name\s*:?\s*(.+)/i); name=m?m[1]:'';} break;}}
+  if(!name){const t=R.slice(0,4).flat().find(v=>typeof v=='string'&&/portfolio (of|statement of|statement for)\s+.+ (as on|for the)/i.test(v)); if(t)name=t.match(/portfolio (?:of|statement of|statement for)\s+(?:the\s+)?(.+?) (?:as on|for the)/i)[1];}
+  if(!name){name=R.slice(0,8).flat().find(v=>typeof v=='string'&&/fund|plan/i.test(v)&&!/^\W*[\w&\s]+ mutual fund\W*$/i.test(v)&&!/^(scheme|portfolio)/i.test(v.trim()))||fallbackName||'';}
+  if(!RE.test(name)||/\betf\b|fof|fund of fund|index|interval|fixed maturity|fmp/i.test(name)) continue;
+  let h=-1,cp=-1,cy=-1,ci=-1; for(let i=0;i<40&&i<R.length;i++){const t=R[i].map(v=>String(v).toLowerCase().replace(/\s+/g,' ').trim()); const a=t.findIndex(v=>/^%|% ?(to|of) ?(net assets|nav|aum)|percentage|to net assets/.test(v)), y=t.findIndex(v=>/^(ytm|yield)/.test(v)); if(a>=0&&y>=0){h=i;cp=a;cy=y;ci=t.findIndex(v=>v.includes('isin'));break;}}
+  if(h<0){out.push({name:name.trim(),sheet:s.name,err:'no YTM column'});continue;}
+  const rows=[]; for(const r of R.slice(h+1)){const txt=r.filter(v=>typeof v=='string').join(' '); if(/grand total|net assets\s*$/i.test(txt.trim())&&rows.length)break; const p=typeof r[cp]=='number'?r[cp]:parseFloat(String(r[cp]).replace(/[%,]/g,'')); if(!isFinite(p)||p===0)continue; const isI=ci>=0&&ISIN.test(String(r[ci]).trim()); const isC=/treps|repo|reverse|cblo|tri-?party/i.test(txt); if(!isI&&!isC)continue; const y=r[cy]; rows.push({p, y:typeof y=='number'?y:parseFloat(String(y).replace('%','')), txt});}
+  const ps=rows.map(x=>Math.abs(x.p)).sort((a,b)=>a-b), med=ps[Math.floor(ps.length/2)]||0, frac=med<0.2&&rows.reduce((t,x)=>t+x.p,0)<50;
+  let w=0,wy=0,tot=0,n=0,miss=[]; for(const x of rows){ if(frac&&Math.abs(x.p)>1.5)continue; tot+=x.p; if(isFinite(x.y)&&x.y>0){w+=x.p;wy+=x.p*x.y;n++;} else if(miss.length<2)miss.push(x.txt.slice(0,40));}
+  const sc=frac?100:1; let ytm=w?wy/w:null; if(ytm!=null&&ytm<1)ytm*=100;
+  out.push({name:name.trim().replace(/\s+/g,' ').slice(0,80),sheet:s.name,ytm:ytm&&+ytm.toFixed(2),cov:+(w*sc).toFixed(1),tot:+(tot*sc).toFixed(1),n,miss}); }
+ return out; };
+window.__sj = async () => { if (window.XLSX) return 'have'; return await new Promise((ok)=>{const s=document.createElementNS('http://www.w3.org/1999/xhtml','script');s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';s.onload=()=>ok('loaded');s.onerror=()=>ok('blocked');(document.head||document.documentElement).appendChild(s);setTimeout(()=>ok('timeout'),15000);}); };
+window.__book = buf => { const wb=XLSX.read(buf,{type:'array'}); return wb.SheetNames.map(n=>({name:n, rows:XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,defval:'',raw:true})})); };
+window.__bridge = (buf) => new Promise((ok, no) => { let f = document.getElementById('xlsb'); const send = () => { const id = Math.random(); const h = e => { if (e.data && e.data.xlsBridge && e.data.id === id) { removeEventListener('message', h); e.data.error ? no(e.data.error) : ok(e.data.sheets); } }; addEventListener('message', h); f.contentWindow.postMessage({ xlsBridge: true, id, buf }, '*'); };
+  if (f && f.dataset.ready) return send(); f = document.createElementNS('http://www.w3.org/1999/xhtml','iframe'); f.id = 'xlsb'; f.style.display = 'none'; f.src = 'https://abundance-dashboard-beta.vercel.app/tools/xls-bridge.html';
+  addEventListener('message', function r(e) { if (e.data && e.data.xlsBridgeReady) { removeEventListener('message', r); f.dataset.ready = 1; send(); } }); (document.body||document.documentElement).appendChild(f); setTimeout(() => no('bridge timeout'), 30000); });
+window.__read = async buf => { const u=new Uint8Array(buf,0,2); if(u[0]===0x50&&u[1]===0x4b) return await __xl(buf); if (await __sj() !== 'blocked' && window.XLSX) return __book(buf); return await __bridge(buf); };
+window.__run = async (url) => { const r = await fetch(url, { cache: 'no-store' }); if (!r.ok) return { status: r.status }; const buf = await r.arrayBuffer(); const u8 = new Uint8Array(buf, 0, 4); let books = [];
+  const isZip = u8[0] === 0x50 && u8[1] === 0x4b && /\.zip/i.test(url);
+  if (isZip) { const z = __zipEntries(buf); for (const n of z.names.filter(n => /\.xlsx?$/i.test(n))) books.push([n, await z.bytes(n)]); } else books.push([url.split('/').pop(), buf]);
+  const res = []; for (const [n, b] of books) { try { res.push(...__calc(await __read(b), n.replace(/\.xlsx?$/i, '')).map(x => ({ name: x.name, ytm: x.ytm, cov: x.cov, tot: x.tot, err: x.err, miss: x.miss }))); } catch (e) { res.push({ file: n, err: String(e) }); } }
+  return { status: r.status, bytes: buf.byteLength, files: books.length, res }; };
+window.__xl = async function(buf){ const z=__zipEntries(buf), get=async n=>{const b=await z.bytes(n); return b&&new TextDecoder().decode(b);}, P=t=>new DOMParser().parseFromString(t,'application/xml');
+ const ss=[]; const sst=await get('xl/sharedStrings.xml'); if(sst) for(const si of P(sst).getElementsByTagName('si')) ss.push([...si.getElementsByTagName('t')].map(t=>t.textContent).join(''));
+ const wbx=P(await get('xl/workbook.xml')), rel=P(await get('xl/_rels/workbook.xml.rels')); const rmap={}; for(const r of rel.getElementsByTagName('Relationship')) rmap[r.getAttribute('Id')]=r.getAttribute('Target');
+ const out=[]; for(const s of wbx.getElementsByTagName('sheet')){ let t=rmap[s.getAttribute('r:id')]||rmap[s.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships','id')]; t=t.replace(/^\//,''); if(!t.startsWith('xl/'))t='xl/'+t;
+  const x=await get(t); if(!x)continue; const rows=[]; for(const r of P(x).getElementsByTagName('row')){const ri=+r.getAttribute('r')-1; const row=[]; for(const c of r.getElementsByTagName('c')){const ref=c.getAttribute('r'); const col=ref.replace(/\d+/,'').split('').reduce((a,ch)=>a*26+ch.charCodeAt(0)-64,0)-1; const ty=c.getAttribute('t'); const v=c.getElementsByTagName('v')[0]; let val=v?v.textContent:(c.getElementsByTagName('t')[0]||{}).textContent; if(ty==='s')val=ss[+val]; else if(ty!=='str'&&ty!=='inlineStr'&&val!=null&&val!==''&&!isNaN(val))val=+val; row[col]=val;} rows[ri>=0?ri:rows.length]=row;} out.push({name:s.getAttribute('name'),rows:Array.from(rows,r=>r||[])}); }
+ return out; };
+'ready'
