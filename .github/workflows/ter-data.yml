@@ -1,0 +1,20 @@
+name: Expense ratio (TER) data
+on:
+  workflow_dispatch: {}
+permissions:
+  contents: write
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - run: python scripts/ter_update.py
+      - name: Commit if changed
+        if: always()
+        run: |
+          git config user.name "ter-data-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/ter.json data/ter_raw_sample.json 2>/dev/null || true
+          git diff --cached --quiet && echo "no change" || (git commit -m "TER data $(date -u +%F)" && git pull --rebase -q && git push)
