@@ -1,6 +1,13 @@
 {
- "updated": "2026-11-24T12:57:20Z",
+ "updated": "2026-11-24T20:42:14Z",
  "items": [
+  {
+   "src": "NSE",
+   "title": "Streamlining EOD information dissemination related to Bhavcopy - Update",
+   "url": "https://nsearchives.nseindia.com/content/circulars/MSD77581.pdf",
+   "date": "2026-11-24",
+   "important": false
+  },
   {
    "src": "RBI",
    "title": "Governor, Reserve Bank of India meets Managing Directors & Chief Executive Officers of select NBFCs, HFCs and Industry Representatives in Mumbai on November 23, 2026",
@@ -72,125 +79,6 @@
    "important": false
   },
   {
-   "src": "NSE",
-   "title": "Revised list of Cross Margin Eligible Exchange Traded Funds (ETFs)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CMPT77580.pdf",
-   "date": "2026-11-23",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Applicable MWPL, TM, FII/FPI & MF limits for Introduction of Two Individual Securities",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CMPT77578.pdf",
-   "date": "2026-11-23",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of further issues of securities",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77577.pdf",
-   "date": "2026-11-23",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of Equity Shares of Oneclick Logistics India Limited on Capital Market Segment (Main Board) pursuant to migration from SME Emerge platform",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77576.zip",
-   "date": "2026-11-23",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of privately placed securities on the debt market segment of the Exchange",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77574.pdf",
-   "date": "2026-11-23",
-   "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Trade for Trade",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77573.zip",
-   "date": "2026-11-23",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of privately placed securities on capital market segment",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77571.pdf",
-   "date": "2026-11-23",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Applicability of Short-Term Additional Surveillance Measure (ST-ASM)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77570.zip",
-   "date": "2026-11-23",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Applicability of Additional Surveillance Measure (ASM)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77569.zip",
-   "date": "2026-11-23",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Permanent discontinuation of SIP and STP Facilities in certain schemes of Edelweiss Mutual Fund on NSE MF Invest Platform",
-   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77568.zip",
-   "date": "2026-11-23",
-   "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Merger of certain schemes of Union Mutual Fund on NSE MF Invest Platform",
-   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77567.zip",
-   "date": "2026-11-23",
-   "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Launch Invesco India Financial Services Debt Fund NFO on NSE MF Invest Platform",
-   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77566.pdf",
-   "date": "2026-11-23",
-   "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Launch Quant Nifty Next 50 Index Fund NFO on NSE MF Invest Platform",
-   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77565.pdf",
-   "date": "2026-11-23",
-   "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Launch Baroda BNP Paribas Balanced Hybrid Fund NFO on NSE MF Invest Platform",
-   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77564.pdf",
-   "date": "2026-11-23",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Applicability of Enhanced Surveillance Measure (ESM)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77563.zip",
-   "date": "2026-11-23",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of units issued by Edelweiss Asset Management Limited (Edelweiss Nifty Energy ETF)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77562.pdf",
-   "date": "2026-11-23",
-   "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Introduction of Futures & Options Contracts on Two Individual Securities",
-   "url": "https://nsearchives.nseindia.com/content/circulars/FAOP77549.zip",
-   "date": "2026-11-23",
-   "important": false
-  },
-  {
    "src": "RBI",
    "title": "Reserve Bank of India (Domestic Money Transfer) Directions, 2026",
    "url": "https://www.rbi.org.in/scripts/NotificationUser.aspx?Id=13752&Mode=0",
@@ -247,8 +135,8 @@
    10
   ],
   "https://nsearchives.nseindia.com/content/RSS/Circulars.xml": [
-   21,
-   19
+   1,
+   1
   ]
  },
  "errors": []
