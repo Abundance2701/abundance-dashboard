@@ -13,7 +13,13 @@ months = get('/api/populate-ter-month', year=fy)
 print('months', months[:3])
 m = months[0]['MonthNumber']
 data = get('/api/populate-te-rdata-revised', MF_ID='All', Month=m, strCat='-1', strType='-1')
+print('top', type(data).__name__, list(data.keys()) if isinstance(data, dict) else '', {k: v for k, v in data.items() if k != 'data'} if isinstance(data, dict) else '')
 recs = data if isinstance(data, list) else data.get('data', data)
+for extra in ({'page': 2}, {'pageNumber': 2}, {'PageNo': 2}, {'pageSize': 5000}, {'PageSize': 5000}, {'limit': 5000}):
+    try:
+        d2 = get('/api/populate-te-rdata-revised', MF_ID='All', Month=m, strCat='-1', strType='-1', **extra)
+        r2 = d2 if isinstance(d2, list) else d2.get('data', d2); print('try', extra, len(r2), r2[0].get('Scheme_Name') if r2 else '')
+    except Exception as e: print('try', extra, e)
 print('records', len(recs)); print(json.dumps(recs[:2], indent=1)[:3000])
 json.dump({'month': m, 'sample': recs[:5], 'keys': sorted({k for r in recs[:200] for k in r})}, open('data/ter_raw_sample.json', 'w'), indent=1)
 def pick(r, *subs):
