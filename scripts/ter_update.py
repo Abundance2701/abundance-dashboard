@@ -21,10 +21,14 @@ p2 = get('/api/populate-te-rdata-revised', **q, pageSize=100, page=2)['data']
 if json.dumps(p2[:1]) == seen1:
     sys.exit('paging by "page" does not work')
 recs += p2
-for p in range(3, pages + 1):
-    for k in range(3):
-        try: recs += get('/api/populate-te-rdata-revised', **q, pageSize=100, page=p)['data']; break
-        except Exception as e: print('retry', p, e)
+from concurrent.futures import ThreadPoolExecutor
+def page(p):
+    for k in range(4):
+        try: return get('/api/populate-te-rdata-revised', **q, pageSize=100, page=p)['data']
+        except Exception as e: err = e
+    print('page failed', p, err); return []
+with ThreadPoolExecutor(8) as ex:
+    for d in ex.map(page, range(3, pages + 1)): recs += d
 print('records', len(recs), 'of', meta.get('total'))
 latest = {}
 for r in recs:
@@ -35,6 +39,7 @@ def num(v):
     try: return round(float(v), 2)
     except: return None
 rows = [{'n': r['Scheme_Name'].strip(), 'c': r.get('SchemeCat_Desc') or '', 'mf': r.get('MF_ID'), 'reg': num(r.get('R_TER')), 'dir': num(r.get('D_TER')), 'd': (r.get('TER_Date') or '')[:10]} for r in latest.values()]
+print('records kept', len(recs))
 if len(rows) < 800: sys.exit(f'too few schemes: {len(rows)}')
 asof = max(x['d'] for x in rows)
 json.dump({'month': m, 'asof': asof, 'src': 'AMFI, TER of MF schemes (total TER incl. GST, latest day per scheme)', 'rows': rows}, open('data/ter.json', 'w'), separators=(',', ':'))
