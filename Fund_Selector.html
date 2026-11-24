@@ -1643,6 +1643,7 @@ function xrAssetOf(r) {
   if (isGoldSilver(r)) return 'Gold / Silver';
   const c = (r.category || '').toLowerCase(), n = (r.scheme_name || '').toLowerCase();
   if (/fof overseas|overseas|international/.test(c)) return 'International';
+  if (/solution|retirement|children/.test(c)) return /equity/.test(n) ? 'Equity' : 'Hybrid';   // retirement / children's funds: equity plans count as equity
   if (/debt|income|liquid|money market|gilt|overnight/.test(c)) return 'Debt';
   if (/hybrid|balanced|arbitrage|asset allocation|equity savings/.test(c)) return 'Hybrid';
   if (/equity|elss|growth/.test(c)) return 'Equity';
@@ -1693,7 +1694,7 @@ function xrParseAOA(aoa) {
       lc = { type: f(/transaction/), date: f(/^date/), amt: f(/^amount/), sd: f(/^sd/), val: f(/cur\.?\s*val/), gain: f(/gain/), abs: f(/abs/) }; continue; }
     if (typeof r[0] === 'number' && lc && cur) {
       const typ = String(r[lc.type] ?? ''), d = dmy2(r[lc.date]), num = c => xrNum(r[c]);
-      if (/sip purchase/i.test(typ) && d) { const a = (num(lc.amt) || 0) + (lc.sd >= 0 ? num(lc.sd) || 0 : 0); if (!cur.sipTx || d >= cur.sipTx.d) cur.sipTx = { d, amt: Math.round(a) }; }
+      if (/sip purchase/i.test(typ) && d) { const a = (num(lc.amt) || 0) + (lc.sd >= 0 ? num(lc.sd) || 0 : 0); (cur.sipAll = cur.sipAll || []).push({ d, amt: Math.round(a) }); }
       if (String(r[lc.abs] ?? '').trim() !== 'N.A.' && d) { const val = num(lc.val), gain = num(lc.gain);
         if (val > 0 && !isNaN(gain)) (cur.lots = cur.lots || []).push({ date: d, val, gain, cost: val - gain, ltOn: Date.UTC(new Date(d).getUTCFullYear() + 1, new Date(d).getUTCMonth(), new Date(d).getUTCDate() + 1) }); }
       continue; }
@@ -1701,7 +1702,7 @@ function xrParseAOA(aoa) {
     const v = xrNum(r[cv]);
     if (isNaN(v) || v <= 0) { if (/^\s*(equity|debt|hybrid|others?|solution|index|fof|international|gold)\b.*-/i.test(String(s)) && r.filter(c => c != null && c !== '').length === 1) sec = String(s).trim(); continue; }
     cur = { raw: String(s).split(/\n/)[0].trim(), val: v, sec }; rows.push(cur); }
-  for (const r of rows) if (r.sipTx && meta.asof) r.sip = { amt: r.sipTx.amt, last: r.sipTx.d, active: meta.asof - r.sipTx.d <= 40 * DAY };
+  for (const r of rows) if (r.sipAll && r.sipAll.length) { const last = Math.max(...r.sipAll.map(x => x.d)); r.sip = { amt: r.sipAll.filter(x => x.d > last - 24 * DAY).reduce((t, x) => t + x.amt, 0), last, active: (meta.asof || Date.now()) - last <= 45 * DAY }; }
   return { rows, valCol: aoa[h][cv], meta, lots: rows.some(r => r.lots) };
 }
 let xrXlsx = null;
@@ -1927,10 +1928,10 @@ function closeModal() { $('modalBg').style.display = 'none'; }
 const RV = { profile: 'M', t: null };
 const PROFILES = [['C', 'Conservative'], ['MC', 'Moderately conservative'], ['M', 'Moderate'], ['MA', 'Moderately aggressive'], ['A', 'Aggressive']];
 const ASSETS = ['Equity', 'Hybrid', 'Debt', 'Gold & other'];
-const EQJOBS = ['Large cap', 'Large & mid cap', 'Flexi & diversified', 'Mid cap', 'Small cap', 'Sectoral / thematic', 'Index funds', 'International'];
+const EQJOBS = ['Large cap', 'Large & mid cap', 'Flexi & diversified', 'Mid cap', 'Small cap', 'Sectoral / thematic', 'Retirement / children', 'Index funds', 'International'];
 const JOBS = { large_cap: 'Large cap', large_mid_cap: 'Large & mid cap', flexi_cap: 'Flexi & diversified', multi_cap: 'Flexi & diversified', focused: 'Flexi & diversified', value_contra: 'Flexi & diversified', dividend_yield: 'Flexi & diversified', elss: 'Flexi & diversified', mid_cap: 'Mid cap', small_cap: 'Small cap', sectoral_thematic: 'Sectoral / thematic' };
 const assetRow = f => f.asset === 'Equity' || f.asset === 'International' ? 'Equity' : f.asset === 'Hybrid' ? 'Hybrid' : f.asset === 'Debt' ? 'Debt' : 'Gold & other';
-const eqJob = f => f.asset === 'International' ? 'International' : f.ck && JOBS[f.ck] ? JOBS[f.ck] : 'Index funds';
+const eqJob = f => f.asset === 'International' ? 'International' : f.ck && JOBS[f.ck] ? JOBS[f.ck] : f.ck === 'solution_oriented' ? 'Retirement / children' : 'Index funds';
 // Starting targets per profile (a proposal; change them on screen and press "Save as default")
 const TGT_DEFAULT = {
   C:  { a: { Equity: 30, Hybrid: 10, Debt: 55, 'Gold & other': 5 },  e: { 'Large cap': 40, 'Large & mid cap': 15, 'Flexi & diversified': 35, 'Mid cap': 10, 'Small cap': 0 } },
@@ -1981,6 +1982,15 @@ function rvRender() {
   const AS = X.activeShare, wholeOv = `${isNum(AS) ? `<div class="tiles small" style="margin:0 0 8px">${tile('Active share', AS.toFixed(0) + '%', 'different from the blended index')}${tile('Overlap with index', (100 - AS).toFixed(0) + '%', 'same stocks, same weight as the index')}</div>` : ''}
     ${pHi ? `<div class="pbpair"><span>Highest: ${esc(pHi.a.short)} × ${esc(pHi.b.short)}</span><b style="color:${pbCol(pHi.v)}">${pHi.v.toFixed(0)}%</b></div><div class="pbpair"><span>Average of all ${pN} pairs</span><b style="color:${pbCol(pSum / pN)}">${(pSum / pN).toFixed(0)}%</b></div><div class="pbpair"><span>Pairs above ${OVL}%</span><b>${pOver} of ${pN}</b></div>` : '<div class="meta">Needs two funds with holdings data.</div>'}
     <div class="meta">Blended index = each fund's own index, weighted by the money in it. Full grid under "More detail".</div>`;
+  // SIPs from the statement (Wealth Elite "SIP Purchase" instalments): active = last instalment within 45 days of the statement
+  const sipF = F.filter(f => f.sip), actS = sipF.filter(f => f.sip.active), inaS = sipF.filter(f => !f.sip.active), sipTot = actS.reduce((t, f) => t + f.sip.amt, 0);
+  const sipBy = {}; for (const f of actS) { const k = assetRow(f) === 'Equity' ? eqJob(f) : assetRow(f); (sipBy[k] = sipBy[k] || { v: 0, n: 0 }).v += f.sip.amt; sipBy[k].n++; }
+  const sipOrder = [...EQJOBS, 'Hybrid', 'Debt', 'Gold & other'].filter(k => sipBy[k]);
+  const sipEq = sipOrder.filter(k => EQJOBS.includes(k)).reduce((t, k) => t + sipBy[k].v, 0);
+  const sipCard = sipF.length ? `<div class="card2 xsec"><div class="ct">SIPs <span class="ctsub">from the statement's SIP instalments</span></div>
+    <div class="tiles small" style="margin-top:0">${tile('Active SIPs', inr(sipTot), `a month · ${actS.length} fund${actS.length === 1 ? '' : 's'}`)}${tile('Into equity', sipTot ? (sipEq / sipTot * 100).toFixed(0) + '%' : '—', inr(sipEq) + ' a month')}${inaS.length ? tile('Stopped SIPs', inr(inaS.reduce((t, f) => t + f.sip.amt, 0)), `${inaS.length} fund${inaS.length === 1 ? '' : 's'} · last paid over 45 days ago`) : ''}</div>
+    ${sipTot ? hbars(sipOrder.map(k => ({ l: k, v: sipBy[k].v / sipTot * 100, sub: `${inr(sipBy[k].v)} a month · ${sipBy[k].n} fund${sipBy[k].n === 1 ? '' : 's'}` }))) : ''}
+    ${XR.hasLots ? '' : '<div class="meta">Upload the detailed Wealth Elite statement (with transactions) to see SIPs.</div>'}</div>` : (XR.hasLots === false ? '' : '');
   $('xrOut').innerHTML = `<div class="panel xr4 rv">
     <h3>Client review${client ? ' · ' + esc(client) : ''} <span class="sub">${inrS(T)} · ${F.length} funds · statement ${esc(meta.asofLabel || '—')} · holdings ${esc(X.asof || '—')}</span></h3>
     <div class="controls" style="gap:10px 14px;margin-bottom:10px"><div class="field"><label>Risk profile</label><select id="rvProf">${PROFILES.map(([k, l]) => `<option value="${k}"${k === RV.profile ? ' selected' : ''}>${l}</option>`).join('')}</select></div>
@@ -1989,6 +1999,7 @@ function rvRender() {
       <div class="card2"><div class="ct">Asset mix</div>${tbl('Asset', assetRows, sumA)}</div>
       <div class="card2"><div class="ct">Equity by category <span class="ctsub">% of equity · change at the equity target</span></div>${tbl('Category', eqRows, sumE)}${addable.length ? `<div class="btnrow" style="margin-top:6px"><select id="rvAddJob" style="min-width:0;font-size:13px;padding:4px 8px"><option value="">+ add a category</option>${addable.map(j => `<option>${j}</option>`).join('')}</select></div>` : ''}</div>
     </div>
+    ${sipCard}
     <div class="grid2 xsec"><div class="card2"><div class="ct">Overlap within each category <span class="ctsub">pairs above ${OVL}% listed</span></div>${catOv}</div>
       <div class="card2"><div class="ct">Whole portfolio vs the index</div>${wholeOv}</div></div>
     <div class="card2 xsec"><div class="ct">What the whole portfolio owns <span class="ctsub">funds looked through to their stocks</span></div>
