@@ -924,10 +924,11 @@ async function loadCostData() {
   const get = async f => { try { const r = await fetch('data/' + f, { cache: 'no-cache' }); return r.ok ? await r.json() : null; } catch (e) { return null; } };
   const [t, y] = await Promise.all([get('ter.json'), get('ytm.json')]);
   TER = { asof: t && t.asof, by: new Map() }; if (t) for (const r of t.rows) { const k = holdKey(r.n); TER.by.set(k, TER.by.has(k) ? null : r); }
-  YTM = { asof: y && y.asof, by: new Map() }; if (y) for (const r of y.rows) YTM.by.set(holdKey(r.n), r);
+  YTM = { asof: y && y.asof, minCov: y && y.minCov, by: new Map() }; if (y) for (const r of y.rows) YTM.by.set(holdKey(r.n), r);
 }
 const terOf = name => TER && TER.by.get(holdKey(name)) || null;
 const ytmOf = name => YTM && YTM.by.get(holdKey(name)) || null;
+const YTM_CATS = new Set(['overnight', 'liquid', 'money_market', 'ultra_short', 'low_duration', 'short_duration']);   // YTM collected only for these
 function holdKey(name) {
   return String(name || '').toLowerCase().replace(/\(.*?\)/g, ' ').replace(/&/g, ' and ')
     .replace(/\b(fund|plan|growth|option|regular|direct|the|scheme|cumulative|erstwhile|formerly|known|as)\b/g, ' ').replace(/[^a-z0-9]/g, '');
@@ -1291,14 +1292,17 @@ function columns(v, R) {
   if (v === 'cost') {
     const reg = R.plan === 'Regular', debt = !R.equity && !EQUITY_CATS.has(R.ck) && !HYB_CATS.has(R.ck);
     const ter = o => { const t = terOf(o.name); return t ? (reg ? t.reg : t.dir) : null; }, ter2 = o => { const t = terOf(o.name); return t ? (reg ? t.dir : t.reg) : null; };
-    const ytm = o => { const y = ytmOf(o.name); return y ? y.ytm : null; }, net = o => isNum(ytm(o)) && isNum(ter(o)) ? ytm(o) - ter(o) : null;
+    // YTM = weighted average of each paper's YTM in the AMC's monthly portfolio; shown only when the papers with a YTM cover at least 90% of the fund
+    const minCov = (YTM && YTM.minCov) || 90, yrow = o => ytmOf(o.name), ytm = o => { const y = yrow(o); return y && isNum(y.ytm) && y.cov >= minCov ? y.ytm : null; }, net = o => isNum(ytm(o)) && isNum(ter(o)) ? ytm(o) - ter(o) : null;
+    const covOf = o => { const y = yrow(o); return y && isNum(y.cov) ? Math.min(100, y.cov) : null; };
     const f2p = z => z.toFixed(2) + '%';
     const cols = [
       { k: 'ter', label: 'Expense ratio', sub: R.plan + ' plan, % a year', asc: true, cell: o => cell(ter(o), f2p), sort: ter },
       { k: 'ter2', label: 'Expense ratio', sub: (reg ? 'Direct' : 'Regular') + ' plan, for reference', asc: true, cell: o => cell(ter2(o), f2p), sort: ter2 }];
-    if (debt && YTM && YTM.by.size) cols.push(
+    if (YTM_CATS.has(R.ck) && YTM && YTM.by.size) cols.push(
       { k: 'ytm', label: 'YTM', sub: 'portfolio yield to maturity', grp: true, cell: o => cell(ytm(o), f2p), sort: ytm },
-      { k: 'nytm', label: 'Net YTM', sub: 'YTM minus ' + R.plan + ' expense ratio', cell: o => isNum(net(o)) ? `<b>${f2p(net(o))}</b>` : na, sort: net });
+      { k: 'nytm', label: 'Net YTM', sub: 'YTM minus ' + R.plan + ' expense ratio', cell: o => isNum(net(o)) ? `<b>${f2p(net(o))}</b>` : na, sort: net },
+      { k: 'ycov', label: 'YTM covers', sub: '% of the fund with a YTM given', cell: o => isNum(covOf(o)) ? `<span style="color:${covOf(o) >= minCov ? 'inherit' : 'var(--muted)'}">${covOf(o).toFixed(0)}%</span>` : na, sort: covOf });
     return cols;
   }
   if (v === 'risk') return [
@@ -1373,7 +1377,7 @@ function render() {
   else if (view === 'quart') when = `calendar years; ${new Date(M0).getUTCFullYear()} is to <b>${fmtDate(M0)}</b>`;
   else if (view === 'cons') when = `3-year periods ending up to <b>${fmtDate(M0)}</b>`;
   else if (view === 'style') when = `holdings <b>${HOLD && HOLD.asof ? esc(HOLD.asof) : '—'}</b> · style from <b>${fmtDate(me(36))} – ${fmtDate(M0)}</b>`;
-  else if (view === 'cost') when = `expense ratio: AMFI, <b>${TER && TER.asof ? fmtDate(Date.parse(TER.asof)) : (TER ? 'not loaded yet' : 'loading…')}</b>` + ((R.equity || EQUITY_CATS.has(R.ck) || HYB_CATS.has(R.ck)) ? '' : ` · YTM: AMC monthly portfolios, <b>${YTM && YTM.asof ? esc(YTM.asof) : 'not added yet'}</b>`);
+  else if (view === 'cost') when = `expense ratio: AMFI, <b>${TER && TER.asof ? fmtDate(Date.parse(TER.asof)) : (TER ? 'not loaded yet' : 'loading…')}</b>` + (YTM_CATS.has(R.ck) ? ` · YTM: AMC monthly portfolios, <b>${YTM && YTM.asof ? fmtDate(Date.parse(YTM.asof)) : 'not added yet'}</b> (shown when the papers with a YTM cover 90%+ of the fund)` : '');
   else if (view === 'phase') when = `<b>${fmtDate(me(120))} – ${fmtDate(M0)}</b>`;
   else when = `last ${winLabel(R.W)}, <b>${fmtDate(me(R.W))} – ${fmtDate(M0)}</b>`;
   $('meta').innerHTML = `<b>${esc(R.label)}</b> · ${R.plan} · ${funds.length} funds · vs <b>${esc(R.yardLabel)}</b> · ${when}`;

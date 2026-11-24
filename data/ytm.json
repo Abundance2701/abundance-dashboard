@@ -1,0 +1,559 @@
+{
+"asof": "2026-10-31",
+"src": "AMC monthly portfolio disclosures (31/10/2026): weighted average of each paper's YTM by its % of net assets",
+"minCov": 90,
+"rows": [
+{
+"n": "SBI Overnight Fund",
+"amc": "SBI",
+"ytm": 5.62,
+"cov": 2.8
+},
+{
+"n": "SBI Liquid Fund",
+"amc": "SBI",
+"ytm": 7.19,
+"cov": 99.7
+},
+{
+"n": "SBI Money Market Fund",
+"amc": "SBI",
+"ytm": 7.65,
+"cov": 99.0
+},
+{
+"n": "SBI Ultra Short Term Fund",
+"amc": "SBI",
+"ytm": 7.93,
+"cov": 93.4
+},
+{
+"n": "SBI Ultra Short to Short Term Fund",
+"amc": "SBI",
+"ytm": 8.04,
+"cov": 90.0
+},
+{
+"n": "SBI Short Term Fund",
+"amc": "SBI",
+"ytm": 8.58,
+"cov": 80.3
+},
+{
+"n": "HDFC Ultra Short to Short Term Fund",
+"amc": "HDFC",
+"ytm": 8.32,
+"cov": 96.6
+},
+{
+"n": "HDFC Ultra Short Term Fund",
+"amc": "HDFC",
+"ytm": 8.06,
+"cov": 100.3
+},
+{
+"n": "HDFC Short Term Fund",
+"amc": "HDFC",
+"ytm": 8.47,
+"cov": 97.0
+},
+{
+"n": "HDFC Overnight Fund",
+"amc": "HDFC",
+"ytm": 5.7,
+"cov": 99.5
+},
+{
+"n": "HDFC Money Market Fund",
+"amc": "HDFC",
+"ytm": 7.7,
+"cov": 101.7
+},
+{
+"n": "HDFC Liquid Fund",
+"amc": "HDFC",
+"ytm": 7.05,
+"cov": 99.2
+},
+{
+"n": "ICICI Prudential Liquid Fund",
+"amc": "ICICI",
+"ytm": 7.11,
+"cov": 102.3
+},
+{
+"n": "ICICI Prudential Money Market Fund",
+"amc": "ICICI",
+"ytm": 7.65,
+"cov": 97.4
+},
+{
+"n": "ICICI Prudential Overnight Fund",
+"amc": "ICICI",
+"ytm": 5.67,
+"cov": 0
+},
+{
+"n": "ICICI Prudential Short Term Fund",
+"amc": "ICICI",
+"ytm": 8.55,
+"cov": 96.2
+},
+{
+"n": "ICICI Prudential Ultra Short Term Fund",
+"amc": "ICICI",
+"ytm": 8.2,
+"cov": 89.9
+},
+{
+"n": "ICICI Prudential Ultra Short to Short Term Fund",
+"amc": "ICICI",
+"ytm": 8.23,
+"cov": 95.2
+},
+{
+"n": "Aditya Birla Sun Life Liquid Fund",
+"amc": "ABSL",
+"ytm": 7.3,
+"cov": 113.8
+},
+{
+"n": "Aditya Birla Sun Life Ultra Short to Short Term Fund",
+"amc": "ABSL",
+"ytm": 8.12,
+"cov": 94.2
+},
+{
+"n": "Aditya Birla Sun Life Ultra Short Term Fund",
+"amc": "ABSL",
+"ytm": 8.37,
+"cov": 94.9
+},
+{
+"n": "Aditya Birla Sun Life Short Term Fund",
+"amc": "ABSL",
+"ytm": 8.43,
+"cov": 91.0
+},
+{
+"n": "Aditya Birla Sun Life Money Market Fund",
+"amc": "ABSL",
+"ytm": 7.77,
+"cov": 101.9
+},
+{
+"n": "Aditya Birla Sun Life Overnight Fund",
+"amc": "ABSL",
+"ytm": 5.7,
+"cov": 2.1
+},
+{
+"n": "Nippon India Short Term Fund",
+"amc": "NIPPON",
+"ytm": 8.51,
+"cov": 95.7
+},
+{
+"n": "Nippon India Ultra Short Term Fund",
+"amc": "NIPPON",
+"ytm": 8.15,
+"cov": 96.9
+},
+{
+"n": "Nippon India Liquid Fund",
+"amc": "NIPPON",
+"ytm": 7.38,
+"cov": 100.7
+},
+{
+"n": "Nippon India Money Market Fund",
+"amc": "NIPPON",
+"ytm": 7.78,
+"cov": 100.1
+},
+{
+"n": "Nippon India Ultra Short to Short Term Fund",
+"amc": "NIPPON",
+"ytm": 8.34,
+"cov": 94.7
+},
+{
+"n": "Nippon India Overnight Fund",
+"amc": "NIPPON",
+"ytm": 5.4,
+"cov": 0.1
+},
+{
+"n": "DSP Liquid Fund",
+"amc": "DSP",
+"ytm": 7.18,
+"cov": 103.1
+},
+{
+"n": "DSP Ultra Short Term Fund",
+"amc": "DSP",
+"ytm": 8.0,
+"cov": 99.9
+},
+{
+"n": "DSP Ultra Short to Short Term Fund",
+"amc": "DSP",
+"ytm": 7.99,
+"cov": 98.5
+},
+{
+"n": "DSP Short Term Fund",
+"amc": "DSP",
+"ytm": 8.19,
+"cov": 97.0
+},
+{
+"n": "DSP Money Market Fund",
+"amc": "DSP",
+"ytm": 7.69,
+"cov": 99.8
+},
+{
+"n": "DSP Overnight Fund",
+"amc": "DSP",
+"ytm": 5.78,
+"cov": 16.5
+},
+{
+"n": "Tata Liquid Fund",
+"amc": "TATA",
+"ytm": 7.19,
+"cov": 91.0
+},
+{
+"n": "Tata Ultra Short to Short Term Fund",
+"amc": "TATA",
+"ytm": 8.04,
+"cov": 97.5
+},
+{
+"n": "Tata Ultra Short Term Fund",
+"amc": "TATA",
+"ytm": 8.02,
+"cov": 95.4
+},
+{
+"n": "Tata Short Term Fund",
+"amc": "TATA",
+"ytm": 8.3,
+"cov": 96.3
+},
+{
+"n": "Tata Overnight Fund",
+"amc": "TATA",
+"ytm": 5.64,
+"cov": 2.3
+},
+{
+"n": "Tata Money Market Fund",
+"amc": "TATA",
+"ytm": 7.69,
+"cov": 99.8
+},
+{
+"n": "Franklin India Liquid Fund",
+"amc": "FRANKLIN",
+"ytm": 7.5,
+"cov": 72.9
+},
+{
+"n": "Franklin India Overnight Fund",
+"amc": "FRANKLIN",
+"ytm": 5.67,
+"cov": 3.0
+},
+{
+"n": "Franklin India Money Market Fund",
+"amc": "FRANKLIN",
+"ytm": 7.81,
+"cov": 89.9
+},
+{
+"n": "Franklin India Ultra Short Term Fund",
+"amc": "FRANKLIN",
+"ytm": 7.99,
+"cov": 86.2
+},
+{
+"n": "Franklin India Ultra Short to Short Term Fund",
+"amc": "FRANKLIN",
+"ytm": 8.27,
+"cov": 92.2
+},
+{
+"n": "Franklin India Short Term Fund",
+"amc": "FRANKLIN",
+"ytm": 8.25,
+"cov": 71.4
+},
+{
+"n": "Kotak Overnight Fund",
+"amc": "KOTAK",
+"ytm": 5.69,
+"cov": 24.7
+},
+{
+"n": "Kotak Liquid Fund",
+"amc": "KOTAK",
+"ytm": 7.28,
+"cov": 98.2
+},
+{
+"n": "Kotak Ultra Short to Short Term Fund",
+"amc": "KOTAK",
+"ytm": 8.31,
+"cov": 97.2
+},
+{
+"n": "Kotak Ultra Short Term Fund",
+"amc": "KOTAK",
+"ytm": 8.0,
+"cov": 98.5
+},
+{
+"n": "Kotak Money Market Fund",
+"amc": "KOTAK",
+"ytm": 7.72,
+"cov": 99.9
+},
+{
+"n": "Kotak Short Term Fund",
+"amc": "KOTAK",
+"ytm": 8.36,
+"cov": 96.5
+},
+{
+"n": "Edelweiss Money Market Fund",
+"amc": "EDELWEISS",
+"ytm": 7.6,
+"cov": 99.3
+},
+{
+"n": "Edelweiss Ultra Short Term Fund",
+"amc": "EDELWEISS",
+"ytm": 7.63,
+"cov": 98.5
+},
+{
+"n": "Edelweiss Overnight Fund",
+"amc": "EDELWEISS",
+"ytm": 5.85,
+"cov": 94.0
+},
+{
+"n": "Edelweiss Ultra Short to Short Term Fund",
+"amc": "EDELWEISS",
+"ytm": 7.91,
+"cov": 98.3
+},
+{
+"n": "Edelweiss Liquid Fund",
+"amc": "EDELWEISS",
+"ytm": 7.13,
+"cov": 97.0
+},
+{
+"n": "Bajaj Finserv Liquid Fund",
+"amc": "BAJAJ",
+"ytm": 7.04,
+"cov": 99.7
+},
+{
+"n": "Bajaj Finserv Ultra Short to Short Term Fund",
+"amc": "BAJAJ",
+"ytm": 7.77,
+"cov": 98.2
+},
+{
+"n": "Bajaj Finserv Money Market Fund",
+"amc": "BAJAJ",
+"ytm": 7.5,
+"cov": 99.7
+},
+{
+"n": "Bajaj Finserv Overnight Fund",
+"amc": "BAJAJ",
+"ytm": 5.72,
+"cov": 99.7
+},
+{
+"n": "quant Liquid Fund",
+"amc": "QUANT",
+"ytm": 6.79,
+"cov": 99.4
+},
+{
+"n": "quant Overnight Fund",
+"amc": "QUANT",
+"ytm": 5.71,
+"cov": 98.8
+},
+{
+"n": "UTI Money Market Fund",
+"amc": "UTI",
+"ytm": 7.88,
+"cov": 92.2
+},
+{
+"n": "UTI Liquid Fund",
+"amc": "UTI",
+"ytm": 7.44,
+"cov": 85.7
+},
+{
+"n": "UTI Short Term Fund",
+"amc": "UTI",
+"ytm": 8.26,
+"cov": 87.1
+},
+{
+"n": "UTI Overnight Fund",
+"amc": "UTI",
+"ytm": 5.6,
+"cov": 5.0
+},
+{
+"n": "UTI Ultra Short to Short Term Fund",
+"amc": "UTI",
+"ytm": 8.08,
+"cov": 85.3
+},
+{
+"n": "UTI Ultra Short Term Fund",
+"amc": "UTI",
+"ytm": 8.02,
+"cov": 95.6
+},
+{
+"n": "Mirae Asset Liquid Fund",
+"amc": "MIRAE",
+"ytm": 7.1,
+"cov": 99.7
+},
+{
+"n": "Mirae Asset Overnight Fund",
+"amc": "MIRAE",
+"ytm": 5.68,
+"cov": 99.7
+},
+{
+"n": "Mirae Asset Ultra Short to Short Term Fund",
+"amc": "MIRAE",
+"ytm": 8.04,
+"cov": 96.7
+},
+{
+"n": "Mirae Asset Money Market Fund",
+"amc": "MIRAE",
+"ytm": 7.68,
+"cov": 101.9
+},
+{
+"n": "Mirae Asset Ultra Short-Term Fund",
+"amc": "MIRAE",
+"ytm": 8.01,
+"cov": 104.6
+},
+{
+"n": "Mirae Asset Short Term Fund",
+"amc": "MIRAE",
+"ytm": 8.19,
+"cov": 99.6
+},
+{
+"n": "Invesco India Liquid Fund",
+"amc": "INVESCO",
+"ytm": 7.11,
+"cov": 99.7
+},
+{
+"n": "Invesco India Ultra Short Term Fund",
+"amc": "INVESCO",
+"ytm": 7.79,
+"cov": 97.6
+},
+{
+"n": "Invesco India Ultra Short to Short Term Fund",
+"amc": "INVESCO",
+"ytm": 7.8,
+"cov": 95.7
+},
+{
+"n": "Invesco India Short Term Fund",
+"amc": "INVESCO",
+"ytm": 8.02,
+"cov": 97.2
+},
+{
+"n": "Invesco India Money Market Fund",
+"amc": "INVESCO",
+"ytm": 7.56,
+"cov": 100.2
+},
+{
+"n": "Invesco India Overnight Fund",
+"amc": "INVESCO",
+"ytm": 5.85,
+"cov": 99.9
+},
+{
+"n": "Canara Robeco Ultra Short Term Fund",
+"amc": "CANARA",
+"ytm": 7.77,
+"cov": 90.0
+},
+{
+"n": "Canara Robeco Overnight Fund",
+"amc": "CANARA",
+"ytm": 5.67,
+"cov": 2.7
+},
+{
+"n": "Canara Robeco Liquid Fund",
+"amc": "CANARA",
+"ytm": 7.29,
+"cov": 85.4
+},
+{
+"n": "Canara Robeco Ultra Short to Short Term Fund",
+"amc": "CANARA",
+"ytm": 7.86,
+"cov": 96.3
+},
+{
+"n": "Canara Robeco Short Term Fund",
+"amc": "CANARA",
+"ytm": 8.14,
+"cov": 95.2
+},
+{
+"n": "PGIM India Liquid Fund",
+"amc": "PGIM",
+"ytm": 7.42,
+"cov": 96.8
+},
+{
+"n": "PGIM India Overnight Fund",
+"amc": "PGIM",
+"ytm": 5.63,
+"cov": 2.0
+},
+{
+"n": "PGIM India Money Market Fund",
+"amc": "PGIM",
+"ytm": 7.56,
+"cov": 88.6
+},
+{
+"n": "PGIM India Ultra Short Term Fund",
+"amc": "PGIM",
+"ytm": 7.54,
+"cov": 87.2
+}
+]
+}
