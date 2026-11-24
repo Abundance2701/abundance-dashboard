@@ -554,6 +554,41 @@
 "amc": "PGIM",
 "ytm": 7.54,
 "cov": 87.2
+},
+{
+"n": "UTI MMF",
+"amc": "UTI",
+"ytm": 7.88,
+"cov": 92.2,
+"alias_of": "UTI Money Market Fund"
+},
+{
+"n": "Franklin India Low Duration Fund",
+"amc": "FRANKLIN",
+"ytm": 8.27,
+"cov": 92.2,
+"alias_of": "Franklin India Ultra Short to Short Term Fund"
+},
+{
+"n": "Franklin India Ultra Short Duration Fund",
+"amc": "FRANKLIN",
+"ytm": 7.99,
+"cov": 86.2,
+"alias_of": "Franklin India Ultra Short Term Fund"
+},
+{
+"n": "Tata Treasury Advantage Fund",
+"amc": "TATA",
+"ytm": 8.04,
+"cov": 97.5,
+"alias_of": "Tata Ultra Short to Short Term Fund"
+},
+{
+"n": "Tata Short Term Bond Fund",
+"amc": "TATA",
+"ytm": 8.3,
+"cov": 96.3,
+"alias_of": "Tata Short Term Fund"
 }
 ]
 }
