@@ -1987,10 +1987,14 @@ function rvRender() {
   const sipBy = {}; for (const f of actS) { const k = assetRow(f) === 'Equity' ? eqJob(f) : assetRow(f); (sipBy[k] = sipBy[k] || { v: 0, n: 0 }).v += f.sip.amt; sipBy[k].n++; }
   const sipOrder = [...EQJOBS, 'Hybrid', 'Debt', 'Gold & other'].filter(k => sipBy[k]);
   const sipEq = sipOrder.filter(k => EQJOBS.includes(k)).reduce((t, k) => t + sipBy[k].v, 0);
-  const sipCard = sipF.length ? `<div class="card2 xsec"><div class="ct">SIPs <span class="ctsub">from the statement's SIP instalments</span></div>
-    <div class="tiles small" style="margin-top:0">${tile('Active SIPs', inr(sipTot), `a month · ${actS.length} fund${actS.length === 1 ? '' : 's'}`)}${tile('Into equity', sipTot ? (sipEq / sipTot * 100).toFixed(0) + '%' : '—', inr(sipEq) + ' a month')}${inaS.length ? tile('Stopped SIPs', inr(inaS.reduce((t, f) => t + f.sip.amt, 0)), `${inaS.length} fund${inaS.length === 1 ? '' : 's'} · last paid over 45 days ago`) : ''}</div>
-    ${sipTot ? hbars(sipOrder.map(k => ({ l: k, v: sipBy[k].v / sipTot * 100, sub: `${inr(sipBy[k].v)} a month · ${sipBy[k].n} fund${sipBy[k].n === 1 ? '' : 's'}` }))) : ''}
-    ${XR.hasLots ? '' : '<div class="meta">Upload the detailed Wealth Elite statement (with transactions) to see SIPs.</div>'}</div>` : (XR.hasLots === false ? '' : '');
+  const pct = v => sipTot ? (v / sipTot * 100).toFixed(1) + '%' : '—', nf = n => `${n} fund${n === 1 ? '' : 's'}`;
+  const inaT = inaS.reduce((t, f) => t + f.sip.amt, 0);
+  const sipCard = sipF.length ? `<div class="card2 xsec"><div class="ct">SIPs <span class="ctsub">from the statement's SIP instalments · active = paid in the last 45 days</span></div>
+    <div class="tablewrap"><table class="mini rvtg"><thead><tr><th class="l">Category</th><th>₹ a month</th><th>Funds</th><th>% of SIP</th></tr></thead><tbody>
+    ${sipOrder.map(k => `<tr><td class="l">${k}</td><td>${inr(sipBy[k].v)}</td><td>${sipBy[k].n}</td><td>${pct(sipBy[k].v)}</td></tr>`).join('')}</tbody>
+    <tfoot><tr><td class="l"><b>Active SIPs</b></td><td><b>${inr(sipTot)}</b></td><td><b>${actS.length}</b></td><td><b>${sipTot ? '100%' : '—'}</b></td></tr>
+    <tr><td class="l">of which into equity</td><td>${inr(sipEq)}</td><td></td><td>${pct(sipEq)}</td></tr>
+    ${inaS.length ? `<tr><td class="l">Stopped SIPs <span class="fund-meta" style="display:inline">not counted above</span></td><td>${inr(inaT)}</td><td>${inaS.length}</td><td></td></tr>` : ''}</tfoot></table></div></div>` : '';
   $('xrOut').innerHTML = `<div class="panel xr4 rv">
     <h3>Client review${client ? ' · ' + esc(client) : ''} <span class="sub">${inrS(T)} · ${F.length} funds · statement ${esc(meta.asofLabel || '—')} · holdings ${esc(X.asof || '—')}</span></h3>
     <div class="controls" style="gap:10px 14px;margin-bottom:10px"><div class="field"><label>Risk profile</label><select id="rvProf">${PROFILES.map(([k, l]) => `<option value="${k}"${k === RV.profile ? ' selected' : ''}>${l}</option>`).join('')}</select></div>
@@ -1999,7 +2003,6 @@ function rvRender() {
       <div class="card2"><div class="ct">Asset mix</div>${tbl('Asset', assetRows, sumA)}</div>
       <div class="card2"><div class="ct">Equity by category <span class="ctsub">% of equity · change at the equity target</span></div>${tbl('Category', eqRows, sumE)}${addable.length ? `<div class="btnrow" style="margin-top:6px"><select id="rvAddJob" style="min-width:0;font-size:13px;padding:4px 8px"><option value="">+ add a category</option>${addable.map(j => `<option>${j}</option>`).join('')}</select></div>` : ''}</div>
     </div>
-    ${sipCard}
     <div class="grid2 xsec"><div class="card2"><div class="ct">Overlap within each category <span class="ctsub">pairs above ${OVL}% listed</span></div>${catOv}</div>
       <div class="card2"><div class="ct">Whole portfolio vs the index</div>${wholeOv}</div></div>
     <div class="card2 xsec"><div class="ct">What the whole portfolio owns <span class="ctsub">funds looked through to their stocks</span></div>
@@ -2007,7 +2010,8 @@ function rvRender() {
       <span class="capbar" style="width:100%;height:16px">${parts.map(x => `<i style="width:${(x[1] / tot * 100).toFixed(2)}%;background:${x[2]}" title="${x[0]} ${inr(x[1])}"></i>`).join('')}</span>
       <div class="legend" style="margin-top:8px">${parts.map(x => `<span><span class="sw" style="background:${x[2]}"></span>${x[0]} ${inrS(x[1])} (${(x[1] / tot * 100).toFixed(1)}%)</span>`).join('')}</div>
       ${nl && nl.nl && nl.nl.length ? `<div class="meta">Not looked through (fund house not in the holdings data): ${nl.nl.map(f => esc(f.short)).join(', ')}.</div>` : ''}</div>
-    <details class="xsec"><summary class="linkbtn" style="font-size:13.5px">More detail: fund houses, overlap, top stocks</summary>
+    <details class="xsec" open><summary class="linkbtn" style="font-size:13.5px">More detail: ${sipCard ? 'SIPs, ' : ''}fund houses, overlap, top stocks</summary>
+      ${sipCard}
       <div class="grid2 xsec"><div class="card2"><div class="ct">By fund house <span class="ctsub">% of equity money</span></div>${amcBars}</div>
         <div class="card2"><div class="ct">Top 10 stocks <span class="ctsub">% of stocks held</span></div>${stockBars}</div></div>
       <div class="card2 xsec"><div class="ct">Fund-vs-fund overlap <span class="ctsub">% of stocks held in common</span></div>${ovCard}</div>
