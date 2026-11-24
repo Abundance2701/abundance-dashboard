@@ -16,5 +16,5 @@ jobs:
         run: |
           git config user.name "ter-data-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add data/ter.json data/ter_raw_sample.json 2>/dev/null || true
+          git add data/ter.json 2>/dev/null || true
           git diff --cached --quiet && echo "no change" || (git commit -m "TER data $(date -u +%F)" && git pull --rebase -q && git push)
