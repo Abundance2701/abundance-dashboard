@@ -21,15 +21,15 @@ def fetch(size, p):
             err = e; time.sleep(min(60, 5 * 2 ** k) if '429' in str(e) else 3)
     print('page failed', p, err); return None
 # biggest page the API will give, so there are few calls (AMFI rate-limits with HTTP 429)
-for size in (5000, 2000, 1000, 500, 100):
-    first = fetch(size, 1)
-    if first and len(first.get('data') or []) >= min(size, (first.get('meta') or {}).get('total', size)): break
+size = 100   # AMFI only honours pageSize 100 (checked 24/11/2026); ~470 pages, about 30-60 min
+first = fetch(size, 1)
 meta = first.get('meta', {}); print('meta', meta, 'pageSize', size)
 recs = list(first['data']); pages = meta.get('pageCount', 1)
 for p in range(2, pages + 1):
     d = fetch(size, p)
     if d is None: sys.exit(f'page {p} failed; old file kept')
     recs += d['data']; time.sleep(1)
+    if p % 25 == 0: print('page', p, 'of', pages)
 print('records', len(recs), 'of', meta.get('total'))
 latest = {}
 for r in recs:
