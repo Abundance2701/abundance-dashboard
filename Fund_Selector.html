@@ -169,6 +169,9 @@
   .hbar .tr u{position:absolute; top:-2px; bottom:-2px; width:3px; border-radius:2px; background:var(--accent); box-shadow:0 0 0 1px #fff; text-decoration:none;}
   .hbar .val{text-align:right; font-weight:700;}
   .hbar .sm{display:block; font-size:10.5px; color:var(--muted); font-weight:400;}
+  .sipr{display:grid; grid-template-columns:minmax(0,40%) 82px minmax(50px,1fr) 56px; align-items:center; gap:8px; font-size:inherit; margin:7px 0;}
+  .sipr .dl{min-width:0;} .sipr small{font-size:11.5px; color:var(--muted);} .sipr .amt{text-align:right;} .sipr b{text-align:right;}
+  .sipr .tr{height:11px; background:#eef2ef; border-radius:6px; overflow:hidden;} .sipr .tr i{display:block; height:100%; border-radius:6px; background:var(--primary);}
   .xin td{vertical-align:middle;}
   .xin select{min-width:0; width:100%; max-width:440px; font-size:13px; padding:5px 8px;}
   .xin input{width:120px; font-size:13px; padding:5px 8px;}
@@ -1987,14 +1990,17 @@ function rvRender() {
   const sipBy = {}; for (const f of actS) { const k = assetRow(f) === 'Equity' ? eqJob(f) : assetRow(f); (sipBy[k] = sipBy[k] || { v: 0, n: 0 }).v += f.sip.amt; sipBy[k].n++; }
   const sipOrder = [...EQJOBS, 'Hybrid', 'Debt', 'Gold & other'].filter(k => sipBy[k]);
   const sipEq = sipOrder.filter(k => EQJOBS.includes(k)).reduce((t, k) => t + sipBy[k].v, 0);
-  const pct = v => sipTot ? (v / sipTot * 100).toFixed(1) + '%' : '—', nf = n => `${n} fund${n === 1 ? '' : 's'}`;
+  const sPct = v => sipTot ? (v / sipTot * 100).toFixed(1) + '%' : '—', nf = n => `${n} fund${n === 1 ? '' : 's'}`;
   const inaT = inaS.reduce((t, f) => t + f.sip.amt, 0);
-  const sipCard = sipF.length ? `<div class="card2 xsec"><div class="ct">SIPs <span class="ctsub">from the statement's SIP instalments · active = paid in the last 45 days</span></div>
-    <div class="tablewrap"><table class="mini rvtg"><thead><tr><th class="l">Category</th><th>₹ a month</th><th>Funds</th><th>% of SIP</th></tr></thead><tbody>
-    ${sipOrder.map(k => `<tr><td class="l">${k}</td><td>${inr(sipBy[k].v)}</td><td>${sipBy[k].n}</td><td>${pct(sipBy[k].v)}</td></tr>`).join('')}</tbody>
-    <tfoot><tr><td class="l"><b>Active SIPs</b></td><td><b>${inr(sipTot)}</b></td><td><b>${actS.length}</b></td><td><b>${sipTot ? '100%' : '—'}</b></td></tr>
-    <tr><td class="l">of which into equity</td><td>${inr(sipEq)}</td><td></td><td>${pct(sipEq)}</td></tr>
-    ${inaS.length ? `<tr><td class="l">Stopped SIPs <span class="fund-meta" style="display:inline">not counted above</span></td><td>${inr(inaT)}</td><td>${inaS.length}</td><td></td></tr>` : ''}</tfoot></table></div></div>` : '';
+  const sipMx = Math.max(...sipOrder.map(k => sipBy[k].v), 1);
+  const sipCard = sipF.length ? `<div class="grid2 xsec"><div class="card2"><div class="ct">SIPs by category <span class="ctsub">% of active SIP a month</span></div>
+    ${sipOrder.map(k => `<div class="sipr"><span class="dl">${k} <small>${nf(sipBy[k].n)}</small></span><span class="amt">${inr(sipBy[k].v)}</span><span class="tr"><i style="width:${(sipBy[k].v / sipMx * 100).toFixed(1)}%"></i></span><b>${sPct(sipBy[k].v)}</b></div>`).join('') || '<div class="na">—</div>'}</div>
+    <div class="card2"><div class="ct">SIP summary <span class="ctsub">from the statement's SIP instalments</span></div>
+      <div class="pbpair"><span>Active SIPs <small class="fund-meta" style="display:inline">${nf(actS.length)}</small></span><b>${inr(sipTot)} a month</b></div>
+      <div class="pbpair"><span>Into equity</span><b>${inr(sipEq)} · ${sPct(sipEq)}</b></div>
+      <div class="pbpair"><span>Into debt, hybrid, gold & other</span><b>${inr(sipTot - sipEq)} · ${sPct(sipTot - sipEq)}</b></div>
+      ${inaS.length ? `<div class="pbpair"><span>Stopped SIPs <small class="fund-meta" style="display:inline">${nf(inaS.length)}</small></span><b>${inr(inaT)} a month</b></div>` : ''}
+      <div class="meta">Active = an instalment paid in the 45 days before the statement date. Stopped SIPs are not in the totals.</div></div></div>` : '';
   $('xrOut').innerHTML = `<div class="panel xr4 rv">
     <h3>Client review${client ? ' · ' + esc(client) : ''} <span class="sub">${inrS(T)} · ${F.length} funds · statement ${esc(meta.asofLabel || '—')} · holdings ${esc(X.asof || '—')}</span></h3>
     <div class="controls" style="gap:10px 14px;margin-bottom:10px"><div class="field"><label>Risk profile</label><select id="rvProf">${PROFILES.map(([k, l]) => `<option value="${k}"${k === RV.profile ? ' selected' : ''}>${l}</option>`).join('')}</select></div>
