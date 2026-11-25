@@ -1,6 +1,139 @@
 {
- "updated": "2026-11-25T11:45:24Z",
+ "updated": "2026-11-25T19:58:19Z",
  "items": [
+  {
+   "src": "RBI",
+   "title": "47th Half-Yearly Report on Management of Foreign Exchange Reserves: April – September 2026",
+   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=64042",
+   "date": "2026-11-25",
+   "important": false
+  },
+  {
+   "src": "RBI",
+   "title": "RBI Bulletin – November 2026",
+   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=64041",
+   "date": "2026-11-25",
+   "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of further issues of securities",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77614.pdf",
+   "date": "2026-11-25",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of Equity Shares of HEG Limited (formerly known as HEG Graphite Limited) pursuant to the Scheme of Arrangement",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77613.zip",
+   "date": "2026-11-25",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of Equity Shares of Crystal Crop Protection Limited (IPO)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77612.zip",
+   "date": "2026-11-25",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of units issued by Motilal Oswal Asset Management Company Limited (Motilal Oswal Nifty PSU Bank ETF, Motilal Oswal Nifty500 Growth 50 ETF, Motilal Oswal Nifty Private Bank ETF, Motilal Oswal Nifty REITs & Realty ETF and Motilal Oswal Nifty 10 yr Benchmark G-Sec ETF)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77611.pdf",
+   "date": "2026-11-25",
+   "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "BONUS: Adjustment of Futures and Options contracts in the security TECHM",
+   "url": "https://nsearchives.nseindia.com/content/circulars/FAOP77610.pdf",
+   "date": "2026-11-25",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of further issue of Lloyds Engineering Works Limited",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77609.pdf",
+   "date": "2026-11-25",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of privately placed securities on the debt market segment of the Exchange",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77608.pdf",
+   "date": "2026-11-25",
+   "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of privately placed securities on capital market segment",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77607.pdf",
+   "date": "2026-11-25",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Reminder for Submission of Half yearly Networth Certificate as on September 30, 2026",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CMPL77605.zip",
+   "date": "2026-11-25",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Total Surrender of Membership",
+   "url": "https://nsearchives.nseindia.com/content/circulars/COMP77604.pdf",
+   "date": "2026-11-25",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Clarifications on account of review of settlement methodology for derivatives contracts",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CMPT77603.pdf",
+   "date": "2026-11-25",
+   "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Submission of Action Taken Report (ATR) for observations reported during inspection of Authorised Persons",
+   "url": "https://nsearchives.nseindia.com/content/circulars/COMP77602.pdf",
+   "date": "2026-11-25",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Measure in respect of companies with high Promoter as well as non- Promoter 'Encumbrance' as per Reg, 28(3) of SEBI (SAST) Regulation 2011",
+   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77601.zip",
+   "date": "2026-11-25",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Reversal Trade Cancellation Mechanism (RTCM)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77600.zip",
+   "date": "2026-11-25",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Applicability of Short-Term Additional Surveillance Measure (ST-ASM)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77599.zip",
+   "date": "2026-11-25",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Applicability of Additional Surveillance Measure (ASM)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77598.zip",
+   "date": "2026-11-25",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Change in ISIN - Varvee Global Limited (VGL)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77597.pdf",
+   "date": "2026-11-25",
+   "important": false
+  },
   {
    "src": "NSE",
    "title": "Applicability of Enhanced Surveillance Measure (ESM)",
@@ -10,15 +143,15 @@
   },
   {
    "src": "NSE",
-   "title": "Total Surrender of Membership",
-   "url": "https://nsearchives.nseindia.com/content/circulars/COMP77592.pdf",
+   "title": "Implementation of Security Council Resolution on Democratic People's Republic of Korea ( Amendment) Order, 2021: Security Council 1718 Sanction's Committee Updated One Entry on Its Sanctions List",
+   "url": "https://nsearchives.nseindia.com/content/circulars/ISC77595.zip",
    "date": "2026-11-25",
    "important": false
   },
   {
    "src": "NSE",
-   "title": "Listing of Equity Shares of Crystal Crop Protection Limited (IPO)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77589.pdf",
+   "title": "Suspension of trading in Non-Convertible Securities (Privately Placed)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77588.pdf",
    "date": "2026-11-25",
    "important": false
   },
@@ -45,23 +178,16 @@
   },
   {
    "src": "NSE",
-   "title": "Early Pay-in of Securities for Varvee Global Limited (VGL)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CMPT77582.pdf",
+   "title": "Trading of Rights Entitlements pursuant to Rights Issue of Praxis Home Retail Limited",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77583.pdf",
    "date": "2026-11-25",
    "important": false
   },
   {
-   "src": "RBI",
-   "title": "Governor, Reserve Bank of India meets Managing Directors & Chief Executive Officers of select NBFCs, HFCs and Industry Representatives in Mumbai on November 23, 2026",
-   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=64032",
-   "date": "2026-11-23",
-   "important": true
-  },
-  {
-   "src": "RBI",
-   "title": "Governor, Reserve Bank of India meets Chairpersons and Managing Directors & Chief Executive Officers of select UCBs and Industry Representatives in Mumbai on November 23, 2026",
-   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=64031",
-   "date": "2026-11-23",
+   "src": "NSE",
+   "title": "Early Pay-in of Securities for Varvee Global Limited (VGL)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CMPT77582.pdf",
+   "date": "2026-11-25",
    "important": false
   },
   {
@@ -149,8 +275,8 @@
    10
   ],
   "https://nsearchives.nseindia.com/content/RSS/Circulars.xml": [
-   10,
-   7
+   31,
+   27
   ]
  },
  "errors": []
