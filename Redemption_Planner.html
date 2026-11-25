@@ -988,10 +988,10 @@ $('xls').addEventListener('click', async () => {
   const nm = properName($('client').value), sub = `${nm} · Redemption date ${dmy(rd)} · Tax Year ${RP.taxYear(rd)}`;
   const R0 = v => Math.round(v);
   sheet('Plan', 'Redemption Plan · ' + sub,
-    [['Fund', 40], ['Cost', 13, INR], ['Current value', 14, INR], ['Redeem ₹', 13, INR], ['Purchase dates redeemed', 24, null, 'center'], ['Folio', 16, null, 'center'], ['XIRR %', 9, '0.00'],
+    [['Fund', 40], ['Cost', 13, INR], ['Current value', 14, INR], ['Redeem ₹', 13, INR], ['Purchase dates redeemed', 24, null, 'center'], ['Folio', 16, null, 'center'], ['XIRR %', 9, '0.00'], ['Cost of units redeemed', 14, INR],
      ['Gain', 12, GAIN], ['ST gain', 12, GAIN], ['LT gain', 12, GAIN], ['Exit load', 11, INR], ['Exit load %', 11, '0.0#', 'center'], ['Load days', 10, '0', 'center'], ['Kept out', 10, null, 'center']],
-    ev.rows.map(r => [r.f.short, R0(r.cost), R0(r.f.value), R0(r.amount), lotRange(r), r.f.folio, isFinite(r.f.xirr) ? r.f.xirr : null, R0(r.gain), R0(r.eqST + r.slab), R0(r.eqLT + r.othLT), R0(r.load), r.f.loadPct, r.f.loadDays, r.f.exclude ? 'Yes' : '']),
-    ['Total', R0(ev.rows.reduce((s, r) => s + r.cost, 0)), R0(ev.rows.reduce((s, r) => s + r.f.value, 0)), R0(ev.total), '', '', null, R0(ev.gain), R0(ev.buckets.eqST + ev.buckets.slab), R0(ev.buckets.eqLT + ev.buckets.othLT), R0(ev.load), null, null, '']);
+    ev.rows.map(r => [r.f.short, R0(costOf(r.f)), R0(r.f.value), R0(r.amount), lotRange(r), r.f.folio, isFinite(r.f.xirr) ? r.f.xirr : null, R0(r.cost), R0(r.gain), R0(r.eqST + r.slab), R0(r.eqLT + r.othLT), R0(r.load), r.f.loadPct, r.f.loadDays, r.f.exclude ? 'Yes' : '']),
+    ['Total', R0(ev.rows.reduce((s, r) => s + costOf(r.f), 0)), R0(ev.rows.reduce((s, r) => s + r.f.value, 0)), R0(ev.total), '', '', null, R0(ev.rows.reduce((s, r) => s + r.cost, 0)), R0(ev.gain), R0(ev.buckets.eqST + ev.buckets.slab), R0(ev.buckets.eqLT + ev.buckets.othLT), R0(ev.load), null, null, '']);
   const lots = []; for (const r of ev.rows) for (const x of r.slices) lots.push([r.f.short, r.f.folio, dmy(x.lotDate), x.held, x.term, { eqST: 'Equity ST', eqLT: 'Equity LT', othLT: 'Other LT', slab: 'Slab' }[x.bucket], +x.units.toFixed(3), +x.purNav.toFixed(4), R0(x.cost), R0(x.value), R0(x.gain), R0(x.load), x.gfNote]);
   sheet('FIFO lots', 'Lots redeemed (oldest first) · ' + sub,
     [['Fund', 36], ['Folio', 16, null, 'center'], ['Purchase date', 13, null, 'center'], ['Days held', 10, '0', 'center'], ['Term', 7, null, 'center'], ['Tax bucket', 12, null, 'center'], ['Units', 12, '#,##0.000'], ['Purchase NAV', 13, '#,##0.0000'],
