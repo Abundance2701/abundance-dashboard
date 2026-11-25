@@ -1,11 +1,53 @@
 {
- "updated": "2026-11-24T20:42:14Z",
+ "updated": "2026-11-25T11:45:24Z",
  "items": [
   {
    "src": "NSE",
-   "title": "Streamlining EOD information dissemination related to Bhavcopy - Update",
-   "url": "https://nsearchives.nseindia.com/content/circulars/MSD77581.pdf",
-   "date": "2026-11-24",
+   "title": "Applicability of Enhanced Surveillance Measure (ESM)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77596.zip",
+   "date": "2026-11-25",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Total Surrender of Membership",
+   "url": "https://nsearchives.nseindia.com/content/circulars/COMP77592.pdf",
+   "date": "2026-11-25",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of Equity Shares of Crystal Crop Protection Limited (IPO)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77589.pdf",
+   "date": "2026-11-25",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "CBRICS - Settlement Calendar for December 2026",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CMPT77586.pdf",
+   "date": "2026-11-25",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Extension of trading of Rights Entitlement pursuant to Rights Issue - Indian Emulsifiers Limited",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77585.pdf",
+   "date": "2026-11-25",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Extension of allotment date & NFO close date for Nippon India CRISIL - IBX SDL - June 2037 Index Fund NFO on NSE MF Invest Platform",
+   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77584.pdf",
+   "date": "2026-11-25",
+   "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Early Pay-in of Securities for Varvee Global Limited (VGL)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CMPT77582.pdf",
+   "date": "2026-11-25",
    "important": false
   },
   {
@@ -19,34 +61,6 @@
    "src": "RBI",
    "title": "Governor, Reserve Bank of India meets Chairpersons and Managing Directors & Chief Executive Officers of select UCBs and Industry Representatives in Mumbai on November 23, 2026",
    "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=64031",
-   "date": "2026-11-23",
-   "important": false
-  },
-  {
-   "src": "RBI",
-   "title": "Premature redemption under Sovereign Gold Bond (SGB) Scheme - Redemption Price for premature redemption of SGB 2021-22 Series I due on November 25, 2026",
-   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=64030",
-   "date": "2026-11-23",
-   "important": true
-  },
-  {
-   "src": "RBI",
-   "title": "Reserve Bank (Securitisation Transactions) Amendment Directions, 2026",
-   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=64028",
-   "date": "2026-11-23",
-   "important": false
-  },
-  {
-   "src": "RBI",
-   "title": "RBI issues Draft Amendment Directions for ‘Preventive Safeguards for Electronic Banking Transactions (EBTs)’",
-   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=64026",
-   "date": "2026-11-23",
-   "important": true
-  },
-  {
-   "src": "RBI",
-   "title": "RBI releases 2026 list of Domestic Systemically Important Banks (D-SIBs)",
-   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=64025",
    "date": "2026-11-23",
    "important": false
   },
@@ -128,15 +142,15 @@
   ],
   "https://rbi.org.in/pressreleases_rss.xml": [
    10,
-   6
+   2
   ],
   "https://rbi.org.in/notifications_rss.xml": [
    10,
    10
   ],
   "https://nsearchives.nseindia.com/content/RSS/Circulars.xml": [
-   1,
-   1
+   10,
+   7
   ]
  },
  "errors": []
