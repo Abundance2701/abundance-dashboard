@@ -34,7 +34,7 @@
   .appswitch button.ref{background:#f1f2f1; color:#8a8590; border-color:#e3e5e3; font-weight:600;}
   .appswitch button.ref.on{background:#8a8590; color:#fff; border-color:#8a8590;}
   /* Fund Lab: table scrolls inside its card so the heading stays pinned */
-  #resultCard .tablewrap{max-height:calc(100vh - 120px); overflow:auto;}
+  #resultCard .tablewrap{max-height:calc(100vh - 40px - var(--pinH)); overflow:auto;}
   #resultCard thead th{position:sticky; top:0; z-index:3;}
   #resultCard thead th.sk1, #resultCard thead th.sk2{z-index:5;}
   .controls{display:flex; flex-wrap:wrap; gap:14px 18px; align-items:flex-end;}
@@ -213,7 +213,7 @@
   #appWb .panel h2{margin:0; font-size:17px; color:var(--dark);}
   .wb-head{display:flex; flex-wrap:wrap; justify-content:space-between; align-items:baseline; gap:6px 16px; margin-bottom:12px;}
   .wb-hint{color:var(--muted); font-size:13px; max-width:75ch;}
-  .wb-bar{position:sticky; top:0; z-index:20; display:flex; flex-wrap:wrap; gap:8px 10px; align-items:center; background:#fff; border:1px solid var(--line); border-radius:10px; padding:10px 14px; margin-bottom:14px; box-shadow:0 6px 16px -12px rgba(0,0,0,.4);}
+  .wb-bar{position:sticky; top:var(--pinH); z-index:20; display:flex; flex-wrap:wrap; gap:8px 10px; align-items:center; background:#fff; border:1px solid var(--line); border-radius:10px; padding:10px 14px; margin-bottom:14px; box-shadow:0 6px 16px -12px rgba(0,0,0,.4);}
   .wb-bar.open{position:relative;}
   #appWb [hidden], #appScreener[hidden], #appWb[hidden]{display:none !important;}
   .wb-bar .lbl{font:600 12px Montserrat, sans-serif; color:var(--muted); text-transform:uppercase; letter-spacing:.06em;}
@@ -398,10 +398,24 @@
 #dropVeil div{border:3px dashed #005826;border-radius:22px;padding:46px 70px;background:#fff;text-align:center;box-shadow:0 12px 40px rgba(57,41,62,.18);font-family:Montserrat,sans-serif;color:#005826}
 #dropVeil b{display:block;font-size:24px;margin-bottom:6px} #dropVeil span{font-family:Calibri,'Segoe UI',sans-serif;font-size:15px;color:#39293E}
 body.dragging #dropVeil{display:flex}
+  /* header + tab row stay pinned while scrolling; compacts once the page is scrolled */
+  :root{--pinH:0px;}
+  html{scroll-padding-top:calc(var(--pinH) + 8px);}
+  .pinbar{position:sticky; top:0; z-index:30; background:var(--bg); margin:-24px -24px 0; padding:24px 24px 0; transition:box-shadow .2s;}
+  .pinbar .appswitch{margin-bottom:0; padding-bottom:12px;}
+  .pinbar + *{margin-top:2px;}
+  .pinbar.stuck{box-shadow:0 8px 14px -12px rgba(57,41,62,.45); padding-top:10px; margin-top:-24px;}
+  .pinbar.stuck .top{padding-bottom:8px; margin-bottom:10px; align-items:center;}
+  .pinbar.stuck .top h1{font-size:20px;}
+  .pinbar.stuck .top p{display:none;}
+  .pinbar.stuck .appswitch{padding-bottom:10px;}
+  .pinbar.stuck .appswitch button{padding:6px 12px;}
+  @media (max-width:760px){ .pinbar{margin:-16px -16px 0; padding:16px 16px 0;} .pinbar.stuck{margin-top:-16px; padding-top:8px;} .pinbar.stuck .tagline{display:none;} }
 </style>
 </head>
 <body>
 <div class="wrap">
+  <div class="pinbar" id="pinbar">
   <div class="top">
     <div><h1>Fund Screener</h1><p>Every fund measured against its official index, scored against its peers, and checked for what it does differently.</p></div>
     <div class="tagline">Designing Portfolio. Delivering Peace.<br><a href="index.html">← Dashboard</a></div>
@@ -419,6 +433,7 @@ body.dragging #dropVeil{display:flex}
     <button class="ref" data-page="bench">Benchmarks &amp; data</button>
     <button class="ref" data-page="method">How it works</button>
   </div>
+  </div><!-- /pinbar -->
 
   <!-- ===================== MONEY FLOW ===================== -->
   <section id="page-flow" class="hide">
@@ -2521,5 +2536,14 @@ const FLOW = (() => {
 window.FS = { rbsa, solveLinear, factorMix, phases, bets, scoreGroup, pctRanks, analyse, captures, riskStats, rolling3, cagr, monthlyRet, trailing, valAt, me, peerSeries, holdKey, findHoldings, loadTRI, loadHoldings, runCategories, runBacktest, get TRI() { return TRI; }, get HOLD() { return HOLD; }, get M0() { return M0; }, NAVS, get RESULTS() { return RESULTS; }, ensureMasterData, leadChart, get RV() { return RV; }, pbRender, pbFind, wbOpen, get WB() { return WB; }, xrTokens, xrMatch, xrParseAOA, xrCompute, xrUniverse, XR };
 </script>
 <div id="dropVeil"><div><b>Drop the file here</b><span>The Wealth Elite statement opens in Client review, replacing the one loaded now</span></div></div>
+<script>
+/* pinned header: keep --pinH equal to its height; compact it once scrolled (gap between 10 and 90 px stops it flickering) */
+(function(){ var pb=document.getElementById('pinbar'); if(!pb) return;
+  var set=function(){ document.documentElement.style.setProperty('--pinH', pb.offsetHeight+'px'); };
+  if (window.ResizeObserver) new ResizeObserver(set).observe(pb); window.addEventListener('resize', set); set();
+  var on=false; var chk=function(){ var y=window.scrollY; if(!on && y>90){on=true; pb.classList.add('stuck');} else if(on && y<10){on=false; pb.classList.remove('stuck');} };
+  window.addEventListener('scroll', chk, {passive:true}); chk();
+})();
+</script>
 </body>
 </html>
