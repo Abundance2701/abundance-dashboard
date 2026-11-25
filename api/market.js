@@ -7,10 +7,10 @@
 const IDX = [
   // name, Yahoo symbol, NSE index name
   ['Nifty 50', '^NSEI', 'NIFTY 50'],
+  ['Sensex', '^BSESN', null],
   ['Nifty 500', '^CRSLDX', 'NIFTY 500'],
   // no Yahoo symbol: history and (if the NSE website fails) the live level come from NSE's official MCP
   ['Multicap 50:25:25', null, 'NIFTY500 MULTICAP 50:25:25', { eod: 'Nifty500 Multicap 50:25:25', live: 'NIFTY500 MULTICAP' }],
-  ['Sensex', '^BSESN', null],
   ['Bank Nifty', '^NSEBANK', 'NIFTY BANK'],
   ['Nifty Midcap 150', 'NIFTYMIDCAP150.NS', 'NIFTY MIDCAP 150'],
   ['Nifty Smallcap 250', 'NIFTYSMLCAP250.NS', 'NIFTY SMALLCAP 250'],
@@ -36,7 +36,9 @@ function card(name, rows, srcNote) {
 }
 async function metals(notes) {
   const [g, sv, fx, gs, ss] = await Promise.all([firstOk(METALS.gold), firstOk(METALS.silver), firstOk(METALS.fx), spotNow('XAU'), spotNow('XAG')]);
-  if (!g || !sv || !fx) { notes.push('metals: ' + [!g && 'gold', !sv && 'silver', !fx && 'USD/INR'].filter(Boolean).join(', ') + ' unavailable'); return []; }
+  // rupee per US dollar (Yahoo INR=X), shown as its own row; kept even if gold/silver fail
+  const fxCard = fx ? Object.assign(card('USD/INR · ₹ per $', fx.rows, 'Yahoo Finance (INR=X), currency market trades ~24h on weekdays'), { metal: false, fx: true }) : null;
+  if (!g || !sv || !fx) { notes.push('metals: ' + [!g && 'gold', !sv && 'silver', !fx && 'USD/INR'].filter(Boolean).join(', ') + ' unavailable'); return fxCard ? [fxCard] : []; }
   const fxAt = (() => { const m = new Map(fx.rows); const ds = fx.rows.map(r => r[0]); return d => { if (m.has(d)) return m.get(d); let v = null; for (const x of ds) { if (x <= d) v = m.get(x); else break; } return v; }; })();
   const fix = (y, live) => { const rows = y.rows.slice(); if (live && rows.length) { const ref = rows[rows.length - 1][1]; if (Math.abs(live / ref - 1) < 0.08) rows[rows.length - 1] = [rows[rows.length - 1][0], live]; } return rows; };
   const gU = fix(g, gs), sU = fix(sv, ss);
@@ -44,7 +46,7 @@ async function metals(notes) {
   const sMap = new Map(sU);
   const ratio = gU.filter(([d]) => sMap.has(d)).map(([d, v]) => [d, v / sMap.get(d)]);
   const how = y => (/=X$/.test(y.sym) ? 'international spot' : 'COMEX futures') + ((y === g ? gs : ss) ? ', live spot from gold-api.com' : '') + ' × USD/INR (Yahoo)';
-  return [card('Gold · ₹/10 g', inr(gU, 10), how(g)), card('Silver · ₹/kg', inr(sU, 1000), how(sv)), card('Gold/Silver ratio', ratio, 'gold ÷ silver, both in $/oz')].filter(Boolean);
+  return [fxCard, card('Gold · ₹/10 g', inr(gU, 10), how(g)), card('Silver · ₹/kg', inr(sU, 1000), how(sv)), card('Gold/Silver ratio', ratio, 'gold ÷ silver, both in $/oz')].filter(Boolean);
 }
 
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';

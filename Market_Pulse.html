@@ -340,7 +340,7 @@ main .perf .src{margin-top:0}
     if (!IX || !IX.indices || !IX.indices.length) { $('idx').innerHTML = ''; $('perf').hidden = true; return; }
     const L = IX.indices; if (sel >= L.length) sel = 0;
     const tick = x => { const p = LAST[x.name]; LAST[x.name] = x.level; return p == null || p === x.level ? '' : x.level > p ? ' fu' : ' fd'; };
-    const SHORT = { 'Multicap 50:25:25': 'Multicap', 'Nifty Midcap 150': 'Midcap 150', 'Nifty Smallcap 250': 'Smallcap 250', 'Brent crude · $': 'Brent $', 'WTI crude · $': 'WTI $', 'Gold · ₹/10 g': 'Gold ₹/10g', 'Silver · ₹/kg': 'Silver ₹/kg', 'Gold/Silver ratio': 'Gold/Silver' };
+    const SHORT = { 'Multicap 50:25:25': 'Multicap', 'Nifty Midcap 150': 'Midcap 150', 'Nifty Smallcap 250': 'Smallcap 250', 'Brent crude · $': 'Brent $', 'WTI crude · $': 'WTI $', 'Gold · ₹/10 g': 'Gold ₹/10g', 'Silver · ₹/kg': 'Silver ₹/kg', 'Gold/Silver ratio': 'Gold/Silver', 'USD/INR · ₹ per $': 'USD/INR' };
     $('idx').innerHTML = L.map((x, i) => {
       const ch = x.chg == null ? '' : (x.chg > 0 ? '+' : x.chg < 0 ? '−' : '') + inr(Math.abs(x.chg));
       return `<button type="button" class="wr${tick(x)}" aria-pressed="${i === sel}" data-i="${i}" title="${esc(x.name)}: click for performance">
@@ -356,7 +356,7 @@ main .perf .src{margin-top:0}
       .map(([k, v]) => `<button type="button" class="tile ${cls(v)}" data-r="${k}"${k === '1D' ? ' disabled title="Today: see What\'s moving the market"' : ` aria-pressed="${k === rng}" title="Show ${k} on the chart"`}><b class="${cls(v)}">${sg(v)}</b><span>${k}</span></button>`).join('');
     $('pchart').innerHTML = perfChart(x);
     const t = new Date(IX.updated);
-    const live = x.metal ? `Price: ${x.src}. Quoted the Indian way: gold per 10 g, silver per kg (÷ 1,000 for per gram). To compare with TradingView: XAUINRG × 10 = gold card; XAGINR ÷ 31.1035 × 1,000 = silver card. Excludes import duty and GST, so it is below Indian MCX or jeweller rates` : IX.live ? `Live, refreshed every 15 seconds in market hours (${x.src === 'NSE' ? 'level from NSE' : 'level from Yahoo Finance, may lag ~15 min'})` : 'Daily closes from Yahoo Finance';
+    const live = x.fx ? `Rupee per US dollar: ${x.src}. Higher = rupee weaker (each $ costs more ₹); lower = rupee stronger. Shows the latest rate since currencies trade almost round the clock on weekdays` : x.metal ? `Price: ${x.src}. Quoted the Indian way: gold per 10 g, silver per kg (÷ 1,000 for per gram). To compare with TradingView: XAUINRG × 10 = gold card; XAGINR ÷ 31.1035 × 1,000 = silver card. Excludes import duty and GST, so it is below Indian MCX or jeweller rates` : IX.live ? `Live, refreshed every 15 seconds in market hours (${x.src === 'NSE' ? 'level from NSE' : 'level from Yahoo Finance, may lag ~15 min'})` : 'Daily closes from Yahoo Finance';
     $('idxSrc').textContent = `${live}; return history from Yahoo Finance daily closes. Card lines show the last ~22 trading days (about 1 month): green if the index is higher than a month ago, orange if lower. Updated ${t.toLocaleString('en-IN', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit', timeZone:'Asia/Kolkata' })} IST.`;
   }
   const cr = v => v == null ? '—' : (v > 0 ? '+' : v < 0 ? '−' : '') + '₹' + Math.abs(Math.round(v)).toLocaleString('en-IN') + ' cr';
@@ -484,7 +484,7 @@ main .perf .src{margin-top:0}
 
   // which market a row belongs to, and whether that market is trading now
   const nyNow = () => { const p = Object.fromEntries(new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', weekday: 'short', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(new Date()).map(x => [x.type, x.value])); return { d: p.weekday, m: (+p.hour % 24) * 60 + +p.minute }; };
-  const kindOf = x => x.metal || /brent|wti|gold|silver/i.test(x.name) ? 'comm' : /s&p|nasdaq|dow/i.test(x.name) ? 'us' : 'in';
+  const kindOf = x => x.metal || x.fx || /brent|wti|gold|silver|usd\/inr/i.test(x.name) ? 'comm' : /s&p|nasdaq|dow/i.test(x.name) ? 'us' : 'in';
   function kindOpen(x) {
     const k = kindOf(x), n = nyNow();
     if (k === 'in') return marketOpen();
