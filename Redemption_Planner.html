@@ -267,7 +267,7 @@ tfoot td{font-weight:700;border-bottom:0;border-top:2px solid var(--line)}
 
     <section class="card hidden" id="s2">
       <h2><span class="n">2</span>Suggested plan · edit any amount</h2>
-      <p class="lead">Units go out oldest-first (FIFO), so each bar shows the order they'll be redeemed in, left to right. Type over any amount, then <b>Recompute the rest</b> to spread the balance over the other funds. Use ⚙ for exit load, tax type or to keep a fund out.</p>
+      <p class="lead">Units go out oldest-first (FIFO), so each bar shows the order they'll be redeemed in, left to right. Type over any amount, then <b>Recompute the rest</b> to spread the balance over the other funds. Typing 0 keeps that fund out. Use ⚙ for exit load, tax type or to keep a fund out.</p>
       <div class="legend">
         <span><i style="background:var(--lt)"></i>Long-term, no exit load</span>
         <span><i style="background:var(--st)"></i>Short-term</span>
@@ -727,7 +727,7 @@ function runSuggest(keepFixed){
   if (target <= 0){ $('target').focus(); return; }
   $('target').value = inr(target);
   saveSettings();
-  const fixed = {}; if (keepFixed) funds.forEach(f => { if (f.fixed && plan[f.id] > 0 && !f.exclude) fixed[f.id] = plan[f.id]; else f.fixed = false; });
+  const fixed = {}; if (keepFixed) funds.forEach(f => { if (f.fixed && !f.exclude) fixed[f.id] = plan[f.id] || 0; else f.fixed = false; });
   else funds.forEach(f => f.fixed = false);
   sugg = RP.suggest(funds, target, rdate(), cfg(), weights(), { fixed, smallBelow: pnum($('smallBelow').value), band: +$('band').value });
   plan = {}; Object.keys(sugg.plan).forEach(k => { if (sugg.plan[k] > 0) plan[k] = sugg.plan[k]; });
@@ -757,7 +757,7 @@ function mixFor(f){ // value split in FIFO order
 }
 function reasons(f, r){
   const out = [];
-  if (f.fixed && plan[f.id] > 0) out.push(['Set by you', 'fx']);
+  if (f.fixed) out.push([plan[f.id] > 0 ? 'Set by you' : 'Kept out by you', 'fx']);
   if (!r) return out;
   if (sugg && sugg.why[f.id] === 'small' && !f.fixed) out.push(['Small holding: full exit', '']);
   const c = cfg();
@@ -820,7 +820,7 @@ function rowHtml(f, total){
       <div class="mixc mix"><div class="bar">${bar}</div><div class="sub">${sub.join('')}</div></div>
       <div class="num xrc"><div class="xr">${isFinite(f.xirr) ? f.xirr.toFixed(1) + '%' : '—'}${!seasoned ? '<small>new · not scored</small>' : ''}</div></div>
       <div class="scc">${f.exclude ? '<span class="note" style="margin:0">Kept out</span>' : sc ? `<div class="sc" title="Tax ${Math.round(sc.tax)} · Exit load ${Math.round(sc.load)} · XIRR ${Math.round(sc.perf)}"><b>${Math.round(sc.score)}</b><div class="t"><i style="width:${sc.score}%"></i></div></div>` : '<span class="note" style="margin:0">—</span>'}</div>
-      <div class="inpc inp"><input data-amt value="${plan[f.id] ? inr(plan[f.id]) : ''}" placeholder="0" inputmode="numeric" aria-label="Redeem amount for ${esc(f.short)}" ${f.exclude ? 'disabled' : ''}>
+      <div class="inpc inp"><input data-amt value="${plan[f.id] ? inr(plan[f.id]) : f.fixed ? '0' : ''}" placeholder="0" inputmode="numeric" aria-label="Redeem amount for ${esc(f.short)}" ${f.exclude ? 'disabled' : ''}>
         <div class="q"><button class="lnk" data-all type="button" ${f.exclude ? 'disabled' : ''}>All</button><span data-units></span></div></div>
       <div class="cfgbc"><button class="cfgb" data-cfg type="button" aria-expanded="false" aria-label="Settings for ${esc(f.short)}" title="Exit load, tax type, keep out">⚙</button></div>
       <div class="cfgc hidden" data-panel>
@@ -844,12 +844,12 @@ $('plan').addEventListener('click', e => {
 });
 $('plan').addEventListener('input', e => {
   const row = e.target.closest('.row'); if (!row) return; const f = funds[+row.dataset.id];
-  if (e.target.matches('[data-amt]')){ plan[f.id] = pnum(e.target.value); f.fixed = plan[f.id] > 0; recalc(); }
+  if (e.target.matches('[data-amt]')){ plan[f.id] = pnum(e.target.value); f.fixed = true; recalc(); }
 });
 $('plan').addEventListener('change', e => {
   const row = e.target.closest('.row'); if (!row) return; const f = funds[+row.dataset.id];
   if (e.target.matches('[data-amt]')){ const mx = RP.redeemable(f, rdate(), cfg()); let v = pnum(e.target.value);
-    if (v > mx + 1){ v = mx; } plan[f.id] = v; f.fixed = v > 0; e.target.value = v ? inr(v) : ''; recalc(); return; }
+    if (v > mx + 1){ v = mx; } plan[f.id] = v; f.fixed = true; e.target.value = inr(v); recalc(); return; }
   const k = e.target.dataset.k; if (!k) return;
   if (k === 'exclude'){ f.exclude = e.target.checked; if (f.exclude) delete plan[f.id]; }
   else if (k === 'taxType') f.taxType = e.target.value;
