@@ -56,6 +56,17 @@ h1,h2,h3{font-family:var(--f-head);margin:0;text-wrap:balance}
 .vh{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;clip:rect(0 0 0 0)}
 .status{font-size:14px;padding:8px 12px;border-radius:8px;background:var(--soft2)}
 .status.err{background:#C0392B22}
+.status.warn{background:#F9B73833}
+.members{display:flex;flex-wrap:wrap;gap:10px;align-items:stretch}
+.members .fam{display:flex;flex-direction:column;justify-content:center;font-size:13px;color:var(--muted,#6b6470);padding:0 4px;margin-right:4px}
+.members .fam b{font-size:16px;color:var(--dark,#39293E)}
+.members button{font:inherit;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:2px;min-width:180px;padding:10px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface,#fff);color:var(--dark,#39293E)}
+.members button b{font-size:15px}
+.members button span{font-size:12.5px;opacity:.8}
+.members button .rd{font-weight:700;opacity:1;color:#934E32}
+.members button[aria-pressed="true"]{background:#005826;border-color:#005826;color:#fff}
+.members button[aria-pressed="true"] .rd{color:#F9B738}
+@media (max-width:760px){.members button{flex:1 1 140px;min-width:0}.members .fam{flex-basis:100%}}
 /* client strip */
 .client{display:grid;grid-template-columns:2fr repeat(3,1fr);gap:12px 24px;align-items:end;padding:14px 18px;background:var(--surface);border:1px solid var(--line);border-radius:14px}
 @media (max-width:760px){.client{grid-template-columns:1fr 1fr}.client .cf{grid-column:1/-1}}
@@ -201,6 +212,7 @@ tfoot td{font-weight:700;border-bottom:0;border-top:2px solid var(--line)}
   <div id="status" class="status hidden" role="status"></div>
 
   <div id="app" class="hidden" style="display:flex;flex-direction:column;gap:20px">
+    <nav class="members hidden" id="members" aria-label="Family members"></nav>
     <section class="client">
       <div class="cf"><div class="k">Client</div><input id="client" class="cname" aria-label="Client name"></div>
       <div><div class="k">Portfolio value</div><div class="cv" id="pv"></div><div class="note" id="navd" style="margin:0"></div></div>
@@ -350,7 +362,7 @@ function parse(aoa, sheetName){
         for (let i = row.length - 1; i >= 0; i--) if (/xirr/i.test(String(row[i] || ''))) { H.xirr = i; break; } }
       continue;
     }
-    if (!H){ if (r > 0 && r < 4 && !out.client && aS && !/report|pan|mob|email|dob|s\/o|d\/o|w\/o/i.test(aS)) out.client = aS.replace(/\s*\([A-Z]{5}\d{4}[A-Z]\)\s*$/, '').trim(); continue; }
+    if (!H){ if (r > 0 && r < 4 && !out.client && aS && !/client\s*name\s*:?\s*$/i.test(aS) && !/report|^pan\s*:|mob|email|dob|s\/o|d\/o|w\/o/i.test(aS.replace(/\[\s*pan\s*:[^\]]*\]/i, ''))) out.client = aS.replace(/\s*\([A-Z]{5}\d{4}[A-Z]\)\s*$/, '').replace(/\s*\[\s*pan\s*:[^\]]*\]\s*$/i, '').trim(); continue; }
     if (norm(a) === 'srno'){
       T = { type: find(row, ['transactiontype','txntype','type']), date: find(row, ['date','txndate']), amount: find(row, ['amount']), sd: find(row, ['sdamt','stampduty']),
             price: find(row, ['price','nav','purnav']), units: find(row, ['units']), cum: find(row, ['cummunit','cumunits','balanceunits']) };
@@ -361,7 +373,7 @@ function parse(aoa, sheetName){
       const fm = aS.match(/folio\s*:\s*([^\n]+)/i);
       cur = { id: out.funds.length, name: lines[0], folio: fm ? fm[1].trim() : '', category: cat, units: num(row[H.units]), nav: num(row[H.nav]),
               value: num(row[H.value]), cost: num(row[H.cost]), xirr: H.xirr >= 0 ? num(row[H.xirr]) : NaN, abs: H.abs >= 0 ? num(row[H.abs]) : NaN,
-              navDateRaw: H.navDate >= 0 ? row[H.navDate] : null, txns: [], unknown: [] };
+              navDateRaw: H.navDate >= 0 ? row[H.navDate] : null, sinceRaw: H.since >= 0 ? row[H.since] : null, txns: [], unknown: [] };
       out.funds.push(cur); continue;
     }
     if (typeof a === 'number' && cur && T){
@@ -381,6 +393,17 @@ function parse(aoa, sheetName){
 
 /* ---------- FIFO: remaining lots per fund ---------- */
 function buildLots(f){
+  f.approx = false;
+  if (!f.txns.length){
+    const d = toDate(f.sinceRaw);
+    if (d instanceof Date && isFinite(f.units) && f.units > 0 && isFinite(f.cost)){
+      // report without transaction details: the whole folio is treated as bought on its first purchase date
+      f.approx = true;
+      f.lots = [{ date: d, units: f.units, cost: f.cost, costPerUnit: f.cost / f.units, price: f.cost / f.units, type: 'Holding (no transaction details)' }];
+      f.fifoUnits = f.units; f.reconciled = 0; f.unitsCheck = true; f.unknownTypes = []; f.oversold = 0;
+      return f;
+    }
+  }
   const ev = f.txns.filter(t => t.kind === 'in' || t.kind === 'out').map((t, i) => ({ ...t, i }));
   ev.sort((x, y) => (x.date - y.date) || ((x.kind === 'in' ? 0 : 1) - (y.kind === 'in' ? 0 : 1)) || (x.i - y.i));
   const lots = [];
@@ -627,36 +650,65 @@ try{ const o = JSON.parse(localStorage.getItem(LS) || '{}'); Object.keys(o).forE
 showWeights();
 
 /* ---------- file loading ---------- */
-function status(t, err){ const s = $('status'); s.textContent = t; s.className = 'status' + (err ? ' err' : ''); }
+function status(t, err, warn){ const s = $('status'); s.textContent = t; s.className = 'status' + (err ? ' err' : warn ? ' warn' : ''); }
 async function handleFile(f){
   if (!f) return;
   try{
     const wb = XLSX.read(await f.arrayBuffer(), { type: 'array', cellDates: false });
-    let got = null;
+    const got = [];   // family report: one sheet per member (the Family Summary sheet has no schemes and is skipped)
     for (const n of wb.SheetNames){
       const aoa = XLSX.utils.sheet_to_json(wb.Sheets[n], { header: 1, raw: true, defval: null });
-      const p = RP.parse(aoa, n); if (p.funds.length){ got = p; break; }
+      const p = RP.parse(aoa, n); if (p.funds.length) got.push(p);
     }
-    if (!got){ status(`Couldn't find any schemes in ${f.name}. Upload the Wealth Elite Investment Report exported with transaction details.`, true); return; }
+    if (!got.length){ status(`Couldn't find any schemes in ${f.name}. Upload the Wealth Elite Investment Report exported with transaction details.`, true); return; }
     load(got, f.name);
   }catch(e){ status('Could not read ' + f.name + ': ' + e.message, true); }
 }
-function load(p, fname){
-  P = p; funds = p.funds;
-  funds.forEach(f => { RP.buildLots(f); f.loadPct = f.taxType === 'equity' ? 1 : 0; f.loadDays = 365; f.exclude = false; f.fmv2018 = '';
+/* family report: each member keeps their own plan, amount, exemption used and slab (tax is per person) */
+let MEM = [], cur = -1;
+const PER = ['target', 'exUsed', 'client', 'rdate', 'rSlab', 'rSur'];
+function prep(p){
+  p.funds.forEach(f => { RP.buildLots(f); f.loadPct = f.taxType === 'equity' ? 1 : 0; f.loadDays = 365; f.exclude = false; f.fmv2018 = '';
     f.navDate = navDate(f.navDateRaw, p.reportDate); f.short = cleanName(f.name); });
-  $('client').value = properName(p.client);
   const rd = p.reportDate || new Date(); const t = new Date();
   const use = (Date.UTC(t.getFullYear(), t.getMonth(), t.getDate()) > rd) ? new Date(Date.UTC(t.getFullYear(), t.getMonth(), t.getDate())) : rd;
-  $('rdate').value = use.toISOString().slice(0, 10);
-  const total = funds.reduce((s, f) => s + (f.value || 0), 0);
-  $('pv').textContent = short(total);
+  return { p, plan: {}, sugg: null, lastEval: null, v: { target: '', exUsed: '0', client: properName(p.client), rdate: use.toISOString().slice(0, 10), rSlab: $('rSlab').value, rSur: $('rSur').value } };
+}
+const memValue = m => m.p.funds.reduce((s, f) => s + (f.value || 0), 0);
+function snap(){ if (cur < 0 || !MEM[cur]) return; const m = MEM[cur]; m.plan = plan; m.sugg = sugg; m.lastEval = lastEval; PER.forEach(k => m.v[k] = $(k).value); }
+function renderMembers(){
+  const nav = $('members');
+  if (MEM.length < 2){ nav.classList.add('hidden'); nav.innerHTML = ''; return; }
+  nav.classList.remove('hidden');
+  const tot = MEM.reduce((s, m) => s + memValue(m), 0);
+  nav.innerHTML = `<div class="fam">Family portfolio<b>${short(tot)}</b>${MEM.length} members</div>` + MEM.map((m, i) => {
+    const pl = i === cur ? plan : m.plan; const r = Object.values(pl || {}).reduce((s, v) => s + (v || 0), 0);
+    return `<button type="button" data-m="${i}" aria-pressed="${i === cur}"><b>${esc(i === cur ? ($('client').value || m.v.client) : m.v.client)}</b><span>${short(memValue(m))} · ${m.p.funds.length} funds</span><span class="rd">${r > 0 ? 'Redeem ' + rs(r) : '&nbsp;'}</span></button>`;
+  }).join('');
+}
+$('members').addEventListener('click', e => { const b = e.target.closest('button[data-m]'); if (b && +b.dataset.m !== cur) showMember(+b.dataset.m); });
+function showMember(i){
+  snap(); cur = i; const m = MEM[i];
+  P = m.p; funds = m.p.funds; plan = m.plan || {}; sugg = m.sugg; lastEval = m.lastEval;
+  PER.forEach(k => $(k).value = m.v[k]);
+  target = pnum(m.v.target);
+  $('pv').textContent = short(memValue(m));
   const nd = funds.map(f => f.navDate).filter(Boolean).sort((a, b) => b - a)[0];
   $('navd').textContent = nd ? 'NAV as of ' + dmy(nd) : '';
   $('nf').textContent = funds.length;
-  status(`Loaded ${fname}: ${funds.length} holdings, ${funds.reduce((s, f) => s + f.lots.length, 0)} open purchase lots.`);
-  $('app').classList.remove('hidden'); $('s2').classList.add('hidden'); $('s3').classList.add('hidden');
-  plan = {}; sugg = null; $('target').focus();
+  if (sugg){ $('s2').classList.remove('hidden'); renderPlan(); recalc(); }
+  else { $('s2').classList.add('hidden'); $('s3').classList.add('hidden'); }
+  renderMembers();
+}
+function load(list, fname){
+  MEM = list.map(prep); cur = -1;
+  $('app').classList.remove('hidden');
+  showMember(0);
+  const n = MEM.reduce((s, m) => s + m.p.funds.length, 0), lots = MEM.reduce((s, m) => s + m.p.funds.reduce((x, f) => x + f.lots.length, 0), 0);
+  const approx = MEM.some(m => m.p.funds.some(f => f.approx));
+  const who = MEM.length > 1 ? `${MEM.length} family members (${MEM.map(m => m.v.client).join(', ')}), ` : '';
+  status(`Loaded ${fname}: ${who}${n} holdings` + (approx ? `. ⚠ This file has no transaction details, so each folio is treated as bought on its "Inv. Since" date. Gains and exit load are approximate (SIP folios will look fully long-term). Export the Investment Report with transaction details for exact tax.` : `, ${lots} open purchase lots.`), false, approx);
+  $('target').focus();
 }
 function navDate(raw, rd){
   const d = RP.toDate(raw); if (!d) return rd || null;
@@ -685,6 +737,7 @@ function runSuggest(keepFixed){
 $('go').addEventListener('click', () => runSuggest(false));
 $('target').addEventListener('keydown', e => { if (e.key === 'Enter') runSuggest(false); });
 $('target').addEventListener('blur', () => { const v = pnum($('target').value); if (v) $('target').value = inr(v); });
+$('client').addEventListener('input', () => { if (MEM.length > 1) renderMembers(); });
 $('exUsed').addEventListener('blur', () => { $('exUsed').value = inr(pnum($('exUsed').value)); });
 W_IDS.forEach(([i]) => $(i).addEventListener('input', showWeights));
 $('smallBelow').addEventListener('blur', () => { $('smallBelow').value = inr(pnum($('smallBelow').value)); });
@@ -808,7 +861,7 @@ $('plan').addEventListener('change', e => {
 });
 
 /* ---------- step 3: impact ---------- */
-function recalc(){
+function recalc(){ if (typeof renderMembers === 'function' && MEM.length > 1) setTimeout(renderMembers, 0);
   const rd = rdate(), c = cfg();
   const ev = RP.evaluate(funds, plan, rd, c); lastEval = ev;
   const byId = {}; ev.rows.forEach(r => byId[r.f.id] = r);
@@ -872,6 +925,8 @@ function flags(ev){
     if (!f.unitsCheck) F.push([`<b>${esc(f.short)}</b>: transactions add up to ${f.fifoUnits.toFixed(3)} units, but the report shows ${f.units}. Check the transactions before using this fund.`, 1]);
     if (f.unknownTypes.length) F.push([`<b>${esc(f.short)}</b>: ignored unknown transaction type(s): ${esc(f.unknownTypes.join(', '))}.`, 1]);
   });
+  const ap = ev.rows.filter(r => r.f.approx);
+  if (ap.length) F.unshift([`<b>Approximate:</b> this report has no transaction details, so ${ap.length === 1 ? esc(ap[0].f.short) + ' is' : ap.length + ' funds are'} treated as bought entirely on the first purchase date. Later SIP or top-up units may actually be short-term or within exit load. Use the report with transaction details for exact figures.`, 1]);
   if (ev.tax.taxable.slab > 0) F.push(['Slab-rate gains use ' + cfg().slab + '% as entered under Tax rates. Change it to the client\'s actual slab.', 0]);
   F.push(['Units are redeemed oldest-first (FIFO), as the fund house does. Cost includes stamp duty. Basic exemption limit and rebate are not considered.', 0]);
   return F;
