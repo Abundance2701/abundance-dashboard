@@ -1,6 +1,62 @@
 {
- "updated": "2026-11-25T19:58:19Z",
+ "updated": "2026-11-26T11:30:38Z",
  "items": [
+  {
+   "src": "RBI",
+   "title": "Implementation of Section 51A of UAPA, 1967: Updates to UNSC’s 1267/ 1989 ISIL (Da'esh) & Al-Qaida Sanctions List: Amendment of 01 Entry",
+   "url": "https://www.rbi.org.in/scripts/NotificationUser.aspx?Id=13758&Mode=0",
+   "date": "2026-11-26",
+   "important": false
+  },
+  {
+   "src": "RBI",
+   "title": "Implementation of Section 51A of UAPA, 1967: Updates to UNSC’s 1267/ 1989 ISIL (Da'esh) & Al-Qaida Sanctions List: Amendment of 81 entries",
+   "url": "https://www.rbi.org.in/scripts/NotificationUser.aspx?Id=13757&Mode=0",
+   "date": "2026-11-26",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of privately placed securities on the debt market segment of the Exchange",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77627.pdf",
+   "date": "2026-11-26",
+   "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of Equity Shares of Mahanadi Coalfields Limited (IPO)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77620.pdf",
+   "date": "2026-11-26",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Early Pay-in of Securities for Interarch Building Solutions Limited (INTERARCH)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CMPT77615.pdf",
+   "date": "2026-11-26",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Adjustment of Futures and Options Contracts in the security TECH MAHINDRA LIMITED (TECHM)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CMPT77593.pdf",
+   "date": "2026-11-26",
+   "important": false
+  },
+  {
+   "src": "SEBI",
+   "title": "Half-yearly review of -Significant Indices- under SEBI (Index Providers) Regulations, 2024",
+   "url": "https://www.sebi.gov.in/legal/circulars/nov-2026/half-yearly-review-of-significant-indices-under-sebi-index-providers-regulations-2024_105853.html",
+   "date": "2026-11-25",
+   "important": true
+  },
+  {
+   "src": "SEBI",
+   "title": "Simplification of client on-boarding and rationalisation of risk management framework at KYC Registration Agencies",
+   "url": "https://www.sebi.gov.in/legal/circulars/nov-2026/simplification-of-client-on-boarding-and-rationalisation-of-risk-management-framework-at-kyc-registration-agencies_105839.html",
+   "date": "2026-11-25",
+   "important": true
+  },
   {
    "src": "RBI",
    "title": "47th Half-Yearly Report on Management of Foreign Exchange Reserves: April – September 2026",
@@ -16,178 +72,17 @@
    "important": true
   },
   {
-   "src": "NSE",
-   "title": "Listing of further issues of securities",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77614.pdf",
-   "date": "2026-11-25",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of Equity Shares of HEG Limited (formerly known as HEG Graphite Limited) pursuant to the Scheme of Arrangement",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77613.zip",
-   "date": "2026-11-25",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of Equity Shares of Crystal Crop Protection Limited (IPO)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77612.zip",
-   "date": "2026-11-25",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of units issued by Motilal Oswal Asset Management Company Limited (Motilal Oswal Nifty PSU Bank ETF, Motilal Oswal Nifty500 Growth 50 ETF, Motilal Oswal Nifty Private Bank ETF, Motilal Oswal Nifty REITs & Realty ETF and Motilal Oswal Nifty 10 yr Benchmark G-Sec ETF)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77611.pdf",
-   "date": "2026-11-25",
+   "src": "SEBI",
+   "title": "Caution to investors regarding impersonation of SEBI registered intermediaries on closed user groups of social media platforms",
+   "url": "https://www.sebi.gov.in/media-and-notifications/press-releases/nov-2026/caution-to-investors-regarding-impersonation-of-sebi-registered-intermediaries-on-closed-user-groups-of-social-media-platforms_105944.html",
+   "date": "2026-11-23",
    "important": true
   },
   {
-   "src": "NSE",
-   "title": "BONUS: Adjustment of Futures and Options contracts in the security TECHM",
-   "url": "https://nsearchives.nseindia.com/content/circulars/FAOP77610.pdf",
-   "date": "2026-11-25",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of further issue of Lloyds Engineering Works Limited",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77609.pdf",
-   "date": "2026-11-25",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of privately placed securities on the debt market segment of the Exchange",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77608.pdf",
-   "date": "2026-11-25",
-   "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Listing of privately placed securities on capital market segment",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77607.pdf",
-   "date": "2026-11-25",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Reminder for Submission of Half yearly Networth Certificate as on September 30, 2026",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CMPL77605.zip",
-   "date": "2026-11-25",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Total Surrender of Membership",
-   "url": "https://nsearchives.nseindia.com/content/circulars/COMP77604.pdf",
-   "date": "2026-11-25",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Clarifications on account of review of settlement methodology for derivatives contracts",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CMPT77603.pdf",
-   "date": "2026-11-25",
-   "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Submission of Action Taken Report (ATR) for observations reported during inspection of Authorised Persons",
-   "url": "https://nsearchives.nseindia.com/content/circulars/COMP77602.pdf",
-   "date": "2026-11-25",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Measure in respect of companies with high Promoter as well as non- Promoter 'Encumbrance' as per Reg, 28(3) of SEBI (SAST) Regulation 2011",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77601.zip",
-   "date": "2026-11-25",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Reversal Trade Cancellation Mechanism (RTCM)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77600.zip",
-   "date": "2026-11-25",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Applicability of Short-Term Additional Surveillance Measure (ST-ASM)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77599.zip",
-   "date": "2026-11-25",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Applicability of Additional Surveillance Measure (ASM)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77598.zip",
-   "date": "2026-11-25",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Change in ISIN - Varvee Global Limited (VGL)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77597.pdf",
-   "date": "2026-11-25",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Applicability of Enhanced Surveillance Measure (ESM)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77596.zip",
-   "date": "2026-11-25",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Implementation of Security Council Resolution on Democratic People's Republic of Korea ( Amendment) Order, 2021: Security Council 1718 Sanction's Committee Updated One Entry on Its Sanctions List",
-   "url": "https://nsearchives.nseindia.com/content/circulars/ISC77595.zip",
-   "date": "2026-11-25",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Suspension of trading in Non-Convertible Securities (Privately Placed)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77588.pdf",
-   "date": "2026-11-25",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "CBRICS - Settlement Calendar for December 2026",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CMPT77586.pdf",
-   "date": "2026-11-25",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Extension of trading of Rights Entitlement pursuant to Rights Issue - Indian Emulsifiers Limited",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77585.pdf",
-   "date": "2026-11-25",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Extension of allotment date & NFO close date for Nippon India CRISIL - IBX SDL - June 2037 Index Fund NFO on NSE MF Invest Platform",
-   "url": "https://nsearchives.nseindia.com/content/circulars/NMF77584.pdf",
-   "date": "2026-11-25",
-   "important": true
-  },
-  {
-   "src": "NSE",
-   "title": "Trading of Rights Entitlements pursuant to Rights Issue of Praxis Home Retail Limited",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77583.pdf",
-   "date": "2026-11-25",
-   "important": false
-  },
-  {
-   "src": "NSE",
-   "title": "Early Pay-in of Securities for Varvee Global Limited (VGL)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CMPT77582.pdf",
-   "date": "2026-11-25",
+   "src": "SEBI",
+   "title": "Advisory Regarding Unregulated Pre-listing Premium often called as Grey Market Premium (GMP) for Upcoming Initial Public Offers (IPOs)",
+   "url": "https://www.sebi.gov.in/media-and-notifications/press-releases/nov-2026/advisory-regarding-unregulated-pre-listing-premium-often-called-as-grey-market-premium-gmp-for-upcoming-initial-public-offers-ipos-_105942.html",
+   "date": "2026-11-23",
    "important": false
   },
   {
@@ -219,6 +114,34 @@
    "important": false
   },
   {
+   "src": "SEBI",
+   "title": "SEBI hosts IOSCO’s Asia-Pacific Regional Committee Regulatory Roundtable on Market Infrastructure Institutions",
+   "url": "https://www.sebi.gov.in/media-and-notifications/press-releases/nov-2026/sebi-hosts-iosco-s-asia-pacific-regional-committee-regulatory-roundtable-on-market-infrastructure-institutions_105848.html",
+   "date": "2026-11-19",
+   "important": false
+  },
+  {
+   "src": "SEBI",
+   "title": "Notices of Attachment of Demat Accounts and Mutual Fund Folios with AP No. 15888 of 2026 dated November 17, 2026 against Sadhana Paresh Kariya (PAN – AJHPK6018N) in the matter of Anugrah Stock and Broking Private Limited under RC No. 9294 of 2026",
+   "url": "https://www.sebi.gov.in/enforcement/recovery-proceedings/nov-2026/notices-of-attachment-of-demat-accounts-and-mutual-fund-folios-with-ap-no-15888-of-2026-dated-november-17-2026-against-sadhana-paresh-kariya-pan-ajhpk6018n-in-the-matter-of-anugrah-stock-and-bro-_105895.html",
+   "date": "2026-11-17",
+   "important": true
+  },
+  {
+   "src": "SEBI",
+   "title": "Review of Margin Framework for Commodity Derivatives Segment",
+   "url": "https://www.sebi.gov.in/legal/circulars/nov-2026/review-of-margin-framework-for-commodity-derivatives-segment_105799.html",
+   "date": "2026-11-17",
+   "important": true
+  },
+  {
+   "src": "SEBI",
+   "title": "Notice of Attachment dated November 16, 2026 issued under RC No. 9308 of 2026 drawn against Niranjan D Agarwal in the matter of Kalahridhaan Trendz Limited",
+   "url": "https://www.sebi.gov.in/enforcement/recovery-proceedings/nov-2026/notice-of-attachment-dated-november-16-2026-issued-under-rc-no-9308-of-2026-drawn-against-niranjan-d-agarwal-in-the-matter-of-kalahridhaan-trendz-limited_105901.html",
+   "date": "2026-11-16",
+   "important": false
+  },
+  {
    "src": "RBI",
    "title": "Reserve Bank of India (Domestic Money Transfer) Directions, 2026",
    "url": "https://www.rbi.org.in/scripts/NotificationUser.aspx?Id=13752&Mode=0",
@@ -245,26 +168,12 @@
    "url": "https://www.rbi.org.in/scripts/NotificationUser.aspx?Id=13749&Mode=0",
    "date": "2026-10-30",
    "important": false
-  },
-  {
-   "src": "RBI",
-   "title": "Implementation of Section 51A of UAPA, 1967: Updates to UNSC’s 1267/ 1989 ISIL (Da'esh) & Al-Qaida Sanctions List: Amendment of 03 Entries",
-   "url": "https://www.rbi.org.in/scripts/NotificationUser.aspx?Id=13748&Mode=0",
-   "date": "2026-10-27",
-   "important": false
-  },
-  {
-   "src": "RBI",
-   "title": "Implementation of Section 51A of UAPA, 1967: Updates to UNSC’s 1267/ 1989 ISIL (Da'esh) & Al-Qaida Sanctions List: Removal of 03 Entries",
-   "url": "https://www.rbi.org.in/scripts/NotificationUser.aspx?Id=13747&Mode=0",
-   "date": "2026-10-27",
-   "important": false
   }
  ],
  "counts": {
   "https://www.sebi.gov.in/sebirss.xml": [
-   0,
-   0
+   30,
+   8
   ],
   "https://rbi.org.in/pressreleases_rss.xml": [
    10,
@@ -275,8 +184,8 @@
    10
   ],
   "https://nsearchives.nseindia.com/content/RSS/Circulars.xml": [
-   31,
-   27
+   5,
+   4
   ]
  },
  "errors": []
