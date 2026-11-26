@@ -260,7 +260,7 @@ tfoot td{font-weight:700;border-bottom:0;border-top:2px solid var(--line)}
             <div class="wt"><span>Weaker XIRR first</span><input type="range" id="wPerf" min="0" max="100" value="30"><output id="oPerf"></output></div>
             <p class="note">XIRR is compared only for holdings older than a year. Newer ones aren't judged on it.</p>
             <div class="mini" style="grid-template-columns:1fr 1fr;margin-top:12px">
-              <label>Spread across funds<select id="band"><option value="0.25">Even (±25%)</option><option value="0.5" selected>Balanced (±50%)</option><option value="1">Flexible (±100%)</option></select></label>
+              <label>Spread across funds<select id="band"><option value="0.25">Even (±25%)</option><option value="0.5" selected>Balanced (±50%)</option><option value="1">Flexible (±100%)</option><option value="pro">Equally: same % of every fund</option><option value="eq">Equally: same ₹ from every fund</option></select></label>
               <label>Fully exit holdings below (₹)<input id="smallBelow" inputmode="numeric" value="1,00,000"></label>
             </div>
             <p class="note">Every fund gives roughly the same share of itself, so the allocation holds. Small holdings are fully exited first, but only when that triggers no exit load. Enter 0 to switch this off.</p>
@@ -532,8 +532,35 @@ const TAX_CAP = 0.06, LOAD_CAP = 0.01;
 function ageDays(f, rdate){ let u = 0, d = 0; for (const l of f.lots){ u += l.units; d += l.units * days(l.date, rdate); } return u ? d / u : 0; }
 function hasLoadUnits(f, rdate, cfg){ return f.lots.some(l => classify(f, l, rdate, cfg).loadApplies); }
 /* opts: { fixed: {id: amt}, smallBelow: ₹ (0 = off), seasonDays: 365 } */
+/* equal split: same % of every fund (mode 'pro') or same ₹ from every fund ('eq'); no scoring, no small-holding exits */
+function suggestEqual(funds, target, rdate, cfg, opts){
+  const fixed = opts.fixed || {}; const plan = {}, why = {};
+  let need = target;
+  for (const id in fixed){ plan[id] = fixed[id]; need -= fixed[id]; why[id] = 'fixed'; }
+  const elig = funds.filter(f => !f.exclude && f.nav > 0 && f.lots.length && !(f.id in fixed));
+  const avail = {}; elig.forEach(f => { avail[f.id] = redeemable(f, rdate, cfg); plan[f.id] = 0; });
+  const R = Math.ceil(Math.max(need, 0) / 1000 - 1e-9) * 1000;
+  // share out, then hand any amount a fund can't give (too small / locked) to the others, same rule
+  let left = R, open = elig.filter(f => avail[f.id] > 0);
+  for (let k = 0; k < 50 && left > 0.5 && open.length; k++){
+    const wt = f => opts.mode === 'pro' ? f.value : 1; const W = open.reduce((s, f) => s + wt(f), 0); let used = 0;
+    open.forEach(f => { const give = Math.min(left * wt(f) / W, avail[f.id] - plan[f.id]); plan[f.id] += give; used += give; });
+    left -= used; open = open.filter(f => avail[f.id] - plan[f.id] > 1);
+  }
+  // round to ₹1,000 (full exits stay exact), then top up the largest remainders
+  const full = f => plan[f.id] >= avail[f.id] - 1;
+  const rem = elig.filter(f => plan[f.id] > 0 && !full(f)).map(f => { const fl = Math.floor(plan[f.id] / 1000) * 1000; const r = plan[f.id] - fl; plan[f.id] = fl; return [f, r]; }).sort((a, b) => b[1] - a[1]);
+  let gap = Math.min(R, elig.reduce((s, f) => s + avail[f.id], 0)) - elig.reduce((s, f) => s + plan[f.id], 0);
+  for (let k = 0; gap > 0.5 && k < 100; k++){ let moved = false;
+    for (const [f] of rem){ if (gap <= 0.5) break; const room = avail[f.id] - plan[f.id]; if (room < 1) continue; const add = Math.min(1000, room, gap); plan[f.id] += add; gap -= add; moved = true; }
+    if (!moved) break; }
+  Object.keys(plan).forEach(k => { if (plan[k] <= 0) delete plan[k]; else why[k] = why[k] || 'spread'; });
+  const total = Object.values(plan).reduce((s, v) => s + v, 0);
+  return { plan, why, scores: {}, shortfall: Math.max(0, target - total), available: avail, band: 0, evenShare: 0 };
+}
 function suggest(funds, target, rdate, cfg, w, opts){
   opts = opts || {};
+  if (opts.mode === 'pro' || opts.mode === 'eq') return suggestEqual(funds, target, rdate, cfg, opts);
   const fixed = opts.fixed || {};
   const seasonDays = opts.seasonDays || 365;
   const plan = {}; const why = {};
@@ -739,7 +766,7 @@ function runSuggest(keepFixed){
   saveSettings();
   const fixed = {}; if (keepFixed) funds.forEach(f => { if (f.fixed && !f.exclude) fixed[f.id] = plan[f.id] || 0; else f.fixed = false; });
   else funds.forEach(f => f.fixed = false);
-  sugg = RP.suggest(funds, target, rdate(), cfg(), weights(), { fixed, smallBelow: pnum($('smallBelow').value), band: +$('band').value });
+  sugg = RP.suggest(funds, target, rdate(), cfg(), weights(), { fixed, smallBelow: pnum($('smallBelow').value), band: isNaN(+$('band').value) ? 0.5 : +$('band').value, mode: isNaN(+$('band').value) ? $('band').value : 'smart' });
   plan = {}; Object.keys(sugg.plan).forEach(k => { if (sugg.plan[k] > 0) plan[k] = sugg.plan[k]; });
   renderPlan(); $('s2').classList.remove('hidden'); recalc();
   if (!keepFixed) $('s2').scrollIntoView({ behavior: 'smooth', block: 'start' });
