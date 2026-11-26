@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-26T11:30:38Z",
+ "updated": "2026-11-26T19:41:57Z",
  "items": [
   {
    "src": "RBI",
@@ -17,6 +17,55 @@
   },
   {
    "src": "NSE",
+   "title": "Listing of Equity Shares of Mafatlal Industries Limited (New Listing)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77634.zip",
+   "date": "2026-11-26",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Reporting of Client level pay-in shortages for SLBS first leg & Reverse Leg securities pay-in",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CMPT77633.zip",
+   "date": "2026-11-26",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of further issues of securities",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77632.pdf",
+   "date": "2026-11-26",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Liquidity Enhancement Scheme (LES) - Dated Brent Crude oil (Platts) Futures.",
+   "url": "https://nsearchives.nseindia.com/content/circulars/COM77631.pdf",
+   "date": "2026-11-26",
+   "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of Equity Shares of Mahanadi Coalfields Limited (IPO)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77630.zip",
+   "date": "2026-11-26",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Applicability of Enhanced Surveillance Measure (ESM)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77629.zip",
+   "date": "2026-11-26",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Listing & Trading of Equity Shares pursuant to Bonus Issue of Tech Mahindra Limited",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77628.pdf",
+   "date": "2026-11-26",
+   "important": false
+  },
+  {
+   "src": "NSE",
    "title": "Listing of privately placed securities on the debt market segment of the Exchange",
    "url": "https://nsearchives.nseindia.com/content/circulars/CML77627.pdf",
    "date": "2026-11-26",
@@ -24,8 +73,43 @@
   },
   {
    "src": "NSE",
-   "title": "Listing of Equity Shares of Mahanadi Coalfields Limited (IPO)",
-   "url": "https://nsearchives.nseindia.com/content/circulars/CML77620.pdf",
+   "title": "Applicability of Short-Term Additional Surveillance Measure (ST-ASM)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77626.zip",
+   "date": "2026-11-26",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Applicability of Additional Surveillance Measure (ASM)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/SURV77625.zip",
+   "date": "2026-11-26",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of further issue of Aurum PropTech Limited",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77624.pdf",
+   "date": "2026-11-26",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Suspension of trading in T-Bills, State Government Bonds, Government Securities and Sovereign Gold Bonds - On account of redemption",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77623.pdf",
+   "date": "2026-11-26",
+   "important": true
+  },
+  {
+   "src": "NSE",
+   "title": "Change in ISIN - Interarch Building Solutions Limited (INTERARCH)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77622.pdf",
+   "date": "2026-11-26",
+   "important": false
+  },
+  {
+   "src": "NSE",
+   "title": "Listing of Equity Shares of Watrana Rentals Limited (SME IPO)",
+   "url": "https://nsearchives.nseindia.com/content/circulars/CML77616.zip",
    "date": "2026-11-26",
    "important": false
   },
@@ -63,13 +147,6 @@
    "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=64042",
    "date": "2026-11-25",
    "important": false
-  },
-  {
-   "src": "RBI",
-   "title": "RBI Bulletin – November 2026",
-   "url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=64041",
-   "date": "2026-11-25",
-   "important": true
   },
   {
    "src": "SEBI",
@@ -115,6 +192,27 @@
   },
   {
    "src": "SEBI",
+   "title": "Notices of Attachment of Demat Accounts and Mutual Fund Folios with AP No. 15894 of 2026 dated November 19, 2026 against Paresh Mulji Kariya (PAN – AAEPK0469M) in the matter of Anugrah Stock and Broking Private Limited under RC No. 9295 of 2026",
+   "url": "https://www.sebi.gov.in/enforcement/recovery-proceedings/nov-2026/notices-of-attachment-of-demat-accounts-and-mutual-fund-folios-with-ap-no-15894-of-2026-dated-november-19-2026-against-paresh-mulji-kariya-pan-aaepk0469m-in-the-matter-of-anugrah-stock-and-brok-_105962.html",
+   "date": "2026-11-19",
+   "important": true
+  },
+  {
+   "src": "SEBI",
+   "title": "Notices of Attachment of Demat Accounts and Mutual Fund Folios with AP No. 15890 of 2026 dated November 19, 2026 against Om Sri Sai Investments (PAN – AADFO8242K) in the matter of Anugrah Stock and Broking Private Limited under RC No. 9293 of 2026",
+   "url": "https://www.sebi.gov.in/enforcement/recovery-proceedings/nov-2026/notices-of-attachment-of-demat-accounts-and-mutual-fund-folios-with-ap-no-15890-of-2026-dated-november-19-2026-against-om-sri-sai-investments-pan-aadfo8242k-in-the-matter-of-anugrah-stock-and-br-_105958.html",
+   "date": "2026-11-19",
+   "important": true
+  },
+  {
+   "src": "SEBI",
+   "title": "Notices of Attachment of Demat Accounts and Mutual Fund Folios with AP No. 15892 of 2026 dated November 19, 2026 against Anugrah Stock and Broking Private Limited (PAN – AAACW2920N) in the matter of Anugrah Stock and Broking Private Limited under RC No. 9292 of 2026",
+   "url": "https://www.sebi.gov.in/enforcement/recovery-proceedings/nov-2026/notices-of-attachment-of-demat-accounts-and-mutual-fund-folios-with-ap-no-15892-of-2026-dated-november-19-2026-against-anugrah-stock-and-broking-private-limited-pan-aaacw2920n-in-the-matter-of-a-_105954.html",
+   "date": "2026-11-19",
+   "important": true
+  },
+  {
+   "src": "SEBI",
    "title": "SEBI hosts IOSCO’s Asia-Pacific Regional Committee Regulatory Roundtable on Market Infrastructure Institutions",
    "url": "https://www.sebi.gov.in/media-and-notifications/press-releases/nov-2026/sebi-hosts-iosco-s-asia-pacific-regional-committee-regulatory-roundtable-on-market-infrastructure-institutions_105848.html",
    "date": "2026-11-19",
@@ -126,20 +224,6 @@
    "url": "https://www.sebi.gov.in/enforcement/recovery-proceedings/nov-2026/notices-of-attachment-of-demat-accounts-and-mutual-fund-folios-with-ap-no-15888-of-2026-dated-november-17-2026-against-sadhana-paresh-kariya-pan-ajhpk6018n-in-the-matter-of-anugrah-stock-and-bro-_105895.html",
    "date": "2026-11-17",
    "important": true
-  },
-  {
-   "src": "SEBI",
-   "title": "Review of Margin Framework for Commodity Derivatives Segment",
-   "url": "https://www.sebi.gov.in/legal/circulars/nov-2026/review-of-margin-framework-for-commodity-derivatives-segment_105799.html",
-   "date": "2026-11-17",
-   "important": true
-  },
-  {
-   "src": "SEBI",
-   "title": "Notice of Attachment dated November 16, 2026 issued under RC No. 9308 of 2026 drawn against Niranjan D Agarwal in the matter of Kalahridhaan Trendz Limited",
-   "url": "https://www.sebi.gov.in/enforcement/recovery-proceedings/nov-2026/notice-of-attachment-dated-november-16-2026-issued-under-rc-no-9308-of-2026-drawn-against-niranjan-d-agarwal-in-the-matter-of-kalahridhaan-trendz-limited_105901.html",
-   "date": "2026-11-16",
-   "important": false
   },
   {
    "src": "RBI",
@@ -173,19 +257,19 @@
  "counts": {
   "https://www.sebi.gov.in/sebirss.xml": [
    30,
-   8
+   9
   ],
   "https://rbi.org.in/pressreleases_rss.xml": [
    10,
-   2
+   1
   ],
   "https://rbi.org.in/notifications_rss.xml": [
    10,
    10
   ],
   "https://nsearchives.nseindia.com/content/RSS/Circulars.xml": [
-   5,
-   4
+   18,
+   17
   ]
  },
  "errors": []
