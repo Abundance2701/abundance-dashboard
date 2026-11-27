@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Money Tree · Advisor view · Abundance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--g:#005826;--br:#934E32;--gold:#F9B738;--bg:#F0F8FF;--dk:#39293E;--line:#dfe6ea;--mut:#6b6472}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--dk);font-family:Calibri,Carlito,'Segoe UI',sans-serif;font-size:15px}
+h1,h2,h3,h4,.badge,.big,.chip,.sg,.btn{font-family:Montserrat,'Segoe UI',sans-serif}
+header{background:var(--g);color:#fff;padding:10px 18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;position:sticky;top:0;z-index:5}
+header h1{font-size:17px;margin:0 8px 0 0;font-weight:700}header h1 small{font-weight:500;color:#cfe8d8;font-size:12px;margin-left:6px}
+header select,header input{border:0;border-radius:8px;padding:7px 9px;font-size:14px;font-family:inherit}
+header .sp{flex:1}
+.hbtn{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.35);border-radius:8px;padding:6px 10px;font-size:12.5px;cursor:pointer;font-family:Montserrat,sans-serif}
+.hbtn:hover{background:rgba(255,255,255,.25)}
+.wrap{display:grid;grid-template-columns:minmax(440px,560px) 1fr;gap:16px;padding:16px;align-items:start}
+@media(max-width:1100px){.wrap{grid-template-columns:1fr}}
+.side .card{margin-bottom:12px}
+.wrap>*{min-width:0}.card{overflow-x:auto;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:14px}
+.card h3{margin:0 0 10px;font-size:15.5px;color:var(--g)}.card h3 small{font-family:Calibri,sans-serif;font-weight:400;color:var(--mut);font-size:13px;margin-left:6px}
+.card h4{margin:14px 0 6px;font-size:13.5px;color:var(--br)}
+.side h3{font-size:14px;margin-bottom:8px}
+.row{display:flex;gap:10px;flex-wrap:wrap}.row>.f{flex:1;min-width:120px}
+.f{display:flex;flex-direction:column;gap:3px;margin-bottom:8px}.f span{font-size:12px;color:var(--mut)}
+.in{border:1px solid #cdd7dc;border-radius:8px;padding:6px 8px;font-size:14px;font-family:inherit;width:100%;background:#fff;color:var(--dk)}
+.in:focus{outline:2px solid #9cc9ae;border-color:#9cc9ae}.in.bad{border-color:#d9534f;background:#fff5f5}.in:disabled{background:#f3f4f5;color:#aaa}
+.in.sm{width:58px}.amt{text-align:right}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.chip{border:1px solid #cfdcd3;background:#f4faf6;color:var(--g);border-radius:20px;padding:5px 11px;font-size:12.5px;cursor:pointer;font-weight:600}
+.chip.on{background:var(--g);color:#fff;border-color:var(--g)}.chip.add{background:#fff;border-style:dashed}
+.seg{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:4px 0 8px}.seg>span{font-size:12px;color:var(--mut);min-width:78px}
+.sg{border:1px solid #cdd7dc;background:#fff;border-radius:8px;padding:5px 10px;font-size:12.5px;cursor:pointer;color:var(--dk);font-weight:600}
+.sg.on{background:var(--g);border-color:var(--g);color:#fff}
+.hint{font-size:12.5px;color:var(--mut);margin:6px 0;line-height:1.45}
+.warn{background:#fff8e6;border:1px solid #f3dfaa;color:#7a5400;border-radius:8px;padding:7px 10px;font-size:12.5px;margin:6px 0}
+.good{background:#eef8f1;border:1px solid #cfe7d6;color:var(--g);border-radius:8px;padding:8px 10px;font-size:13.5px;margin:8px 0;font-weight:600}
+.lnk{background:none;border:0;color:var(--g);text-decoration:underline;cursor:pointer;font-size:12.5px;padding:0;font-family:inherit}
+.btn{background:var(--g);color:#fff;border:0;border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer;font-weight:600;white-space:nowrap}
+.btn.sec{background:#fff;color:var(--g);border:1px solid #cfdcd3}.btn.sm{padding:5px 10px;font-size:12px}
+.x{border:0;background:none;color:#b55;cursor:pointer;font-size:14px}
+table{border-collapse:collapse;width:100%}
+.pt th,.gt th{font-size:11.5px;color:var(--mut);font-weight:400;text-align:left;padding:3px 4px}.pt td,.gt td{padding:2px 3px}
+.gt tr.off td{opacity:.5}.gt td:nth-child(2) .in{min-width:128px}.gt td:nth-child(3) .in{min-width:96px}.gt select.in{width:74px;padding:6px 4px}.gt .in.sm{width:52px}.c{text-align:center}
+.sub{margin-top:10px;padding-top:8px;border-top:1px dashed var(--line)}.ck{font-size:13.5px;display:flex;gap:6px;align-items:center;margin-bottom:6px}
+.rt th{background:#f3f8f5;color:var(--g);font-size:12.5px;text-align:left;padding:7px 8px;font-family:Montserrat,sans-serif;font-weight:600}
+.rt td{border-top:1px solid #eef2f4;padding:7px 8px;font-size:14px;vertical-align:top}
+.rt .n{text-align:right;white-space:nowrap}.rt td:first-child{min-width:150px}.rt td.sel{background:#fff6dc;font-weight:700;box-shadow:inset 0 0 0 2px var(--gold)}
+.rt.sm td{font-size:13px;padding:5px 7px}.rt tr.tot td{background:#fafbfc;font-weight:600}.rt tr.seedr td{background:#fffbef}
+.ok{color:#2E7D32;font-weight:700}.part{color:#B86E00;font-weight:700}.no{color:#a23;font-weight:700}
+.badge{display:inline-block;background:#f4faf6;color:var(--g);border-radius:8px;padding:4px 10px;font-size:12px;margin-bottom:10px;font-weight:600}
+.big{font-size:30px;font-weight:700;color:var(--g);margin:2px 0 4px}
+.notes{margin:8px 0 0;padding-left:20px;font-size:13.5px;line-height:1.5}.notes li{margin-bottom:4px}
+.wi{position:relative;border:1px solid #e5ece8;background:#fbfdfc;border-radius:10px;padding:8px 34px 2px 10px;margin:8px 0}.wi b{font-size:13px;color:var(--br);display:block;margin-bottom:4px}
+.wi .x{position:absolute;top:6px;right:8px}.wi.off{opacity:.55;background:#f6f7f8}.wih{display:flex;align-items:center;gap:6px;cursor:pointer;margin-bottom:4px}.wih b{display:inline;margin:0}.wi .warn b{display:inline;font-size:inherit;color:inherit;margin:0}
+.scroll{max-height:420px;overflow:auto;border:1px solid #eef2f4;border-radius:8px}
+.scroll th{position:sticky;top:0}
+.xrow{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-top:12px;font-size:13px;color:var(--mut);background:#f7faf8;border-radius:10px;padding:10px 12px}
+.xn{border-bottom:1px dotted #7fa08c;cursor:pointer;border-radius:3px;padding:0 1px}.xn:hover,.xn:focus{background:#fff3cc;outline:none}
+.tip{font-size:12.5px;color:var(--mut);margin:0 0 10px 4px}.tip .xn{cursor:default}
+.pop{position:fixed;z-index:50;max-width:min(440px,calc(100vw - 16px));background:#fff;border:1px solid #cfdcd3;border-radius:12px;box-shadow:0 10px 28px rgba(57,41,62,.18);padding:12px 14px 10px;font-size:13px;line-height:1.5;color:var(--dk)}
+.pop h5{margin:0 22px 6px 0;font-family:Montserrat,sans-serif;font-size:13px;color:var(--g)}
+.pop .eq{background:#f4faf6;border-radius:8px;padding:6px 9px;margin:6px 0;font-size:13.5px}
+.pop .mut{color:var(--mut);font-size:12px;margin-top:6px}.pop sup{font-size:10px}
+.pop .pt2{width:100%;border-collapse:collapse;margin:4px 0}.pop .pt2 td,.pop .pt2 th{padding:3px 4px;border-top:1px solid #eef2f4;vertical-align:top}.pop .pt2 th{font-weight:600;color:var(--mut);font-size:11.5px;text-align:left;border-top:0}
+.pop .pt2 .n{text-align:right;white-space:nowrap}.pop .pt2 tr.t td{font-weight:700;border-top:1.5px solid #cfdcd3}
+.pop-x{position:absolute;top:6px;right:8px;border:0;background:none;color:var(--mut);cursor:pointer;font-size:13px}
+.strip{overflow-x:auto}.strip td{white-space:nowrap}.mut{color:var(--mut)}
+@media(max-width:640px){.wrap{padding:8px}.card{padding:12px}.rt td,.rt th{padding:5px 5px;font-size:12.5px}.xrow{flex-direction:column;align-items:stretch}.pt th:nth-child(2),.pt td:nth-child(2){display:none}}
+</style></head><body>
+<header><h1>🌳 Money Tree <small>Advisor view · not for clients</small></h1>
+<select id="famList" title="Saved families"></select><input id="famName" placeholder="Family name">
+<span class="sp"></span>
+<button class="hbtn" id="newFam">New family</button><button class="hbtn" id="expFam">Export file</button><button class="hbtn" id="impFam">Import file</button><input type="file" id="impFile" accept=".json" hidden>
+</header>
+<div class="wrap">
+<div class="side">
+  <div class="card"><h3>Family &amp; parents</h3><div id="pParents"></div></div>
+  <div class="card"><h3>Child</h3><div class="chips" id="childTabs"></div><div id="pChild"></div><button class="lnk" id="delChild">Remove this child</button></div>
+  <div class="card"><h3>Goals</h3><div id="pGoals"></div></div>
+  <div class="card"><h3>SIP</h3><div id="pSip"></div></div>
+  <div class="card"><h3>Assumptions</h3><div id="pAssume"></div></div>
+  <div class="card"><h3>Money already invested</h3><div id="pNow"></div></div>
+</div>
+<main id="out"></main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+<script>// ===== Money Tree advisor engine v2 (pure functions) =====
+// Model: two buckets. Every month: SIP in -> rebalance so the DEBT bucket holds exactly the money for
+// goals due within the next `safeYears` (each discounted at the debt rate) -> pay goals due this month
+// -> grow equity at the equity rate and debt at the debt rate. Monthly rates = (1+annual)^(1/12)-1.
+// Method A = this month-by-month simulation. Method B = closed-form present values.
+const MT2 = (() => {
+  const GOALS = () => ([
+    { id: 'puc', label: 'PUC (11th & 12th)', on: true, cost: 150000, perYear: true, startAge: 16, years: 2, infl: 10, edu: true },
+    { id: 'grad', label: 'Graduation', on: true, cost: 300000, perYear: true, startAge: 18, years: 4, infl: 10, edu: true },
+    { id: 'pg', label: 'Post-graduation', on: true, cost: 1500000, perYear: false, startAge: 22, years: 2, infl: 10, edu: true },
+    { id: 'car', label: 'First car', on: true, cost: 1000000, perYear: false, startAge: 24, years: 1, infl: 7 },
+    { id: 'wedding', label: 'Wedding', on: true, cost: 1500000, perYear: false, startAge: 27, years: 1, infl: 7 }
+  ]);
+  function defaultChild(dobISO, startISO) {
+    return {
+      id: 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+      name: '', dob: dobISO, startDate: startISO, product: null, // null = auto (tree if child <= 5 at start)
+      goals: GOALS(),
+      seed: { on: true, name: 'Golden Seed', targetToday: 500000, age: 27 },
+      sip: { type: 'stepup', stepUp: 5, endAge: 18, mode: 'required', amount: 0, lumpsum: 0 },
+      caseSel: 'low',
+      current: { value: 0, date: '' },
+      whatIf: []
+    };
+  }
+  function defaultFamily() {
+    const t = new Date(), iso = d => d.toISOString().slice(0, 10);
+    return {
+      id: 'f' + Date.now().toString(36), name: '',
+      parents: [{ name: '', dob: '', earns: true, share: 100, existing: 0 }, { name: '', dob: '', earns: false, share: 0, existing: 0 }],
+      coverMode: 'proportional',
+      a: { eqLow: 10, eqHigh: 12, debt: 5.5, safeYears: 2, infl: 7 },
+      children: [defaultChild(iso(t), iso(t))]
+    };
+  }
+
+  function monthsBetween(d1, d2) {
+    const a = new Date(d1 + 'T00:00:00'), b = new Date(d2 + 'T00:00:00');
+    let m = (b.getFullYear() - a.getFullYear()) * 12 + (b.getMonth() - a.getMonth());
+    if (b.getDate() < a.getDate()) m -= 1;
+    return m;
+  }
+  const mRate = p => Math.pow(1 + p / 100, 1 / 12) - 1;
+  const productOf = c => c.product || (Math.max(0, monthsBetween(c.dob, c.startDate)) <= 60 ? 'tree' : 'plant');
+
+  // ---- the liabilities: every goal payment (paid) + the Golden Seed target (kept, not paid) ----
+  // k = months after the SIP start date; need = cost today x (1+inflation)^(k/12)
+  function liabilities(child, A, goalsOverride) {
+    const a0m = Math.max(0, monthsBetween(child.dob, child.startDate));
+    const K = child.seed.age * 12 - a0m;
+    const out = [];
+    (goalsOverride || child.goals).forEach(g => {
+      if (!g.on) return;
+      const years = Math.max(1, Math.round(g.years || 1));
+      const per = g.perYear ? g.cost : g.cost / years;
+      for (let y = 0; y < years; y++) {
+        const age = g.startAge + y, k = age * 12 - a0m;
+        if (k < 0 || age > child.seed.age) continue;
+        out.push({ gid: g.id, label: g.label, age, k, today: per, infl: g.infl, need: per * Math.pow(1 + g.infl / 100, k / 12), paid: true });
+      }
+    });
+    if (child.seed.on && child.seed.targetToday > 0) out.push({ gid: 'seed', label: child.seed.name || 'Golden Seed', age: child.seed.age, k: K, today: child.seed.targetToday, infl: A.infl, need: child.seed.targetToday * Math.pow(1 + A.infl / 100, K / 12), paid: false });
+    return { list: out.sort((x, y) => x.k - y.k || (x.paid ? -1 : 1)), a0m, K };
+  }
+
+  // ---- money flows per month: SIP, lump sums/withdrawals, market falls ----
+  function flows(child, fam, eq, s0, mods) {
+    const a0m = Math.max(0, monthsBetween(child.dob, child.startDate)), K = child.seed.age * 12 - a0m;
+    const sp = child.sip, endAge = mods && mods.endAge != null ? mods.endAge : sp.endAge;
+    const step = sp.type === 'stepup' ? (sp.stepUp || 0) / 100 : 0;
+    const sip = new Array(K + 1).fill(0), add = new Array(K + 1).fill(0), fall = new Array(K + 1).fill(0);
+    const ev = (mods && mods.events) || [];
+    const kOf = age => Math.round(age * 12) - a0m;
+    for (let k = 0; k <= K; k++) {
+      if (a0m + k >= endAge * 12) continue;
+      let yrs = Math.floor(k / 12);
+      ev.filter(e => e.type === 'skipStep').forEach(e => { const k1 = kOf(e.age); if (k >= k1) yrs -= Math.min(Math.round(e.years || 1), Math.floor((k - k1) / 12) + 1); });
+      let amt = s0 * Math.pow(1 + step, Math.max(0, yrs));
+      ev.forEach(e => {
+        const k1 = kOf(e.age);
+        if (e.type === 'pause' && k >= k1 && k < k1 + (e.months || 0)) amt = 0;
+        if (e.type === 'reduce' && k >= k1 && k < k1 + (e.months || 0)) amt = Math.min(amt, e.amount || 0);
+        if (e.type === 'death' && k >= k1) amt *= e.keep; // share of SIP that continues
+      });
+      if (mods && mods.multFrom != null && k >= mods.multFrom) amt *= mods.mult;
+      sip[k] = amt;
+    }
+    add[0] += sp.lumpsum || 0;
+    ev.forEach(e => {
+      const k1 = kOf(e.age); if (k1 < 0 || k1 > K) return;
+      if (e.type === 'lump') add[k1] += e.amount || 0;
+      if (e.type === 'withdraw') add[k1] -= e.amount || 0;
+      if (e.type === 'death') add[k1] += e.payout || 0;
+      if (e.type === 'fall') fall[k1] = Math.min(1, (e.pct || 0) / 100);
+    });
+    if (mods && mods.lumpAt != null && mods.lumpAt <= K) add[mods.lumpAt] += mods.lump;
+    return { sip, add, fall, a0m, K };
+  }
+
+  // ---- Method A: month-by-month simulation ----
+  // opts: { eq, s0, mods, goals (override), fromK, startBal }
+  function simulate(child, fam, o) {
+    const A = fam.a, me = mRate(o.eq), md = mRate(A.debt), W = Math.round(A.safeYears * 12);
+    const L = liabilities(child, A, o.goals), F = flows(child, fam, o.eq, o.s0, o.mods);
+    const fromK = o.fromK || 0, K = L.K;
+    let eqB = 0, dB = 0, total = o.startBal || 0;
+    const paidBy = {}, rows = [];
+    L.list.forEach(l => { if (l.paid) paidBy[l.gid] = paidBy[l.gid] || { need: 0, paid: 0, label: l.label, ages: [] }; });
+    let seedVal = 0, minCash = 0;
+    for (let k = fromK; k <= K; k++) {
+      const sip = F.sip[k], add = F.add[k] - (k === 0 && o.noLump ? (child.sip.lumpsum || 0) : 0);
+      // a market fall hits the equity part of the money at the start of that month
+      if (F.fall[k]) { const loss = eqB * F.fall[k]; eqB -= loss; total -= loss; }
+      total += sip + add;
+      if (total < 0) { minCash = Math.min(minCash, total); total = 0; }
+      let target = 0;
+      L.list.forEach(l => { const d = l.k - k; if (d >= 0 && d <= W) target += l.need / Math.pow(1 + md, d); });
+      dB = Math.min(total, target); eqB = total - dB;
+      let due = 0, paid = 0; const pays = [];
+      L.list.forEach(l => {
+        if (l.k !== k || !l.paid) return;
+        const p = Math.max(0, Math.min(total, l.need));
+        total -= p; due += l.need; paid += p;
+        const r = paidBy[l.gid]; r.need += l.need; r.paid += p; r.ages.push(l.age);
+        pays.push({ gid: l.gid, label: l.label, age: l.age, need: l.need, paid: p });
+      });
+      dB = Math.max(0, dB - paid); eqB = total - dB;
+      if (eqB < 0) { dB += eqB; eqB = 0; }
+      const row = { k, age: (F.a0m + k) / 12, sip, add, target, debtIn: dB, eqIn: eqB, due, paid, pays };
+      if (k === K) { seedVal = total; row.close = total; row.eqEnd = eqB; row.dEnd = dB; rows.push(row); break; }
+      eqB *= 1 + me; dB *= 1 + md; total = eqB + dB;
+      row.close = total; row.eqEnd = eqB; row.dEnd = dB; rows.push(row);
+    }
+    const seedL = L.list.find(l => l.gid === 'seed');
+    const goals = Object.entries(paidBy).map(([gid, r]) => ({ gid, label: r.label, ages: r.ages, need: r.need, paid: r.paid, frac: r.need > 0 ? r.paid / r.need : 1 }));
+    const allPaid = goals.every(g => g.paid >= g.need - 0.5);
+    const seedOk = !seedL || seedVal >= seedL.need - 0.5;
+    return { rows, goals, seedVal, seedTarget: seedL ? seedL.need : 0, allPaid, seedOk, ok: allPaid && seedOk, L, F };
+  }
+
+  const bisect = (lo, hi, okFn, it = 60) => { for (let i = 0; i < it; i++) { const m = (lo + hi) / 2; okFn(m) ? (hi = m) : (lo = m); } return hi; };
+
+  // required SIP, Method A (exact, then rounded up to the next ₹100)
+  function requiredSipA(child, fam, eq) {
+    const ok = s => simulate(child, fam, { eq, s0: s }).ok;
+    if (ok(0)) return { exact: 0, rounded: 0 };
+    if (!ok(5e7)) return { exact: NaN, rounded: NaN };
+    const x = bisect(0, 5e7, ok);
+    return { exact: x, rounded: Math.ceil(x / 100) * 100 };
+  }
+  // present value at month k0 of one liability, along the plan's own path:
+  // the last `safeYears` before it at the debt rate, everything before that at the equity rate
+  function pvOf(l, k0, eq, A) {
+    const me = mRate(eq), md = mRate(A.debt), W = Math.round(A.safeYears * 12), d = l.k - k0;
+    const dm = Math.min(W, d), em = Math.max(0, d - W);
+    return { d, dm, em, pv: l.need / Math.pow(1 + md, dm) / Math.pow(1 + me, em), fD: Math.pow(1 + md, dm), fE: Math.pow(1 + me, em) };
+  }
+  // required SIP, Method B: (PV of all goals + seed - lump sum) / PV of ₹1 of first-year SIP (with step-ups)
+  function requiredSipB(child, fam, eq) {
+    const L = liabilities(child, fam.a), me = mRate(eq);
+    const pvL = L.list.reduce((s, l) => s + pvOf(l, 0, eq, fam.a).pv, 0);
+    const F = flows(child, fam, eq, 1, null);
+    let pvS = 0; F.sip.forEach((g, k) => { pvS += g / Math.pow(1 + me, k); });
+    const exact = pvS > 0 ? Math.max(0, (pvL - (child.sip.lumpsum || 0)) / pvS) : NaN;
+    return { exact, rounded: Math.ceil(exact / 100) * 100, pvL, pvS };
+  }
+
+  // valuation point: today's value + date (money already invested), else the start (lump sum)
+  function valuation(child) {
+    const a0m = Math.max(0, monthsBetween(child.dob, child.startDate)), K = child.seed.age * 12 - a0m;
+    if (child.current && child.current.value > 0 && child.current.date) {
+      const k0 = Math.max(0, Math.min(K, monthsBetween(child.startDate, child.current.date)));
+      return { k0, value: child.current.value, date: child.current.date };
+    }
+    return { k0: 0, value: child.sip.lumpsum || 0, date: child.startDate };
+  }
+  // life cover needed (always at the low equity case): PV of remaining goals + seed - money already invested
+  function coverB(child, fam) {
+    const eq = fam.a.eqLow, V = valuation(child), L = liabilities(child, fam.a);
+    const rows = L.list.filter(l => l.k >= V.k0).map(l => Object.assign({}, l, pvOf(l, V.k0, eq, fam.a)));
+    const pv = rows.reduce((s, r) => s + r.pv, 0);
+    return { need: Math.max(0, pv - V.value), pv, rows, V };
+  }
+  function coverA(child, fam) {
+    const eq = fam.a.eqLow, V = valuation(child);
+    const ok = x => simulate(child, fam, { eq, s0: 0, fromK: V.k0, startBal: V.value + x, noLump: true }).ok;
+    if (ok(0)) return { need: 0 };
+    return { need: bisect(0, 5e9, ok) };
+  }
+
+  // Life cover need month by month along the plan (low equity case, at the SIP actually used).
+  // need(k) = value at k of every goal still to come - money the plan holds at the start of month k
+  //           - (share of the SIP that continues after this parent's death) x value at k of the SIPs still to come
+  function coverPath(child, fam, s0, endK) {
+    const A = fam.a, eq = A.eqLow, me = mRate(eq), V = valuation(child), L = liabilities(child, A);
+    const hasCur = !!(child.current && child.current.value > 0 && child.current.date);
+    const sim = simulate(child, fam, hasCur ? { eq, s0, fromK: V.k0, startBal: V.value, noLump: true } : { eq, s0 });
+    const K = L.K, sipArr = sim.F.sip;
+    const pvSip = new Array(K + 2).fill(0);
+    for (let k = K; k >= 0; k--) pvSip[k] = (sipArr[k] || 0) + pvSip[k + 1] / (1 + me);
+    const earners = fam.parents.map((p, i) => ({ p, i })).filter(x => x.p.earns);
+    const shareSum = earners.reduce((s, x) => s + (+x.p.share || 0), 0) || 1;
+    const keep = fam.parents.map(p => !p.earns ? null : fam.coverMode === 'full' ? 0 : 1 - (+p.share || 0) / shareSum);
+    const last = Math.min(K, endK == null ? K : endK), pts = [];
+    for (let k = V.k0; k <= last; k++) {
+      const corpus = k === V.k0 ? V.value : sim.rows[k - V.k0 - 1].close;
+      const pv = L.list.filter(l => l.k >= k).reduce((s, l) => s + pvOf(l, k, eq, A).pv, 0);
+      const all = Math.max(0, pv - corpus);
+      pts.push({ k, age: (L.a0m + k) / 12, pv, corpus, pvSip: pvSip[k], all, per: keep.map(kp => kp == null ? null : Math.max(0, pv - corpus - kp * pvSip[k])) });
+    }
+    const peakOf = f => pts.reduce((b, x) => f(x) > f(b) ? x : b, pts[0]);
+    const peakAll = peakOf(x => x.all);
+    const peakPer = keep.map((kp, i) => kp == null ? null : peakOf(x => x.per[i]));
+    return { pts, peakAll, peakPer, keep, now: pts[0], V };
+  }
+  // Method A check of a peak: the smallest claim, paid on that parent's death at that month, that keeps every goal funded
+  function claimNeededA(child, fam, s0, pi, k, keep) {
+    const age = (Math.max(0, monthsBetween(child.dob, child.startDate)) + k) / 12;
+    const V = valuation(child), hasCur = !!(child.current && child.current.value > 0 && child.current.date);
+    const ok = x => simulate(child, fam, Object.assign({ eq: fam.a.eqLow, s0, mods: { events: [{ type: 'death', age, keep, payout: x }] } }, hasCur ? { fromK: V.k0, startBal: V.value, noLump: true } : {})).ok;
+    if (ok(0)) return 0;
+    return bisect(0, 5e9, ok);
+  }
+
+  // per-parent cover, policy term, premium paying term
+  function coverPlan(child, fam, chosenSip) {
+    const B = coverB(child, fam), A = coverA(child, fam), V = B.V;
+    const a0m = Math.max(0, monthsBetween(child.dob, child.startDate));
+    const reqLow = requiredSipA(child, fam, fam.a.eqLow).rounded;
+    const fullyFundedLow = chosenSip >= reqLow - 0.5;
+    const L = liabilities(child, fam.a);
+    const lastAge = L.list.length ? Math.max(...L.list.map(l => l.age)) : child.seed.age;
+    const endAge = fullyFundedLow ? Math.min(child.sip.endAge, lastAge) : lastAge;
+    const childAgeAtV = (a0m + V.k0) / 12;
+    const term = Math.max(1, Math.ceil(endAge - childAgeAtV - 1e-9));
+    const earners = fam.parents.filter(p => p.earns);
+    const shareSum = earners.reduce((s, p) => s + (+p.share || 0), 0) || 1;
+    const path = coverPath(child, fam, chosenSip, Math.round(endAge * 12) - a0m);
+    const per = fam.parents.map((p, i) => {
+      if (!p.earns) return null;
+      const part = fam.coverMode === 'full' ? 1 : (+p.share || 0) / shareSum;
+      const pk = path.peakPer[i], need = pk.per[i], needNow = path.now.per[i];
+      const gap = Math.max(0, need - (+p.existing || 0));
+      const sa = gap > 0 ? Math.ceil(gap / 500000) * 500000 : 0;
+      const ageNow = p.dob ? monthsBetween(p.dob, V.date) / 12 : null;
+      return { name: p.name, part, keep: path.keep[i], need, needNow, peakK: pk.k, peakAge: pk.age, existing: +p.existing || 0, gap, sa, ageNow, ageEnd: ageNow != null ? ageNow + term : null };
+    });
+    return { B, A, term, endAge, fullyFundedLow, reqLow, per, ppt: term, path };
+  }
+
+  // ---- What if: apply events, compare, and find ways to catch up ----
+  function whatIf(child, fam, eq, s0, events, coverPer, noFix) {
+    const a0m = Math.max(0, monthsBetween(child.dob, child.startDate));
+    const kOf = age => Math.round(age * 12) - a0m;
+    let goals = child.goals;
+    const evs = [];
+    events.forEach(e => {
+      if (e.type === 'goal') { goals = goals.map(g => g.id === e.gid ? Object.assign({}, g, { cost: e.cost != null && e.cost !== '' ? +e.cost : g.cost, startAge: e.startAge != null && e.startAge !== '' ? +e.startAge : g.startAge, years: e.years != null && e.years !== '' ? +e.years : g.years }) : g); return; }
+      if (e.type === 'death') {
+        const pi = +e.parent || 0, p = fam.parents[pi] || {};
+        const shareSum = fam.parents.filter(x => x.earns).reduce((s, x) => s + (+x.share || 0), 0) || 1;
+        const part = p.earns ? (+p.share || 0) / shareSum : 0;
+        const keep = fam.coverMode === 'full' ? 0 : 1 - part;
+        const payout = e.payout != null && e.payout !== '' ? +e.payout : ((coverPer && coverPer[pi]) ? coverPer[pi].existing + coverPer[pi].sa : 0);
+        evs.push(Object.assign({}, e, { keep, payout })); return;
+      }
+      evs.push(e);
+    });
+    const base = simulate(child, fam, { eq, s0 });
+    const mods = { events: evs };
+    const scen = simulate(child, fam, { eq, s0, mods, goals });
+    // restart point: after the last pause / reduction, else the latest event
+    let kR = 0;
+    evs.forEach(e => { const k = kOf(e.age); kR = Math.max(kR, e.type === 'pause' || e.type === 'reduce' ? k + (e.months || 0) : k); });
+    events.filter(e => e.type === 'goal').forEach(() => { kR = Math.max(kR, 0); });
+    const K = scen.L.K; kR = Math.max(0, Math.min(K, kR));
+    const fix = {};
+    if (!scen.ok && !noFix) {
+      const sipLeft = scen.F.sip.slice(kR).some(v => v > 0);
+      if (sipLeft) {
+        const okM = m => simulate(child, fam, { eq, s0, mods: Object.assign({}, mods, { multFrom: kR, mult: m }), goals }).ok;
+        if (okM(20)) { const m = bisect(1, 20, okM); fix.raise = { pct: (m - 1) * 100, from: kR, sipThen: scen.F.sip[kR] * m, sipBefore: scen.F.sip[kR] }; }
+      }
+      for (let ea = child.sip.endAge + 1; ea <= child.seed.age; ea++) {
+        if (simulate(child, fam, { eq, s0, mods: Object.assign({}, mods, { endAge: ea }), goals }).ok) { fix.extend = { endAge: ea, mandate: ea > 18 }; break; }
+      }
+      const okL = x => simulate(child, fam, { eq, s0, mods: Object.assign({}, mods, { lumpAt: kR, lump: x }), goals }).ok;
+      if (okL(5e9)) fix.lump = { amount: Math.ceil(bisect(0, 5e9, okL) / 1000) * 1000, at: kR };
+    }
+    return { base, scen, kR, restartAge: (a0m + kR) / 12, fix, goalsUsed: goals };
+  }
+
+  return { defaultFamily, defaultChild, GOALS, monthsBetween, mRate, productOf, liabilities, flows, simulate, requiredSipA, requiredSipB, pvOf, coverA, coverB, coverPath, claimNeededA, coverPlan, valuation, whatIf };
+})();
+if (typeof module !== 'undefined') module.exports = MT2;
+</script>
+<script>// ===== Excel cross-check builder: every number recomputed with live formulas =====
+// Uses xlsx-js-style (SheetJS + cell styles): Indian number format, Calibri 10, neat bordered tables.
+function buildCheckWorkbook(XLSX, child, fam, eq, s0, tool) {
+  const A = fam.a, L = MT2.liabilities(child, A), a0m = L.a0m, K = L.K;
+  const wb = XLSX.utils.book_new();
+  // ---- formats & styles ----
+  const INR = '[>=10000000]##\\,##\\,##\\,##0;[>=100000]##\\,##\\,##0;##,##0';
+  const FMT = { inr: INR, int: '0', p: '0.0#', fac: '0.0000', rate: '0.0000%', txt: '@' };
+  const line = { style: 'thin', color: { rgb: 'DFE6EA' } };
+  const base = { font: { name: 'Calibri', sz: 10, color: { rgb: '39293E' } }, border: { top: line, bottom: line, left: line, right: line }, alignment: { vertical: 'center' } };
+  const S = {
+    head: { font: { name: 'Calibri', sz: 10, bold: true, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '005826' } }, border: base.border, alignment: { vertical: 'center', horizontal: 'center', wrapText: true } },
+    title: { font: { name: 'Calibri', sz: 12, bold: true, color: { rgb: '005826' } } },
+    note: { font: { name: 'Calibri', sz: 9, italic: true, color: { rgb: '6B6472' } }, alignment: { wrapText: true, vertical: 'top' } },
+    tot: { fill: { fgColor: { rgb: 'F3F8F5' } }, font: { name: 'Calibri', sz: 10, bold: true, color: { rgb: '39293E' } } },
+    input: { fill: { fgColor: { rgb: 'FFF6DC' } } }
+  };
+  const put = (ws, ref, v, fmt, extra) => {
+    const cell = typeof v === 'object' && v !== null ? v : { t: typeof v === 'number' ? 'n' : 's', v };
+    const st = JSON.parse(JSON.stringify(base));
+    if (fmt) { cell.z = FMT[fmt]; st.numFmt = FMT[fmt]; st.alignment.horizontal = fmt === 'txt' ? 'left' : 'right'; }
+    if (extra) Object.keys(extra).forEach(k => { st[k] = Object.assign({}, st[k] || {}, extra[k]); });
+    cell.s = st; ws[ref] = cell;
+  };
+  const head = (ws, r, arr) => arr.forEach((h, i) => { const ref = XLSX.utils.encode_cell({ r, c: i }); ws[ref] = { t: 's', v: h, s: S.head }; });
+  const text = (ws, ref, v, st) => { ws[ref] = { t: 's', v, s: st }; };
+  const F = f => ({ t: 'n', f });
+  const FS = f => ({ t: 's', f });
+  const fin = (ws, ref, cols, hRow, rows) => { ws['!ref'] = ref; ws['!cols'] = cols.map(w => ({ wch: w })); if (hRow != null) ws['!rows'] = Object.assign([], { [hRow]: { hpt: rows || 30 } }); };
+
+  // --- Inputs ---
+  const inRows = [
+    ['Child age at SIP start (months)', a0m, 'int'], ['Golden Seed age (years)', child.seed.age, 'int'], ['Equity return % (this case)', eq, 'p'],
+    ['Debt return %', A.debt, 'p'], ['Years before each goal moved to debt', A.safeYears, 'p'],
+    ['Monthly equity rate', F('(1+B4/100)^(1/12)-1'), 'rate'], ['Monthly debt rate', F('(1+B5/100)^(1/12)-1'), 'rate'], ['Debt window (months)', F('B6*12'), 'int'],
+    ['First-year monthly SIP (₹) - edit to test', s0, 'inr', true], ['Step-up % a year (0 = fixed)', child.sip.type === 'stepup' ? child.sip.stepUp : 0, 'p'],
+    ['SIP continues till age', child.sip.endAge, 'int'], ['Lump sum at start (₹)', child.sip.lumpsum || 0, 'inr'], ['General inflation % (Golden Seed)', A.infl, 'p'],
+    ['Last month (k) = Golden Seed month', F('B3*12-B2'), 'int'], ['Equity return % for life cover (low case)', A.eqLow, 'p'], ['Monthly equity rate, cover case', F('(1+B16/100)^(1/12)-1'), 'rate']
+  ];
+  const wsI = {}; head(wsI, 0, ['Input', 'Value']);
+  inRows.forEach((r, i) => { put(wsI, 'A' + (i + 2), r[0]); put(wsI, 'B' + (i + 2), r[1], r[2], r[3] || i === 2 ? S.input : null); });
+  text(wsI, 'D1', 'How the model works', S.title);
+  ['Each month: SIP added → money for goals due within the debt window (each discounted at the debt rate) is kept in debt, the rest in equity → goals due that month paid → equity grows at the equity rate, debt at the debt rate.',
+    'Monthly rate = (1 + yearly rate)^(1/12) − 1, so 10% is exactly 10% a year. Goal cost then = cost today × (1 + inflation)^(months from SIP start ÷ 12).',
+    'Yellow cells (B4 equity return, B10 SIP) can be edited: every sheet recalculates.',
+    'Rupee amounts are shown without paise; the formulas keep full precision.'].forEach((t, i) => text(wsI, 'D' + (i + 2), t, S.note));
+  fin(wsI, 'A1:D' + (inRows.length + 1), [40, 14, 2, 90]);
+  // --- Goals (liabilities) ---
+  const wsG = {}, gh = ['Goal / payment', 'Child age', 'Cost today (₹)', 'Inflation %', 'Month k (from SIP start)', 'Cost then (₹)', 'Paid out? (1 = yes, 0 = kept as Golden Seed)', 'Months in debt', 'Months in equity', 'Value today, this case (₹)', 'Value today, cover case (₹)'];
+  head(wsG, 0, gh);
+  L.list.forEach((l, i) => {
+    const r = i + 2;
+    put(wsG, 'A' + r, l.label + (l.paid ? '' : ' (target)')); put(wsG, 'B' + r, l.age, 'int'); put(wsG, 'C' + r, l.today, 'inr'); put(wsG, 'D' + r, l.infl, 'p');
+    put(wsG, 'E' + r, F(`B${r}*12-Inputs!$B$2`), 'int'); put(wsG, 'F' + r, F(`C${r}*(1+D${r}/100)^(E${r}/12)`), 'inr'); put(wsG, 'G' + r, l.paid ? 1 : 0, 'int');
+    put(wsG, 'H' + r, F(`MIN(Inputs!$B$9,E${r})`), 'int'); put(wsG, 'I' + r, F(`MAX(0,E${r}-Inputs!$B$9)`), 'int');
+    put(wsG, 'J' + r, F(`F${r}/(1+Inputs!$B$8)^H${r}/(1+Inputs!$B$7)^I${r}`), 'inr'); put(wsG, 'K' + r, F(`F${r}/(1+Inputs!$B$8)^H${r}/(1+Inputs!$B$17)^I${r}`), 'inr');
+  });
+  const gN = L.list.length + 1, gT = gN + 1;
+  put(wsG, 'A' + gT, 'Total', null, S.tot); 'BCDEFGHI'.split('').forEach(c => put(wsG, c + gT, '', null, S.tot));
+  put(wsG, 'J' + gT, F(`SUM(J2:J${gN})`), 'inr', S.tot); put(wsG, 'K' + gT, F(`SUM(K2:K${gN})`), 'inr', S.tot);
+  fin(wsG, 'A1:K' + gT, [26, 8, 13, 9, 11, 14, 14, 9, 10, 15, 15], 0, 42);
+  // --- Month-by-month simulation ---
+  const wsS = {}, sh = ['Month k', 'Child age', 'SIP (₹)', 'SIP of ₹1 (step-ups)', '₹1 SIP valued today', 'Lump sum (₹)', 'Opening (₹)', 'After SIP (₹)', 'Debt target (₹)', 'In debt (₹)', 'Goals due (₹)', 'Paid (₹)', 'Debt after paying (₹)', 'Equity after paying (₹)', 'Closing (₹)'];
+  head(wsS, 0, sh);
+  const gE = `Goals!$E$2:$E$${gN}`, gF = `Goals!$F$2:$F$${gN}`, gG = `Goals!$G$2:$G$${gN}`;
+  for (let k = 0; k <= K; k++) {
+    const r = k + 2;
+    put(wsS, 'A' + r, k, 'int'); put(wsS, 'B' + r, FS(`INT((Inputs!$B$2+A${r})/12)&"y "&MOD(Inputs!$B$2+A${r},12)&"m"`), 'txt');
+    put(wsS, 'D' + r, F(`IF(Inputs!$B$2+A${r}<Inputs!$B$12*12,(1+Inputs!$B$11/100)^INT(A${r}/12),0)`), 'fac');
+    put(wsS, 'C' + r, F(`Inputs!$B$10*D${r}`), 'inr'); put(wsS, 'E' + r, F(`D${r}/(1+Inputs!$B$7)^A${r}`), 'fac');
+    put(wsS, 'F' + r, k === 0 ? F('Inputs!$B$13') : 0, 'inr'); put(wsS, 'G' + r, k === 0 ? 0 : F(`O${r - 1}`), 'inr');
+    put(wsS, 'H' + r, F(`G${r}+C${r}+F${r}`), 'inr');
+    put(wsS, 'I' + r, F(`SUMPRODUCT((${gE}-A${r}>=0)*(${gE}-A${r}<=Inputs!$B$9)*${gF}/(1+Inputs!$B$8)^(${gE}-A${r}))`), 'inr');
+    put(wsS, 'J' + r, F(`MIN(H${r},I${r})`), 'inr'); put(wsS, 'K' + r, F(`SUMPRODUCT((${gE}=A${r})*${gG}*${gF})`), 'inr');
+    put(wsS, 'L' + r, F(`MIN(H${r},K${r})`), 'inr'); put(wsS, 'M' + r, F(`MAX(0,J${r}-L${r})`), 'inr'); put(wsS, 'N' + r, F(`H${r}-L${r}-M${r}`), 'inr');
+    put(wsS, 'O' + r, k === K ? F(`H${r}-L${r}`) : F(`N${r}*(1+Inputs!$B$7)+M${r}*(1+Inputs!$B$8)`), 'inr');
+  }
+  const sN = K + 2;
+  fin(wsS, 'A1:O' + sN, [8, 9, 11, 10, 10, 11, 13, 13, 13, 13, 12, 12, 13, 14, 14], 0, 30);
+  // --- Cover by age: need at each month along the plan (cover case) ---
+  const wsV = {}, coverOk = eq === A.eqLow;
+  const earners = fam.parents.map((p, i) => ({ p, i })).filter(x => x.p.earns);
+  const shareSum = earners.reduce((s, x) => s + (+x.p.share || 0), 0) || 1;
+  const keeps = earners.map(x => ({ name: x.p.name || 'Parent ' + (x.i + 1), keep: fam.coverMode === 'full' ? 0 : 1 - (+x.p.share || 0) / shareSum }));
+  const vh = ['Month k', 'Child age', 'Value then of goals still to come (₹)', 'Money held at start of month (₹)', 'Value then of SIPs still to come (₹)', 'Cover needed if the SIP stops (₹)'].concat(keeps.map(x => `Cover needed: ${x.name} (other parent keeps ${Math.round(x.keep * 100)}% of SIP) (₹)`));
+  head(wsV, 0, vh);
+  const W = 'Inputs!$B$9', sA = `'Month by month'!$A$2:$A$${sN}`, sC = `'Month by month'!$C$2:$C$${sN}`;
+  const lastK = Math.min(K, tool.coverEndK != null ? tool.coverEndK : K);
+  for (let k = 0; k <= lastK; k++) {
+    const r = k + 2, mr = k + 2, d = `(${gE}-A${r})`;
+    put(wsV, 'A' + r, k, 'int'); put(wsV, 'B' + r, FS(`'Month by month'!B${mr}`), 'txt');
+    put(wsV, 'C' + r, F(`SUMPRODUCT((${d}>=0)*${gF}/(1+Inputs!$B$8)^((${d}<=${W})*${d}+(${d}>${W})*${W})/(1+Inputs!$B$17)^((${d}>${W})*(${d}-${W})))`), 'inr');
+    put(wsV, 'D' + r, F(`'Month by month'!G${mr}+'Month by month'!F${mr}`), 'inr');
+    put(wsV, 'E' + r, F(`SUMPRODUCT((${sA}>=A${r})*${sC}/(1+Inputs!$B$17)^((${sA}>=A${r})*(${sA}-A${r})))`), 'inr');
+    put(wsV, 'F' + r, F(`MAX(0,C${r}-D${r})`), 'inr');
+    keeps.forEach((x, j) => { const col = XLSX.utils.encode_col(6 + j); put(wsV, col + r, F(`MAX(0,C${r}-D${r}-${x.keep}*E${r})`), 'inr'); });
+  }
+  const vN = lastK + 2, vLastCol = XLSX.utils.encode_col(5 + keeps.length);
+  const vNote = vN + 2;
+  text(wsV, 'A' + vNote, coverOk ? 'Life cover is checked at the low equity case and the SIP in Inputs!B10. Sum assured = the highest value in each cover column, rounded up to the next ₹5,00,000 (after existing cover set aside).'
+    : `This file is for the ${eq}% case, but life cover uses the ${A.eqLow}% case: money held here grows at ${eq}%, so these cover figures will not match the tool. Download the ${A.eqLow}% case to check cover.`, S.note);
+  fin(wsV, 'A1:' + vLastCol + vNote, [8, 9, 16, 16, 16, 16].concat(keeps.map(() => 20)), 0, 54);
+  // --- Check: Excel's answers next to the tool's ---
+  const seedRow = L.list.findIndex(l => !l.paid);
+  const seedRef = seedRow >= 0 ? `Goals!F${seedRow + 2}` : '0';
+  const wsC = {};
+  head(wsC, 0, ['Check', 'Excel (formulas)', 'Tool says', 'Same?']);
+  const cRows = [
+    ['Total value today of all goals + Golden Seed (this case)', F(`Goals!J${gT}`), tool.pvL, 'inr'],
+    ['Value today of ₹1 of first-year SIP (with step-ups)', F(`SUM('Month by month'!E2:E${sN})`), tool.pvS, 'fac'],
+    ['Required SIP, Method B (exact)', F('(B2-Inputs!B13)/B3'), tool.reqB, 'inr'],
+    ['Required SIP, rounded up to ₹100', F('CEILING(B4,100)'), tool.reqRounded, 'inr'],
+    null,
+    ['Simulation with the SIP in Inputs!B10', null, null, 'sec'],
+    ['Total goal payments due (₹)', F(`SUM('Month by month'!K2:K${sN})`), tool.due, 'inr'],
+    ['Total paid (₹)', F(`SUM('Month by month'!L2:L${sN})`), tool.paid, 'inr'],
+    ['Shortfall (₹)', F('B8-B9'), tool.due - tool.paid, 'inr'],
+    ['Golden Seed at age ' + child.seed.age + ' (₹)', F(`'Month by month'!O${sN}`), tool.seedVal, 'inr'],
+    ['Golden Seed target (₹)', F(seedRef), tool.seedTarget, 'inr'],
+    ['Result', FS('IF(AND(B10<0.5,B11>=B12-0.5),"All goals + Golden Seed funded","Short")'), tool.ok ? 'All goals + Golden Seed funded' : 'Short', 'txt'],
+    null,
+    ['Life cover', null, null, 'sec'],
+    ['Life cover needed at the start (cover case = low equity return)', F(`Goals!K${gT}-Inputs!B13`), tool.coverStart, 'inr'],
+    ['Life cover to buy = highest need in any month, if the SIP stops', F(`MAX('Cover by age'!F2:F${vN})`), coverOk ? tool.coverPeak : 'Download the ' + A.eqLow + '% case', coverOk ? 'inr' : 'txt'],
+  ];
+  cRows.forEach((r, i) => {
+    const R = i + 2;
+    if (!r) return;
+    if (r[3] === 'sec') { text(wsC, 'A' + R, r[0], S.title); return; }
+    put(wsC, 'A' + R, r[0]); put(wsC, 'B' + R, r[1], r[3]);
+    if (r[2] === 'Download the ' + A.eqLow + '% case') { put(wsC, 'C' + R, r[2], 'txt'); put(wsC, 'D' + R, '—', null, { alignment: { horizontal: 'center' } }); return; } put(wsC, 'C' + R, r[2], r[3]);
+    put(wsC, 'D' + R, r[3] === 'txt' ? FS(`IF(B${R}=C${R},"✓ match","differs")`) : FS(`IF(ABS(B${R}-C${R})<${r[3] === 'fac' ? '0.0001' : '1'},"✓ match","differs")`), null, { alignment: { horizontal: 'center' }, font: { color: { rgb: '2E7D32' }, bold: true } });
+  });
+  fin(wsC, 'A1:D' + (cRows.length + 1), [58, 30, 30, 10]);
+  [[wsI, 'Inputs'], [wsG, 'Goals'], [wsS, 'Month by month'], [wsV, 'Cover by age'], [wsC, 'Check']].forEach(([ws, n]) => XLSX.utils.book_append_sheet(wb, ws, n));
+  wb.SheetNames = ['Check', 'Inputs', 'Goals', 'Month by month', 'Cover by age'];
+  return wb;
+}
+if (typeof module !== 'undefined') module.exports = buildCheckWorkbook;
+</script>
+<script>// ===== Money Tree advisor view: UI =====
+(() => {
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const inr = n => (n < 0 ? '−₹' : '₹') + Math.round(Math.abs(n)).toLocaleString('en-IN');
+  const num = n => Math.round(n).toLocaleString('en-IN');
+  const pct = (f, d = 0) => (f * 100).toFixed(d) + '%';
+  const dmy = iso => { if (!iso) return ''; const [y, m, d] = iso.split('-'); return `${d}/${m}/${y}`; };
+  const isoOf = s => { const m = String(s || '').trim().match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/); if (!m) return null; const d = +m[1], mo = +m[2], y = +m[3]; const dt = new Date(y, mo - 1, d); if (dt.getMonth() !== mo - 1 || dt.getDate() !== d) return null; return `${y}-${String(mo).padStart(2, '0')}-${String(d).padStart(2, '0')}`; };
+  const parseAmt = s => { const v = parseFloat(String(s).replace(/[₹,\s]/g, '')); return isFinite(v) ? v : 0; };
+  const ageTxt = months => `${Math.floor(months / 12)}y ${months % 12}m`;
+
+  // ---------- state ----------
+  const KEY = 'mt_adv_v1';
+  let store = { families: {}, last: null };
+  try { store = JSON.parse(localStorage.getItem(KEY)) || store; } catch (_) { }
+  let fam = store.last && store.families[store.last] ? store.families[store.last] : MT2.defaultFamily();
+  let ci = 0;
+  const child = () => fam.children[Math.min(ci, fam.children.length - 1)];
+  function save() { try { store.families[fam.id] = fam; store.last = fam.id; localStorage.setItem(KEY, JSON.stringify(store)); } catch (_) { } }
+
+  // ---------- inputs panel ----------
+  const field = (label, path, val, kind, extra = '') => {
+    let v = val;
+    if (kind === 'amt') v = num(val || 0);
+    if (kind === 'date') v = dmy(val);
+    const ph = kind === 'date' ? 'DD/MM/YYYY' : '';
+    return `<label class="f"><span>${label}</span><input class="in ${kind || ''}" data-p="${path}" data-kind="${kind || 'num'}" value="${esc(v)}" placeholder="${ph}" ${kind === 'date' ? 'inputmode="numeric" maxlength="10" autocomplete="off"' : ''} ${extra}></label>`;
+  };
+  function renderInputs() {
+    const c = child(), prod = MT2.productOf(c), a0m = Math.max(0, MT2.monthsBetween(c.dob, c.startDate));
+    $('famName').value = fam.name || '';
+    $('childTabs').innerHTML = fam.children.map((k, i) => `<button class="chip ${i === ci ? 'on' : ''}" data-child="${i}">${MT2.productOf(k) === 'tree' ? '🌳' : '🪴'} ${esc(k.name || 'Child ' + (i + 1))}</button>`).join('') + `<button class="chip add" id="addChild">+ Add child</button>`;
+    const P = fam.parents;
+    $('pParents').innerHTML = `
+      <table class="pt"><tr><th>Parent</th><th>Date of birth</th><th>Earns?</th><th>Share of SIP %</th><th>Existing cover set aside for this plan (₹)</th></tr>
+      ${P.map((p, i) => `<tr><td><input class="in" data-p="fam.parents.${i}.name" data-kind="text" value="${esc(p.name)}" placeholder="${i ? 'Parent 2' : 'Parent 1'}"></td>
+        <td><input class="in date" data-p="fam.parents.${i}.dob" data-kind="date" value="${dmy(p.dob)}" placeholder="DD/MM/YYYY" inputmode="numeric" maxlength="10" autocomplete="off"></td>
+        <td class="c"><input type="checkbox" data-p="fam.parents.${i}.earns" data-kind="bool" ${p.earns ? 'checked' : ''}></td>
+        <td><input class="in" data-p="fam.parents.${i}.share" data-kind="num" value="${p.share}" ${p.earns ? '' : 'disabled'}></td>
+        <td><input class="in amt" data-p="fam.parents.${i}.existing" data-kind="amt" value="${num(p.existing || 0)}" ${p.earns ? '' : 'disabled'}></td></tr>`).join('')}</table>
+      <div class="seg" style="margin-top:8px"><span>Cover split</span>
+        <button class="sg ${fam.coverMode === 'proportional' ? 'on' : ''}" data-set="fam.coverMode" data-val="proportional">In proportion to SIP share</button>
+        <button class="sg ${fam.coverMode === 'full' ? 'on' : ''}" data-set="fam.coverMode" data-val="full">Full cover on each earning parent</button></div>
+      <div class="hint" id="shareHint"></div>`;
+    $('pChild').innerHTML = `
+      <div class="row">${field("Child's name", 'c.name', c.name, 'text')}${field('Date of birth', 'c.dob', c.dob, 'date')}${field('SIP start date', 'c.startDate', c.startDate, 'date')}</div>
+      <div class="seg"><span>Plan</span>
+        <button class="sg ${!c.product ? 'on' : ''}" data-set="c.product" data-val="">Auto</button>
+        <button class="sg ${c.product === 'tree' ? 'on' : ''}" data-set="c.product" data-val="tree">🌳 Money Tree</button>
+        <button class="sg ${c.product === 'plant' ? 'on' : ''}" data-set="c.product" data-val="plant">🪴 Money Plant</button></div>
+      <div class="hint">Age at SIP start: <b>${ageTxt(a0m)}</b> → ${prod === 'tree' ? '🌳 Money Tree' : '🪴 Money Plant'}${!c.product ? ' (auto: Money Tree up to age 5)' : ''}.
+        ${prod === 'plant' ? ' <button class="lnk" id="plantGoals">Use Money Plant goals (education only, no Golden Seed)</button>' : ' <button class="lnk" id="treeGoals">Reset to the full Money Tree goals</button>'}</div>`;
+    $('pGoals').innerHTML = `<table class="gt"><tr><th></th><th>Goal</th><th>Cost today (₹)</th><th>Cost is</th><th>From age</th><th>Years</th><th>Inflation %</th><th></th></tr>
+      ${c.goals.map((g, i) => `<tr class="${g.on ? '' : 'off'}"><td><input type="checkbox" data-p="c.goals.${i}.on" data-kind="bool" ${g.on ? 'checked' : ''}></td>
+        <td><input class="in" data-p="c.goals.${i}.label" data-kind="text" value="${esc(g.label)}"></td>
+        <td><input class="in amt" data-p="c.goals.${i}.cost" data-kind="amt" value="${num(g.cost)}"></td>
+        <td><select class="in" data-p="c.goals.${i}.perYear" data-kind="boolsel"><option value="1" ${g.perYear ? 'selected' : ''}>a year</option><option value="0" ${g.perYear ? '' : 'selected'}>total</option></select></td>
+        <td><input class="in sm" data-p="c.goals.${i}.startAge" data-kind="num" value="${g.startAge}"></td>
+        <td><input class="in sm" data-p="c.goals.${i}.years" data-kind="num" value="${g.years}"></td>
+        <td><input class="in sm" data-p="c.goals.${i}.infl" data-kind="num" value="${g.infl}"></td>
+        <td>${g.custom ? `<button class="x" data-delgoal="${i}" title="Remove">✕</button>` : ''}</td></tr>`).join('')}</table>
+      <button class="btn sec sm" id="addGoal">+ Add goal</button>
+      <div class="sub">
+        <label class="ck"><input type="checkbox" data-p="c.seed.on" data-kind="bool" ${c.seed.on ? 'checked' : ''}> Golden Seed at age ${c.seed.age}</label>
+        <div class="row">${field('Name', 'c.seed.name', c.seed.name, 'text')}${field("Target in today's ₹", 'c.seed.targetToday', c.seed.targetToday, 'amt')}</div>
+        <div class="hint">Grows with general inflation (${fam.a.infl}%) to age ${c.seed.age}. It is not paid out; it is what stays invested for the child.</div></div>`;
+    const sp = c.sip;
+    $('pSip').innerHTML = `
+      <div class="seg"><span>SIP type</span><button class="sg ${sp.type === 'stepup' ? 'on' : ''}" data-set="c.sip.type" data-val="stepup">Step-up</button><button class="sg ${sp.type === 'fixed' ? 'on' : ''}" data-set="c.sip.type" data-val="fixed">Fixed</button></div>
+      <div class="row">${sp.type === 'stepup' ? field('Step-up % a year', 'c.sip.stepUp', sp.stepUp, 'num') : ''}${field('SIP continues till age', 'c.sip.endAge', sp.endAge, 'num')}${field('Lump sum at start (₹)', 'c.sip.lumpsum', sp.lumpsum, 'amt')}</div>
+      ${sp.endAge > 18 ? `<div class="warn">SIP beyond age 18 needs the child's own mandate (the folio is in the child's name; SIPs stop at 18 until the status changes to major).</div>` : ''}
+      <div class="seg"><span>Equity case</span><button class="sg ${c.caseSel === 'low' ? 'on' : ''}" data-set="c.caseSel" data-val="low">${fam.a.eqLow}%</button><button class="sg ${c.caseSel === 'high' ? 'on' : ''}" data-set="c.caseSel" data-val="high">${fam.a.eqHigh}%</button></div>
+      <div class="seg"><span>SIP to use</span><button class="sg ${sp.mode === 'required' ? 'on' : ''}" data-set="c.sip.mode" data-val="required">Required SIP</button><button class="sg ${sp.mode === 'custom' ? 'on' : ''}" data-set="c.sip.mode" data-val="custom">What they can invest</button></div>
+      ${sp.mode === 'custom' ? `<div class="row">${field('Monthly SIP they can invest (₹, first year)', 'c.sip.amount', sp.amount, 'amt')}</div>` : ''}`;
+    $('pAssume').innerHTML = `<div class="row">${field('Equity return, low case %', 'fam.a.eqLow', fam.a.eqLow, 'num')}${field('Equity return, high case %', 'fam.a.eqHigh', fam.a.eqHigh, 'num')}${field('Debt return %', 'fam.a.debt', fam.a.debt, 'num')}</div>
+      <div class="row">${field('Move each goal to debt, years before it is due', 'fam.a.safeYears', fam.a.safeYears, 'num')}${field('General inflation % (Golden Seed)', 'fam.a.infl', fam.a.infl, 'num')}</div>
+      <div class="hint">Only debt counts as safe. Life cover always uses the low equity case.</div>`;
+    $('pNow').innerHTML = `<div class="row">${field('Current value (₹)', 'c.current.value', c.current.value, 'amt')}${field('As on', 'c.current.date', c.current.date, 'date')}</div>
+      <div class="hint">Optional. Market value from Wealth Elite (not cost). Used for life cover needed now and for what-ifs.</div>`;
+  }
+
+  // ---------- "how is this calculated" popovers ----------
+  const fx = p => String(+(1 + p / 100).toFixed(4));
+  const yrs = m => { const y = m / 12; return Math.abs(y - Math.round(y)) < 1e-9 ? String(Math.round(y)) : y.toFixed(2); };
+  const pw = (p, m) => `${fx(p)}<sup>${yrs(m)}</sup>`;
+  const ageLbl = a => { const m = Math.round(a * 12); return m % 12 ? `${Math.floor(m / 12)}y ${m % 12}m` : String(m / 12); };
+  let XP = [];
+  const xn = (txt, html, hov) => { XP.push(html); return `<span class="xn${hov ? ' hv' : ''}" data-x="${XP.length - 1}" tabindex="0">${txt}</span>`; };
+  const tbl = rows => `<table class="pt2">${rows.map(r => `<tr class="${r[2] || ''}"><td>${r[0]}</td><td class="n">${r[1]}</td></tr>`).join('')}</table>`;
+  const pop = document.createElement('div'); pop.className = 'pop'; pop.hidden = true; document.body.appendChild(pop);
+  let popFor = null, popHover = false;
+  function showPop(el, hover) {
+    const h = XP[+el.dataset.x]; if (h == null) return;
+    pop.innerHTML = h + (hover ? '' : '<button class="pop-x" title="Close">✕</button>');
+    pop.hidden = false; popFor = el; popHover = hover;
+    const r = el.getBoundingClientRect(), w = pop.offsetWidth, hh = pop.offsetHeight;
+    const x = Math.min(window.innerWidth - w - 8, Math.max(8, r.left));
+    let y = r.bottom + 6; if (y + hh > window.innerHeight - 8) y = Math.max(8, r.top - hh - 6);
+    pop.style.left = x + 'px'; pop.style.top = y + 'px';
+  }
+  function hidePop() { pop.hidden = true; popFor = null; }
+  document.addEventListener('click', e => {
+    const el = e.target.closest('.xn');
+    if (el) { if (popFor === el && !popHover) hidePop(); else showPop(el, false); return; }
+    if (!e.target.closest('.pop') || e.target.closest('.pop-x')) hidePop();
+  });
+  document.addEventListener('mouseover', e => { const el = e.target.closest('.xn.hv'); if (el && (pop.hidden || popHover)) showPop(el, true); });
+  document.addEventListener('mouseout', e => { const el = e.target.closest('.xn.hv'); if (el && popHover && !el.contains(e.relatedTarget)) hidePop(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') hidePop(); if (e.key === 'Enter' && e.target.classList && e.target.classList.contains('xn')) showPop(e.target, false); });
+  window.addEventListener('scroll', () => { if (!pop.hidden) hidePop(); }, true);
+  window.addEventListener('resize', () => { if (!pop.hidden) hidePop(); });
+
+  // ---------- results ----------
+  const chosenEq = c => c.caseSel === 'high' ? fam.a.eqHigh : fam.a.eqLow;
+  function chosenSip(c) {
+    if (c.sip.mode === 'custom') return c.sip.amount || 0;
+    return MT2.requiredSipA(c, fam, chosenEq(c)).rounded || 0;
+  }
+  const paysOf = (sim, gid) => sim.rows.flatMap(r => r.pays.filter(p => p.gid === gid));
+  const tick = (p) => p.paid >= p.need - 0.5 ? '<span class="ok">✓</span>' : `<span class="part">${pct(p.paid / p.need)}</span>`;
+  function paidListX(pays, title) {
+    return `<h5>${title}</h5><table class="pt2"><tr><th>Goal</th><th>Age</th><th class="n">Cost then</th><th class="n">Paid</th><th></th></tr>${pays.map(p => `<tr><td>${esc(p.label)}</td><td>${p.age}</td><td class="n">${inr(p.need)}</td><td class="n">${inr(p.paid)}</td><td>${tick(p)}</td></tr>`).join('')}</table>`;
+  }
+  function costThenX(L1, title) {
+    const tot = L1.reduce((s, l) => s + l.need, 0);
+    return `<h5>${title}: cost then</h5>${tbl(L1.map(l => [`Age ${l.age}: ${inr(l.today)} × ${pw(l.infl, l.k)}`, inr(l.need)]).concat(L1.length > 1 ? [['Total', inr(tot), 't']] : []))}
+      <div class="mut">Cost today grows at ${L1[0].infl}% a year for the years from the SIP start to each payment (${L1.map(l => yrs(l.k)).join(', ')} years).</div>`;
+  }
+  function coverX(pt, who, keep) {
+    const A = fam.a, seed = child().seed.on ? ' + the ' + esc(child().seed.name) : '';
+    const rows = [[`Value then of every goal still to come${seed}`, inr(pt.pv)], ['− money the plan holds by then', inr(pt.corpus)]];
+    if (keep > 0) rows.push([`− value then of the SIPs the other parent keeps paying (${pct(keep)} of ${inr(pt.pvSip)})`, inr(keep * pt.pvSip)]);
+    rows.push(['= cover needed', inr(Math.max(0, pt.pv - pt.corpus - (keep || 0) * pt.pvSip)), 't']);
+    return `<h5>Cover needed at age ${ageLbl(pt.age)}${who ? ' · ' + esc(who) : ''}</h5>${tbl(rows)}
+      <div class="mut">If ${who ? esc(who) : 'the earning parent'} dies at this point, ${keep > 0 ? 'their share of the SIP stops' : 'the SIP stops'}. The claim plus the money already invested must then fund everything still to come. ${A.eqLow}% case: each goal discounted at ${A.debt}% for its last ${A.safeYears} years and ${A.eqLow}% before that.</div>`;
+  }
+
+  function results() {
+    XP = []; hidePop();
+    const c = child(), A = fam.a, prod = MT2.productOf(c);
+    const warn = [];
+    const sumShare = fam.parents.filter(p => p.earns).reduce((s, p) => s + (+p.share || 0), 0);
+    const sh = $('shareHint'); if (sh) sh.textContent = fam.parents.filter(p => p.earns).length > 1 && Math.abs(sumShare - 100) > 0.01 ? `Shares add up to ${sumShare}%; the cover split uses them in proportion.` : '';
+    if (!fam.parents.some(p => p.earns)) warn.push('No earning parent is ticked, so no life cover is shown.');
+    const L = MT2.liabilities(c, A);
+    if (!L.list.length) { $('out').innerHTML = '<div class="card">Add at least one goal or the Golden Seed.</div>'; return; }
+    const seedTxt = c.seed.on ? ' + the ' + esc(c.seed.name) : '';
+    // required SIPs
+    const req = {};
+    ['low', 'high'].forEach(cs => {
+      const eq = cs === 'low' ? A.eqLow : A.eqHigh;
+      const up = JSON.parse(JSON.stringify(c)); up.sip.type = 'stepup'; if (!up.sip.stepUp) up.sip.stepUp = 5;
+      const fxc = JSON.parse(JSON.stringify(c)); fxc.sip.type = 'fixed';
+      req[cs] = { eq, upStep: up.sip.stepUp, cur: MT2.requiredSipA(c, fam, eq), curB: MT2.requiredSipB(c, fam, eq),
+        up: MT2.requiredSipA(up, fam, eq), upB: MT2.requiredSipB(up, fam, eq), fx: MT2.requiredSipA(fxc, fam, eq), fxB: MT2.requiredSipB(fxc, fam, eq) };
+    });
+    const s0 = c.sip.mode === 'custom' ? (c.sip.amount || 0) : req[c.caseSel].cur.rounded;
+    const simL = MT2.simulate(c, fam, { eq: A.eqLow, s0 }), simH = MT2.simulate(c, fam, { eq: A.eqHigh, s0 });
+    const cp = MT2.coverPlan(c, fam, s0);
+    let h = `<div class="tip">Click any <span class="xn">underlined number</span> to see how it is worked out.</div>`;
+    // 1. required SIP
+    const sipX = (cs, key) => {
+      const r = req[cs], a = r[key], b = r[key + 'B'];
+      return `<h5>${key === 'up' ? `Step-up SIP (${r.upStep}% a year)` : 'Fixed SIP'}, equity ${r.eq}%</h5>${tbl([
+        [`Value today of every goal${seedTxt}`, inr(b.pvL)], ['− lump sum at start', inr(c.sip.lumpsum || 0)],
+        [`÷ value today of ₹1 a month of SIP${key === 'up' ? `, growing ${r.upStep}% a year,` : ''} till age ${c.sip.endAge}`, b.pvS.toFixed(2)],
+        ['= SIP needed', inr(b.exact), 't']])}
+        <div class="eq">Rounded up to the next ₹100: <b>${inr(a.rounded)}</b></div>
+        <div class="mut">"Value today" = each future amount discounted at ${A.debt}% for its last ${A.safeYears} years and ${r.eq}% before that. The ₹1 SIP figure: every month's ₹1 (with step-ups) discounted back at ${r.eq}%. Month-by-month check (Method A): ${inr(a.exact)}.</div>`;
+    };
+    const cell = (cs, key) => `<td class="n ${c.caseSel === cs && (key === (c.sip.type === 'stepup' ? 'up' : 'fx')) ? 'sel' : ''}">${xn(inr(req[cs][key].rounded), sipX(cs, key))}</td>`;
+    h += `<section class="card"><h3>1 · Required SIP <small>funds every goal${seedTxt}</small></h3>
+      <div class="badge">${prod === 'tree' ? '🌳 Money Tree' : '🪴 Money Plant'} · ${esc(c.name || 'Child')} · SIP from ${dmy(c.startDate)} till age ${c.sip.endAge}</div>
+      <table class="rt"><tr><th></th><th class="n">Equity ${A.eqLow}%</th><th class="n">Equity ${A.eqHigh}%</th></tr>
+      <tr><td>Step-up SIP (${req.low.upStep}% a year), first-year monthly</td>${cell('low', 'up')}${cell('high', 'up')}</tr>
+      <tr><td>Fixed SIP, monthly</td>${cell('low', 'fx')}${cell('high', 'fx')}</tr></table>
+      <div class="hint">Highlighted = the SIP type and case selected on the left. Rounded up to the next ₹100. Debt ${A.debt}% · each goal moves to debt ${A.safeYears} years before it is due${c.sip.lumpsum ? ' · lump sum ' + inr(c.sip.lumpsum) + ' at start' : ''}.</div></section>`;
+    // 2. what the SIP covers
+    const st = f => f >= 0.9999 ? '<span class="ok">✓ 100%</span>' : f > 0.0001 ? `<span class="part">${pct(f)}</span>` : '<span class="no">0%</span>';
+    let totToday = 0, totThen = 0;
+    const goalRows = simL.goals.map((g, i) => {
+      const gH = simH.goals[i], L1 = L.list.filter(l => l.gid === g.gid && l.paid), today = L1.reduce((s, l) => s + l.today, 0);
+      totToday += today; totThen += g.need;
+      const gg = c.goals.find(x => x.id === g.gid) || {};
+      const todayX = `<h5>${esc(g.label)}: cost today</h5>${gg.perYear ? `<div class="eq">${inr(gg.cost)} a year × ${L1.length} year${L1.length > 1 ? 's' : ''} = <b>${inr(today)}</b></div>` : `<div class="eq">${inr(gg.cost)} in total${L1.length > 1 ? `, split equally over ${L1.length} years` : ''}</div>`}
+        ${L1.length > 1 ? tbl(L1.map(l => [`Paid at age ${l.age}`, inr(l.today)])) : ''}<div class="mut">In today's prices. "a year" = this amount every year; "total" = the whole cost, divided over the years.</div>`;
+      const fundX = (sim, eq) => paidListX(paysOf(sim, g.gid), `${esc(g.label)} at the ${eq}% case`) + (sim.goals[i].frac < 0.9999 ? `<div class="mut">Goals are paid in date order. By this point the money had run out, so this goal is only partly paid.</div>` : '');
+      return `<tr><td>${esc(g.label)}</td><td>${g.ages.length > 1 ? g.ages[0] + '–' + g.ages[g.ages.length - 1] : g.ages[0]}</td><td class="n">${xn(inr(today), todayX)}</td><td class="n">${xn(inr(g.need), costThenX(L1, esc(g.label)))}</td><td class="n">${xn(st(g.frac), fundX(simL, A.eqLow))}</td><td class="n">${xn(st(gH.frac), fundX(simH, A.eqHigh))}</td></tr>`;
+    }).join('');
+    const seedL = L.list.find(l => !l.paid);
+    const seedTX = seedL ? `<h5>${esc(c.seed.name)}: target at age ${c.seed.age}</h5><div class="eq">${inr(seedL.today)} × ${pw(A.infl, seedL.k)} = <b>${inr(seedL.need)}</b></div><div class="mut">Grows at general inflation (${A.infl}%) for ${yrs(seedL.k)} years. It is kept invested, not paid out.</div>` : '';
+    const seedVX = (sim, eq) => `<h5>${esc(c.seed.name)} at age ${c.seed.age}, ${eq}% case</h5>${tbl([['What is left after paying every goal', inr(sim.seedVal)], ['Target', inr(sim.seedTarget)], [sim.seedVal >= sim.seedTarget ? 'Above target by' : 'Short of target by', inr(Math.abs(sim.seedVal - sim.seedTarget)), 't']])}`;
+    const seedRow = c.seed.on ? `<tr class="seedr"><td>✨ ${esc(c.seed.name)}</td><td>${c.seed.age}</td><td class="n">${inr(c.seed.targetToday)}</td><td class="n">${xn(inr(simL.seedTarget), seedTX)}</td><td class="n">${xn(inr(simL.seedVal), seedVX(simL, A.eqLow))}<br><small>${pct(simL.seedTarget ? Math.min(9.99, simL.seedVal / simL.seedTarget) : 1)} of target</small></td><td class="n">${xn(inr(simH.seedVal), seedVX(simH, A.eqHigh))}<br><small>${pct(simH.seedTarget ? Math.min(9.99, simH.seedVal / simH.seedTarget) : 1)} of target</small></td></tr>` : '';
+    const pvAll = req.low.curB.pvL, allToday = totToday + (c.seed.on ? c.seed.targetToday : 0);
+    const pvX = `<h5>Value today: ${inr(pvAll)}</h5>${tbl([[`Cost of every goal${seedTxt} in today's prices`, inr(allToday)], ['Value today (what would need to be invested today)', inr(pvAll), 't']])}
+      <div class="mut">Value today is lower because the money grows faster (${A.eqLow}% in equity, ${A.debt}% in debt for the last ${A.safeYears} years) than the costs rise (${[...new Set(L.list.map(l => l.infl))].join('% / ')}%). Each payment's working is in section 5.</div>`;
+    h += `<section class="card"><h3>2 · What ${inr(s0)}/month ${c.sip.type === 'stepup' ? `(+${c.sip.stepUp}% a year)` : '(fixed)'} covers <small>${c.sip.mode === 'custom' ? 'what they can invest' : 'the required SIP, ' + (c.caseSel === 'low' ? A.eqLow : A.eqHigh) + '% case'}</small></h3>
+      <table class="rt"><tr><th>Goal</th><th>Age</th><th class="n">Cost today</th><th class="n">Cost then</th><th class="n">Funded at ${A.eqLow}%</th><th class="n">Funded at ${A.eqHigh}%</th></tr>${goalRows}
+      <tr class="tot"><td>All goals</td><td></td><td class="n">${inr(totToday)}</td><td class="n">${inr(totThen)}</td><td></td><td></td></tr>${seedRow}</table>
+      <div class="hint">Goals${seedTxt} in today's prices: <b>${inr(allToday)}</b> · value today at ${A.eqLow}%: <b>${xn(inr(pvAll), pvX)}</b>. Goals are paid in date order, so a shortfall falls on the later goals first, then on the ${esc(c.seed.name || 'Golden Seed')}.</div></section>`;
+    // 3. life cover
+    const V = cp.B.V, P = cp.path, pk = P.peakAll, now = P.now;
+    const yearPts = P.pts.filter((p, i) => i === 0 || Math.round(p.age * 12) % 12 === 0);
+    const byAge = `<div class="mut" style="margin-top:8px"><b>Cover needed if death happens at each age</b> (₹ lakh; highest marked):</div>
+      <div class="strip"><table class="pt2"><tr>${yearPts.map(p => `<td class="n" style="${p.k === pk.k ? 'background:#fff6dc;font-weight:700' : ''}">${ageLbl(p.age)}</td>`).join('')}</tr><tr>${yearPts.map(p => `<td class="n" style="${p.k === pk.k ? 'background:#fff6dc;font-weight:700' : ''}">${lakh(p.all)}</td>`).join('')}</tr></table></div>`;
+    const buyX = `${coverX(pk, '', 0)}<div class="mut">This is the highest need in any year of the plan, so one level policy of this size, bought now, keeps the Money Tree whole whenever the claim comes. It is higher than the need today (${inr(now.all)}) because a claim paid later has fewer years to grow, while the SIPs it replaces (stepping up ${c.sip.type === 'stepup' ? c.sip.stepUp : 0}% a year) are larger.</div>${byAge}`;
+    h += `<section class="card"><h3>3 · Life cover to buy now <small>one level term policy, ${A.eqLow}% case, on ${inr(s0)}/month</small></h3>
+      <div class="big">${xn(inr(pk.all), buyX)}</div>
+      <div class="hint">Enough for a claim in <b>any year</b> of the plan: the highest need comes at child's age ${ageLbl(pk.age)}. If the claim came today, ${xn(inr(now.all), coverX(now, '', 0))} would be enough${pk.k !== now.k ? '; later claims need more because they have fewer years to grow' : ''}. Method A check: ${inr(cp.A.need)} today.</div>
+      ${fam.parents.some(p => p.earns) ? `<h4>Notes for the premium quote</h4>
+      <table class="rt"><tr><th>Life to be insured</th><th class="n">Share</th><th class="n">Cover to buy</th><th class="n">Existing (set aside)</th><th class="n">Gap</th><th class="n">Sum assured to quote</th><th class="n">Age now</th><th class="n">Age at policy end</th></tr>
+      ${cp.per.map((p, i) => { if (!p) return ''; const pt = P.pts.find(x => x.k === p.peakK), nm = p.name || 'Parent ' + (i + 1);
+        return `<tr><td>${esc(nm)}</td><td class="n">${fam.coverMode === 'full' ? 'Full' : pct(p.part)}</td><td class="n">${xn(inr(p.need), coverX(pt, nm, p.keep) + `<div class="mut">Highest need for ${esc(nm)}, at child's age ${ageLbl(p.peakAge)}.</div>`)}</td><td class="n">${inr(p.existing)}</td>
+        <td class="n">${xn(inr(p.gap), `<h5>Gap: ${esc(nm)}</h5>${tbl([['Cover to buy (highest need)', inr(p.need)], ['− existing cover set aside for this plan', inr(p.existing)], ['= gap', inr(p.gap), 't']])}`)}</td>
+        <td class="n"><b>${p.sa ? xn(inr(p.sa), `<h5>Sum assured: ${esc(nm)}</h5><div class="eq">Gap ${inr(p.gap)} rounded up to the next ₹5,00,000 = <b>${inr(p.sa)}</b></div>`) : '—'}</b></td><td class="n">${p.ageNow != null ? Math.floor(p.ageNow) : '—'}</td><td class="n">${p.ageEnd != null ? Math.floor(p.ageEnd) : '—'}</td></tr>`; }).join('')}</table>
+      <ul class="notes">
+        <li><b>Policy term: ${cp.term} years</b>, until the child is ${cp.endAge}${cp.fullyFundedLow ? ` (when the SIP ends; after that the money already invested funds everything)` : ` (the last goal: the SIP used is below the ${A.eqLow}%-case required SIP of ${inr(cp.reqLow)}, so the need never reaches zero earlier)`}.</li>
+        <li><b>Premium paying term: ${cp.ppt} years</b> (regular pay). Limited pay (e.g. 10 years) is an option: higher yearly premium, finishes earlier.</li>
+        <li>Sum assured = the highest gap in any year, rounded up to the next ₹5,00,000. One level term policy bought now; it never needs changing.</li>
+        <li>This is cover for this plan only, on top of cover for the family's other needs (home loan, spouse's income).</li></ul>` : ''}</section>`;
+    // 4. what if
+    h += whatIfHTML(c, s0, cp);
+    // 5. cross-check
+    h += crossHTML(c, req, s0, cp);
+    $('out').innerHTML = (warn.length ? `<div class="warn">${warn.join('<br>')}</div>` : '') + h;
+    window.__last = { c, s0, req, cp };
+  }
+  const lakh = n => (n / 1e5).toLocaleString('en-IN', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+
+  const WI_TYPES = { pause: 'SIP paused (job loss)', reduce: 'SIP reduced', skipStep: 'Step-up skipped', fall: 'Market fall', lump: 'Bonus / gift added', withdraw: 'Emergency withdrawal', goal: 'Goal changed', death: 'Death of a parent' };
+  function evLabel(e, c) {
+    const g = c.goals.find(x => x.id === e.gid), p = fam.parents[+e.parent || 0] || {};
+    return ({ pause: () => `SIP paused at age ${e.age} for ${e.months} months`, reduce: () => `SIP cut to ${inr(e.amount || 0)} at age ${e.age} for ${e.months} months`,
+      skipStep: () => `Step-up skipped for ${e.years} year(s) from age ${e.age}`, fall: () => `Market fall of ${e.pct}% at age ${e.age}`,
+      lump: () => `Bonus of ${inr(e.amount || 0)} at age ${e.age}`, withdraw: () => `Withdrawal of ${inr(e.amount || 0)} at age ${e.age}`,
+      goal: () => `${g ? esc(g.label) : 'Goal'} changed${e.cost !== '' && e.cost != null ? ' to ' + inr(e.cost) : ''}${e.startAge !== '' && e.startAge != null ? ', from age ' + e.startAge : ''}${e.years !== '' && e.years != null ? ', over ' + e.years + ' yr' : ''}`,
+      death: () => `Death of ${esc(p.name || 'Parent ' + ((+e.parent || 0) + 1))} at age ${e.age}` }[e.type] || (() => e.type))();
+  }
+  function whatIfHTML(c, s0, cp) {
+    const eq = chosenEq(c), A = fam.a, a0 = Math.max(0, MT2.monthsBetween(c.dob, c.startDate)) / 12;
+    const ed = c.whatIf.map((e, i) => {
+      const f = (lbl, key, val, w) => `<label class="f ${w || ''}"><span>${lbl}</span><input class="in" data-p="c.whatIf.${i}.${key}" data-kind="${key === 'amount' || key === 'cost' || key === 'payout' ? 'amt' : 'num'}" value="${key === 'amount' || key === 'cost' || key === 'payout' ? (val === '' || val == null ? '' : num(val)) : (val ?? '')}"></label>`;
+      let body = '', note = '';
+      if (e.type === 'pause') body = f("From child's age", 'age', e.age) + f('For months', 'months', e.months);
+      if (e.type === 'reduce') body = f("From child's age", 'age', e.age) + f('For months', 'months', e.months) + f('Reduced SIP (₹/month)', 'amount', e.amount);
+      if (e.type === 'skipStep') body = f("From child's age", 'age', e.age) + f('Step-ups skipped (years)', 'years', e.years);
+      if (e.type === 'fall') body = f("At child's age", 'age', e.age) + f('Fall in the equity part %', 'pct', e.pct);
+      if (e.type === 'lump' || e.type === 'withdraw') body = f("At child's age", 'age', e.age) + f('Amount (₹)', 'amount', e.amount);
+      if (e.type === 'goal') {
+        const g = c.goals.find(x => x.id === e.gid) || c.goals[0];
+        body = `<label class="f"><span>Goal</span><select class="in" data-p="c.whatIf.${i}.gid" data-kind="text">${c.goals.map(gx => `<option value="${gx.id}" ${gx.id === e.gid ? 'selected' : ''}>${esc(gx.label)}</option>`).join('')}</select></label>` + f(`New cost today (₹${g.perYear ? ' a year' : ', total'}; blank = same)`, 'cost', e.cost) + f(`New start age (blank = ${g.startAge})`, 'startAge', e.startAge) + f(`New number of years (blank = ${g.years})`, 'years', e.years);
+        const sa = e.startAge === '' || e.startAge == null ? null : +e.startAge;
+        if (sa != null && sa < a0) note = `<div class="warn">${esc(g.label)} at age ${sa} is before the SIP starts (age ${ageLbl(a0)}), so it drops out of the plan.</div>`;
+        else if (sa != null && sa < g.startAge) note = `<div class="warn">${esc(g.label)} now starts at <b>age ${sa}</b> (it was ${g.startAge}). The plan has much less money by then, and the later goals no longer have to pay for it. If you meant <b>${sa} years</b>, put that in "New number of years" and leave the start age blank.</div>`;
+      }
+      if (e.type === 'death') body = `<label class="f"><span>Parent</span><select class="in" data-p="c.whatIf.${i}.parent" data-kind="num">${fam.parents.map((p, j) => `<option value="${j}" ${+e.parent === j ? 'selected' : ''}>${esc(p.name || 'Parent ' + (j + 1))}</option>`).join('')}</select></label>` + f("At child's age", 'age', e.age) + f('Claim paid in (₹, blank = sum assured)', 'payout', e.payout);
+      const on = e.on !== false;
+      return `<div class="wi ${on ? '' : 'off'}"><label class="wih"><input type="checkbox" data-p="c.whatIf.${i}.on" data-kind="bool" ${on ? 'checked' : ''}> <b>${WI_TYPES[e.type]}</b><span class="mut">${on ? '' : ' · switched off'}</span></label><div class="row">${body}</div>${on ? note : ''}<button class="x" data-delwi="${i}" title="Remove">✕</button></div>`;
+    }).join('');
+    let res = '';
+    const act = c.whatIf.filter(e => e.on !== false);
+    if (c.whatIf.length && !act.length) res = '<div class="hint">Every event is switched off. Tick one to see its effect.</div>';
+    if (act.length) {
+      const w = MT2.whatIf(c, fam, eq, s0, act, cp.per);
+      const stf = f => f >= 0.9999 ? '<span class="ok">✓</span>' : `<span class="part">${pct(f)}</span>`;
+      const Ls = w.scen.L.list;
+      const rows = w.scen.goals.map((s) => {
+        const g = w.base.goals.find(b => b.gid === s.gid) || { frac: 1 }, L1 = Ls.filter(l => l.gid === s.gid && l.paid), pays = paysOf(w.scen, s.gid);
+        const short = s.need - s.paid;
+        return `<tr><td>${esc(s.label)}</td><td>${s.ages.length > 1 ? s.ages[0] + '–' + s.ages[s.ages.length - 1] : s.ages[0]}</td><td class="n">${xn(inr(s.need), costThenX(L1, esc(s.label)))}</td><td class="n">${stf(g.frac)}</td><td class="n">${xn(stf(s.frac), paidListX(pays, esc(s.label) + ': what if'))}</td><td class="n">${short > 0.5 ? xn(inr(short), `<h5>Shortfall: ${esc(s.label)}</h5>${tbl([['Cost then', inr(s.need)], ['− paid', inr(s.paid)], ['= shortfall', inr(short), 't']])}<div class="mut">Goals are paid in date order; this one came after the money ran out.</div>`) : '—'}</td></tr>`;
+      }).join('');
+      const seedR = c.seed.on ? `<tr class="seedr"><td>✨ ${esc(c.seed.name)}</td><td>${c.seed.age}</td><td class="n">${inr(w.scen.seedTarget)}</td><td class="n">${inr(w.base.seedVal)}</td><td class="n">${inr(w.scen.seedVal)}</td><td class="n">${w.scen.seedTarget - w.scen.seedVal > 0.5 ? inr(w.scen.seedTarget - w.scen.seedVal) : '—'}</td></tr>` : '';
+      const fx_ = w.fix; let fixes = '';
+      if (w.scen.ok) fixes = `<div class="good">🌤 Plan stays intact: every goal${c.seed.on ? ' and the ' + esc(c.seed.name) : ''} still funded.</div>`;
+      else {
+        const opts = [];
+        const early = w.scen.goals.filter(g => g.paid < g.need - 0.5 && Math.max(...g.ages) < w.restartAge);
+        if (fx_.raise) opts.push(`Raise the SIP by <b>${fx_.raise.pct.toFixed(1)}%</b> from age ${w.restartAge.toFixed(1)}: ${inr(fx_.raise.sipBefore)} → <b>${inr(Math.ceil(fx_.raise.sipThen / 100) * 100)}</b>/month${c.sip.type === 'stepup' ? ', with the step-ups continuing' : ''}.`);
+        if (fx_.extend) opts.push(`Continue the SIP till age <b>${fx_.extend.endAge}</b> (instead of ${c.sip.endAge})${fx_.extend.mandate ? ' — needs the child\'s own mandate after 18' : ''}.`);
+        else opts.push(`Extending the SIP up to age ${c.seed.age} is not enough on its own.`);
+        if (fx_.lump) opts.push(`Add a lump sum of <b>${inr(fx_.lump.amount)}</b> at age ${w.restartAge.toFixed(1)}.`);
+        opts.push('Or trim a goal by the shortfall shown above.');
+        fixes = (early.length ? `<div class="warn">${early.map(g => esc(g.label)).join(', ')} falls due before age ${w.restartAge.toFixed(1)}, when catching up would start, so none of the options below can reach it. Only money added before it is due, or moving the goal, helps.</div>` : '') +
+          `<div class="hint"><b>Ways to catch up</b> (any one):</div><ol class="notes">${opts.map(o => `<li>${o}</li>`).join('')}</ol>`;
+      }
+      // each event on its own, then all together
+      let each = '';
+      if (act.length > 1) {
+        const line = (lbl, sc) => { const short = sc.goals.filter(g => g.paid < g.need - 0.5); const sGap = sc.seedTarget - sc.seedVal;
+          return `<tr><td>${lbl}</td><td>${short.length ? short.map(g => `${esc(g.label)} <span class="part">${pct(g.frac)}</span>`).join(', ') : '<span class="ok">All funded ✓</span>'}</td>${c.seed.on ? `<td class="n">${inr(sc.seedVal)}${sGap > 0.5 ? ` <span class="part">(${pct(sc.seedVal / sc.seedTarget)})</span>` : ' <span class="ok">✓</span>'}</td>` : ''}</tr>`; };
+        each = `<h4>Each event on its own, then all together</h4><table class="rt sm"><tr><th>Event</th><th>Goals not fully funded</th>${c.seed.on ? `<th class="n">${esc(c.seed.name)} at ${c.seed.age}</th>` : ''}</tr>
+          ${act.map(e => line(evLabel(e, c), MT2.whatIf(c, fam, eq, s0, [e], cp.per, true).scen)).join('')}
+          ${line('<b>All together</b>', w.scen).replace('<tr>', '<tr class="tot">')}</table>`;
+      }
+      res = `<table class="rt"><tr><th>Goal</th><th>Age</th><th class="n">Cost then</th><th class="n">Funded: plan</th><th class="n">Funded: what if</th><th class="n">Shortfall</th></tr>${rows}${seedR}</table>${fixes}${each}`;
+    }
+    return `<section class="card"><h3>4 · What if… <small>on ${inr(s0)}/month at the ${eq}% case; events combine</small></h3>
+      <div class="chips">${Object.entries(WI_TYPES).map(([k, v]) => `<button class="chip" data-addwi="${k}">+ ${v}</button>`).join('')}</div>${ed}${res || '<div class="hint">Add one or more events to see their effect and the ways to catch up.</div>'}
+      <div class="hint">Tick or untick an event to switch it on or off. Events that are on are applied together; with two or more, each one's effect on its own is shown too. Market fall hits the equity part only. Death of a parent: the claim (sum assured incl. existing cover set aside) is invested and ${fam.coverMode === 'full' ? 'the SIP stops' : "the other parent's share of the SIP continues"}.</div></section>`;
+  }
+
+  function crossHTML(c, req, s0, cp) {
+    const A = fam.a, cs = window.__xcase || c.caseSel, eq = cs === 'low' ? A.eqLow : A.eqHigh;
+    const B = MT2.requiredSipB(c, fam, eq), L = MT2.liabilities(c, A), md = MT2.mRate(A.debt), W = Math.round(A.safeYears * 12);
+    const rateNote = `<div class="mut">Monthly rates are the yearly rates converted exactly, so ${eq}% is a true ${eq}% a year: ${(MT2.mRate(eq) * 100).toFixed(4)}% a month. (${eq}% ÷ 12 = ${(eq / 12).toFixed(4)}% a month would compound to ${((Math.pow(1 + eq / 1200, 12) - 1) * 100).toFixed(2)}% a year.)</div>`;
+    const rows = L.list.map(l => { const p = MT2.pvOf(l, 0, eq, A);
+      const thenX = `<h5>${esc(l.label)}${l.paid ? '' : ' (target)'}, age ${l.age}: cost then</h5><div class="eq">${inr(l.today)} × ${pw(l.infl, l.k)} = <b>${inr(l.need)}</b></div><div class="mut">Grows at ${l.infl}% a year for ${yrs(l.k)} years (${l.k} months from the SIP start).</div>`;
+      const pvX = `<h5>${esc(l.label)}${l.paid ? '' : ' (target)'}, age ${l.age}: value today</h5><div class="eq">${inr(l.need)} ÷ ${pw(A.debt, p.dm)} ÷ ${pw(eq, p.em)} = <b>${inr(p.pv)}</b></div>
+        <div>${tbl([['Cost then', inr(l.need)], [`÷ ${p.dm} months in debt at ${A.debt}% (the last ${A.safeYears} years)`, inr(l.need / p.fD)], [`÷ ${p.em} months in equity at ${eq}% (before that)`, inr(p.pv), 't']])}</div>${rateNote}`;
+      return `<tr><td>${esc(l.label)}${l.paid ? '' : ' (target)'}</td><td>${l.age}</td><td class="n">${l.k}</td><td class="n">${inr(l.today)}</td><td class="n">${l.infl}%</td><td class="n">${xn(inr(l.need), thenX)}</td><td class="n">${p.dm}</td><td class="n">${p.em}</td><td class="n">${xn(inr(p.pv), pvX)}</td></tr>`; }).join('');
+    const d = (a, b) => { const x = Math.abs(a - b); return x < 1 ? '<span class="ok">match</span>' : `<span class="no">${inr(x)}</span>`; };
+    const sim = MT2.simulate(c, fam, { eq, s0 });
+    // year by year
+    const yr = {};
+    let prevClose = 0;
+    sim.rows.forEach(r => { const a = Math.floor(r.age + 1e-9);
+      if (!yr[a]) yr[a] = { a, open: prevClose, sip: 0, add: 0, paid: 0, pays: [], sips: [], eq: 0, debt: 0, close: 0, k: 0 };
+      const y = yr[a]; y.sip += r.sip; y.add += r.add; y.paid += r.paid; y.pays.push(...r.pays); y.sips.push(r.sip); y.eq = r.eqEnd; y.debt = r.dEnd; y.close = r.close; y.k = r.k; prevClose = r.close; });
+    const grp = arr => { const out = []; arr.forEach(v => { const l = out[out.length - 1]; if (l && Math.abs(l.v - v) < 0.005) l.n++; else out.push({ v, n: 1 }); }); return out; };
+    const yrows = Object.values(yr).map(y => {
+      const g = y.open + y.sip + y.add - y.paid, growth = y.close - g;
+      const sipX = `<h5>SIP paid in during age ${y.a}</h5>${tbl(grp(y.sips).map(s => [`${s.n} month${s.n > 1 ? 's' : ''} × ${inr(s.v)}`, inr(s.v * s.n)]).concat([['Total', inr(y.sip), 't']]))}`;
+      const debtList = L.list.map(l => ({ l, m: l.k - y.k - 1 })).filter(x => x.m >= 0 && x.m < W);
+      const debtX = `<h5>In debt at the end of age ${y.a}</h5>${debtList.length ? `<div>Money for every goal due in the next ${A.safeYears} years, each discounted at ${A.debt}%:</div>${tbl(debtList.map(x => [`${esc(x.l.label)}${x.l.paid ? '' : ' (kept)'}, age ${x.l.age}: ${inr(x.l.need)} ÷ ${pw(A.debt, x.m)}`, inr(x.l.need / Math.pow(1 + md, x.m))]).concat([['Total in debt', inr(y.debt), 't']]))}` : `<div>Nothing is due in the next ${A.safeYears} years, so all the money stays in equity.</div>`}`;
+      const eqX = `<h5>In equity at the end of age ${y.a}</h5>${tbl([['Total at year end', inr(y.close)], ['− in debt', inr(y.debt)], ['= in equity', inr(y.eq), 't']])}<div class="mut">Everything not needed for goals in the next ${A.safeYears} years stays in equity.</div>`;
+      const totX = `<h5>Total at the end of age ${y.a}</h5>${tbl([['Start of the year', inr(y.open)], ['+ SIP paid in', inr(y.sip)]].concat(y.add ? [[y.add > 0 ? '+ lump sum' : '− withdrawal', inr(Math.abs(y.add))]] : []).concat(y.paid ? [['− goals paid', inr(y.paid)]] : []).concat([['+ growth (equity ' + eq + '%, debt ' + A.debt + '%)', inr(growth)], ['= total at year end', inr(y.close), 't']]))}`;
+      const addX = `<h5>${y.add > 0 ? 'Lump sum' : 'Withdrawal'} during age ${y.a}</h5><div class="eq">${inr(Math.abs(y.add))}</div><div class="mut">${y.a === Math.floor(sim.rows[0].age) && c.sip.lumpsum ? 'Lump sum at the SIP start.' : 'From the what-if events (not applied here) or the start lump sum.'}</div>`;
+      return `<tr><td>${y.a}</td><td class="n">${xn(inr(y.sip), sipX)}</td><td class="n">${y.add ? xn(inr(y.add), addX, true) : '—'}</td><td class="n">${y.paid ? xn(inr(y.paid), paidListX(y.pays, `Goals paid during age ${y.a}`), true) : '—'}</td><td class="n">${xn(inr(y.eq), eqX)}</td><td class="n">${xn(inr(y.debt), debtX)}</td><td class="n">${xn(inr(y.close), totX)}</td></tr>`;
+    }).join('');
+    const cpA = MT2.coverA(c, fam).need, cpB = MT2.coverB(c, fam).need, pk = cp.path.peakAll;
+    const pkA = MT2.claimNeededA(c, fam, s0, null, pk.k, 0);
+    return `<section class="card"><h3>5 · Check the math <small>two independent methods + Excel</small></h3>
+      <table class="rt"><tr><th></th><th class="n">Method A: month-by-month simulation</th><th class="n">Method B: present-value formula</th><th class="n">Difference</th></tr>
+      ${['low', 'high'].map(k => `<tr><td>Required SIP (${c.sip.type === 'stepup' ? 'step-up' : 'fixed'}), equity ${req[k].eq}%</td><td class="n">${inr(req[k].cur.exact)} → ${inr(req[k].cur.rounded)}</td><td class="n">${inr(req[k].curB.exact)} → ${inr(req[k].curB.rounded)}</td><td class="n">${d(req[k].cur.exact, req[k].curB.exact)}</td></tr>`).join('')}
+      <tr><td>Life cover needed now (${A.eqLow}% case)</td><td class="n">${inr(cpA)}</td><td class="n">${inr(cpB)}</td><td class="n">${d(cpA, cpB)}</td></tr>
+      <tr><td>Life cover to buy (highest need, at age ${ageLbl(pk.age)})</td><td class="n">${inr(pkA)}<br><small>smallest claim at that age that keeps every goal funded</small></td><td class="n">${inr(pk.all)}<br><small>value then of goals − money held</small></td><td class="n">${d(pkA, pk.all)}</td></tr></table>
+      <ul class="notes"><li><b>Method A</b> runs the plan month by month: SIP in → money for goals due within ${A.safeYears} years is kept in debt (each discounted at ${A.debt}%) → goals paid → equity grows at the equity rate, debt at ${A.debt}%. The required SIP is the smallest SIP that pays every goal in full${c.seed.on ? ' and leaves the ' + esc(c.seed.name) + ' target' : ''}.</li>
+      <li><b>Method B</b>: Required SIP = (value today of every goal${c.seed.on ? ' + seed' : ''} − lump sum) ÷ (value today of ₹1 of first-year SIP, with step-ups). Value today = cost then ÷ (1 + debt rate)^(years in debt) ÷ (1 + equity rate)^(years in equity).</li>
+      <li>Monthly rate = (1 + yearly rate)^(1/12) − 1, so ${eq}% is exactly ${eq}% a year (not ${eq}% ÷ 12).</li></ul>
+      <div class="seg"><span>Working shown for</span><button class="sg ${cs === 'low' ? 'on' : ''}" data-xcase="low">Equity ${A.eqLow}%</button><button class="sg ${cs === 'high' ? 'on' : ''}" data-xcase="high">Equity ${A.eqHigh}%</button></div>
+      <table class="rt sm"><tr><th>Payment</th><th>Age</th><th class="n">Month k</th><th class="n">Cost today</th><th class="n">Infl.</th><th class="n">Cost then</th><th class="n">Months in debt</th><th class="n">Months in equity</th><th class="n">Value today</th></tr>${rows}
+      <tr class="tot"><td colspan="8">Total value today of all payments</td><td class="n">${inr(B.pvL)}</td></tr>
+      <tr class="tot"><td colspan="8">Value today of ₹1 of first-year SIP (sum of each month's SIP factor ÷ (1 + equity monthly)^k)</td><td class="n">${B.pvS.toFixed(4)}</td></tr>
+      <tr class="tot"><td colspan="8">Required SIP = (${inr(B.pvL)} − ${inr(c.sip.lumpsum || 0)}) ÷ ${B.pvS.toFixed(4)}</td><td class="n">${inr(B.exact)}</td></tr></table>
+      <h4>Year by year at ${inr(s0)}/month, equity ${eq}%</h4>
+      <div class="scroll"><table class="rt sm"><tr><th>Age</th><th class="n">SIP paid in</th><th class="n">Lump sum / withdrawal</th><th class="n">Goals paid</th><th class="n">In equity*</th><th class="n">In debt*</th><th class="n">Total at year end</th></tr>${yrows}</table></div>
+      <div class="hint">*At the end of each year of age: in equity + in debt = total. Hover over <b>Goals paid</b> to see which goals; click any number for its working.</div>
+      <div class="xrow"><div>The Excel file recomputes every number above with live formulas (Check → Inputs → Goals → Month by month → Cover by age). Change the SIP or the equity return in Inputs and it recalculates.</div><button class="btn" id="xlBtn">⬇ Excel check (${eq}% case)</button></div></section>`;
+  }
+
+  // ---------- events ----------
+  function setPath(path, val) {
+    const parts = path.split('.'); let o = parts[0] === 'fam' ? fam : child();
+    for (let i = 1; i < parts.length - 1; i++) o = o[parts[i]];
+    o[parts[parts.length - 1]] = val;
+  }
+  let tmr = null; const later = (fn, ms = 250) => { clearTimeout(tmr); tmr = setTimeout(fn, ms); };
+  const STRUCT = /(dob|startDate|product|perYear|earns|\.on$|sip\.type|sip\.mode|caseSel|coverMode|endAge|eqLow|eqHigh|infl$)/;
+  function onInput(e) {
+    const el = e.target; if (!el.dataset || !el.dataset.p) return;
+    const k = el.dataset.kind, p = el.dataset.p;
+    let v;
+    if (k === 'bool') v = el.checked;
+    else if (k === 'boolsel') v = el.value === '1';
+    else if (k === 'text') v = el.value;
+    else if (k === 'date') { v = isoOf(el.value); el.classList.toggle('bad', !v && el.value.trim() !== '' && (e.type === 'change' || el.value.replace(/\D/g, '').length === 8)); if (!v) { if (el.value.trim() === '' && (p.startsWith('fam.parents') || p === 'c.current.date')) v = ''; else return; } }
+    else if (k === 'amt') v = el.value.trim() === '' && /whatIf/.test(p) ? '' : parseAmt(el.value);
+    else { if (el.value.trim() === '' && /whatIf/.test(p)) v = ''; else { v = parseFloat(el.value); if (!isFinite(v)) return; } }
+    if (p.startsWith('c.')) setPath(p.replace(/^c\./, 'c.'), v); else setPath(p, v);
+    if (p === 'c.sip.amount' || p === 'c.sip.mode') { /* nothing extra */ }
+    save();
+    if (e.type === 'change' && (k === 'bool' || k === 'boolsel' || k === 'date' || STRUCT.test(p))) { renderInputs(); results(); }
+    else later(results);
+  }
+  // ---- date mask: type 27011998 -> 27/01/1998 (slashes added automatically) ----
+  const fmtDate = d => { d = d.slice(0, 8); return d.length > 4 ? `${d.slice(0, 2)}/${d.slice(2, 4)}/${d.slice(4)}` : d.length > 2 ? `${d.slice(0, 2)}/${d.slice(2)}` : d; };
+  function maskDate(el, e) {
+    const pos = el.selectionStart == null ? el.value.length : el.selectionStart;
+    let digits = el.value.replace(/\D/g, ''), before = el.value.slice(0, pos).replace(/\D/g, '').length;
+    // backspace on a "/" also removes the digit before it
+    if (e.inputType === 'deleteContentBackward' && digits === el.dataset.prev && before > 0) { digits = digits.slice(0, before - 1) + digits.slice(before); before--; }
+    digits = digits.slice(0, 8);
+    const out = fmtDate(digits);
+    let caret = 0, seen = 0; while (caret < out.length && seen < Math.min(before, digits.length)) { if (/\d/.test(out[caret])) seen++; caret++; }
+    el.value = out; el.dataset.prev = digits;
+    try { el.setSelectionRange(caret, caret); } catch (_) { }
+  }
+  document.addEventListener('focusin', e => { const el = e.target; if (el.dataset && el.dataset.kind === 'date') el.dataset.prev = el.value.replace(/\D/g, ''); });
+  document.addEventListener('input', e => { if (e.target.dataset && e.target.dataset.kind === 'date') maskDate(e.target, e); }, true);
+  document.addEventListener('input', e => { if (e.target.dataset && e.target.dataset.kind && e.target.dataset.kind !== 'bool' && e.target.tagName !== 'SELECT') onInput(e); });
+  document.addEventListener('change', onInput);
+  document.addEventListener('focusout', e => { const el = e.target; if (el.classList && el.classList.contains('amt') && el.value.trim() !== '') el.value = num(parseAmt(el.value)); });
+  document.addEventListener('click', e => {
+    const t = e.target.closest('button'); if (!t) return;
+    if (t.dataset.set) { setPath(t.dataset.set, t.dataset.val === '' ? null : t.dataset.val); if (t.dataset.set === 'c.sip.mode' && t.dataset.val === 'custom' && !child().sip.amount) child().sip.amount = chosenSip(Object.assign({}, child(), { sip: Object.assign({}, child().sip, { mode: 'required' }) })); save(); renderInputs(); results(); return; }
+    if (t.dataset.child) { ci = +t.dataset.child; window.__xcase = null; renderInputs(); results(); return; }
+    if (t.id === 'addChild') { const c0 = child(); const n = MT2.defaultChild(new Date().toISOString().slice(0, 10), new Date().toISOString().slice(0, 10)); fam.children.push(n); ci = fam.children.length - 1; void c0; save(); renderInputs(); results(); return; }
+    if (t.id === 'delChild') { if (fam.children.length > 1 && confirm('Remove this child from the family?')) { fam.children.splice(ci, 1); ci = 0; save(); renderInputs(); results(); } return; }
+    if (t.id === 'addGoal') { child().goals.push({ id: 'g' + Date.now().toString(36), label: 'New goal', on: true, cost: 500000, perYear: false, startAge: 20, years: 1, infl: 7, custom: true }); save(); renderInputs(); results(); return; }
+    if (t.dataset.delgoal) { child().goals.splice(+t.dataset.delgoal, 1); save(); renderInputs(); results(); return; }
+    if (t.id === 'plantGoals') { const c = child(); c.goals = MT2.GOALS().map(g => Object.assign(g, { on: !!g.edu })); c.seed.on = false; save(); renderInputs(); results(); return; }
+    if (t.id === 'treeGoals') { const c = child(); c.goals = MT2.GOALS(); c.seed.on = true; save(); renderInputs(); results(); return; }
+    if (t.dataset.addwi) { const c = child(), a0 = Math.ceil(Math.max(0, MT2.monthsBetween(c.dob, c.startDate)) / 12), ty = t.dataset.addwi;
+      const d = { pause: { age: Math.max(a0, 8), months: 12 }, reduce: { age: Math.max(a0, 8), months: 24, amount: 10000 }, skipStep: { age: Math.max(a0, 6), years: 3 }, fall: { age: Math.max(a0, 12), pct: 30 }, lump: { age: Math.max(a0, 3), amount: 200000 }, withdraw: { age: Math.max(a0, 10), amount: 500000 }, goal: { gid: (c.goals[2] || c.goals[0]).id, cost: '', startAge: '', years: '' }, death: { parent: 0, age: Math.max(a0, 5), payout: '' } }[ty];
+      c.whatIf.push(Object.assign({ type: ty }, d)); save(); results(); return; }
+    if (t.dataset.delwi) { child().whatIf.splice(+t.dataset.delwi, 1); save(); results(); return; }
+    if (t.dataset.xcase) { window.__xcase = t.dataset.xcase; results(); return; }
+    if (t.id === 'xlBtn') { excel(); return; }
+    if (t.id === 'newFam') { if (confirm('Start a new family? The current one stays saved in this browser.')) { save(); fam = MT2.defaultFamily(); ci = 0; save(); refreshFamList(); renderInputs(); results(); } return; }
+    if (t.id === 'expFam') { const b = new Blob([JSON.stringify(fam, null, 1)], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `MoneyTree_${(fam.name || 'family').replace(/\W+/g, '_')}.json`; a.click(); return; }
+    if (t.id === 'impFam') { $('impFile').click(); return; }
+  });
+  $('impFile').addEventListener('change', async e => { const f = e.target.files[0]; if (!f) return; try { const j = JSON.parse(await f.text()); if (!j.children || !j.parents) throw 0; fam = j; ci = 0; save(); refreshFamList(); renderInputs(); results(); } catch (_) { alert('That file is not a Money Tree family file.'); } e.target.value = ''; });
+  $('famName').addEventListener('input', e => { fam.name = e.target.value; save(); later(refreshFamList, 400); });
+  $('famList').addEventListener('change', e => { const id = e.target.value; if (store.families[id]) { save(); fam = store.families[id]; ci = 0; save(); renderInputs(); results(); } });
+  function refreshFamList() { const ids = Object.keys(store.families); $('famList').innerHTML = ids.map(id => `<option value="${id}" ${id === fam.id ? 'selected' : ''}>${esc(store.families[id].name || 'Unnamed family')} (${store.families[id].children.length})</option>`).join(''); }
+
+  function excel() {
+    if (!window.XLSX) { alert('The Excel library did not load (needs internet).'); return; }
+    const c = child(), cs = window.__xcase || c.caseSel, eq = cs === 'low' ? fam.a.eqLow : fam.a.eqHigh;
+    const s0 = window.__last.s0, B = MT2.requiredSipB(c, fam, eq), rq = MT2.requiredSipA(c, fam, eq);
+    const sim = MT2.simulate(c, fam, { eq, s0 });
+    const c0 = Object.assign({}, c, { current: { value: 0, date: '' } });
+    const cov0 = MT2.coverB(c0, fam).need, cpl = window.__last.cp;
+    const coverEndK = Math.round(cpl.endAge * 12) - Math.max(0, MT2.monthsBetween(c.dob, c.startDate));
+    const coverPeak = MT2.coverPath(c0, fam, s0, coverEndK).peakAll.all;
+    const tool = { coverPeak, coverEndK, pvL: B.pvL, pvS: B.pvS, reqB: B.exact, reqRounded: rq.rounded, due: sim.goals.reduce((s, g) => s + g.need, 0), paid: sim.goals.reduce((s, g) => s + g.paid, 0), seedVal: sim.seedVal, seedTarget: sim.seedTarget, ok: sim.ok, coverStart: cov0 };
+    const wb = buildCheckWorkbook(XLSX, c, fam, eq, s0, tool);
+    XLSX.writeFile(wb, `MoneyTree_check_${(c.name || 'child').replace(/\W+/g, '_')}_${eq}pc.xlsx`);
+  }
+
+  save(); refreshFamList(); renderInputs(); results();
+})();
+</script>
+</body></html>
