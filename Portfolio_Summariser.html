@@ -1,3 +1,4 @@
+<meta charset="UTF-8">
 <title>Transaction Summariser · Abundance</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20100%20100%27%3E%3Ctext%20x%3D%2750%27%20y%3D%27.88em%27%20font-size%3D%2786%27%20text-anchor%3D%27middle%27%3E%F0%9F%93%91%3C/text%3E%3C/svg%3E">
 <script data-tabname>(function(){var t=document.title;addEventListener("afterprint",function(){document.title=t})})()</script>
@@ -204,7 +205,7 @@ body.dragging #dropVeil{display:flex}
   <section class="card" id="sipCard" aria-labelledby="h-sip" hidden>
     <div class="sipbox" id="sipBoxes"></div>
     <div id="sipGraphs" style="margin-top:14px"></div>
-    <div class="thead" style="margin-top:14px"><h2 id="h-sip">SIPs</h2><div style="display:flex;gap:10px;align-items:center"><span class="hint" id="sipCount"></span><button class="btn ghost" id="sipCopy" type="button">Copy for Excel</button></div></div>
+    <div class="thead" style="margin-top:14px"><h2 id="h-sip">SIPs</h2><div style="display:flex;gap:10px;align-items:center"><span class="hint" id="sipCount"></span><button class="btn ghost" id="sipCopy" type="button">Download Excel</button></div></div>
     <div class="filters"><div class="frow"><span class="flab" id="sipFlab">Category</span><div class="chips" id="sipChips"></div></div></div>
     <div class="tbl"><table>
       <thead id="sipTh"></thead>
@@ -250,7 +251,7 @@ body.dragging #dropVeil{display:flex}
             <option value="n:-1">Transactions: most first</option>
           </select>
         </label>
-        <button class="btn ghost" id="copyBtn">Copy for Excel</button>
+        <button class="btn ghost" id="copyBtn">Download Excel</button>
       </div>
     </div>
     <div class="filters" role="group" aria-label="Filter funds">
@@ -435,12 +436,32 @@ function parseSIPReg(aoa){
   return sips.length?{rows:[],period:'',client:(sips.find(x=>x.client)||{}).client||'',sips,sipSrc:'reg'}:null;
 }
 let SIPS=[],SIPSRC='',sipView='on',sipF=new Set(),sipSort=['amt',-1],SIPLIST=[];
-$('sipCopy').onclick=async()=>{
-  const l=SIPLIST,tot=l.reduce((t,x)=>t+(isNaN(x.amt)?0:x.amt),0),cn=properName($('client').value);
-  let t=(cn?`Client\t${cn}\n`:'')+`${sipView==='on'?'Active':'Inactive'} SIPs\n\nFund\tCategory\tFolio\tStatus\tSIP amount\n`+l.map(x=>[x.name,x.cat,x.folio||'',x.status,isNaN(x.amt)?'':x.amt].join('\t')).join('\n')+`\nTotal\t\t\t\t${tot}`;
-  const b=$('sipCopy');try{await navigator.clipboard.writeText(t);b.textContent='Copied. Paste into Excel';}
-  catch(e){const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');b.textContent='Copied. Paste into Excel';}catch(_){b.textContent='Copy failed';}ta.remove();}
-  setTimeout(()=>b.textContent='Copy for Excel',2500);
+/* ── Excel download (.xlsx) ── Indian ₹ grouping, numbers stay numbers */
+const XL_INR='[>=10000000]"₹"##\\,##\\,##\\,##0;[>=100000]"₹"##\\,##\\,##0;"₹"##,##0';
+function xlStamp(){const d=new Date(),p=n=>String(n).padStart(2,'0');return `${p(d.getDate())}-${p(d.getMonth()+1)}-${String(d.getFullYear()).slice(2)}`;}
+function xlSafe(t){return String(t).replace(/[\\/:*?"<>|]+/g,'-').replace(/\s+/g,' ').trim();}
+/* sheets: [{name, aoa, cols:[width…], fmt:{colIndex:numFmt}, from:first data row}] */
+async function xlDownload(file,sheets,btn){
+  const keep=btn.textContent;
+  if(!(await ensureXLSX())){btn.textContent='Excel writer did not load';setTimeout(()=>btn.textContent=keep,3000);return;}
+  const wb=XLSX.utils.book_new();
+  sheets.forEach(sh=>{
+    const ws=XLSX.utils.aoa_to_sheet(sh.aoa);
+    ws['!cols']=sh.cols.map(w=>({wch:w}));
+    for(let r=sh.from;r<sh.aoa.length;r++)for(const c in sh.fmt){const a=XLSX.utils.encode_cell({r,c:+c});if(ws[a]&&ws[a].t==='n')ws[a].z=sh.fmt[c];}
+    XLSX.utils.book_append_sheet(wb,ws,sh.name);
+  });
+  XLSX.writeFile(wb,xlSafe(file)+'.xlsx');
+  btn.textContent='Downloaded';setTimeout(()=>btn.textContent=keep,2500);
+}
+$('sipCopy').onclick=()=>{
+  const l=SIPLIST,tot=l.reduce((t,x)=>t+(isNaN(x.amt)?0:x.amt),0),cn=properName($('client').value),lab=sipView==='on'?'Active':'Inactive';
+  const aoa=[];if(cn)aoa.push(['Client',cn]);aoa.push([`${lab} SIPs`]);aoa.push([]);
+  const from=aoa.length;
+  aoa.push(['Fund','Category','Folio','Status','SIP amount']);
+  l.forEach(x=>aoa.push([x.name,x.cat,x.folio||'',x.status,isNaN(x.amt)?'':x.amt]));
+  aoa.push(['Total','','','',tot]);
+  xlDownload(`${cn||'Client'} - ${lab} SIPs ${xlStamp()}`,[{name:`${lab} SIPs`,aoa,cols:[48,20,16,12,14],fmt:{4:XL_INR},from}],$('sipCopy'));
 };
 // Fund name only, in proper case: "UTI FLEXI CAP FUND-REGULAR PLAN-GROWTH" → "UTI Flexi Cap Fund"
 const UPPER=new Set(['UTI','HDFC','SBI','ICICI','DSP','PGIM','LIC','HSBC','IDBI','ITI','JM','NJ','ELSS','ETF','FOF','PSU','ESG','MNC','US','IT','BNP','IDFC','ABSL','PPFAS']);
@@ -653,16 +674,28 @@ $('fq').addEventListener('input',e=>{fq=e.target.value;render();});
 $('fClear').onclick=clearFilters;
 $('sortSel').onchange=e=>{const [k,d]=e.target.value.split(':');setSort(k,+d);};
 
-$('copyBtn').onclick=async()=>{
-  const {total,fl,cl}=aggregate();
-  let t=(clientName()?`Client\t${clientName()}\n`:'')+(PERIOD?`Period\t${PERIOD}\n`:'')+((clientName()||PERIOD)?'\n':'')+'Category\tFunds\tTransactions\tAmount\tShare %\n'+cl.map(c=>[c.cat,c.funds.length,c.n,c.amt.toFixed(2),(c.amt/total*100).toFixed(2)].join('\t')).join('\n')+`\nTotal\t${fl.length}\t\t${total.toFixed(2)}\t100\n\n`;
+$('copyBtn').onclick=()=>{
+  const {total,fl,cl}=aggregate(),cn=clientName();
   const shown=applyFilter(fl),sAmt=shown.reduce((a,f)=>a+f.amt,0),flt=shown.length!==fl.length;
-  if(flt)t+=`Filter: ${catFilter.size?[...catFilter].join(', '):'all categories'}${fq.trim()?` · search "${fq.trim()}"`:''}\n`;
-  t+='Fund\tCategory\tTransactions\tUnits\tAmount\tShare %\n'+sortFunds(shown).map(f=>[f.fund,f.cat,f.n,f.units.toFixed(3),f.amt.toFixed(2),f.pct.toFixed(2)].join('\t')).join('\n')+(flt?`\nFiltered total\t\t\t\t${sAmt.toFixed(2)}\t${(sAmt/total*100).toFixed(2)}`:'')+`\nTotal\t\t\t\t${total.toFixed(2)}\t100`;
-  const b=$('copyBtn');
-  try{await navigator.clipboard.writeText(t);b.textContent='Copied. Paste into Excel';}
-  catch(e){const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');b.textContent='Copied. Paste into Excel';}catch(_){b.textContent='Copy failed';}ta.remove();}
-  setTimeout(()=>b.textContent='Copy for Excel',2500);
+  const r2=n=>Math.round(n*100)/100;
+  /* Sheet 1: funds (what you see, in the order shown) — ready to drop into the Portfolio Generator */
+  const fa=[];if(cn)fa.push(['Client',cn]);if(PERIOD)fa.push(['Period',PERIOD]);
+  if(flt)fa.push(['Filter',`${catFilter.size?[...catFilter].join(', '):'all categories'}${fq.trim()?` · search "${fq.trim()}"`:''}`]);
+  if(fa.length)fa.push([]);
+  const ff=fa.length;
+  fa.push(['Fund','Category','Transactions','Units','Amount','Share %']);
+  sortFunds(shown).forEach(f=>fa.push([f.fund,f.cat,f.n,Math.round(f.units*1000)/1000,r2(f.amt),r2(f.pct)]));
+  if(flt)fa.push(['Filtered total','','','',r2(sAmt),r2(sAmt/total*100)]);
+  fa.push(['Total','','','',r2(total),100]);
+  /* Sheet 2: category summary (all funds) */
+  const ca=[];if(cn)ca.push(['Client',cn]);if(PERIOD)ca.push(['Period',PERIOD]);if(ca.length)ca.push([]);
+  const cf=ca.length;
+  ca.push(['Category','Funds','Transactions','Amount','Share %']);
+  cl.forEach(c=>ca.push([c.cat,c.funds.length,c.n,r2(c.amt),r2(c.amt/total*100)]));
+  ca.push(['Total',fl.length,'',r2(total),100]);
+  xlDownload(`${cn||'Client'} - Transaction Summary ${xlStamp()}`,[
+    {name:'Funds',aoa:fa,cols:[52,20,13,12,14,10],fmt:{3:'0.000',4:XL_INR,5:'0.00'},from:ff},
+    {name:'Categories',aoa:ca,cols:[24,8,13,14,10],fmt:{3:XL_INR,4:'0.00'},from:cf}],$('copyBtn'));
 };
 
 load(SAMPLE.map(r=>({date:toDate(r[0]),fund:r[1],type:r[2],amt:r[3],units:r[4]})),'30/08/2026 – 30/09/2026',
