@@ -836,8 +836,8 @@ if (typeof module !== 'undefined') module.exports = buildCheckWorkbook;
     const yr = {};
     let prevClose = 0;
     sim.rows.forEach(r => { const a = Math.floor(r.age + 1e-9);
-      if (!yr[a]) yr[a] = { a, open: prevClose, sip: 0, add: 0, paid: 0, pays: [], sips: [], eq: 0, debt: 0, close: 0, k: 0 };
-      const y = yr[a]; y.sip += r.sip; y.add += r.add; y.paid += r.paid; y.pays.push(...r.pays); y.sips.push(r.sip); y.eq = r.eqEnd; y.debt = r.dEnd; y.close = r.close; y.k = r.k; prevClose = r.close; });
+      if (!yr[a]) yr[a] = { a, open: prevClose, sip: 0, add: 0, paid: 0, pays: [], sips: [], eq: 0, debt: 0, close: 0, k: 0, gE: 0, gD: 0, m: 0 };
+      const y = yr[a]; y.sip += r.sip; y.add += r.add; y.paid += r.paid; y.pays.push(...r.pays); y.sips.push(r.sip); y.eq = r.eqEnd; y.debt = r.dEnd; y.close = r.close; y.k = r.k; y.gE += r.eqEnd - r.eqIn; y.gD += r.dEnd - r.debtIn; y.m++; prevClose = r.close; });
     const grp = arr => { const out = []; arr.forEach(v => { const l = out[out.length - 1]; if (l && Math.abs(l.v - v) < 0.005) l.n++; else out.push({ v, n: 1 }); }); return out; };
     const yrows = Object.values(yr).map(y => {
       const g = y.open + y.sip + y.add - y.paid, growth = y.close - g;
@@ -845,7 +845,9 @@ if (typeof module !== 'undefined') module.exports = buildCheckWorkbook;
       const debtList = L.list.map(l => ({ l, m: l.k - y.k - 1 })).filter(x => x.m >= 0 && x.m < W);
       const debtX = `<h5>In debt at the end of age ${y.a}</h5>${debtList.length ? `<div>Money for every goal due in the next ${A.safeYears} years, each discounted at ${A.debt}%:</div>${tbl(debtList.map(x => [`${esc(x.l.label)}${x.l.paid ? '' : ' (kept)'}, age ${x.l.age}: ${inr(x.l.need)} ÷ ${pw(A.debt, x.m)}`, inr(x.l.need / Math.pow(1 + md, x.m))]).concat([['Total in debt', inr(y.debt), 't']]))}` : `<div>Nothing is due in the next ${A.safeYears} years, so all the money stays in equity.</div>`}`;
       const eqX = `<h5>In equity at the end of age ${y.a}</h5>${tbl([['Total at year end', inr(y.close)], ['− in debt', inr(y.debt)], ['= in equity', inr(y.eq), 't']])}<div class="mut">Everything not needed for goals in the next ${A.safeYears} years stays in equity.</div>`;
-      const totX = `<h5>Total at the end of age ${y.a}</h5>${tbl([['Start of the year', inr(y.open)], ['+ SIP paid in', inr(y.sip)]].concat(y.add ? [[y.add > 0 ? '+ lump sum' : '− withdrawal', inr(Math.abs(y.add))]] : []).concat(y.paid ? [['− goals paid', inr(y.paid)]] : []).concat([['+ growth (equity ' + eq + '%, debt ' + A.debt + '%)', inr(growth)], ['= total at year end', inr(y.close), 't']]))}`;
+      const totX = `<h5>Total at the end of age ${y.a}</h5>${tbl([['Start of the year', inr(y.open)], ['+ SIP paid in', inr(y.sip)]].concat(y.add ? [[y.add > 0 ? '+ lump sum' : '− withdrawal', inr(Math.abs(y.add))]] : []).concat(y.paid ? [['− goals paid', inr(y.paid)]] : []).concat([['+ growth (see below)', inr(growth)], ['= total at year end', inr(y.close), 't']]))}
+        <h5 style="margin-top:10px">How the growth is worked out</h5>${tbl([[`Equity part: grows ${(MT2.mRate(eq) * 100).toFixed(4)}% every month (= ${eq}% a year), ${y.m} months`, inr(y.gE)], [`Debt part: grows ${(MT2.mRate(A.debt) * 100).toFixed(4)}% every month (= ${A.debt}% a year), ${y.m} months`, inr(y.gD)], ['= growth', inr(y.gE + y.gD), 't']])}
+        <div class="mut">Month by month: this month's SIP is added, goals due are paid, then the equity part × ${fx(eq)}<sup>1/12</sup> and the debt part × ${fx(A.debt)}<sup>1/12</sup>. The growth of all ${y.m} months is added up. The debt part holds the money for goals due in the next ${A.safeYears} years.</div>`;
       const addX = `<h5>${y.add > 0 ? 'Lump sum' : 'Withdrawal'} during age ${y.a}</h5><div class="eq">${inr(Math.abs(y.add))}</div><div class="mut">${y.a === Math.floor(sim.rows[0].age) && c.sip.lumpsum ? 'Lump sum at the SIP start.' : 'From the what-if events (not applied here) or the start lump sum.'}</div>`;
       return `<tr><td>${y.a}</td><td class="n">${xn(inr(y.sip), sipX)}</td><td class="n">${y.add ? xn(inr(y.add), addX, true) : '—'}</td><td class="n">${y.paid ? xn(inr(y.paid), paidListX(y.pays, `Goals paid during age ${y.a}`), true) : '—'}</td><td class="n">${xn(inr(y.eq), eqX)}</td><td class="n">${xn(inr(y.debt), debtX)}</td><td class="n">${xn(inr(y.close), totX)}</td></tr>`;
     }).join('');
