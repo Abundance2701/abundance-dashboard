@@ -109,7 +109,7 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xm
   background:#39293E;color:#fff;border-radius:12px;padding:12px 16px;font-size:13.5px;line-height:1.45;box-shadow:0 8px 28px rgba(0,0,0,.25);display:none;}
 #pgToast.on{display:block;}
 #pgToast.err{background:#934E32;}
-body.pdfdrag::after{content:"Drop the saved portfolio PDF to open it";position:fixed;inset:12px;z-index:400;border:3px dashed #005826;border-radius:18px;
+body.pdfdrag::after{content:"Drop a saved portfolio PDF, or an Excel / CSV list of funds";position:fixed;inset:12px;z-index:400;border:3px dashed #005826;border-radius:18px;
   background:rgba(240,248,255,.92);display:grid;place-items:center;font:700 18px var(--head);color:#005826;}
 .opt .p{display:block;font-size:12px;color:var(--green);font-weight:700;margin-top:5px;line-height:1.35;word-break:break-word;}
 .opt .d.warn{color:#934E32;}
@@ -459,9 +459,11 @@ body.exporting #viewer{display:block !important;position:fixed;left:-10000px;top
       <div class="sub">Designing Portfolios. Delivering Peace.</div>
     </div>
     <div class="spacer"></div>
+    <button class="chip-btn" id="xlBtn" title="Fill fund names, categories and amounts from an Excel or CSV file (or drop the file on the page)">Import Excel</button>
     <button class="chip-btn" id="openBtn" title="Open a PDF saved from this tool to edit it">Open saved PDF</button>
     <button class="chip-btn" id="resetBtn">Clear</button>
     <input type="file" id="openFile" accept="application/pdf,.pdf" hidden>
+    <input type="file" id="xlFile" accept=".xlsx,.xls,.xlsm,.csv" hidden>
   </div>
   <div id="pgToast" role="status" aria-live="polite"></div>
 
@@ -3185,7 +3187,144 @@ const isFileDrag = e => e.dataTransfer && [...(e.dataTransfer.types||[])].includ
 window.addEventListener('dragenter', e => { if(!isFileDrag(e)) return; e.preventDefault(); pdfDrag++; document.body.classList.add('pdfdrag'); });
 window.addEventListener('dragover', e => { if(isFileDrag(e)) e.preventDefault(); });
 window.addEventListener('dragleave', e => { if(!isFileDrag(e)) return; pdfDrag = Math.max(0, pdfDrag-1); if(!pdfDrag) document.body.classList.remove('pdfdrag'); });
-window.addEventListener('drop', e => { if(!isFileDrag(e)) return; e.preventDefault(); pdfDrag = 0; document.body.classList.remove('pdfdrag'); openSavedPdf(e.dataTransfer.files[0]); });
+window.addEventListener('drop', e => { if(!isFileDrag(e)) return; e.preventDefault(); pdfDrag = 0; document.body.classList.remove('pdfdrag'); const f0 = e.dataTransfer.files[0];
+  if(f0 && /\.(xlsx|xls|xlsm|csv)$/i.test(f0.name)) importSheet(f0); else openSavedPdf(f0); });
+
+
+/* ══════════════ IMPORT FROM EXCEL / CSV ══════════════
+   Any layout: finds the fund / scheme, category and amount columns by their headings
+   (or by their contents when there are no headings). Rows hidden by a filter, total rows
+   and rows without an amount are skipped. Plan / option suffixes are trimmed. */
+let XLSXLIB = null;
+function loadXlsx(){
+  if(window.XLSX) return Promise.resolve(window.XLSX);
+  if(XLSXLIB) return XLSXLIB;
+  const urls = ['https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
+                'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'];
+  XLSXLIB = urls.reduce((p, u) => p.catch(() => new Promise((ok, no) => {
+    const sc = document.createElement('script'); sc.src = u;
+    sc.onload = () => window.XLSX ? ok(window.XLSX) : no(); sc.onerror = () => { sc.remove(); no(); };
+    document.head.appendChild(sc);
+  })), Promise.reject()).catch(e => { XLSXLIB = null; throw new Error('Could not load the Excel reader. Check the internet connection.'); });
+  return XLSXLIB;
+}
+const normKey = t => String(t||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+const H_FUND = [/^(scheme|fund)\s*name$/i, /^(scheme|fund|security|instrument)$/i, /scheme|fund(?!\s*house)/i, /^name$/i];
+const H_AMT  = [/^amount$/i, /amount|amt/i, /invest|lump\s*sum|sip/i, /current\s*value|market\s*value|^value$|valuation/i, /₹|inr|rs\.?$/i];
+const H_CAT  = [/^(sub[\s-]*)?category$/i, /categ/i, /scheme\s*type|fund\s*type|^type$/i];
+const H_NOT  = /unit|nav|share|%|percent|transaction|count|^no\.?$|date|folio|isin|code|amc|fund\s*house|gain|xirr|return|weight/i;
+function pickCol(hdr, pats, skip){
+  for(const re of pats){
+    const i = hdr.findIndex((h,k) => h && !skip.includes(k) && re.test(h) && !(pats !== H_FUND && H_NOT.test(h)) && !(pats === H_FUND && /amc|house|code|isin/i.test(h)));
+    if(i >= 0) return i;
+  }
+  return -1;
+}
+function cellNum(v){
+  if(typeof v === 'number') return v;
+  const t = String(v||'').replace(/,/g,'').trim();        /* ignores any currency sign or symbol before the number */
+  const m = t.match(/(-?\d+(?:\.\d+)?)\s*(lakhs?|l|k|cr)?\.?\s*$/i);
+  if(!m || /\d/.test(t.slice(0, t.length - m[0].length))) return NaN;   /* none, or two numbers in one cell */
+  const mult = { l:1e5, lakh:1e5, lakhs:1e5, k:1e3, cr:1e7 }[String(m[2]||'').toLowerCase()] || 1;
+  return +m[1] * mult;
+}
+function cleanFund(n){
+  let t = String(n||'').replace(/\s+/g,' ').trim();
+  t = t.replace(/\s*[-–(,]\s*(regular|direct)\b.*$/i,'')
+       .replace(/\s+(regular|direct)(?=\s*(plan|growth|idcw|dividend|option|$))\b.*$/i,'')
+       .replace(/\s*[-–(]\s*(growth|idcw|dividend)\b.*$/i,'')
+       .replace(/\s*\((g|gr)\)\s*$/i,'')
+       .replace(/\s+(growth|growth option|growth plan)$/i,'').trim();
+  const k = normKey(t).replace(/fund$/,'');
+  for(const cat in LIBRARY){ const hit = LIBRARY[cat].find(x => normKey(x).replace(/fund$/,'') === k); if(hit) return hit; }
+  return t;
+}
+function catFromText(txt, fund){
+  const all = CATS.map(c => c[0]).concat(Object.keys(customCats()));
+  const t = String(txt||'').trim();
+  if(t){
+    const exact = all.find(c => normKey(c) === normKey(t));
+    if(exact) return exact;
+    const m = SNIFF.find(r => r[0].test(t));
+    if(m){                                              /* e.g. "Gold & Silver": keep the file's name */
+      if(/[&\/]|\band\b/i.test(t) && normKey(t) !== normKey(m[1])){ saveCustomCat(t, catAsset(m[1])); return t; }
+      return m[1];
+    }
+  }
+  const g = SNIFF.find(r => r[0].test(fund||''));
+  return g ? g[1] : '';
+}
+function findTable(rows){
+  const isTot = v => /^(grand\s*|sub\s*|filtered\s*|net\s*)?total\b/i.test(String(v||'').trim());
+  for(let r = 0; r < Math.min(rows.length, 25); r++){
+    const hdr = rows[r].map(v => String(v ?? '').trim());
+    const f = pickCol(hdr, H_FUND, []), a = pickCol(hdr, H_AMT, [f]);
+    if(f >= 0 && a >= 0) return { head:r, f, a, c: pickCol(hdr, H_CAT, [f,a]), isTot };
+  }
+  /* no headings: fund = column with most "Fund"/"Scheme" text, amount = a numeric column */
+  const width = Math.max(0, ...rows.map(r => r.length)), score = k => rows.filter(r => /fund|scheme/i.test(String(r[k]||''))).length;
+  let f = -1, best = 0; for(let k = 0; k < width; k++){ const s = score(k); if(s > best){ best = s; f = k; } }
+  if(f < 0) return null;
+  let a = -1;
+  for(let k = width - 1; k >= 0; k--){ if(k !== f && rows.filter(r => cellNum(r[k]) >= 100).length >= Math.max(1, best/2)){ a = k; break; } }
+  if(a < 0) return null;
+  let c = -1, cb = 0;
+  for(let k = 0; k < width; k++){ if(k === f || k === a) continue; const s = rows.filter(r => SNIFF.some(x => x[0].test(String(r[k]||'')))).length; if(s > cb){ cb = s; c = k; } }
+  return { head:-1, f, a, c, isTot };
+}
+async function importSheet(file){
+  if(!file) return;
+  let X;
+  try{ X = await loadXlsx(); }catch(e){ toast(esc(e.message), true); return; }
+  let wb;
+  try{
+    wb = /\.csv$/i.test(file.name) ? X.read(await file.text(), { type:'string', raw:true })   /* UTF-8, keeps ₹ intact */
+                                     : X.read(await file.arrayBuffer(), { type:'array', cellStyles:true });
+  }
+  catch(e){ toast(`<b>${esc(file.name)}</b> could not be read as Excel / CSV.`, true); return; }
+  let got = null;
+  for(const name of wb.SheetNames){
+    const ws = wb.Sheets[name]; if(!ws || !ws['!ref']) continue;
+    const rows = X.utils.sheet_to_json(ws, { header:1, blankrows:true, defval:'', raw:true });
+    const t = findTable(rows);
+    if(t){ got = { ws, rows, t, start: X.utils.decode_range(ws['!ref']).s.r }; break; }
+  }
+  if(!got){ toast(`No fund and amount columns found in <b>${esc(file.name)}</b>. It needs a column of fund names and a column of amounts.`, true, 9000); return; }
+  const { ws, rows, t, start } = got, hid = ws['!rows'] || [];
+  const out = new Map(); let hidden = 0, totals = 0, noAmt = 0;
+  for(let r = t.head + 1; r < rows.length; r++){
+    const row = rows[r], raw = String(row[t.f] ?? '').trim();
+    if(!raw) continue;
+    if(hid[start + r] && hid[start + r].hidden){ hidden++; continue; }
+    if(t.isTot(raw)){ totals++; continue; }
+    const amt = cellNum(row[t.a]);
+    if(!(amt > 0)){ noAmt++; continue; }
+    const name = cleanFund(raw), cat = catFromText(t.c >= 0 ? row[t.c] : '', raw);
+    const key = normKey(name) + '|' + cat;
+    if(out.has(key)) out.get(key).amt += amt;
+    else out.set(key, { name, cat, amt });
+  }
+  const list = [...out.values()];
+  if(!list.length){ toast(`No funds with an amount found in <b>${esc(file.name)}</b>.`, true); return; }
+
+  let sec = S.type === 'SIP' ? 'sip' : 'lump';
+  if(S.type === 'Both') sec = confirm(`Import ${list.length} funds into the SIP section?\n\nOK = SIP   ·   Cancel = Lumpsum`) ? 'sip' : 'lump';
+  const have = validFunds(sec).length;
+  const rowsNew = list.map(x => Object.assign(blank(), { name:x.name, cat:x.cat, amt:String(Math.round(x.amt)), manual:!!x.cat }));
+  if(have && !confirm(`The ${SEC_TITLE[sec]} section already has ${have} scheme${have>1?'s':''}.\n\nOK = replace them with the ${list.length} from the file\nCancel = add these below them`)){
+    S[sec] = S[sec].filter(f => String(f.name||'').trim() || num(f.amt)).concat(rowsNew);
+  } else S[sec] = rowsNew;
+  S.order[sec] = 'auto';
+  renderSections(); refresh();
+  const tot = list.reduce((s,x) => s + Math.round(x.amt), 0), nocat = list.filter(x => !x.cat).length;
+  const skip = [hidden && `${hidden} hidden by a filter`, totals && `${totals} total row${totals>1?'s':''}`, noAmt && `${noAmt} without an amount`].filter(Boolean);
+  toast(`Imported <b>${list.length} fund${list.length>1?'s':''}</b> into ${SEC_TITLE[sec]} · <b>${inr(tot)}</b>.`
+    + (skip.length ? `<br>Skipped: ${skip.join(', ')}.` : '')
+    + (nocat ? `<br><b>${nocat}</b> without a category: pick it in the list.` : '')
+    + '<br>Check the names and amounts before saving.', false, 10000);
+}
+$('#xlBtn').addEventListener('click', () => $('#xlFile').click());
+$('#xlFile').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; importSheet(f); });
 
 $('#resetBtn').addEventListener('click', ()=>{
   if(!confirm('Clear this portfolio? Your saved scheme names stay.')) return;
