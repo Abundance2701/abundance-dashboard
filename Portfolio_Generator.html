@@ -2484,7 +2484,20 @@ document.addEventListener('selectionchange', ()=>{
 
 $('#segType').addEventListener('click', e=>{
   const b = e.target.closest('button'); if(!b) return;
-  S.type = b.dataset.v;
+  const from = S.type, to = b.dataset.v;
+  /* switching Lumpsum ⇄ SIP when only the old side has schemes: offer to move them across */
+  if(from !== to && from !== 'Both' && to !== 'Both'){
+    const src = from === 'SIP' ? 'sip' : 'lump', dst = to === 'SIP' ? 'sip' : 'lump';
+    const n = validFunds(src).length;
+    if(n && !validFunds(dst).length &&
+       confirm(`Move the ${n} scheme${n>1?'s':''} you entered under ${SEC_TITLE[src]} to ${SEC_TITLE[dst]}?\n\nOK = move them   ·   Cancel = keep them under ${SEC_TITLE[src]} (hidden while ${SEC_TITLE[dst]} is selected)`)){
+      S[dst] = S[src].map(f => Object.assign({}, f));
+      S[src] = [blank()];
+      S.notes[dst] = S.notes[dst] || S.notes[src]; S.notes[src] = '';
+      S.order[dst] = S.order[src]; S.order[src] = 'auto';
+    }
+  }
+  S.type = to;
   [...$('#segType').children].forEach(x=>x.classList.toggle('on', x===b));
   renderSections(); refresh();
 });
